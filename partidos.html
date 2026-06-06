@@ -8,16 +8,39 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="partidos.css" />
+  <style>
+    .nav-top {
+      width: 100%;
+      max-width: 900px;
+      margin: 10px auto 6px auto;
+      display: flex;
+      justify-content: flex-start;
+    }
+    .nav-top a {
+      display: inline-block;
+      padding: 8px 22px;
+      background: rgba(0,0,0,.75);
+      border: 1px solid #39ff14;
+      border-radius: 12px;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      transition: .3s;
+    }
+    .nav-top a:hover {
+      background: #39ff14;
+      color: black;
+      box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    }
+  </style>
 </head>
 <body>
-<header>
-  <img src="logo-liga.png.png" class="logo-liga">
-  <h1>PARTIDOS</h1>
-  <p class="subtitulo">Liga Next Level 7</p>
-  <nav>
-    <a href="index.html">Inicio</a>
-  </nav>
-</header>
+
+  <div class="nav-top">
+    <a href="index.html">← Inicio</a>
+  </div>
 
   <div class="editor-panel">
     <h3>⚽ Dominical — Next Level 7</h3>
