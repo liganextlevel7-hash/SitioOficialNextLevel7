@@ -50,7 +50,8 @@ async function cargarTablaGeneral(){
     }
 
     equipos.sort((a,b)=>a.ranking-b.ranking);
-
+    equipos = equipos.slice(0, 3);
+    
     let html = `
       <table class="tabla">
       <thead>
