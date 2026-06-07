@@ -6,9 +6,9 @@ const CSV_EQUIPOS  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY
 let todosPartidos = [], todosEquipos = [];
 
 function parseCSV(text) {
-  const lines = text.trim().split('\n');
+  const lines = text.replace(/\r/g, '').trim().split('\n');
   const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).map(line => {
+  return lines.slice(1).filter(line => line.trim() !== '').map(line => {
     const vals = []; let cur = '', inQ = false;
     for (let ch of line) {
       if (ch === '"') inQ = !inQ;
@@ -17,7 +17,7 @@ function parseCSV(text) {
     }
     vals.push(cur.trim());
     const obj = {};
-    headers.forEach((h,i) => obj[h] = (vals[i]||'').replace(/^"|"$/g,''));
+    headers.forEach((h,i) => obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim());
     return obj;
   });
 }
