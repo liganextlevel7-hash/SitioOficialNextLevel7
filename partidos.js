@@ -51,6 +51,7 @@ async function cargarFechasYEquipos() {
     const [resP, resE] = await Promise.all([fetch(CSV_PARTIDOS), fetch(CSV_EQUIPOS)]);
     todosPartidos = parseCSV(await resP.text());
     todosEquipos = parseCSV(await resE.text());
+    document.getElementById('statusMsg').textContent = `📊 ${todosPartidos.length} partidos cargados`;
 
     const fechas = [...new Set(todosPartidos.filter(p => p['Fecha'] && p['Fecha'].trim() !== '').map(p => p['Fecha'].trim()))];
     const selFecha = document.getElementById('filterFecha');
@@ -189,7 +190,7 @@ async function downloadPNG() {
   try {
     const canvas = await html2canvas(document.getElementById('flyerRoot'), {
       useCORS: true, allowTaint: true, scale: 2,
-      width: 900, height: 1270, backgroundColor: '#000', imageTimeout: 20000, logging: false
+      width: 900, height: 1600, backgroundColor: '#000', imageTimeout: 20000, logging: false
     });
     canvas.toBlob(blob => {
       const url = URL.createObjectURL(blob);
@@ -213,7 +214,7 @@ function escalarFlyer() {
   const escala = disponible < 900 ? disponible / 900 : 1;
   wrapper.style.transform = `scale(${escala})`;
   wrapper.style.transformOrigin = 'top left';
-  container.style.height = Math.round(1270 * escala) + 'px';
+  container.style.height = Math.round(1600 * escala) + 'px';
   container.style.width = Math.round(900 * escala) + 'px';
   container.style.overflow = 'hidden';
 }
