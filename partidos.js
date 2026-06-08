@@ -126,7 +126,7 @@ async function cargarDatos() {
       const ganPor = (p['Ganado_Por'] || '').trim().toUpperCase();
       const ganPorClass = ganPor.toLowerCase();
       const hora = formatHora(p['Hora']);
-      const jornada = p['Jornada'] ? `Jornada ${p['Jornada']}` : '';
+      const jornada = p['Jornada'] ? `Jornada ${p['Jornada']}` : 'Jornada ?';
       const cancha2 = p['Cancha'] || '';
       const fecha2 = p['Fecha'] || '';
 
@@ -148,7 +148,7 @@ async function cargarDatos() {
         <div class="enc-divider-v"></div>
         <div class="info-section">
           <div class="info-col">
-            ${jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
+            ${jornada === 'Jornada ?' ? `<div class="info-item"><span class="icon">🏆</span><span class="val" style="color:#ffd700;">${jornada}</span></div>` : jornada ? `<div class="info-item"><span class="icon">🏆</span><span class="val">${jornada}</span></div>` : ''}
             ${cancha2 ? `<div class="info-item"><span class="icon">📍</span><span class="val">${cancha2}</span></div>` : ''}
           </div>
           <div class="info-col">
