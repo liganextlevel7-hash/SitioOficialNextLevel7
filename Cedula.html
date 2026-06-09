@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cédula Arbitral | Liga Next Level 7</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <img src="logo-liga.png.png" class="logo-liga">
+  <h1>CÉDULA ARBITRAL</h1>
+  <p class="subtitulo">Liga Next Level 7</p>
+  <nav>
+    <a href="index.html">Inicio</a>
+  </nav>
+</header>
+
+<section class="contenedor">
+
+  <!-- LOGIN -->
+  <div class="card" id="login-section">
+    <h2>🔐 Acceso Árbitro</h2>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:320px;margin:20px auto 0;">
+      <div>
+        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Usuario</label>
+        <input id="login-user" type="text" placeholder="Usuario" style="width:100%;margin-top:6px;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:15px;">
+      </div>
+      <div>
+        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Contraseña</label>
+        <input id="login-pass" type="password" placeholder="Contraseña" style="width:100%;margin-top:6px;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:15px;">
+      </div>
+      <button onclick="iniciarSesion()" style="padding:12px;background:linear-gradient(135deg,#3a6b1a,#7ddf00);border:none;border-radius:8px;color:#fff;font-weight:bold;font-size:15px;letter-spacing:2px;cursor:pointer;">
+        ENTRAR
+      </button>
+      <div id="login-error" style="color:#ff4444;font-size:13px;text-align:center;min-height:18px;"></div>
+    </div>
+  </div>
+
+  <!-- LISTA DE PARTIDOS -->
+  <div class="card" id="partidos-section" style="display:none;">
+    <h2>📋 Partidos Programados</h2>
+    <div id="lista-partidos-cedula" style="margin-top:16px;">Cargando...</div>
+  </div>
+
+  <!-- CÉDULA -->
+  <div id="cedula-section" style="display:none;">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <h2>📝 Cédula de Partido</h2>
+        <button onclick="volverALista()" style="padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;cursor:pointer;font-size:13px;">← Volver</button>
+      </div>
+      <div id="cedula-header" style="margin-top:16px;"></div>
+    </div>
+
+    <div class="card" id="cedula-equipos-wrap" style="margin-top:16px;">
+      <div id="cedula-equipos"></div>
+    </div>
+
+    <!-- FIRMA -->
+    <div class="card" style="margin-top:16px;">
+      <h2>✍️ Firma del Árbitro</h2>
+      <div style="margin-top:12px;">
+        <input id="arbitro-nombre" type="text" placeholder="Nombre del árbitro" style="width:100%;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:14px;margin-bottom:12px;box-sizing:border-box;">
+        <canvas id="firma-canvas" width="400" height="120" style="background:rgba(255,255,255,0.05);border:1px solid #39ff14;border-radius:8px;cursor:crosshair;touch-action:none;width:100%;max-width:500px;display:block;"></canvas>
+        <div style="display:flex;gap:10px;margin-top:10px;">
+          <button onclick="limpiarFirma()" style="padding:8px 16px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:8px;color:#ff4444;cursor:pointer;font-size:13px;">🗑 Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTONES FINALES -->
+    <div class="card" style="margin-top:16px;">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button onclick="guardarCedula()" style="flex:1;padding:14px;background:linear-gradient(135deg,#3a6b1a,#7ddf00);border:none;border-radius:10px;color:#fff;font-weight:bold;font-size:15px;letter-spacing:2px;cursor:pointer;">
+          💾 GUARDAR CÉDULA
+        </button>
+        <button onclick="descargarPDF()" style="flex:1;padding:14px;background:linear-gradient(135deg,#0277bd,#29b6f6);border:none;border-radius:10px;color:#fff;font-weight:bold;font-size:15px;letter-spacing:2px;cursor:pointer;">
+          ⬇ DESCARGAR PDF
+        </button>
+      </div>
+      <div id="cedula-status" style="text-align:center;color:#88cc22;font-size:13px;margin-top:10px;min-height:18px;"></div>
+    </div>
+  </div>
+
+</section>
+<script src="cedula.js"></script>
+</body>
+</html>
