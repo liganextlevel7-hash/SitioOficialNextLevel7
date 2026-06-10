@@ -199,12 +199,13 @@ function abrirCedula(idPartido) {
     const id  = String(part.Jugador).trim();
 
     if (esEditable) {
-      eventosRegistrados[id] = { goles:0, amarilla:false, roja:false };
+      eventosRegistrados[id] = { goles:0, amarilla:false, roja:false, asistencia:false };
       return `
       <div style="display:flex;align-items:center;gap:6px;padding:7px 4px;border-bottom:0.5px solid rgba(255,255,255,0.06);">
         <span style="font-size:11px;font-weight:700;color:rgba(57,255,20,0.7);min-width:22px;">${jug.Numero||'-'}</span>
         <span style="font-size:11px;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${jug.Nombre||'#'+id}</span>
         <div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">
+          <button id="btn-asist-${id}" onclick="toggleAsistencia('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#555;width:28px;height:20px;cursor:pointer;font-size:13px;font-weight:700;padding:0;">✓</button>
           <button onclick="quitarGol('${id}')" style="background:#111;border:1px solid #444;border-radius:4px;color:#fff;width:20px;height:20px;cursor:pointer;font-size:12px;padding:0;">-</button>
           <span id="goles-${id}" style="font-size:13px;font-weight:900;color:#d4f030;min-width:14px;text-align:center;">0</span>
           <span style="font-size:10px;color:rgba(255,255,255,0.4);">GOL</span>
@@ -228,17 +229,68 @@ function abrirCedula(idPartido) {
   const htmlL = partLocal.length  ? partLocal.map(jugadorHTML).join('')  : '<div style="color:rgba(255,255,255,0.3);font-size:12px;text-align:center;padding:10px;">Sin jugadores</div>';
   const htmlV = partVisita.length ? partVisita.map(jugadorHTML).join('') : '<div style="color:rgba(255,255,255,0.3);font-size:12px;text-align:center;padding:10px;">Sin jugadores</div>';
 
-  document.getElementById('cedula-equipos').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div>
-        <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqL.Nombre||'Local'}</div>
-        ${htmlL}
+  if (esEditable) {
+    document.getElementById('cedula-equipos').innerHTML = `
+      <!-- Selector de equipo en movil -->
+      <div class="equipo-tabs">
+        <div id="tab-local" class="equipo-tab tab-activo" onclick="mostrarTabEquipo('local')">
+          <img src="${eqL.URL||''}" style="width:36px;height:36px;object-fit:contain;">
+          <span>${eqL.Nombre||'Local'}</span>
+        </div>
+        <div id="tab-visita" class="equipo-tab" onclick="mostrarTabEquipo('visita')">
+          <img src="${eqV.URL||''}" style="width:36px;height:36px;object-fit:contain;">
+          <span>${eqV.Nombre||'Visita'}</span>
+        </div>
       </div>
-      <div>
-        <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqV.Nombre||'Visita'}</div>
-        ${htmlV}
+      <style>
+        .equipo-tabs { display:none; gap:10px; margin-bottom:14px; }
+        .equipo-tab {
+          flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;
+          padding:10px; border-radius:10px; cursor:pointer;
+          border:2px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03);
+          transition:0.2s;
+        }
+        .equipo-tab span { font-size:11px; font-weight:700; color:rgba(255,255,255,0.5); text-transform:uppercase; text-align:center; }
+        .equipo-tab.tab-activo { border-color:#39ff14; background:rgba(57,255,20,0.1); }
+        .equipo-tab.tab-activo span { color:#39ff14; }
+        @media(max-width:600px) { .equipo-tabs { display:flex; } .col-desktop { display:none; } .col-mobile { display:block; } }
+        @media(min-width:601px) { .equipo-tabs { display:none; } .col-desktop { display:grid; } .col-mobile { display:none; } }
+      </style>
+      <!-- Vista desktop: dos columnas -->
+      <div class="col-desktop" style="grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqL.Nombre||'Local'}</div>
+          ${htmlL}
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqV.Nombre||'Visita'}</div>
+          ${htmlV}
+        </div>
       </div>
-    </div>`;
+      <!-- Vista movil: una columna con tabs -->
+      <div class="col-mobile">
+        <div id="panel-local">
+          <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqL.Nombre||'Local'}</div>
+          ${htmlL}
+        </div>
+        <div id="panel-visita" style="display:none;">
+          <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqV.Nombre||'Visita'}</div>
+          ${htmlV}
+        </div>
+      </div>`;
+  } else {
+    document.getElementById('cedula-equipos').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqL.Nombre||'Local'}</div>
+          ${htmlL}
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqV.Nombre||'Visita'}</div>
+          ${htmlV}
+        </div>
+      </div>`;
+  }
 
   document.getElementById('firma-section').style.display  = esEditable ? 'block' : 'none';
   document.getElementById('botones-section').style.display = esEditable ? 'block' : 'none';
@@ -272,6 +324,21 @@ function toggleRoja(id) {
   btn.style.background = eventosRegistrados[id].roja ? '#8b0000' : '#111';
   btn.style.color      = eventosRegistrados[id].roja ? '#fff' : '#888';
   btn.style.border     = eventosRegistrados[id].roja ? '1px solid #ff4444' : '1px solid #555';
+}
+
+function mostrarTabEquipo(tab) {
+  document.getElementById('panel-local').style.display  = tab === 'local'  ? 'block' : 'none';
+  document.getElementById('panel-visita').style.display = tab === 'visita' ? 'block' : 'none';
+  document.getElementById('tab-local').className  = 'equipo-tab' + (tab === 'local'  ? ' tab-activo' : '');
+  document.getElementById('tab-visita').className = 'equipo-tab' + (tab === 'visita' ? ' tab-activo' : '');
+}
+
+function toggleAsistencia(id) {
+  eventosRegistrados[id].asistencia = !eventosRegistrados[id].asistencia;
+  const btn = document.getElementById(`btn-asist-${id}`);
+  btn.style.background = eventosRegistrados[id].asistencia ? '#1a3a1a' : '#111';
+  btn.style.color      = eventosRegistrados[id].asistencia ? '#39ff14' : '#555';
+  btn.style.border     = eventosRegistrados[id].asistencia ? '1px solid #39ff14' : '1px solid #555';
 }
 
 function iniciarFirma() {
@@ -312,6 +379,7 @@ async function guardarCedula() {
   for (const [jugId, ev] of Object.entries(eventosRegistrados)) {
     const jug = todosJugadores.find(j => String(j.ID_Jugador).trim()===jugId) || {};
     const eqNombre = eqMap[String(jug.Equipo||'').trim()]?.Nombre || '';
+    if (ev.asistencia) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Asistencia']);
     for (let g=0; g<ev.goles; g++) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Gol']);
     if (ev.amarilla) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Amarilla']);
     if (ev.roja)     rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Roja']);
@@ -413,6 +481,9 @@ async function descargarPDF() {
         doc.setFont('helvetica','normal'); doc.setFontSize(7);
         doc.setTextColor(184,240,48); doc.text(String(jug.Numero||'-'), x, y);
         doc.setTextColor(210,210,210); doc.text((jug.Nombre||'').substring(0,20), x+8, y);
+        const asistMark = ev.asistencia ? 'V ' : '  ';
+        doc.setFont('helvetica','bold'); doc.setTextColor(57,255,20); doc.text(asistMark, x+6, y);
+        doc.setTextColor(210,210,210); doc.setFont('helvetica','normal'); doc.text((jug.Nombre||'').substring(0,18), x+10, y);
         const evStr = (ev.goles>0?`${ev.goles}GOL `:'') + (ev.amarilla?'AM ':'') + (ev.roja?'RJ':'');
         if (evStr.trim()) { doc.setFont('helvetica','bold'); doc.setTextColor(212,240,48); doc.text(evStr.trim(), x+62, y); }
       }
