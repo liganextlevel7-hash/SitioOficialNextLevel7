@@ -503,10 +503,8 @@ async function descargarPDF() {
         const ev  = eventosRegistrados[id] || {goles:0, amarilla:false, roja:false};
         doc.setFont('helvetica','normal'); doc.setFontSize(7);
         doc.setTextColor(184,240,48); doc.text(String(jug.Numero||'-'), x, y);
-        doc.setTextColor(210,210,210); doc.text((jug.Nombre||'').substring(0,20), x+8, y);
-        const asistMark = ev.asistencia ? 'V ' : '  ';
-        doc.setFont('helvetica','bold'); doc.setTextColor(57,255,20); doc.text(asistMark, x+6, y);
-        doc.setTextColor(210,210,210); doc.setFont('helvetica','normal'); doc.text((jug.Nombre||'').substring(0,18), x+10, y);
+        if (ev.asistencia) { doc.setFont('helvetica','bold'); doc.setTextColor(57,255,20); doc.text('V', x+6, y); }
+        doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210); doc.text((jug.Nombre||'').substring(0,20), x+10, y);
         const evStr = (ev.goles>0?`${ev.goles}GOL `:'') + (ev.amarilla?'AM ':'') + (ev.roja?'RJ':'');
         if (evStr.trim()) { doc.setFont('helvetica','bold'); doc.setTextColor(212,240,48); doc.text(evStr.trim(), x+62, y); }
       }
