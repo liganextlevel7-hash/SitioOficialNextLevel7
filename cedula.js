@@ -331,6 +331,29 @@ function mostrarTabEquipo(tab) {
   document.getElementById('panel-visita').style.display = tab === 'visita' ? 'block' : 'none';
   document.getElementById('tab-local').className  = 'equipo-tab' + (tab === 'local'  ? ' tab-activo' : '');
   document.getElementById('tab-visita').className = 'equipo-tab' + (tab === 'visita' ? ' tab-activo' : '');
+  // Restaurar estado visual de botones
+  for (const [id, ev] of Object.entries(eventosRegistrados)) {
+    const btnAsist = document.getElementById(`btn-asist-${id}`);
+    const btnAm    = document.getElementById(`btn-am-${id}`);
+    const btnRj    = document.getElementById(`btn-rj-${id}`);
+    const spanGol  = document.getElementById(`goles-${id}`);
+    if (btnAsist) {
+      btnAsist.style.background = ev.asistencia ? '#1a3a1a' : '#111';
+      btnAsist.style.color      = ev.asistencia ? '#39ff14' : '#555';
+      btnAsist.style.border     = ev.asistencia ? '1px solid #39ff14' : '1px solid #555';
+    }
+    if (btnAm) {
+      btnAm.style.background = ev.amarilla ? '#b8860b' : '#111';
+      btnAm.style.color      = ev.amarilla ? '#fff' : '#888';
+      btnAm.style.border     = ev.amarilla ? '1px solid #ffd700' : '1px solid #555';
+    }
+    if (btnRj) {
+      btnRj.style.background = ev.roja ? '#8b0000' : '#111';
+      btnRj.style.color      = ev.roja ? '#fff' : '#888';
+      btnRj.style.border     = ev.roja ? '1px solid #ff4444' : '1px solid #555';
+    }
+    if (spanGol) spanGol.textContent = ev.goles;
+  }
 }
 
 function toggleAsistencia(id) {
