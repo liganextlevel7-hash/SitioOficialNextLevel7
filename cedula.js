@@ -8,6 +8,9 @@ const CSV_EVENTOS_C         = 'https://docs.google.com/spreadsheets/d/e/2PACX-1v
 let usuarioActual = null, modoArbitro = false, partidoActual = null;
 let todosJugadores = [], todasParticipaciones = [], todosEquiposC = [], todosPartidosC = [], todosEventosC = [];
 let eventosRegistrados = {};
+let cronometroInterval = null;
+let cronometroSegundos = 0;
+let cronometroActivo = false;
 
 function parseCSV(text) {
   const lines = text.replace(/\r/g,'').trim().split('\n');
@@ -147,8 +150,8 @@ function actualizarMarcador() {
   for (const [jugId, ev] of Object.entries(eventosRegistrados)) {
     const jug = todosJugadores.find(j => String(j.ID_Jugador).trim()===jugId);
     if (!jug) continue;
-    if (String(jug.Equipo).trim()===String(partidoActual.Equipo_Local).trim()) gLocal+=ev.goles;
-    else gVisita+=ev.goles;
+    if (String(jug.Equipo).trim()===String(partidoActual.Equipo_Local).trim()) gLocal+=ev.goles.length;
+    else gVisita+=ev.goles.length;
   }
   const el = document.getElementById('marcador-live');
   if (el) el.textContent = `${gLocal} - ${gVisita}`;
@@ -175,7 +178,7 @@ function restaurarEstadoBotones() {
       btnRj.style.color      = ev.roja ? '#fff' : '#888';
       btnRj.style.border     = ev.roja ? '1px solid #ff4444' : '1px solid #555';
     }
-    if (spanGol) spanGol.textContent = ev.goles;
+    if (spanGol) spanGol.textContent = ev.goles.length;
   }
 }
 
@@ -187,10 +190,50 @@ function mostrarTabEquipo(tab) {
   restaurarEstadoBotones();
 }
 
+function iniciarCronometro() {
+  if (cronometroActivo) return;
+  cronometroActivo = true;
+  cronometroInterval = setInterval(() => {
+    cronometroSegundos++;
+    const min = Math.floor(cronometroSegundos / 60);
+    const sec = cronometroSegundos % 60;
+    const el = document.getElementById('crono-display');
+    if (el) el.textContent = String(min).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+  }, 1000);
+  const btn = document.getElementById('btn-crono-start');
+  if (btn) { btn.textContent = 'PAUSAR'; btn.style.background = 'rgba(255,180,0,0.2)'; btn.style.borderColor = '#ffd700'; btn.style.color = '#ffd700'; }
+}
+
+function pausarCronometro() {
+  cronometroActivo = false;
+  clearInterval(cronometroInterval);
+  const btn = document.getElementById('btn-crono-start');
+  if (btn) { btn.textContent = 'REANUDAR'; btn.style.background = 'rgba(57,255,20,0.1)'; btn.style.borderColor = '#39ff14'; btn.style.color = '#39ff14'; }
+}
+
+function toggleCronometro() {
+  if (cronometroActivo) pausarCronometro();
+  else iniciarCronometro();
+}
+
+function reiniciarCronometro() {
+  pausarCronometro();
+  cronometroSegundos = 0;
+  const el = document.getElementById('crono-display');
+  if (el) el.textContent = '00:00';
+  const btn = document.getElementById('btn-crono-start');
+  if (btn) { btn.textContent = 'INICIAR'; btn.style.background = 'rgba(57,255,20,0.1)'; btn.style.borderColor = '#39ff14'; btn.style.color = '#39ff14'; }
+}
+
+function getMinutoActual() {
+  return Math.floor(cronometroSegundos / 60) + 1;
+}
+
 function abrirCedula(idPartido) {
   partidoActual = todosPartidosC.find(p => String(p.ID_Partido).trim()===String(idPartido));
   if (!partidoActual) return;
   eventosRegistrados = {};
+  reiniciarCronometro();
 
   const eqMap = {};
   todosEquiposC.forEach(e => { eqMap[String(e.ID_Equipo).trim()] = e; });
@@ -200,6 +243,12 @@ function abrirCedula(idPartido) {
   const esEditable = modoArbitro && estado === 'Programado';
 
   document.getElementById('cedula-header').innerHTML = `
+    <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-bottom:14px;padding:10px;background:rgba(0,0,0,0.4);border-radius:10px;border:1px solid rgba(57,255,20,0.2);">
+      <span id="crono-display" style="font-size:28px;font-weight:900;color:#39ff14;font-family:monospace;min-width:70px;text-align:center;">00:00</span>
+      <button id="btn-crono-start" ontouchstart="event.preventDefault();toggleCronometro()" onclick="toggleCronometro()" style="padding:8px 14px;background:rgba(57,255,20,0.1);border:1px solid #39ff14;border-radius:8px;color:#39ff14;cursor:pointer;font-size:12px;font-weight:700;touch-action:manipulation;">INICIAR</button>
+      <button ontouchstart="event.preventDefault();reiniciarCronometro()" onclick="reiniciarCronometro()" style="padding:8px 14px;background:rgba(255,68,68,0.1);border:1px solid #ff4444;border-radius:8px;color:#ff4444;cursor:pointer;font-size:12px;font-weight:700;touch-action:manipulation;">RESET</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;text-align:center;">
     <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;text-align:center;">
       <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
         <img src="${eqL.URL||''}" style="width:60px;height:60px;object-fit:contain;">
@@ -217,7 +266,8 @@ function abrirCedula(idPartido) {
         <img src="${eqV.URL||''}" style="width:60px;height:60px;object-fit:contain;">
         <div style="font-size:13px;font-weight:700;color:#fff;text-transform:uppercase;">${eqV.Nombre||'?'}</div>
       </div>
-    </div>`;
+    </div>
+    `;
 
   const partLocal  = todasParticipaciones.filter(p => String(p.Partido).trim()===String(idPartido) && String(p.Equipo).trim()===String(partidoActual.Equipo_Local).trim());
   const partVisita = todasParticipaciones.filter(p => String(p.Partido).trim()===String(idPartido) && String(p.Equipo).trim()===String(partidoActual.Equipo_Visita).trim());
@@ -232,7 +282,7 @@ function abrirCedula(idPartido) {
     const id  = String(part.Jugador).trim();
 
     if (esEditable) {
-      eventosRegistrados[id] = { goles:0, amarilla:false, roja:false, asistencia:false };
+      eventosRegistrados[id] = { goles:[], amarilla:false, amarillaMin:0, roja:false, rojaMin:0, asistencia:false };
       return `<div style="display:flex;align-items:center;gap:6px;padding:7px 4px;border-bottom:0.5px solid rgba(255,255,255,0.06);">
         <span style="font-size:11px;font-weight:700;color:rgba(57,255,20,0.7);min-width:22px;">${jug.Numero||'-'}</span>
         <span style="font-size:11px;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${jug.Nombre||'#'+id}</span>
@@ -262,24 +312,9 @@ function abrirCedula(idPartido) {
   if (esEditable) {
     document.getElementById('cedula-equipos').innerHTML = `
       <style>
-        .equipo-tabs { display:none; gap:10px; margin-bottom:14px; }
-        .equipo-tab { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px; border-radius:10px; cursor:pointer; border:2px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03); transition:0.2s; }
-        .equipo-tab span { font-size:11px; font-weight:700; color:rgba(255,255,255,0.5); text-transform:uppercase; text-align:center; }
-        .equipo-tab.tab-activo { border-color:#39ff14; background:rgba(57,255,20,0.1); }
-        .equipo-tab.tab-activo span { color:#39ff14; }
-        @media(max-width:600px) { .equipo-tabs { display:flex; } .col-desktop { display:none !important; } .col-mobile { display:block !important; } }
-        @media(min-width:601px) { .equipo-tabs { display:none !important; } .col-desktop { display:grid !important; } .col-mobile { display:none !important; } }
+        @media(max-width:600px) { .col-desktop { display:none !important; } .col-mobile { display:block !important; } }
+        @media(min-width:601px) { .col-desktop { display:grid !important; } .col-mobile { display:none !important; } }
       </style>
-      <div class="equipo-tabs">
-        <div id="tab-local" class="equipo-tab tab-activo" onclick="mostrarTabEquipo('local')">
-          <img src="${eqL.URL||''}" style="width:40px;height:40px;object-fit:contain;">
-          <span>${eqL.Nombre||'Local'}</span>
-        </div>
-        <div id="tab-visita" class="equipo-tab" onclick="mostrarTabEquipo('visita')">
-          <img src="${eqV.URL||''}" style="width:40px;height:40px;object-fit:contain;">
-          <span>${eqV.Nombre||'Visita'}</span>
-        </div>
-      </div>
       <div class="col-desktop" style="grid-template-columns:1fr 1fr;gap:12px;">
         <div>
           <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqL.Nombre||'Local'}</div>
@@ -291,14 +326,10 @@ function abrirCedula(idPartido) {
         </div>
       </div>
       <div class="col-mobile" style="display:none;">
-        <div id="panel-local">
-          <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqL.Nombre||'Local'}</div>
-          ${htmlL}
-        </div>
-        <div id="panel-visita" style="display:none;">
-          <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;text-align:center;">${eqV.Nombre||'Visita'}</div>
-          ${htmlV}
-        </div>
+        <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;text-align:center;border-bottom:1px solid rgba(57,255,20,0.3);padding-bottom:8px;">${eqL.Nombre||'Local'}</div>
+        ${htmlL}
+        <div style="font-size:10px;font-weight:700;color:rgba(57,255,20,0.6);letter-spacing:2px;text-transform:uppercase;margin:16px 0 8px;text-align:center;border-bottom:1px solid rgba(57,255,20,0.3);padding-bottom:8px;">${eqV.Nombre||'Visita'}</div>
+        ${htmlV}
       </div>`;
   } else {
     document.getElementById('cedula-equipos').innerHTML = `
@@ -322,19 +353,21 @@ function abrirCedula(idPartido) {
 }
 
 function agregarGol(id) {
-  eventosRegistrados[id].goles++;
-  document.getElementById('goles-'+id).textContent = eventosRegistrados[id].goles;
+  const min = getMinutoActual();
+  eventosRegistrados[id].goles.push(min);
+  document.getElementById('goles-'+id).textContent = eventosRegistrados[id].goles.length;
   actualizarMarcador();
 }
 function quitarGol(id) {
-  if (eventosRegistrados[id].goles > 0) {
-    eventosRegistrados[id].goles--;
-    document.getElementById('goles-'+id).textContent = eventosRegistrados[id].goles;
+  if (eventosRegistrados[id].goles.length > 0) {
+    eventosRegistrados[id].goles.pop();
+    document.getElementById('goles-'+id).textContent = eventosRegistrados[id].goles.length;
     actualizarMarcador();
   }
 }
 function toggleAmarilla(id) {
   eventosRegistrados[id].amarilla = !eventosRegistrados[id].amarilla;
+  if (eventosRegistrados[id].amarilla) eventosRegistrados[id].amarillaMin = getMinutoActual();
   const btn = document.getElementById('btn-am-'+id);
   btn.style.background = eventosRegistrados[id].amarilla ? '#b8860b' : '#111';
   btn.style.color      = eventosRegistrados[id].amarilla ? '#fff'    : '#888';
@@ -342,6 +375,7 @@ function toggleAmarilla(id) {
 }
 function toggleRoja(id) {
   eventosRegistrados[id].roja = !eventosRegistrados[id].roja;
+  if (eventosRegistrados[id].roja) eventosRegistrados[id].rojaMin = getMinutoActual();
   const btn = document.getElementById('btn-rj-'+id);
   btn.style.background = eventosRegistrados[id].roja ? '#8b0000' : '#111';
   btn.style.color      = eventosRegistrados[id].roja ? '#fff'    : '#888';
@@ -394,14 +428,14 @@ async function guardarCedula() {
     const jug = todosJugadores.find(j => String(j.ID_Jugador).trim()===jugId) || {};
     const eqNombre = eqMap[String(jug.Equipo||'').trim()]?.Nombre || '';
     if (ev.asistencia) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Asistencia']);
-    for (let g=0; g<ev.goles; g++) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Gol']);
-    if (ev.amarilla) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Amarilla']);
-    if (ev.roja)     rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Roja']);
+    ev.goles.forEach(min => rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Gol', min]));
+    if (ev.amarilla) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Amarilla', ev.amarillaMin]);
+    if (ev.roja)     rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eqNombre, 'Roja', ev.rojaMin]);
   }
 
   if (!rows.length) { statusEl.textContent = 'No hay eventos registrados'; return; }
 
-  const header = 'ID_Cedula\tID_Partido\tID_Jugador\tNombre_Jugador\tEquipo\tTipo_Evento';
+  const header = 'ID_Cedula\tID_Partido\tID_Jugador\tNombre_Jugador\tEquipo\tTipo_Evento\tMinuto';
   const csvData = rows.map(r => r.join('\t')).join('\n');
   const wrap = document.getElementById('botones-section');
   const existing = wrap.querySelector('.cedula-data-wrap');
@@ -438,8 +472,8 @@ async function descargarPDF() {
     for (const [jugId, ev] of Object.entries(eventosRegistrados)) {
       const jug = todosJugadores.find(j => String(j.ID_Jugador).trim()===jugId);
       if (!jug) continue;
-      if (String(jug.Equipo).trim()===String(partidoActual.Equipo_Local).trim()) gLocal+=ev.goles;
-      else gVisita+=ev.goles;
+      if (String(jug.Equipo).trim()===String(partidoActual.Equipo_Local).trim()) gLocal+=ev.goles.length;
+      else gVisita+=ev.goles.length;
     }
 
     doc.setFillColor(8,12,20); doc.rect(0,0,210,297,'F');
@@ -491,7 +525,7 @@ async function descargarPDF() {
         doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
         doc.text((jug.Nombre||'').substring(0,20), x+12, y);
         // Eventos
-        const evStr = (ev.goles>0?ev.goles+'GOL ':'') + (ev.amarilla?'AM ':'') + (ev.roja?'RJ':'');
+        const evStr = (ev.goles.length>0?ev.goles.map(m=>'GOL'+m).join(' ')+' ':'') + (ev.amarilla?'AM'+ev.amarillaMin+' ':'') + (ev.roja?'RJ'+ev.rojaMin:'');
         if (evStr.trim()) { doc.setFont('helvetica','bold'); doc.setTextColor(212,240,48); doc.text(evStr.trim(), x+62, y); }
       }
 
