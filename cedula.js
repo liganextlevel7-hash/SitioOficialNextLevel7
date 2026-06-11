@@ -131,7 +131,7 @@ async function iniciarSesion() {
   errEl.textContent = 'Verificando...';
   try {
     const usuarios = parseCSV(await (await fetch(CSV_USUARIOS)).text());
-    const found = usuarios.find(u => u.UsuarioID?.trim()===user && u.Contrasena?.trim()===pass && (u.Perfil?.trim()==='Arbitro'||u.Perfil?.trim()==='Desarrollador'));
+    const found = usuarios.find(u => u.UsuarioID?.trim()===user && u.Contraseña?.trim()===pass && (u.Perfil?.trim()==='Arbitro'||u.Perfil?.trim()==='Desarrollador'));
     if (!found) { errEl.textContent = 'Usuario o contrasena incorrectos'; return; }
     usuarioActual = found; modoArbitro = true;
     errEl.textContent = '';
