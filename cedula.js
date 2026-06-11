@@ -237,12 +237,12 @@ function abrirCedula(idPartido) {
         <span style="font-size:11px;font-weight:700;color:rgba(57,255,20,0.7);min-width:22px;">${jug.Numero||'-'}</span>
         <span style="font-size:11px;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${jug.Nombre||'#'+id}</span>
         <div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">
-          <button id="btn-asist-${id}" onclick="toggleAsistencia('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#555;width:28px;height:22px;cursor:pointer;font-size:13px;font-weight:700;padding:0;">V</button>
-          <button onclick="quitarGol('${id}')" style="background:#111;border:1px solid #444;border-radius:4px;color:#fff;width:22px;height:22px;cursor:pointer;font-size:13px;padding:0;">-</button>
-          <span id="goles-${id}" style="font-size:13px;font-weight:900;color:#d4f030;min-width:16px;text-align:center;">0</span>
-          <button onclick="agregarGol('${id}')" style="background:#1a3a1a;border:1px solid #39ff14;border-radius:4px;color:#39ff14;width:22px;height:22px;cursor:pointer;font-size:13px;padding:0;">+</button>
-          <button id="btn-am-${id}" onclick="toggleAmarilla('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#888;width:34px;height:22px;cursor:pointer;font-size:10px;font-weight:700;padding:0;">AM</button>
-          <button id="btn-rj-${id}" onclick="toggleRoja('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#888;width:34px;height:22px;cursor:pointer;font-size:10px;font-weight:700;padding:0;">RJ</button>
+          <button id="btn-asist-${id}" ontouchstart="event.preventDefault();toggleAsistencia('${id}')" onclick="toggleAsistencia('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#555;width:32px;height:28px;cursor:pointer;font-size:13px;font-weight:700;padding:0;touch-action:manipulation;">V</button>
+          <button ontouchstart="event.preventDefault();quitarGol('${id}')" onclick="quitarGol('${id}')" style="background:#111;border:1px solid #444;border-radius:4px;color:#fff;width:28px;height:28px;cursor:pointer;font-size:15px;padding:0;touch-action:manipulation;">-</button>
+          <span id="goles-${id}" style="font-size:15px;font-weight:900;color:#d4f030;min-width:18px;text-align:center;">0</span>
+          <button ontouchstart="event.preventDefault();agregarGol('${id}')" onclick="agregarGol('${id}')" style="background:#1a3a1a;border:1px solid #39ff14;border-radius:4px;color:#39ff14;width:28px;height:28px;cursor:pointer;font-size:15px;padding:0;touch-action:manipulation;">+</button>
+          <button id="btn-am-${id}" ontouchstart="event.preventDefault();toggleAmarilla('${id}')" onclick="toggleAmarilla('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#888;width:36px;height:28px;cursor:pointer;font-size:11px;font-weight:700;padding:0;touch-action:manipulation;">AM</button>
+          <button id="btn-rj-${id}" ontouchstart="event.preventDefault();toggleRoja('${id}')" onclick="toggleRoja('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#888;width:36px;height:28px;cursor:pointer;font-size:11px;font-weight:700;padding:0;touch-action:manipulation;">RJ</button>
         </div>
       </div>`;
     } else {
