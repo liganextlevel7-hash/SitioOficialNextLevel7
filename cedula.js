@@ -163,22 +163,10 @@ function restaurarEstadoBotones() {
     const btnAm    = document.getElementById('btn-am-'+id);
     const btnRj    = document.getElementById('btn-rj-'+id);
     const spanGol  = document.getElementById('goles-'+id);
-    if (btnAsist) {
-      btnAsist.style.background = ev.asistencia ? '#1a3a1a' : '#111';
-      btnAsist.style.color      = ev.asistencia ? '#39ff14' : '#555';
-      btnAsist.style.border     = ev.asistencia ? '1px solid #39ff14' : '1px solid #555';
-    }
-    if (btnAm) {
-      btnAm.style.background = ev.amarilla ? '#b8860b' : '#111';
-      btnAm.style.color      = ev.amarilla ? '#fff' : '#888';
-      btnAm.style.border     = ev.amarilla ? '1px solid #ffd700' : '1px solid #555';
-    }
-    if (btnRj) {
-      btnRj.style.background = ev.roja ? '#8b0000' : '#111';
-      btnRj.style.color      = ev.roja ? '#fff' : '#888';
-      btnRj.style.border     = ev.roja ? '1px solid #ff4444' : '1px solid #555';
-    }
-    if (spanGol) spanGol.textContent = ev.goles.length;
+    if (btnAsist) { ev.asistencia ? btnAsist.classList.add('btn-asist-on') : btnAsist.classList.remove('btn-asist-on'); }
+    if (btnAm)    { ev.amarilla   ? btnAm.classList.add('btn-am-on')       : btnAm.classList.remove('btn-am-on'); }
+    if (btnRj)    { ev.roja       ? btnRj.classList.add('btn-rj-on')       : btnRj.classList.remove('btn-rj-on'); }
+    if (spanGol)  { spanGol.textContent = ev.goles.length; }
   }
 }
 
@@ -234,6 +222,18 @@ function abrirCedula(idPartido) {
   if (!partidoActual) return;
   eventosRegistrados = {};
   reiniciarCronometro();
+  // Inyectar estilos de botones activos
+  if (!document.getElementById('cedula-btn-style')) {
+    const s = document.createElement('style');
+    s.id = 'cedula-btn-style';
+    s.textContent = `
+      .btn-asist-on { background:#1a3a1a !important; color:#39ff14 !important; border:2px solid #39ff14 !important; }
+      .btn-am-on    { background:#b8860b !important; color:#fff !important; border:2px solid #ffd700 !important; }
+      .btn-rj-on    { background:#8b0000 !important; color:#fff !important; border:2px solid #ff4444 !important; }
+      .btn-gol-val  { color:#39ff14 !important; font-weight:900; }
+    `;
+    document.head.appendChild(s);
+  }
 
   const eqMap = {};
   todosEquiposC.forEach(e => { eqMap[String(e.ID_Equipo).trim()] = e; });
@@ -355,53 +355,43 @@ function abrirCedula(idPartido) {
 function agregarGol(id) {
   const min = getMinutoActual();
   eventosRegistrados[id].goles.push(min);
-  requestAnimationFrame(() => {
-    const el = document.getElementById('goles-'+id);
-    if (el) el.textContent = eventosRegistrados[id].goles.length;
-    actualizarMarcador();
-  });
+  const el = document.getElementById('goles-'+id);
+  if (el) { el.textContent = eventosRegistrados[id].goles.length; el.classList.add('btn-gol-val'); }
+  actualizarMarcador();
 }
 function quitarGol(id) {
   if (eventosRegistrados[id].goles.length > 0) {
     eventosRegistrados[id].goles.pop();
-    requestAnimationFrame(() => {
-      const el = document.getElementById('goles-'+id);
-      if (el) el.textContent = eventosRegistrados[id].goles.length;
-      actualizarMarcador();
-    });
+    const el = document.getElementById('goles-'+id);
+    if (el) el.textContent = eventosRegistrados[id].goles.length;
+    actualizarMarcador();
   }
 }
 function toggleAmarilla(id) {
   eventosRegistrados[id].amarilla = !eventosRegistrados[id].amarilla;
   if (eventosRegistrados[id].amarilla) eventosRegistrados[id].amarillaMin = getMinutoActual();
-  requestAnimationFrame(() => {
-    const btn = document.getElementById('btn-am-'+id);
-    if (!btn) return;
-    btn.style.background = eventosRegistrados[id].amarilla ? '#b8860b' : '#111';
-    btn.style.color      = eventosRegistrados[id].amarilla ? '#fff'    : '#888';
-    btn.style.border     = eventosRegistrados[id].amarilla ? '1px solid #ffd700' : '1px solid #555';
-  });
+  const btn = document.getElementById('btn-am-'+id);
+  if (btn) {
+    if (eventosRegistrados[id].amarilla) btn.classList.add('btn-am-on');
+    else btn.classList.remove('btn-am-on');
+  }
 }
 function toggleRoja(id) {
   eventosRegistrados[id].roja = !eventosRegistrados[id].roja;
   if (eventosRegistrados[id].roja) eventosRegistrados[id].rojaMin = getMinutoActual();
-  requestAnimationFrame(() => {
-    const btn = document.getElementById('btn-rj-'+id);
-    if (!btn) return;
-    btn.style.background = eventosRegistrados[id].roja ? '#8b0000' : '#111';
-    btn.style.color      = eventosRegistrados[id].roja ? '#fff'    : '#888';
-    btn.style.border     = eventosRegistrados[id].roja ? '1px solid #ff4444' : '1px solid #555';
-  });
+  const btn = document.getElementById('btn-rj-'+id);
+  if (btn) {
+    if (eventosRegistrados[id].roja) btn.classList.add('btn-rj-on');
+    else btn.classList.remove('btn-rj-on');
+  }
 }
 function toggleAsistencia(id) {
   eventosRegistrados[id].asistencia = !eventosRegistrados[id].asistencia;
-  requestAnimationFrame(() => {
-    const btn = document.getElementById('btn-asist-'+id);
-    if (!btn) return;
-    btn.style.background = eventosRegistrados[id].asistencia ? '#1a3a1a' : '#111';
-    btn.style.color      = eventosRegistrados[id].asistencia ? '#39ff14' : '#555';
-    btn.style.border     = eventosRegistrados[id].asistencia ? '1px solid #39ff14' : '1px solid #555';
-  });
+  const btn = document.getElementById('btn-asist-'+id);
+  if (btn) {
+    if (eventosRegistrados[id].asistencia) btn.classList.add('btn-asist-on');
+    else btn.classList.remove('btn-asist-on');
+  }
 }
 
 function iniciarFirma() {
