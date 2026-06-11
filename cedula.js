@@ -355,38 +355,53 @@ function abrirCedula(idPartido) {
 function agregarGol(id) {
   const min = getMinutoActual();
   eventosRegistrados[id].goles.push(min);
-  document.getElementById('goles-'+id).textContent = eventosRegistrados[id].goles.length;
-  actualizarMarcador();
+  requestAnimationFrame(() => {
+    const el = document.getElementById('goles-'+id);
+    if (el) el.textContent = eventosRegistrados[id].goles.length;
+    actualizarMarcador();
+  });
 }
 function quitarGol(id) {
   if (eventosRegistrados[id].goles.length > 0) {
     eventosRegistrados[id].goles.pop();
-    document.getElementById('goles-'+id).textContent = eventosRegistrados[id].goles.length;
-    actualizarMarcador();
+    requestAnimationFrame(() => {
+      const el = document.getElementById('goles-'+id);
+      if (el) el.textContent = eventosRegistrados[id].goles.length;
+      actualizarMarcador();
+    });
   }
 }
 function toggleAmarilla(id) {
   eventosRegistrados[id].amarilla = !eventosRegistrados[id].amarilla;
   if (eventosRegistrados[id].amarilla) eventosRegistrados[id].amarillaMin = getMinutoActual();
-  const btn = document.getElementById('btn-am-'+id);
-  btn.style.background = eventosRegistrados[id].amarilla ? '#b8860b' : '#111';
-  btn.style.color      = eventosRegistrados[id].amarilla ? '#fff'    : '#888';
-  btn.style.border     = eventosRegistrados[id].amarilla ? '1px solid #ffd700' : '1px solid #555';
+  requestAnimationFrame(() => {
+    const btn = document.getElementById('btn-am-'+id);
+    if (!btn) return;
+    btn.style.background = eventosRegistrados[id].amarilla ? '#b8860b' : '#111';
+    btn.style.color      = eventosRegistrados[id].amarilla ? '#fff'    : '#888';
+    btn.style.border     = eventosRegistrados[id].amarilla ? '1px solid #ffd700' : '1px solid #555';
+  });
 }
 function toggleRoja(id) {
   eventosRegistrados[id].roja = !eventosRegistrados[id].roja;
   if (eventosRegistrados[id].roja) eventosRegistrados[id].rojaMin = getMinutoActual();
-  const btn = document.getElementById('btn-rj-'+id);
-  btn.style.background = eventosRegistrados[id].roja ? '#8b0000' : '#111';
-  btn.style.color      = eventosRegistrados[id].roja ? '#fff'    : '#888';
-  btn.style.border     = eventosRegistrados[id].roja ? '1px solid #ff4444' : '1px solid #555';
+  requestAnimationFrame(() => {
+    const btn = document.getElementById('btn-rj-'+id);
+    if (!btn) return;
+    btn.style.background = eventosRegistrados[id].roja ? '#8b0000' : '#111';
+    btn.style.color      = eventosRegistrados[id].roja ? '#fff'    : '#888';
+    btn.style.border     = eventosRegistrados[id].roja ? '1px solid #ff4444' : '1px solid #555';
+  });
 }
 function toggleAsistencia(id) {
   eventosRegistrados[id].asistencia = !eventosRegistrados[id].asistencia;
-  const btn = document.getElementById('btn-asist-'+id);
-  btn.style.background = eventosRegistrados[id].asistencia ? '#1a3a1a' : '#111';
-  btn.style.color      = eventosRegistrados[id].asistencia ? '#39ff14' : '#555';
-  btn.style.border     = eventosRegistrados[id].asistencia ? '1px solid #39ff14' : '1px solid #555';
+  requestAnimationFrame(() => {
+    const btn = document.getElementById('btn-asist-'+id);
+    if (!btn) return;
+    btn.style.background = eventosRegistrados[id].asistencia ? '#1a3a1a' : '#111';
+    btn.style.color      = eventosRegistrados[id].asistencia ? '#39ff14' : '#555';
+    btn.style.border     = eventosRegistrados[id].asistencia ? '1px solid #39ff14' : '1px solid #555';
+  });
 }
 
 function iniciarFirma() {
