@@ -296,16 +296,32 @@ function abrirCedula(idPartido) {
 
     if (esEditable) {
       eventosRegistrados[id] = { goles:[], amarilla:false, amarillaMin:0, roja:false, rojaMin:0, asistencia:false };
-      return `<div style="display:flex;align-items:center;gap:6px;padding:7px 4px;border-bottom:0.5px solid rgba(255,255,255,0.06);">
-        <span style="font-size:11px;font-weight:700;color:rgba(57,255,20,0.7);min-width:22px;">${jug.Numero||'-'}</span>
-        <span style="font-size:11px;color:#fff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${jug.Nombre||'#'+id}</span>
-        <div style="display:flex;gap:4px;align-items:center;flex-shrink:0;">
-          <button id="btn-asist-${id}" ontouchstart="event.preventDefault();toggleAsistencia('${id}')" onclick="toggleAsistencia('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#555;width:32px;height:28px;cursor:pointer;font-size:13px;font-weight:700;padding:0;touch-action:manipulation;">V</button>
-          <button ontouchstart="event.preventDefault();quitarGol('${id}')" onclick="quitarGol('${id}')" style="background:#111;border:1px solid #444;border-radius:4px;color:#fff;width:28px;height:28px;cursor:pointer;font-size:15px;padding:0;touch-action:manipulation;">-</button>
-          <span id="goles-${id}" style="font-size:15px;font-weight:900;color:#d4f030;min-width:18px;text-align:center;">0</span>
-          <button ontouchstart="event.preventDefault();agregarGol('${id}')" onclick="agregarGol('${id}')" style="background:#1a3a1a;border:1px solid #39ff14;border-radius:4px;color:#39ff14;width:28px;height:28px;cursor:pointer;font-size:15px;padding:0;touch-action:manipulation;">+</button>
-          <button id="btn-am-${id}" ontouchstart="event.preventDefault();toggleAmarilla('${id}')" onclick="toggleAmarilla('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#888;width:36px;height:28px;cursor:pointer;font-size:11px;font-weight:700;padding:0;touch-action:manipulation;">AM</button>
-          <button id="btn-rj-${id}" ontouchstart="event.preventDefault();toggleRoja('${id}')" onclick="toggleRoja('${id}')" style="background:#111;border:1px solid #555;border-radius:4px;color:#888;width:36px;height:28px;cursor:pointer;font-size:11px;font-weight:700;padding:0;touch-action:manipulation;">RJ</button>
+      eventosRegistrados[id] = { goles:[], amarilla:false, amarillaMin:0, roja:false, rojaMin:0, asistencia:false };
+      return `<div id="row-${id}" style="padding:8px 4px;border-bottom:0.5px solid rgba(255,255,255,0.06);">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:700;color:rgba(57,255,20,0.7);min-width:22px;">${jug.Numero||'-'}</span>
+          <span style="font-size:12px;color:#fff;flex:1;">${jug.Nombre||'#'+id}</span>
+          <span id="resumen-${id}" style="font-size:11px;color:#d4f030;font-weight:700;"></span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <label id="lbl-asist-${id}" style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 10px;border-radius:6px;border:1px solid #555;background:#111;touch-action:manipulation;">
+            <input type="checkbox" id="chk-asist-${id}" onchange="onAsistChange('${id}')" style="width:16px;height:16px;accent-color:#39ff14;cursor:pointer;">
+            <span style="font-size:11px;color:#888;font-weight:700;">ASIST</span>
+          </label>
+          <div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;border:1px solid rgba(57,255,20,0.3);background:#0a1a0a;">
+            <button ontouchstart="event.preventDefault();quitarGol('${id}')" onclick="quitarGol('${id}')" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;padding:0 6px;touch-action:manipulation;line-height:1;">-</button>
+            <span id="goles-${id}" style="font-size:16px;font-weight:900;color:#d4f030;min-width:20px;text-align:center;">0</span>
+            <button ontouchstart="event.preventDefault();agregarGol('${id}')" onclick="agregarGol('${id}')" style="background:none;border:none;color:#39ff14;font-size:20px;cursor:pointer;padding:0 6px;touch-action:manipulation;line-height:1;">+</button>
+            <span style="font-size:10px;color:rgba(255,255,255,0.4);">GOL</span>
+          </div>
+          <label id="lbl-am-${id}" style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 10px;border-radius:6px;border:1px solid #555;background:#111;touch-action:manipulation;">
+            <input type="checkbox" id="chk-am-${id}" onchange="onAmarChange('${id}')" style="width:16px;height:16px;accent-color:#ffd700;cursor:pointer;">
+            <span style="font-size:11px;color:#888;font-weight:700;">AM</span>
+          </label>
+          <label id="lbl-rj-${id}" style="display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 10px;border-radius:6px;border:1px solid #555;background:#111;touch-action:manipulation;">
+            <input type="checkbox" id="chk-rj-${id}" onchange="onRojaChange('${id}')" style="width:16px;height:16px;accent-color:#ff4444;cursor:pointer;">
+            <span style="font-size:11px;color:#888;font-weight:700;">RJ</span>
+          </label>
         </div>
       </div>`;
     } else {
