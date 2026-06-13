@@ -225,18 +225,15 @@ function abrirCedula(idPartido) {
     if (esEditable) {
       eventosRegistrados[id] = { goles:0, amarilla:false, amarillaMin:0, roja:false, rojaMin:0, asistencia:false };
       return `
-      <div style="display:flex;align-items:center;gap:5px;padding:6px 2px;border-bottom:0.5px solid rgba(255,255,255,0.06);">
+      <div style="display:flex;align-items:center;gap:4px;padding:7px 2px;border-bottom:0.5px solid rgba(255,255,255,0.06);">
         <span style="font-size:11px;font-weight:700;color:rgba(57,255,20,0.7);min-width:20px;">${jug.Numero||'-'}</span>
         <span style="font-size:11px;color:#fff;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${jug.Nombre||'#'+id}</span>
-        <input type="checkbox" id="chk-a-${id}" onclick="chkAsist('${id}')" style="width:16px;height:16px;accent-color:#39ff14;cursor:pointer;flex-shrink:0;">
-        <span style="font-size:9px;color:#666;margin-right:4px;">V</span>
-        <button onclick="golMenos('${id}')" ontouchend="event.preventDefault();golMenos('${id}')" style="background:#111;border:1px solid #444;border-radius:4px;color:#fff;width:24px;height:24px;font-size:14px;cursor:pointer;flex-shrink:0;line-height:1;">-</button>
-        <span id="g-${id}" style="font-size:14px;font-weight:900;color:#d4f030;min-width:18px;text-align:center;flex-shrink:0;">0</span>
-        <button onclick="golMas('${id}')" ontouchend="event.preventDefault();golMas('${id}')" style="background:#1a3a1a;border:1px solid #39ff14;border-radius:4px;color:#39ff14;width:24px;height:24px;font-size:14px;cursor:pointer;flex-shrink:0;line-height:1;">+</button>
-        <input type="checkbox" id="chk-am-${id}" onclick="chkAm('${id}')" style="width:16px;height:16px;accent-color:#ffd700;cursor:pointer;flex-shrink:0;margin-left:4px;">
-        <span style="font-size:9px;color:#666;margin-right:4px;">AM</span>
-        <input type="checkbox" id="chk-rj-${id}" onclick="chkRj('${id}')" style="width:16px;height:16px;accent-color:#ff4444;cursor:pointer;flex-shrink:0;">
-        <span style="font-size:9px;color:#666;">RJ</span>
+        <button id="btn-v-${id}" onclick="tgAsist('${id}')" style="width:30px;height:26px;border-radius:4px;border:1px solid #444;background:#111;color:#555;font-size:11px;font-weight:700;cursor:pointer;">V</button>
+        <button onclick="golMenos('${id}')" style="width:26px;height:26px;border-radius:4px;border:1px solid #444;background:#111;color:#fff;font-size:15px;cursor:pointer;line-height:1;">-</button>
+        <span id="g-${id}" style="font-size:14px;font-weight:900;color:#d4f030;min-width:18px;text-align:center;">0</span>
+        <button onclick="golMas('${id}')" style="width:26px;height:26px;border-radius:4px;border:1px solid #39ff14;background:#1a3a1a;color:#39ff14;font-size:15px;cursor:pointer;line-height:1;">+</button>
+        <button id="btn-am-${id}" onclick="tgAm('${id}')" style="width:30px;height:26px;border-radius:4px;border:1px solid #444;background:#111;color:#555;font-size:10px;font-weight:700;cursor:pointer;">AM</button>
+        <button id="btn-rj-${id}" onclick="tgRj('${id}')" style="width:30px;height:26px;border-radius:4px;border:1px solid #444;background:#111;color:#555;font-size:10px;font-weight:700;cursor:pointer;">RJ</button>
       </div>`;
     } else {
       const ev = getEvsConsulta(id);
