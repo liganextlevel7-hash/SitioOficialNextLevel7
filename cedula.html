@@ -1,415 +1,186 @@
-const CSV_USUARIOS          = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=961328720&single=true&output=csv';
-const CSV_PARTIDOS_C        = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv';
-const CSV_EQUIPOS_C         = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv';
-const CSV_JUGADORES_C       = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1940220650&single=true&output=csv';
-const CSV_PARTICIPACIONES_C = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv';
-const CSV_EVENTOS_C         = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=645868286&single=true&output=csv';
-
-let usuarioActual = null, modoArbitro = false, partidoActual = null;
-let todosJugadores = [], todasParticipaciones = [], todosEquiposC = [], todosPartidosC = [], todosEventosC = [];
-let eventosRegistrados = {};
-let cronSegundos = 0, cronActivo = false, cronInterval = null;
-let pasoActual = 0;
-
-function parseCSV(text) {
-  const lines = text.replace(/\r/g,'').trim().split('\n');
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).filter(l => l.trim()).map(line => {
-    const vals = []; let cur = '', inQ = false;
-    for (let ch of line) {
-      if (ch === '"') inQ = !inQ;
-      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur=''; }
-      else cur += ch;
-    }
-    vals.push(cur.trim());
-    const obj = {};
-    headers.forEach((h,i) => obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim());
-    return obj;
-  });
-}
-
-window.addEventListener('DOMContentLoaded', async () => {
-  await cargarDatos();
-});
-
-async function cargarDatos() {
-  const [resP,resE,resJ,resPart,resEv] = await Promise.all([
-    fetch(CSV_PARTIDOS_C), fetch(CSV_EQUIPOS_C),
-    fetch(CSV_JUGADORES_C), fetch(CSV_PARTICIPACIONES_C), fetch(CSV_EVENTOS_C)
-  ]);
-  todosPartidosC       = parseCSV(await resP.text());
-  todosEquiposC        = parseCSV(await resE.text());
-  todosJugadores       = parseCSV(await resJ.text());
-  todasParticipaciones = parseCSV(await resPart.text());
-  todosEventosC        = parseCSV(await resEv.text());
-}
-
-function irPaso(n) {
-  document.querySelectorAll('.paso').forEach(p => p.classList.remove('activo'));
-  document.getElementById('paso-'+n).classList.add('activo');
-  pasoActual = n;
-  window.scrollTo(0,0);
-  if (n === 4) iniciarFirmas();
-}
-
-// ===== LOGIN =====
-async function iniciarSesion() {
-  const user = document.getElementById('login-user').value.trim();
-  const pass = document.getElementById('login-pass').value.trim();
-  const errEl = document.getElementById('login-error');
-  errEl.textContent = 'Verificando...';
-  try {
-    const usuarios = parseCSV(await (await fetch(CSV_USUARIOS)).text());
-    const found = usuarios.find(u =>
-      u.UsuarioID?.trim()===user &&
-      u.Contraseña?.trim()===pass &&
-      (u.Perfil?.trim()==='Arbitro' || u.Perfil?.trim()==='Desarrollador')
-    );
-    if (!found) { errEl.textContent = 'Usuario o contrasena incorrectos'; return; }
-    usuarioActual = found; modoArbitro = true;
-    errEl.textContent = '';
-    document.getElementById('modo-badge').textContent = 'Modo Arbitro: '+found.Nombre;
-    renderListaPartidos();
-    irPaso(1);
-  } catch(e) { errEl.textContent = 'Error: '+e.message; }
-}
-
-function verSoloConsulta() {
-  modoArbitro = false;
-  document.getElementById('modo-badge').textContent = 'Solo consulta';
-  renderListaPartidos();
-  irPaso(1);
-}
-
-// ===== LISTA =====
-function renderListaPartidos() {
-  const eqMap = {};
-  todosEquiposC.forEach(e => { eqMap[String(e.ID_Equipo).trim()] = e; });
-  const programados = todosPartidosC.filter(p => p.Estado?.trim() === 'Programado');
-  const jugados     = todosPartidosC.filter(p => p.Estado?.trim() === 'Jugado');
-
-  let html = '';
-  if (programados.length) {
-    html += `<div style="color:#39ff14;font-size:11px;letter-spacing:2px;margin-bottom:10px;">PROGRAMADOS</div>`;
-    programados.forEach(p => {
-      const eqL = eqMap[String(p.Equipo_Local).trim()] || {};
-      const eqV = eqMap[String(p.Equipo_Visita).trim()] || {};
-      html += `
-      <div onclick="seleccionarPartido('${p.ID_Partido}')" style="background:${modoArbitro?'rgba(57,255,20,0.07)':'rgba(255,255,255,0.04)'};border:1px solid ${modoArbitro?'rgba(57,255,20,0.3)':'rgba(255,255,255,0.1)'};border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <div style="display:flex;align-items:center;gap:8px;"><img src="${eqL.URL||''}" style="width:36px;height:36px;object-fit:contain;"><span style="font-size:13px;font-weight:700;color:#fff;">${eqL.Nombre||'?'}</span></div>
-          <span style="color:#ffd700;font-weight:700;">VS</span>
-          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:13px;font-weight:700;color:#fff;">${eqV.Nombre||'?'}</span><img src="${eqV.URL||''}" style="width:36px;height:36px;object-fit:contain;"></div>
-        </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;">${p.Jornada?'Jornada '+p.Jornada+' · ':''} ${p.Fecha||''} ${p.Cancha?'· '+p.Cancha:''}</div>
-        <div style="font-size:11px;color:${modoArbitro?'rgba(57,255,20,0.7)':'rgba(255,255,255,0.3)'};margin-top:4px;">${modoArbitro?'▶ LLENAR CEDULA':'▶ VER CEDULA'}</div>
-      </div>`;
-    });
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Cedula Arbitral | Liga Next Level 7</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  .paso { display:none; }
+  .paso.activo { display:block; }
+  .btn-grande {
+    width:100%; padding:14px; border-radius:10px; font-size:15px;
+    font-weight:700; cursor:pointer; border:none; letter-spacing:1px;
+    touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+    margin-bottom:8px;
   }
-
-  if (jugados.length) {
-    html += `<div style="color:rgba(255,255,255,0.4);font-size:11px;letter-spacing:2px;margin:16px 0 10px;">JUGADOS</div>`;
-    jugados.forEach(p => {
-      const eqL = eqMap[String(p.Equipo_Local).trim()] || {};
-      const eqV = eqMap[String(p.Equipo_Visita).trim()] || {};
-      html += `
-      <div onclick="seleccionarPartido('${p.ID_Partido}')" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-          <div style="display:flex;align-items:center;gap:8px;"><img src="${eqL.URL||''}" style="width:32px;height:32px;object-fit:contain;"><span style="font-size:12px;color:rgba(255,255,255,0.7);">${eqL.Nombre||'?'}</span></div>
-          <span style="color:#d4f030;font-weight:900;font-size:18px;">${p.Goles_Local} - ${p.Goles_Visita}</span>
-          <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:rgba(255,255,255,0.7);">${eqV.Nombre||'?'}</span><img src="${eqV.URL||''}" style="width:32px;height:32px;object-fit:contain;"></div>
-        </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:4px;">▶ VER CEDULA</div>
-      </div>`;
-    });
+  .btn-nav {
+    flex:1; padding:12px; border-radius:8px; font-size:13px;
+    font-weight:700; cursor:pointer; touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
   }
-
-  document.getElementById('lista-partidos').innerHTML = html || '<div style="color:rgba(255,255,255,0.3);text-align:center;padding:20px;">Sin partidos</div>';
-}
-
-// ===== SELECCIONAR PARTIDO =====
-function seleccionarPartido(idPartido) {
-  partidoActual = todosPartidosC.find(p => String(p.ID_Partido).trim()===String(idPartido));
-  if (!partidoActual) return;
-  eventosRegistrados = {};
-  cronSegundos = 0; cronActivo = false; clearInterval(cronInterval);
-
-  const eqMap = {};
-  todosEquiposC.forEach(e => { eqMap[String(e.ID_Equipo).trim()] = e; });
-  const eqL = eqMap[String(partidoActual.Equipo_Local).trim()]  || {};
-  const eqV = eqMap[String(partidoActual.Equipo_Visita).trim()] || {};
-  const estado = partidoActual.Estado?.trim();
-  const esEditable = modoArbitro && estado === 'Programado';
-  const idP = String(idPartido);
-
-  const partLocal  = todasParticipaciones.filter(p => String(p.Partido).trim()===idP && String(p.Equipo).trim()===String(partidoActual.Equipo_Local).trim());
-  const partVisita = todasParticipaciones.filter(p => String(p.Partido).trim()===idP && String(p.Equipo).trim()===String(partidoActual.Equipo_Visita).trim());
-
-  function getEvsConsulta(jugId) {
-    const evs = todosEventosC.filter(e => String(e.Partido).trim()===idP && String(e.Jugador).trim()===jugId);
-    return {
-      goles: evs.filter(e=>e.Tipo_Evento==='Gol').length,
-      amarilla: evs.some(e=>e.Tipo_Evento==='Amarilla'),
-      roja: evs.some(e=>e.Tipo_Evento==='Roja')
-    };
+  .jugador-row {
+    display:flex; align-items:center; gap:6px;
+    padding:10px 6px; border-bottom:1px solid rgba(255,255,255,0.08);
   }
-
-  function jugHTML(part) {
-    const jug = todosJugadores.find(j => String(j.ID_Jugador).trim()===String(part.Jugador).trim()) || {};
-    const id  = String(part.Jugador).trim();
-
-    if (esEditable) {
-      eventosRegistrados[id] = { goles:0, amarilla:false, amarillaMin:0, roja:false, rojaMin:0, asistencia:false };
-      return `
-      <div class="jugador-row">
-        <span class="jugador-num">${jug.Numero||'-'}</span>
-        <span class="jugador-nombre">${jug.Nombre||'#'+id}</span>
-        <button class="btn-ev btn-v" id="btn-v-${id}" onclick="tgV('${id}')">V</button>
-        <button class="btn-ev btn-gol-menos" onclick="gMenos('${id}')">-</button>
-        <span class="gol-num" id="g-${id}">0</span>
-        <button class="btn-ev btn-gol-mas" onclick="gMas('${id}')">+</button>
-        <button class="btn-ev btn-am" id="btn-am-${id}" onclick="tgAm('${id}')">AM</button>
-        <button class="btn-ev btn-rj" id="btn-rj-${id}" onclick="tgRj('${id}')">RJ</button>
-      </div>`;
-    } else {
-      const ev = getEvsConsulta(id);
-      const res = (ev.goles>0?ev.goles+'G ':''+(ev.amarilla?'AM ':''+(ev.roja?'RJ':'')));
-      return `
-      <div class="jugador-row">
-        <span class="jugador-num">${jug.Numero||'-'}</span>
-        <span class="jugador-nombre">${jug.Nombre||'#'+id}</span>
-        <span style="font-size:11px;color:#d4f030;font-weight:700;">${res}</span>
-      </div>`;
-    }
+  .jugador-num { font-size:12px; font-weight:700; color:rgba(57,255,20,0.7); min-width:24px; }
+  .jugador-nombre { font-size:12px; color:#fff; flex:1; }
+  .btn-ev {
+    height:36px; border-radius:6px; font-size:12px; font-weight:700;
+    cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+    border:2px solid #444; background:#111; color:#666;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
   }
-
-  document.getElementById('titulo-local').textContent = eqL.Nombre||'Local';
-  document.getElementById('titulo-visita').textContent = eqV.Nombre||'Visita';
-  document.getElementById('jugadores-local').innerHTML  = partLocal.length  ? partLocal.map(jugHTML).join('')  : '<div style="color:rgba(255,255,255,0.3);padding:10px;text-align:center;">Sin jugadores</div>';
-  document.getElementById('jugadores-visita').innerHTML = partVisita.length ? partVisita.map(jugHTML).join('') : '<div style="color:rgba(255,255,255,0.3);padding:10px;text-align:center;">Sin jugadores</div>';
-
-  actualizarMarcadores();
-  document.getElementById('resumen-partido').textContent = (eqL.Nombre||'Local')+' vs '+(eqV.Nombre||'Visita')+' · '+(partidoActual.Fecha||'')+(partidoActual.Cancha?' · '+partidoActual.Cancha:'');
-  irPaso(2);
-}
-
-// ===== EVENTOS =====
-function tgV(id) {
-  eventosRegistrados[id].asistencia = !eventosRegistrados[id].asistencia;
-  const btn = document.getElementById('btn-v-'+id);
-  if (btn) btn.className = 'btn-ev btn-v' + (eventosRegistrados[id].asistencia ? ' on-v' : '');
-}
-function tgAm(id) {
-  eventosRegistrados[id].amarilla = !eventosRegistrados[id].amarilla;
-  if (eventosRegistrados[id].amarilla) eventosRegistrados[id].amarillaMin = getMinuto();
-  const btn = document.getElementById('btn-am-'+id);
-  if (btn) btn.className = 'btn-ev btn-am' + (eventosRegistrados[id].amarilla ? ' on-am' : '');
-}
-function tgRj(id) {
-  eventosRegistrados[id].roja = !eventosRegistrados[id].roja;
-  if (eventosRegistrados[id].roja) eventosRegistrados[id].rojaMin = getMinuto();
-  const btn = document.getElementById('btn-rj-'+id);
-  if (btn) btn.className = 'btn-ev btn-rj' + (eventosRegistrados[id].roja ? ' on-rj' : '');
-}
-function gMas(id) {
-  eventosRegistrados[id].goles++;
-  const el = document.getElementById('g-'+id);
-  if (el) el.textContent = eventosRegistrados[id].goles;
-  actualizarMarcadores();
-}
-function gMenos(id) {
-  if (eventosRegistrados[id].goles > 0) {
-    eventosRegistrados[id].goles--;
-    const el = document.getElementById('g-'+id);
-    if (el) el.textContent = eventosRegistrados[id].goles;
-    actualizarMarcadores();
+  .btn-ev.on-v  { background:#1a3a1a; color:#39ff14; border-color:#39ff14; }
+  .btn-ev.on-am { background:#b8860b; color:#fff;    border-color:#ffd700; }
+  .btn-ev.on-rj { background:#8b0000; color:#fff;    border-color:#ff4444; }
+  .btn-gol-menos { width:34px; background:#111; border:2px solid #444; color:#fff; }
+  .btn-gol-mas   { width:34px; background:#1a3a1a; border:2px solid #39ff14; color:#39ff14; }
+  .btn-v  { width:40px; }
+  .btn-am { width:40px; }
+  .btn-rj { width:40px; }
+  .gol-num { font-size:16px; font-weight:900; color:#d4f030; min-width:22px; text-align:center; }
+  .paso-header {
+    background:rgba(0,0,0,0.5); border-bottom:1px solid rgba(57,255,20,0.2);
+    padding:12px 16px; display:flex; align-items:center; gap:10px;
+    position:sticky; top:0; z-index:10;
   }
-}
-
-function getMinuto() { return Math.floor(cronSegundos/60)+1; }
-
-function actualizarMarcadores() {
-  if (!partidoActual) return;
-  let gL=0, gV=0;
-  for (const [jugId,ev] of Object.entries(eventosRegistrados)) {
-    const jug = todosJugadores.find(j => String(j.ID_Jugador).trim()===jugId);
-    if (!jug) continue;
-    if (String(jug.Equipo).trim()===String(partidoActual.Equipo_Local).trim()) gL+=ev.goles;
-    else gV+=ev.goles;
+  .paso-titulo { font-size:14px; font-weight:700; color:#39ff14; flex:1; }
+  .marcador-badge {
+    font-size:20px; font-weight:900; color:#d4f030;
+    background:rgba(0,0,0,0.5); padding:4px 12px; border-radius:8px;
+    border:1px solid rgba(212,240,48,0.3);
   }
-  const m = gL+' - '+gV;
-  ['marcador-p2','marcador-p3','marcador-p4'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = m;
-  });
-}
-
-// ===== FIRMAS =====
-function iniciarFirmas() {
-  ['firma-arbitro','firma-capitan-local','firma-capitan-visita'].forEach(cid => {
-    const canvas = document.getElementById(cid);
-    if (!canvas || canvas._init) return;
-    canvas._init = true;
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle='#39ff14'; ctx.lineWidth=2; ctx.lineCap='round';
-    let drawing=false;
-    function pos(e) {
-      const r=canvas.getBoundingClientRect(), sx=canvas.width/r.width, sy=canvas.height/r.height;
-      if(e.touches) return {x:(e.touches[0].clientX-r.left)*sx, y:(e.touches[0].clientY-r.top)*sy};
-      return {x:(e.clientX-r.left)*sx, y:(e.clientY-r.top)*sy};
-    }
-    canvas.addEventListener('mousedown', e=>{drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
-    canvas.addEventListener('touchstart', e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
-    canvas.addEventListener('mousemove', e=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();});
-    canvas.addEventListener('touchmove', e=>{e.preventDefault();if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();},{passive:false});
-    canvas.addEventListener('mouseup', ()=>drawing=false);
-    canvas.addEventListener('touchend', ()=>drawing=false);
-    canvas.addEventListener('mouseleave', ()=>drawing=false);
-  });
-}
-
-function limpiarFirma(id) {
-  const c=document.getElementById(id);
-  if(c){c.getContext('2d').clearRect(0,0,c.width,c.height); c._init=false; iniciarFirmas();}
-}
-
-// ===== GUARDAR =====
-function guardarCedula() {
-  const statusEl = document.getElementById('cedula-status');
-  const arbitro = document.getElementById('arbitro-nombre').value.trim();
-  if (!arbitro) { statusEl.textContent = 'Escribe el nombre del arbitro'; return; }
-
-  const eqMap = {};
-  todosEquiposC.forEach(e => { eqMap[String(e.ID_Equipo).trim()] = e; });
-  const idCedula = 'CED-'+Date.now();
-  const rows = [];
-
-  for (const [jugId,ev] of Object.entries(eventosRegistrados)) {
-    const jug = todosJugadores.find(j => String(j.ID_Jugador).trim()===jugId) || {};
-    const eq  = eqMap[String(jug.Equipo||'').trim()]?.Nombre || '';
-    if (ev.asistencia) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eq, 'Asistencia', '']);
-    for (let g=0; g<ev.goles; g++) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eq, 'Gol', getMinuto()]);
-    if (ev.amarilla) rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eq, 'Amarilla', ev.amarillaMin]);
-    if (ev.roja)     rows.push([idCedula, partidoActual.ID_Partido, jugId, jug.Nombre||'', eq, 'Roja', ev.rojaMin]);
+  .firma-canvas {
+    width:100%; height:100px; background:rgba(255,255,255,0.05);
+    border:1px solid #39ff14; border-radius:8px; display:block;
+    touch-action:none;
   }
-
-  if (!rows.length) { statusEl.textContent = 'No hay eventos registrados'; return; }
-
-  const header = 'ID_Cedula\tID_Partido\tID_Jugador\tNombre\tEquipo\tTipo_Evento\tMinuto';
-  const data   = rows.map(r=>r.join('\t')).join('\n');
-  const wrap   = document.getElementById('cedula-data-wrap');
-  wrap.innerHTML = `
-    <pre style="background:rgba(0,0,0,0.5);border:1px solid #39ff14;border-radius:8px;padding:12px;color:#b8f030;font-size:11px;overflow-x:auto;white-space:pre-wrap;">${header}\n${data}</pre>
-    <button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>this.textContent='Copiado!')"
-      style="margin-top:8px;padding:8px 14px;background:rgba(57,255,20,0.2);border:1px solid #39ff14;border-radius:8px;color:#39ff14;cursor:pointer;font-size:12px;touch-action:manipulation;">
-      Copiar para pegar en Sheets
-    </button>`;
-  statusEl.textContent = rows.length+' evento(s) listos';
-}
-
-// ===== PDF =====
-async function descargarPDF() {
-  const statusEl = document.getElementById('cedula-status');
-  const arbitro   = document.getElementById('arbitro-nombre').value.trim() || 'Sin nombre';
-  const capLocal  = document.getElementById('capitan-local-nombre').value.trim()  || 'Sin nombre';
-  const capVisita = document.getElementById('capitan-visita-nombre').value.trim() || 'Sin nombre';
-  const ganPor    = document.getElementById('ganado-por-sel').value;
-  statusEl.textContent = 'Generando PDF...';
-
-  try {
-    const {jsPDF} = window.jspdf;
-    const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const eqMap = {};
-    todosEquiposC.forEach(e=>{eqMap[String(e.ID_Equipo).trim()]=e;});
-    const eqL = eqMap[String(partidoActual.Equipo_Local).trim()]  || {};
-    const eqV = eqMap[String(partidoActual.Equipo_Visita).trim()] || {};
-
-    let gL=0, gV=0;
-    for (const [jugId,ev] of Object.entries(eventosRegistrados)) {
-      const jug=todosJugadores.find(j=>String(j.ID_Jugador).trim()===jugId);
-      if(!jug) continue;
-      if(String(jug.Equipo).trim()===String(partidoActual.Equipo_Local).trim()) gL+=ev.goles;
-      else gV+=ev.goles;
-    }
-
-    doc.setFillColor(8,12,20); doc.rect(0,0,210,297,'F');
-    doc.setFillColor(15,30,10); doc.rect(0,0,210,32,'F');
-    doc.setTextColor(184,240,48); doc.setFontSize(18); doc.setFont('helvetica','bold');
-    doc.text('CEDULA ARBITRAL',105,13,{align:'center'});
-    doc.setFontSize(10); doc.setTextColor(150,200,80);
-    doc.text('LIGA NEXT LEVEL 7',105,21,{align:'center'});
-    doc.setFontSize(8); doc.setTextColor(100,150,60);
-    doc.text('Partido #'+partidoActual.ID_Partido+' | '+(partidoActual.Jornada?'Jornada '+partidoActual.Jornada:'')+' | '+(partidoActual.Fecha||'')+' | '+(partidoActual.Cancha||''),105,28,{align:'center'});
-
-    doc.setFillColor(12,25,8); doc.rect(0,34,210,20,'F');
-    doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
-    doc.text((eqL.Nombre||'Local').toUpperCase(),52,46,{align:'center'});
-    doc.setTextColor(212,240,48); doc.setFontSize(18);
-    doc.text(gL+'  -  '+gV,105,47,{align:'center'});
-    doc.setTextColor(255,255,255); doc.setFontSize(12);
-    doc.text((eqV.Nombre||'Visita').toUpperCase(),158,46,{align:'center'});
-    if(ganPor){doc.setFontSize(8);doc.setTextColor(255,215,0);doc.text('( '+ganPor+' )',105,52,{align:'center'});}
-
-    const idP = String(partidoActual.ID_Partido);
-    const pL  = todasParticipaciones.filter(p=>String(p.Partido).trim()===idP&&String(p.Equipo).trim()===String(partidoActual.Equipo_Local).trim());
-    const pV  = todasParticipaciones.filter(p=>String(p.Partido).trim()===idP&&String(p.Equipo).trim()===String(partidoActual.Equipo_Visita).trim());
-
-    let y=62;
-    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(100,200,60);
-    doc.text('A  NUM  JUGADOR',13,y); doc.text('EVENTOS',75,y);
-    doc.text('A  NUM  JUGADOR',113,y); doc.text('EVENTOS',175,y);
-    y+=3; doc.setDrawColor(57,255,20); doc.line(10,y,200,y); y+=4;
-
-    const maxR=Math.max(pL.length,pV.length);
-    for(let i=0;i<maxR;i++){
-      if(y>255){doc.addPage();doc.setFillColor(8,12,20);doc.rect(0,0,210,297,'F');y=15;}
-      if(i%2===0){doc.setFillColor(14,22,8);doc.rect(10,y-3,88,7,'F');doc.rect(110,y-3,88,7,'F');}
-
-      function rj(part,x){
-        if(!part)return;
-        const jug=todosJugadores.find(j=>String(j.ID_Jugador).trim()===String(part.Jugador).trim())||{};
-        const id=String(part.Jugador).trim();
-        const ev=eventosRegistrados[id]||{goles:0,amarilla:false,roja:false,asistencia:false};
-        doc.setFontSize(7); doc.setFont('helvetica','bold');
-        if(ev.asistencia){doc.setTextColor(57,255,20);doc.text('V',x,y);}
-        else{doc.setTextColor(60,60,60);doc.text('-',x,y);}
-        doc.setTextColor(184,240,48); doc.text(String(jug.Numero||'-'),x+5,y);
-        doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
-        doc.text((jug.Nombre||'').substring(0,20),x+12,y);
-        const evStr=(ev.goles>0?ev.goles+'GOL ':'')+(ev.amarilla?'AM ':'')+(ev.roja?'RJ':'');
-        if(evStr.trim()){doc.setFont('helvetica','bold');doc.setTextColor(212,240,48);doc.text(evStr.trim(),x+62,y);}
-      }
-      rj(pL[i],13); rj(pV[i],113); y+=7;
-    }
-
-    y+=8;
-    if(y>230){doc.addPage();doc.setFillColor(8,12,20);doc.rect(0,0,210,297,'F');y=15;}
-    doc.setDrawColor(57,255,20); doc.line(10,y,200,y); y+=6;
-    doc.setTextColor(184,240,48); doc.setFontSize(9); doc.setFont('helvetica','bold');
-    doc.text('FIRMAS',105,y,{align:'center'}); y+=8;
-
-    const cArb=document.getElementById('firma-arbitro');
-    doc.addImage(cArb.toDataURL('image/png'),'PNG',75,y,60,20); y+=22;
-    doc.setTextColor(200,200,200); doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text(arbitro,105,y,{align:'center'});
-    doc.setTextColor(100,150,60); doc.setFontSize(7); doc.text('ARBITRO',105,y+4,{align:'center'}); y+=12;
-
-    const cCL=document.getElementById('firma-capitan-local');
-    const cCV=document.getElementById('firma-capitan-visita');
-    doc.addImage(cCL.toDataURL('image/png'),'PNG',15,y,60,20);
-    doc.addImage(cCV.toDataURL('image/png'),'PNG',135,y,60,20); y+=22;
-    doc.setTextColor(200,200,200); doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text(capLocal,45,y,{align:'center'}); doc.text(capVisita,165,y,{align:'center'});
-    doc.setTextColor(100,150,60); doc.setFontSize(7);
-    doc.text('CAPITAN - '+(eqL.Nombre||'').toUpperCase(),45,y+4,{align:'center'});
-    doc.text('CAPITAN - '+(eqV.Nombre||'').toUpperCase(),165,y+4,{align:'center'});
-    y+=10; doc.setTextColor(80,120,50); doc.setFontSize(7);
-    doc.text(new Date().toLocaleString('es-MX'),105,y,{align:'center'});
-
-    doc.save('cedula_partido_'+partidoActual.ID_Partido+'.pdf');
-    statusEl.textContent = 'PDF descargado';
-  } catch(e) {
-    statusEl.textContent = 'Error: '+e.message;
-    console.error(e);
+  .input-cedula {
+    width:100%; padding:10px; background:rgba(255,255,255,0.07);
+    border:1px solid #39ff14; border-radius:8px; color:#fff;
+    font-size:14px; box-sizing:border-box; margin-top:6px;
   }
-}
+  .label-cedula {
+    color:#88cc22; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    display:block; margin-top:12px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <img src="logo-liga.png.png" class="logo-liga">
+  <h1>CEDULA ARBITRAL</h1>
+  <p class="subtitulo">Liga Next Level 7</p>
+  <nav><a href="index.html">Inicio</a></nav>
+</header>
+
+<section class="contenedor">
+
+  <!-- PASO 0: LOGIN -->
+  <div class="card paso activo" id="paso-0">
+    <h2>Acceso Arbitro</h2>
+    <div style="max-width:320px;margin:16px auto 0;display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label class="label-cedula">Usuario</label>
+        <input id="login-user" type="text" class="input-cedula" placeholder="Usuario">
+      </div>
+      <div>
+        <label class="label-cedula">Contrasena</label>
+        <input id="login-pass" type="password" class="input-cedula" placeholder="Contrasena">
+      </div>
+      <button class="btn-grande" onclick="iniciarSesion()" style="background:linear-gradient(135deg,#3a6b1a,#7ddf00);color:#fff;">ENTRAR</button>
+      <div id="login-error" style="color:#ff4444;font-size:13px;text-align:center;"></div>
+    </div>
+    <div style="margin-top:16px;text-align:center;">
+      <button class="btn-grande" onclick="verSoloConsulta()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);font-size:13px;">Ver partidos sin login</button>
+    </div>
+  </div>
+
+  <!-- PASO 1: LISTA PARTIDOS -->
+  <div class="card paso" id="paso-1">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;">Partidos</h2>
+      <div id="modo-badge" style="font-size:11px;color:#39ff14;"></div>
+    </div>
+    <div id="lista-partidos"></div>
+  </div>
+
+  <!-- PASO 2: EQUIPO LOCAL -->
+  <div class="paso" id="paso-2">
+    <div class="paso-header">
+      <div class="paso-titulo" id="titulo-local">Equipo Local</div>
+      <div class="marcador-badge" id="marcador-p2">0 - 0</div>
+    </div>
+    <div class="card" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0;">
+      <div id="jugadores-local"></div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn-nav" onclick="irPaso(1)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:#fff;">← Volver</button>
+        <button class="btn-nav" onclick="irPaso(3)" style="background:rgba(57,255,20,0.15);border:1px solid #39ff14;color:#39ff14;">Equipo Visita →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: EQUIPO VISITA -->
+  <div class="paso" id="paso-3">
+    <div class="paso-header">
+      <div class="paso-titulo" id="titulo-visita">Equipo Visita</div>
+      <div class="marcador-badge" id="marcador-p3">0 - 0</div>
+    </div>
+    <div class="card" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0;">
+      <div id="jugadores-visita"></div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn-nav" onclick="irPaso(2)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:#fff;">← Local</button>
+        <button class="btn-nav" onclick="irPaso(4)" style="background:rgba(57,255,20,0.15);border:1px solid #39ff14;color:#39ff14;">Finalizar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 4: FIRMAS Y PDF -->
+  <div class="card paso" id="paso-4">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;">Resultado Final</h2>
+      <div class="marcador-badge" id="marcador-p4">0 - 0</div>
+    </div>
+
+    <div id="resumen-partido" style="text-align:center;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,0.5);"></div>
+
+    <label class="label-cedula">Ganado Por</label>
+    <select id="ganado-por-sel" class="input-cedula">
+      <option value="Normal">Normal</option>
+      <option value="Penales">Penales</option>
+      <option value="Default">Default</option>
+    </select>
+
+    <label class="label-cedula">Nombre del Arbitro</label>
+    <input id="arbitro-nombre" type="text" class="input-cedula" placeholder="Nombre completo">
+    <label class="label-cedula" style="margin-top:8px;">Firma Arbitro</label>
+    <canvas id="firma-arbitro" class="firma-canvas" width="500" height="100"></canvas>
+    <button onclick="limpiarFirma('firma-arbitro')" style="margin-top:4px;padding:5px 12px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:6px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
+
+    <label class="label-cedula">Nombre Capitan Local</label>
+    <input id="capitan-local-nombre" type="text" class="input-cedula" placeholder="Capitan local">
+    <label class="label-cedula" style="margin-top:8px;">Firma Capitan Local</label>
+    <canvas id="firma-capitan-local" class="firma-canvas" width="500" height="100"></canvas>
+    <button onclick="limpiarFirma('firma-capitan-local')" style="margin-top:4px;padding:5px 12px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:6px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
+
+    <label class="label-cedula">Nombre Capitan Visita</label>
+    <input id="capitan-visita-nombre" type="text" class="input-cedula" placeholder="Capitan visita">
+    <label class="label-cedula" style="margin-top:8px;">Firma Capitan Visita</label>
+    <canvas id="firma-capitan-visita" class="firma-canvas" width="500" height="100"></canvas>
+    <button onclick="limpiarFirma('firma-capitan-visita')" style="margin-top:4px;padding:5px 12px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:6px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
+
+    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+      <button class="btn-nav" onclick="irPaso(3)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:#fff;">← Visita</button>
+      <button class="btn-nav" onclick="guardarCedula()" style="background:linear-gradient(135deg,#3a6b1a,#7ddf00);border:none;color:#fff;">GUARDAR</button>
+      <button class="btn-nav" onclick="descargarPDF()" style="background:linear-gradient(135deg,#0277bd,#29b6f6);border:none;color:#fff;">PDF</button>
+    </div>
+    <div id="cedula-status" style="text-align:center;color:#88cc22;font-size:13px;margin-top:10px;"></div>
+    <div id="cedula-data-wrap" style="margin-top:10px;"></div>
+  </div>
+
+</section>
+<script src="cedula.js"></script>
+</body>
+</html>
