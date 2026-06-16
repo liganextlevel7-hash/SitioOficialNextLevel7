@@ -2,30 +2,70 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Cedula Arbitral | Liga Next Level 7</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  .btn-cedula {
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 700;
-    padding: 0;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    transition: background 0.1s, color 0.1s, border 0.1s;
+  .paso { display:none; }
+  .paso.activo { display:block; }
+  .btn-grande {
+    width:100%; padding:14px; border-radius:10px; font-size:15px;
+    font-weight:700; cursor:pointer; border:none; letter-spacing:1px;
+    touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+    margin-bottom:8px;
   }
-  .btn-asist { background:#111; border:1px solid #555; color:#555; width:32px; height:28px; font-size:13px; }
-  .btn-asist.on { background:#1a3a1a !important; color:#39ff14 !important; border:2px solid #39ff14 !important; }
-  .btn-menos { background:#111; border:1px solid #444; color:#fff; width:28px; height:28px; font-size:15px; }
-  .btn-mas   { background:#1a3a1a; border:1px solid #39ff14; color:#39ff14; width:28px; height:28px; font-size:15px; }
-  .btn-am    { background:#111; border:1px solid #555; color:#888; width:36px; height:28px; font-size:11px; }
-  .btn-am.on { background:#b8860b !important; color:#fff !important; border:2px solid #ffd700 !important; }
-  .btn-rj    { background:#111; border:1px solid #555; color:#888; width:36px; height:28px; font-size:11px; }
-  .btn-rj.on { background:#8b0000 !important; color:#fff !important; border:2px solid #ff4444 !important; }
-  .gol-count { font-size:15px; font-weight:900; color:#d4f030; min-width:18px; text-align:center; display:inline-block; }
-  .gol-count.activo { color:#39ff14 !important; }
+  .btn-nav {
+    flex:1; padding:12px; border-radius:8px; font-size:13px;
+    font-weight:700; cursor:pointer; touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .jugador-row {
+    display:flex; align-items:center; gap:6px;
+    padding:10px 6px; border-bottom:1px solid rgba(255,255,255,0.08);
+  }
+  .jugador-num { font-size:12px; font-weight:700; color:rgba(57,255,20,0.7); min-width:24px; }
+  .jugador-nombre { font-size:12px; color:#fff; flex:1; }
+  .btn-ev {
+    height:36px; border-radius:6px; font-size:12px; font-weight:700;
+    cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+    border:2px solid #444; background:#111; color:#666;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+  }
+  .btn-ev.on-v  { background:#1a3a1a; color:#39ff14; border-color:#39ff14; }
+  .btn-ev.on-am { background:#b8860b; color:#fff;    border-color:#ffd700; }
+  .btn-ev.on-rj { background:#8b0000; color:#fff;    border-color:#ff4444; }
+  .btn-gol-menos { width:34px; background:#111; border:2px solid #444; color:#fff; }
+  .btn-gol-mas   { width:34px; background:#1a3a1a; border:2px solid #39ff14; color:#39ff14; }
+  .btn-v  { width:40px; }
+  .btn-am { width:40px; }
+  .btn-rj { width:40px; }
+  .gol-num { font-size:16px; font-weight:900; color:#d4f030; min-width:22px; text-align:center; }
+  .paso-header {
+    background:rgba(0,0,0,0.5); border-bottom:1px solid rgba(57,255,20,0.2);
+    padding:12px 16px; display:flex; align-items:center; gap:10px;
+    position:sticky; top:0; z-index:10;
+  }
+  .paso-titulo { font-size:14px; font-weight:700; color:#39ff14; flex:1; }
+  .marcador-badge {
+    font-size:20px; font-weight:900; color:#d4f030;
+    background:rgba(0,0,0,0.5); padding:4px 12px; border-radius:8px;
+    border:1px solid rgba(212,240,48,0.3);
+  }
+  .firma-canvas {
+    width:100%; height:100px; background:rgba(255,255,255,0.05);
+    border:1px solid #39ff14; border-radius:8px; display:block;
+    touch-action:none;
+  }
+  .input-cedula {
+    width:100%; padding:10px; background:rgba(255,255,255,0.07);
+    border:1px solid #39ff14; border-radius:8px; color:#fff;
+    font-size:14px; box-sizing:border-box; margin-top:6px;
+  }
+  .label-cedula {
+    color:#88cc22; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    display:block; margin-top:12px;
+  }
 </style>
 </head>
 <body>
@@ -38,90 +78,108 @@
 
 <section class="contenedor">
 
-  <!-- LOGIN -->
-  <div class="card" id="login-section" style="display:none;">
+  <!-- PASO 0: LOGIN -->
+  <div class="card paso activo" id="paso-0">
     <h2>Acceso Arbitro</h2>
-    <div style="display:flex;flex-direction:column;gap:14px;max-width:320px;margin:20px auto 0;">
+    <div style="max-width:320px;margin:16px auto 0;display:flex;flex-direction:column;gap:12px;">
       <div>
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Usuario</label>
-        <input id="login-user" type="text" placeholder="Usuario" style="width:100%;margin-top:6px;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:15px;box-sizing:border-box;">
+        <label class="label-cedula">Usuario</label>
+        <input id="login-user" type="text" class="input-cedula" placeholder="Usuario">
       </div>
       <div>
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Contrasena</label>
-        <input id="login-pass" type="password" placeholder="Contrasena" style="width:100%;margin-top:6px;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:15px;box-sizing:border-box;">
+        <label class="label-cedula">Contrasena</label>
+        <input id="login-pass" type="password" class="input-cedula" placeholder="Contrasena">
       </div>
-      <button onclick="iniciarSesion()" style="padding:12px;background:linear-gradient(135deg,#3a6b1a,#7ddf00);border:none;border-radius:8px;color:#fff;font-weight:bold;font-size:15px;cursor:pointer;touch-action:manipulation;">ENTRAR</button>
-      <div id="login-error" style="color:#ff4444;font-size:13px;text-align:center;min-height:18px;"></div>
+      <button class="btn-grande" onclick="iniciarSesion()" style="background:linear-gradient(135deg,#3a6b1a,#7ddf00);color:#fff;">ENTRAR</button>
+      <div id="login-error" style="color:#ff4444;font-size:13px;text-align:center;"></div>
+    </div>
+    <div style="margin-top:16px;text-align:center;">
+      <button class="btn-grande" onclick="verSoloConsulta()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);font-size:13px;">Ver partidos sin login</button>
     </div>
   </div>
 
-  <!-- LISTA -->
-  <div class="card" id="partidos-section" style="display:none;">
-    <h2>Partidos</h2>
-    <div id="lista-partidos-cedula" style="margin-top:16px;">Cargando...</div>
+  <!-- PASO 1: LISTA PARTIDOS -->
+  <div class="card paso" id="paso-1">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;">Partidos</h2>
+      <div id="modo-badge" style="font-size:11px;color:#39ff14;"></div>
+    </div>
+    <div id="lista-partidos"></div>
   </div>
 
-  <!-- CEDULA -->
-  <div id="cedula-section" style="display:none;">
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-        <h2>Cedula de Partido</h2>
-        <button onclick="volverALista()" style="padding:8px 16px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;color:#fff;cursor:pointer;font-size:13px;touch-action:manipulation;">Volver</button>
-      </div>
-      <div id="cedula-header" style="margin-top:16px;"></div>
+  <!-- PASO 2: EQUIPO LOCAL -->
+  <div class="paso" id="paso-2">
+    <div class="paso-header">
+      <div class="paso-titulo" id="titulo-local">Equipo Local</div>
+      <div class="marcador-badge" id="marcador-p2">0 - 0</div>
     </div>
-
-    <div class="card" style="margin-top:16px;">
-      <div id="cedula-equipos"></div>
-    </div>
-
-    <!-- FIRMA -->
-    <div class="card" id="firma-section" style="display:none;margin-top:16px;">
-      <h2>Resultado Final</h2>
-      <div style="margin-top:12px;margin-bottom:16px;">
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Ganado Por</label>
-        <select id="ganado-por-sel" style="width:100%;margin-top:6px;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:14px;box-sizing:border-box;">
-          <option value="Normal">Normal</option>
-          <option value="Penales">Penales</option>
-          <option value="Default">Default</option>
-        </select>
-      </div>
-
-      <h2 style="margin-top:8px;">Firmas</h2>
-      <div style="margin-top:12px;">
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Nombre del Arbitro</label>
-        <input id="arbitro-nombre" type="text" placeholder="Nombre del arbitro" style="width:100%;margin-top:6px;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Firma Arbitro</label>
-        <canvas id="firma-arbitro" width="500" height="100" style="background:rgba(255,255,255,0.05);border:1px solid #39ff14;border-radius:8px;cursor:crosshair;touch-action:none;width:100%;display:block;margin-top:6px;"></canvas>
-        <button onclick="limpiarFirma('firma-arbitro')" style="margin-top:6px;padding:6px 14px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:8px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
-      </div>
-      <div style="margin-top:16px;">
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Nombre Capitan Local</label>
-        <input id="capitan-local-nombre" type="text" placeholder="Nombre del capitan local" style="width:100%;margin-top:6px;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Firma Capitan Local</label>
-        <canvas id="firma-capitan-local" width="500" height="100" style="background:rgba(255,255,255,0.05);border:1px solid #39ff14;border-radius:8px;cursor:crosshair;touch-action:none;width:100%;display:block;margin-top:6px;"></canvas>
-        <button onclick="limpiarFirma('firma-capitan-local')" style="margin-top:6px;padding:6px 14px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:8px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
-      </div>
-      <div style="margin-top:16px;">
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Nombre Capitan Visita</label>
-        <input id="capitan-visita-nombre" type="text" placeholder="Nombre del capitan visita" style="width:100%;margin-top:6px;padding:10px;background:rgba(255,255,255,0.07);border:1px solid #39ff14;border-radius:8px;color:#fff;font-size:14px;margin-bottom:8px;box-sizing:border-box;">
-        <label style="color:#88cc22;font-size:12px;letter-spacing:2px;text-transform:uppercase;">Firma Capitan Visita</label>
-        <canvas id="firma-capitan-visita" width="500" height="100" style="background:rgba(255,255,255,0.05);border:1px solid #39ff14;border-radius:8px;cursor:crosshair;touch-action:none;width:100%;display:block;margin-top:6px;"></canvas>
-        <button onclick="limpiarFirma('firma-capitan-visita')" style="margin-top:6px;padding:6px 14px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:8px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
+    <div class="card" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0;">
+      <div id="jugadores-local"></div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn-nav" onclick="irPaso(1)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:#fff;">← Volver</button>
+        <button class="btn-nav" onclick="irPaso(3)" style="background:rgba(57,255,20,0.15);border:1px solid #39ff14;color:#39ff14;">Equipo Visita →</button>
       </div>
     </div>
-
-    <!-- BOTONES -->
-    <div class="card" id="botones-section" style="display:none;margin-top:16px;">
-      <div style="display:flex;gap:12px;flex-wrap:wrap;">
-        <button onclick="guardarCedula()" style="flex:1;padding:14px;background:linear-gradient(135deg,#3a6b1a,#7ddf00);border:none;border-radius:10px;color:#fff;font-weight:bold;font-size:15px;letter-spacing:2px;cursor:pointer;touch-action:manipulation;">GUARDAR CEDULA</button>
-        <button onclick="descargarPDF()" style="flex:1;padding:14px;background:linear-gradient(135deg,#0277bd,#29b6f6);border:none;border-radius:10px;color:#fff;font-weight:bold;font-size:15px;letter-spacing:2px;cursor:pointer;touch-action:manipulation;">DESCARGAR PDF</button>
-      </div>
-      <div id="cedula-status" style="text-align:center;color:#88cc22;font-size:13px;margin-top:10px;min-height:18px;"></div>
-    </div>
-
   </div>
+
+  <!-- PASO 3: EQUIPO VISITA -->
+  <div class="paso" id="paso-3">
+    <div class="paso-header">
+      <div class="paso-titulo" id="titulo-visita">Equipo Visita</div>
+      <div class="marcador-badge" id="marcador-p3">0 - 0</div>
+    </div>
+    <div class="card" style="margin-top:0;border-top-left-radius:0;border-top-right-radius:0;">
+      <div id="jugadores-visita"></div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn-nav" onclick="irPaso(2)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:#fff;">← Local</button>
+        <button class="btn-nav" onclick="irPaso(4)" style="background:rgba(57,255,20,0.15);border:1px solid #39ff14;color:#39ff14;">Finalizar →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 4: FIRMAS Y PDF -->
+  <div class="card paso" id="paso-4">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h2 style="margin:0;">Resultado Final</h2>
+      <div class="marcador-badge" id="marcador-p4">0 - 0</div>
+    </div>
+
+    <div id="resumen-partido" style="text-align:center;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,0.5);"></div>
+
+    <label class="label-cedula">Ganado Por</label>
+    <select id="ganado-por-sel" class="input-cedula">
+      <option value="Normal">Normal</option>
+      <option value="Penales">Penales</option>
+      <option value="Default">Default</option>
+    </select>
+
+    <label class="label-cedula">Nombre del Arbitro</label>
+    <input id="arbitro-nombre" type="text" class="input-cedula" placeholder="Nombre completo">
+    <label class="label-cedula" style="margin-top:8px;">Firma Arbitro</label>
+    <canvas id="firma-arbitro" class="firma-canvas" width="500" height="100"></canvas>
+    <button onclick="limpiarFirma('firma-arbitro')" style="margin-top:4px;padding:5px 12px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:6px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
+
+    <label class="label-cedula">Nombre Capitan Local</label>
+    <input id="capitan-local-nombre" type="text" class="input-cedula" placeholder="Capitan local">
+    <label class="label-cedula" style="margin-top:8px;">Firma Capitan Local</label>
+    <canvas id="firma-capitan-local" class="firma-canvas" width="500" height="100"></canvas>
+    <button onclick="limpiarFirma('firma-capitan-local')" style="margin-top:4px;padding:5px 12px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:6px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
+
+    <label class="label-cedula">Nombre Capitan Visita</label>
+    <input id="capitan-visita-nombre" type="text" class="input-cedula" placeholder="Capitan visita">
+    <label class="label-cedula" style="margin-top:8px;">Firma Capitan Visita</label>
+    <canvas id="firma-capitan-visita" class="firma-canvas" width="500" height="100"></canvas>
+    <button onclick="limpiarFirma('firma-capitan-visita')" style="margin-top:4px;padding:5px 12px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:6px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Limpiar</button>
+
+    <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+      <button class="btn-nav" onclick="irPaso(3)" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:#fff;">← Visita</button>
+      <button class="btn-nav" onclick="guardarCedula()" style="background:linear-gradient(135deg,#3a6b1a,#7ddf00);border:none;color:#fff;">GUARDAR</button>
+      <button class="btn-nav" onclick="descargarPDF()" style="background:linear-gradient(135deg,#0277bd,#29b6f6);border:none;color:#fff;">PDF</button>
+    </div>
+    <div id="cedula-status" style="text-align:center;color:#88cc22;font-size:13px;margin-top:10px;"></div>
+    <div id="cedula-data-wrap" style="margin-top:10px;"></div>
+  </div>
+
 </section>
 <script src="cedula.js"></script>
 </body>
