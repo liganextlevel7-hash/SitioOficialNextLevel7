@@ -102,10 +102,10 @@
       touch-action: manipulation;
     }
     .stack-card-inner {
-      background: linear-gradient(160deg, #0d1810, #0a1a0d);
-      border: 1.5px solid rgba(57,255,20,0.4);
+      background: #000;
+      border: 3px solid rgba(57,255,20,0.4);
       border-radius: 18px;
-      padding: 22px 20px;
+      padding: 26px 24px;
       position: relative;
       overflow: hidden;
       box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(57,255,20,0.1);
@@ -115,66 +115,74 @@
       position: absolute;
       top: -10px; right: 8px;
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 90px;
+      font-size: 110px;
       font-weight: 900;
-      color: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.09);
       line-height: 1;
       pointer-events: none;
       user-select: none;
     }
     .stack-top-row {
       display: flex; align-items: center; justify-content: space-between;
-      position: relative; z-index: 2; margin-bottom: 14px;
-      font-size: 11px; color: rgba(184,240,48,0.6); letter-spacing: 1px; font-weight: 700;
+      position: relative; z-index: 2; margin-bottom: 18px;
+      font-size: 13px; color: rgba(184,240,48,0.7); letter-spacing: 1px; font-weight: 700;
       text-transform: uppercase;
     }
+    .stack-id-tag {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: rgba(255,255,255,0.8);
+      letter-spacing: 1px;
+    }
     .stack-teams {
-      display: flex; align-items: center; justify-content: center; gap: 16px;
+      display: flex; align-items: center; justify-content: center; gap: 18px;
       position: relative; z-index: 2;
     }
-    .stack-team { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100px; }
-    .stack-team img { width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
-    .stack-team-name { font-size: 12px; font-weight: 700; color: #fff; text-align: center; text-transform: uppercase; line-height: 1.2; }
+    .stack-team { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 115px; }
+    .stack-team img { width: 90px; height: 90px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+    .stack-team-name { font-size: 13px; font-weight: 700; color: #fff; text-align: center; text-transform: uppercase; line-height: 1.2; }
     .stack-score {
-      font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: #d4f030;
+      font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: #d4f030;
       text-shadow: 0 0 12px rgba(120,220,0,0.5); min-width: 70px; text-align: center;
     }
-    .stack-score.programado { font-size: 18px; color: rgba(255,255,255,0.4); }
+    .stack-score.programado { font-size: 20px; color: rgba(255,255,255,0.4); }
     .stack-bottom-row {
-      display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;
-      margin-top: 14px; position: relative; z-index: 2;
-      font-size: 12px; color: #ccc;
+      display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;
+      margin-top: 18px; position: relative; z-index: 2;
+      font-size: 15px; color: #ddd;
     }
     .stack-badge {
-      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 14px;
+      font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 14px;
       text-transform: uppercase; letter-spacing: 1px;
     }
     .stack-badge.normal { color: #b8f030; border: 1px solid #b8f030; }
     .stack-badge.penales { color: #ff4444; border: 1px solid #ff4444; }
     .stack-badge.default { color: #ffd700; border: 1px solid #ffd700; }
     .stack-badge.pendiente { color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); }
-    .stack-jornada-tag { font-size: 11px; color: #ffd700; font-weight: 700; }
+    .stack-jornada-tag { font-size: 15px; color: #ffd700; font-weight: 700; }
+    .stack-vuelta-tag { font-size: 13px; color: rgba(184,240,48,0.7); }
 
-    /* Fondo segun Estado */
-    .estado-programado { background: linear-gradient(160deg, #0a1828, #0d2440) !important; }
-    .estado-jugado { background: linear-gradient(160deg, #2a1505, #3a1f08) !important; }
-    .estado-pendiente { background: linear-gradient(160deg, #161616, #1d1d1d) !important; }
+    /* Fondo segun Estado - solo un overlay sutil, fondo base sigue negro */
+    .estado-programado { box-shadow: inset 0 0 60px rgba(41,166,255,0.08), 0 8px 30px rgba(0,0,0,0.6); }
+    .estado-jugado { box-shadow: inset 0 0 60px rgba(255,150,0,0.08), 0 8px 30px rgba(0,0,0,0.6); }
+    .estado-pendiente { box-shadow: inset 0 0 60px rgba(255,255,255,0.03), 0 8px 30px rgba(0,0,0,0.6); }
 
     /* Borde segun Ganado_Por */
-    .borde-normal { border-color: rgba(184,240,48,0.7) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(184,240,48,0.4) !important; }
-    .borde-penales { border-color: rgba(255,68,68,0.7) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(255,68,68,0.4) !important; }
-    .borde-default { border-color: rgba(255,215,0,0.7) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(255,215,0,0.4) !important; }
-    .borde-programado { border-color: rgba(41,166,255,0.7) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(41,166,255,0.4) !important; }
+    .borde-normal { border-color: rgba(184,240,48,0.8) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(184,240,48,0.4) !important; }
+    .borde-penales { border-color: rgba(255,68,68,0.8) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(255,68,68,0.4) !important; }
+    .borde-default { border-color: rgba(255,215,0,0.8) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(255,215,0,0.4) !important; }
+    .borde-programado { border-color: rgba(41,166,255,0.8) !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(41,166,255,0.4) !important; }
 
     .empty-msg { text-align: center; color: rgba(255,255,255,0.3); font-size: 14px; padding: 40px; }
 
     @media (max-width: 600px) {
-      .stack-team img { width: 58px; height: 58px; }
-      .stack-team { width: 85px; }
-      .stack-team-name { font-size: 10px; }
-      .stack-score { font-size: 28px; }
-      .stack-id-bg { font-size: 60px; top: -4px; right: 4px; }
-      .stack-card-inner { padding: 16px 14px; }
+      .stack-team img { width: 70px; height: 70px; }
+      .stack-team { width: 95px; }
+      .stack-team-name { font-size: 11px; }
+      .stack-score { font-size: 30px; }
+      .stack-id-bg { font-size: 70px; top: -4px; right: 4px; }
+      .stack-card-inner { padding: 20px 16px; }
+      .stack-top-row { font-size: 11px; }
+      .stack-id-tag { font-size: 18px; }
+      .stack-bottom-row { font-size: 13px; gap: 12px; }
     }
   </style>
 </head>
