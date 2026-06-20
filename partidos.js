@@ -394,10 +394,10 @@ function renderStack(filtrados) {
     cont.innerHTML += `
     <div class="stack-card" style="top:${16 + idx * 4}px; z-index:${idx+1};">
       <div class="stack-card-inner ${estadoClass} ${bordeClass}" ${clickable ? `onclick="abrirPopupPartido(todosPartidos[${idxReal}])"` : ''}>
-        <div class="stack-id-bg">#${idPartido}</div>
         <div class="stack-top-row">
           <span class="stack-jornada-tag">${jornadaTxt}</span>
-          <span>V${vueltaActual}</span>
+          <span class="stack-vuelta-tag">${vueltaActual === 1 ? 'PRIMERA VUELTA' : 'SEGUNDA VUELTA'}</span>
+          <span class="stack-id-tag">#${idPartido}</span>
         </div>
         <div class="stack-teams">
           <div class="stack-team">
