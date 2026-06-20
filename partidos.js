@@ -313,8 +313,15 @@ async function cargarDatos() {
         return eqLocal === equipoSel || eqVisita === equipoSel;
       });
       if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para el equipo ${equipoSel}`; return; }
-      // Descendente por ID_Partido
-      filtrados.sort((a,b) => Number(b.ID_Partido) - Number(a.ID_Partido));
+      // Primero los que tienen Jornada (descendente), al final los Pendientes (sin jornada)
+      filtrados.sort((a,b) => {
+        const ja = a.Jornada ? Number(a.Jornada) : -1;
+        const jb = b.Jornada ? Number(b.Jornada) : -1;
+        if (ja === -1 && jb === -1) return Number(b.ID_Partido) - Number(a.ID_Partido);
+        if (ja === -1) return 1;
+        if (jb === -1) return -1;
+        return jb - ja;
+      });
 
     } else {
       statusEl.textContent = '⚠️ Selecciona un tipo de filtro';
@@ -374,9 +381,19 @@ function renderStack(filtrados) {
     const clickable = (estado === 'Jugado' || estado === 'Programado');
     const idxReal = todosPartidos.indexOf(p);
 
+    // Fondo segun Estado
+    const estadoClass = estado === 'Programado' ? 'estado-programado' : estado === 'Jugado' ? 'estado-jugado' : 'estado-pendiente';
+
+    // Borde segun Ganado_Por (solo si Jugado); si es Programado, borde azul
+    let bordeClass = '';
+    if (estado === 'Programado') bordeClass = 'borde-programado';
+    else if (ganPorClass === 'normal') bordeClass = 'borde-normal';
+    else if (ganPorClass === 'penales') bordeClass = 'borde-penales';
+    else if (ganPorClass === 'default') bordeClass = 'borde-default';
+
     cont.innerHTML += `
     <div class="stack-card" style="top:${16 + idx * 4}px; z-index:${idx+1};">
-      <div class="stack-card-inner" ${clickable ? `onclick="abrirPopupPartido(todosPartidos[${idxReal}])"` : ''}>
+      <div class="stack-card-inner ${estadoClass} ${bordeClass}" ${clickable ? `onclick="abrirPopupPartido(todosPartidos[${idxReal}])"` : ''}>
         <div class="stack-id-bg">#${idPartido}</div>
         <div class="stack-top-row">
           <span class="stack-jornada-tag">${jornadaTxt}</span>
