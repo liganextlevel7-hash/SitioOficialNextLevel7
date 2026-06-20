@@ -7,14 +7,21 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="partidos.css" />
   <style>
+    * { box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      font-family: 'Roboto', Arial, sans-serif;
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
     .nav-top {
       width: 100%;
-      max-width: 900px;
-      margin: 10px auto 6px auto;
-      display: flex;
-      justify-content: flex-start;
+      max-width: 700px;
+      margin: 0 auto 14px auto;
     }
     .nav-top a {
       display: inline-block;
@@ -25,7 +32,6 @@
       color: white;
       text-decoration: none;
       font-weight: bold;
-      font-family: Arial, sans-serif;
       font-size: 14px;
       transition: .3s;
     }
@@ -34,16 +40,146 @@
       color: black;
       box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
     }
+
+    /* ===== PANEL CONTROLES ===== */
+    .editor-panel {
+      background: rgba(0,0,0,0.88);
+      border: 1px solid #3a6b1a;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+      width: 100%;
+      max-width: 700px;
+    }
+    .editor-panel h3 {
+      color: #b8f030; font-size: 16px; letter-spacing: 2px;
+      margin: 0 0 12px; text-transform: uppercase; font-family: 'Bebas Neue', sans-serif;
+    }
+    .vuelta-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .vuelta-tab {
+      flex: 1; text-align: center; padding: 10px; border-radius: 8px;
+      border: 1px solid #3a6b1a; background: rgba(255,255,255,0.05);
+      color: #88aa44; font-weight: 700; font-size: 13px; letter-spacing: 1px;
+      cursor: pointer; transition: .2s; touch-action: manipulation;
+    }
+    .vuelta-tab.activo { background: #39ff14; color: #000; border-color: #39ff14; box-shadow: 0 0 12px rgba(57,255,20,0.5); }
+
+    .controls-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .field-group { display: flex; flex-direction: column; gap: 4px; }
+    .field-group.full { grid-column: 1 / -1; }
+    .field-group label { color: #88aa44; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+    .field-group select {
+      background: rgba(255,255,255,0.07); border: 1px solid #3a6b1a; border-radius: 6px;
+      color: #fff; font-size: 14px; padding: 8px 10px; outline: none;
+    }
+    .field-group select option { background: #111; color: #fff; }
+    .load-btn {
+      background: linear-gradient(135deg, #3a6b1a, #7ddf00); border: none; border-radius: 8px;
+      color: #fff; cursor: pointer; font-size: 14px; font-weight: 700;
+      letter-spacing: 2px; padding: 10px 16px; text-transform: uppercase; width: 100%;
+      touch-action: manipulation;
+    }
+    .status-msg { color: #88cc22; font-size: 12px; margin-top: 8px; min-height: 18px; text-align: center; }
+    .dl-btn {
+      background: linear-gradient(135deg, #7ddf00, #d4f030); border: none; border-radius: 8px;
+      color: #000; cursor: pointer; font-size: 14px; font-weight: 700;
+      letter-spacing: 2px; padding: 12px 18px; text-transform: uppercase; width: 100%; margin-top: 10px;
+      touch-action: manipulation;
+    }
+
+    /* ===== STACKING CARDS ===== */
+    .stack-container {
+      width: 100%;
+      max-width: 700px;
+      position: relative;
+      padding-bottom: 200px;
+    }
+    .stack-card {
+      position: sticky;
+      top: 16px;
+      margin-bottom: 16px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .stack-card-inner {
+      background: linear-gradient(160deg, #0d1810, #0a1a0d);
+      border: 1.5px solid rgba(57,255,20,0.4);
+      border-radius: 18px;
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(57,255,20,0.1);
+      min-height: 150px;
+    }
+    .stack-id-bg {
+      position: absolute;
+      top: -10px; right: 8px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 90px;
+      font-weight: 900;
+      color: rgba(255,255,255,0.05);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+    }
+    .stack-top-row {
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 2; margin-bottom: 14px;
+      font-size: 11px; color: rgba(184,240,48,0.6); letter-spacing: 1px; font-weight: 700;
+      text-transform: uppercase;
+    }
+    .stack-teams {
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+      position: relative; z-index: 2;
+    }
+    .stack-team { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100px; }
+    .stack-team img { width: 56px; height: 56px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+    .stack-team-name { font-size: 12px; font-weight: 700; color: #fff; text-align: center; text-transform: uppercase; line-height: 1.2; }
+    .stack-score {
+      font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: #d4f030;
+      text-shadow: 0 0 12px rgba(120,220,0,0.5); min-width: 70px; text-align: center;
+    }
+    .stack-score.programado { font-size: 18px; color: rgba(255,255,255,0.4); }
+    .stack-bottom-row {
+      display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;
+      margin-top: 14px; position: relative; z-index: 2;
+      font-size: 12px; color: #ccc;
+    }
+    .stack-badge {
+      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 14px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .stack-badge.normal { color: #b8f030; border: 1px solid #b8f030; }
+    .stack-badge.penales { color: #ffb400; border: 1px solid #ffb400; }
+    .stack-badge.default { color: #ff4444; border: 1px solid #ff4444; }
+    .stack-badge.pendiente { color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); }
+    .stack-jornada-tag { font-size: 11px; color: #ffd700; font-weight: 700; }
+
+    .empty-msg { text-align: center; color: rgba(255,255,255,0.3); font-size: 14px; padding: 40px; }
+
+    @media (max-width: 600px) {
+      .stack-team img { width: 44px; height: 44px; }
+      .stack-team { width: 75px; }
+      .stack-team-name { font-size: 10px; }
+      .stack-score { font-size: 28px; }
+      .stack-id-bg { font-size: 60px; top: -4px; right: 4px; }
+      .stack-card-inner { padding: 16px 14px; }
+    }
   </style>
 </head>
 <body>
-
   <div class="nav-top">
     <a href="index.html">← Inicio</a>
   </div>
 
   <div class="editor-panel">
-    <h3>⚽ Dominical — Next Level 7</h3>
+    <h3>⚽ Partidos — Next Level 7</h3>
+
+    <div class="vuelta-tabs">
+      <div class="vuelta-tab activo" id="tabVuelta1" onclick="cambiarVuelta(1)">PRIMERA VUELTA</div>
+      <div class="vuelta-tab" id="tabVuelta2" onclick="cambiarVuelta(2)">SEGUNDA VUELTA</div>
+    </div>
+
     <div class="controls-row">
       <div class="field-group">
         <label>Filtrar por</label>
@@ -57,14 +193,6 @@
         <label>Jornada</label>
         <select id="filterJornada">
           <option value="">— Selecciona —</option>
-          <option value="1">Jornada 1</option>
-          <option value="2">Jornada 2</option>
-          <option value="3">Jornada 3</option>
-          <option value="4">Jornada 4</option>
-          <option value="5">Jornada 5</option>
-          <option value="6">Jornada 6</option>
-          <option value="7">Jornada 7</option>
-          <option value="8">Jornada 8</option>
         </select>
       </div>
       <div class="field-group" id="groupFecha" style="display:none">
@@ -75,28 +203,16 @@
         <label>Equipo</label>
         <select id="filterEquipo"><option value="">— Cargando... —</option></select>
       </div>
-      <div class="field-group">
-        <label>&nbsp;</label>
+      <div class="field-group full">
         <button class="load-btn" onclick="cargarDatos()">🔄 Cargar Datos</button>
       </div>
     </div>
     <div class="status-msg" id="statusMsg">Selecciona jornada, fecha o equipo y presiona Cargar Datos</div>
-    <button class="dl-btn" onclick="downloadPNG()" id="dlBtn">⬇ Descargar Flyer como PNG</button>
+    <button class="dl-btn" onclick="downloadPNG()" id="dlBtn">⬇ Descargar Lista como PNG</button>
   </div>
 
-  <div class="flyer-scale-container" id="flyerScaleContainer">
-    <div class="flyer-wrapper" id="flyerRoot">
-      <img class="flyer-bg" id="flyerBg" src="" alt="bg" />
-      <div class="overlay-main"></div>
-      <div class="liga-banner">
-        <div class="jornada-title" id="jornadaDisplay">DOMINICAL</div>
-      </div>
-      <div class="encounters-container" id="encFlyer">
-        <div style="text-align:center;color:rgba(255,255,255,0.3);font-size:20px;letter-spacing:4px;padding:40px;">
-          CARGA LOS DATOS PARA VER LOS PARTIDOS
-        </div>
-      </div>
-    </div>
+  <div class="stack-container" id="stackContainer">
+    <div class="empty-msg">CARGA LOS DATOS PARA VER LOS PARTIDOS</div>
   </div>
 
   <script src="partidos.js"></script>
