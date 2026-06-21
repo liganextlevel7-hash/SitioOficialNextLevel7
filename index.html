@@ -155,6 +155,33 @@
 .fifa-mini.blue   .mn-sep { background:#fff; }
 .fifa-mini-wrap { display:flex; flex-direction:column; align-items:center; gap:4px; }
 .fifa-mini-medal { font-size:16px; }
+
+/* ===== PODIO ===== */
+.podio-wrap { display:flex; align-items:flex-end; justify-content:center; gap:10px; padding:10px 0 4px; }
+.podio-item { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.podio-escudo-box {
+  width:64px; height:64px; background:#000; border-radius:10px;
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  border: 2px solid;
+}
+.podio-escudo-box img { width:88%; height:88%; object-fit:contain; }
+.podio-nombre { font-size:10px; font-weight:900; color:#fff; text-align:center; text-transform:uppercase; max-width:80px; line-height:1.15; }
+.podio-pts { font-size:15px; font-weight:900; }
+.podio-base {
+  width:80px; border-radius:8px 8px 0 0;
+  display:flex; align-items:flex-start; justify-content:center; padding-top:6px;
+  font-family:'Bebas Neue',sans-serif; font-size:26px; font-weight:900;
+}
+.podio-1 .podio-escudo-box { border-color:#ffd700; box-shadow:0 0 14px rgba(255,215,0,0.6); }
+.podio-1 .podio-pts { color:#ffd700; }
+.podio-1 .podio-base { height:78px; background:linear-gradient(160deg,#3d2f00,#5c4600); color:#ffd700; border:1px solid #ffd700; }
+.podio-2 .podio-escudo-box { border-color:#c0c0c0; box-shadow:0 0 12px rgba(192,192,192,0.5); }
+.podio-2 .podio-pts { color:#c0c0c0; }
+.podio-2 .podio-base { height:56px; background:linear-gradient(160deg,#2a2a2a,#3d3d3d); color:#c0c0c0; border:1px solid #c0c0c0; }
+.podio-3 .podio-escudo-box { border-color:#cd7f32; box-shadow:0 0 12px rgba(205,127,50,0.5); }
+.podio-3 .podio-pts { color:#cd7f32; }
+.podio-3 .podio-base { height:40px; background:linear-gradient(160deg,#3d2410,#4d2e14); color:#cd7f32; border:1px solid #cd7f32; }
+.podio-medal { font-size:18px; }
 </style>
 </head>
 <body>
@@ -335,7 +362,7 @@ async function cargarCarrusel() {
     ]);
     const [tE,tP,tJ,tEv,tPart] = await Promise.all([resE.text(),resP.text(),resJ.text(),resEv.text(),resPart.text()]);
 
-    // TABLA
+    // TABLA - PODIO
     const filasE=tE.trim().split('\n'); const equipos=[];
     for(let i=1;i<filasE.length;i++){
       const c=filasE[i].split(','); const n=(c[1]||'').trim();
@@ -343,11 +370,27 @@ async function cargarCarrusel() {
       equipos.push({ranking:Number(c[10])||999,nombre:n,pts:Number(c[9])||0});
     }
     equipos.sort((a,b)=>a.ranking-b.ranking);
+    const top3eq = equipos.slice(0,3);
     let htmlTabla='';
-    equipos.slice(0,5).forEach((e,i)=>{
-      const m=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'°';
-      htmlTabla+=`<div class="mini-fila"><span class="mini-rank">${m}</span><img src="${carLogos[e.nombre]||''}" onerror="this.style.display='none'"><span style="flex:1;font-size:11px;">${e.nombre}</span><span class="mini-pts">${e.pts}pts</span></div>`;
-    });
+    if (top3eq.length) {
+      // Orden visual del podio: 2do, 1ro, 3ro
+      const orden = [top3eq[1], top3eq[0], top3eq[2]];
+      const claves = ['podio-2','podio-1','podio-3'];
+      const medallas = ['🥈','🥇','🥉'];
+      htmlTabla = '<div class="podio-wrap">';
+      orden.forEach((e, idx) => {
+        if (!e) { htmlTabla += '<div style="width:80px;"></div>'; return; }
+        htmlTabla += `
+          <div class="podio-item ${claves[idx]}">
+            <span class="podio-medal">${medallas[idx]}</span>
+            <div class="podio-escudo-box"><img src="${carLogos[e.nombre]||''}" onerror="this.style.display='none'"></div>
+            <div class="podio-nombre">${e.nombre}</div>
+            <div class="podio-pts">${e.pts} PTS</div>
+            <div class="podio-base"></div>
+          </div>`;
+      });
+      htmlTabla += '</div>';
+    }
     document.getElementById('car-tabla').innerHTML=htmlTabla||'<div class="car-cargando">Sin datos</div>';
 
     // PARTIDOS
@@ -382,20 +425,43 @@ async function cargarCarrusel() {
     }
     document.getElementById('car-proxima').innerHTML=htmlProx||'<div class="car-cargando">Sin partidos programados</div>';
 
-    // GOLEADORES FIFA
+    // GOLEADORES - PODIO (con asistencia real %)
     const jugadores=carParseCSV(tJ), eventos=carParseCSV(tEv), partic=carParseCSV(tPart);
     const golMap={}, partMap={};
     eventos.filter(e=>e.Tipo_Evento==='Gol').forEach(e=>{golMap[e.Jugador]=(golMap[e.Jugador]||0)+1;});
     partic.filter(p=>p.Asistio==='TRUE').forEach(p=>{partMap[p.Jugador]=(partMap[p.Jugador]||0)+1;});
+
+    // Total real de jornadas jugadas (partidos con Estado=Jugado, jornadas unicas)
+    const jornadasJugadas = new Set();
+    filasP.slice(1).forEach(line => {
+      const c = line.split(',');
+      if ((c[6]||'').trim() === 'Jugado' && c[1]) jornadasJugadas.add(c[1].trim());
+    });
+    const totalJornadas = jornadasJugadas.size || 1;
+
     const top3=jugadores.filter(j=>golMap[j.ID_Jugador]>0)
-      .map(j=>({nombre:j.Nombre||'',equipoID:Number(j.Equipo),numero:j.Numero||'-',goles:golMap[j.ID_Jugador]||0,partidos:partMap[j.ID_Jugador]||0}))
+      .map(j=>({nombre:j.Nombre||'',equipoID:Number(j.Equipo),numero:j.Numero||'-',goles:golMap[j.ID_Jugador]||0,partidosJugados:partMap[j.ID_Jugador]||0}))
       .sort((a,b)=>b.goles-a.goles).slice(0,3);
-    const tg=['gold','silver','blue'], med=['🥇','🥈','🥉'];
+
     let htmlGoles='';
     if(top3.length){
-      top3.forEach((j,i)=>{
-        htmlGoles+=`<div class="fifa-mini-wrap"><div class="fifa-mini-medal">${med[i]}</div><div class="fifa-mini ${tg[i]}"><div class="mn-shimmer"></div><div class="mn-svg">${svgMini(tg[i],j.numero,carLogosID[j.equipoID]||'')}</div><div class="mn-nombre">${j.nombre}</div><div class="mn-sep"></div><div class="mn-stats"><div class="mn-stat"><div class="mn-val">${j.goles}</div><div class="mn-lbl">GOLES</div></div><div class="mn-stat"><div class="mn-val">${j.partidos}</div><div class="mn-lbl">PART</div></div></div></div></div>`;
+      const orden = [top3[1], top3[0], top3[2]];
+      const claves = ['podio-2','podio-1','podio-3'];
+      const medallas = ['🥈','🥇','🥉'];
+      htmlGoles = '<div class="podio-wrap">';
+      orden.forEach((j, idx) => {
+        if (!j) { htmlGoles += '<div style="width:80px;"></div>'; return; }
+        const pct = Math.min(100, Math.round((j.partidosJugados / totalJornadas) * 100));
+        htmlGoles += `
+          <div class="podio-item ${claves[idx]}">
+            <span class="podio-medal">${medallas[idx]}</span>
+            <div class="podio-escudo-box"><img src="${carLogosID[j.equipoID]||''}" onerror="this.style.display='none'"></div>
+            <div class="podio-nombre">${j.nombre}</div>
+            <div class="podio-pts">${j.goles}⚽ · ${pct}%</div>
+            <div class="podio-base"></div>
+          </div>`;
       });
+      htmlGoles += '</div>';
     } else { htmlGoles='<div class="car-cargando">Sin goles aún</div>'; }
     document.getElementById('car-goles').innerHTML=htmlGoles;
 
