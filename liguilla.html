@@ -5,28 +5,76 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Liguilla | Liga Next Level 7</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+  .contenedor-liguilla { padding: 10px 6px 40px; }
+
+  .card-liguilla {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+
+  .card-liguilla h2 {
+    font-size: clamp(18px,4vw,26px);
+    letter-spacing: 3px;
+    color: #ffd700;
+    text-align: center;
+  }
+
+  #selector-ronda {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,215,0,0.4);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    outline: none;
+    text-align: center;
+  }
+
+  #selector-ronda option { background: #1a1a2e; color: #fff; }
+
+  #contenedor-bracket {
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+
+  .pildora-equipo + .pildora-equipo { margin-top: 8px; }
+
+  @media (max-width: 600px) {
+    #contenedor-bracket > div { flex-direction: column !important; align-items: center !important; }
+  }
+</style>
 </head>
 <body>
 <header>
-<img src="logo-liga.png.png" class="logo-liga">
-<h1>LIGUILLA</h1>
-<p class="subtitulo">Liga Next Level 7</p>
-<nav>
-<a href="index.html">Inicio</a>
-</nav>
+  <img src="logo-liga.png.png" class="logo-liga">
+  <h1>LIGUILLA</h1>
+  <p class="subtitulo">Liga Next Level 7</p>
+  <nav>
+    <a href="index.html">Inicio</a>
+  </nav>
 </header>
+
 <section class="contenedor-liguilla">
-<div class="card card-liguilla">
-<h2>🏆 Fase Final</h2>
-<select id="selector-ronda">
-<option value="completa">Liguilla Completa</option>
-<option value="Cuartos">Cuartos de Final</option>
-<option value="Semifinal">Semifinales</option>
-<option value="Final">Final</option>
-</select>
-</div>
-<div id="contenedor-bracket"></div>
+  <div class="card card-liguilla">
+    <h2>🏆 Fase Final</h2>
+    <select id="selector-ronda">
+      <option value="Completa">Liguilla Completa</option>
+      <option value="Cuartos">Cuartos de Final</option>
+      <option value="Semifinal">Semifinales</option>
+      <option value="Final">Final</option>
+    </select>
+  </div>
+  <div id="contenedor-bracket"></div>
 </section>
+
 <script src="liguilla.js"></script>
 </body>
 </html>
