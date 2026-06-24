@@ -24,246 +24,173 @@ async function cargarLiguilla() {
         <option value="Semifinal">Semifinales</option>
         <option value="Final">Final</option>
     `;
-    selector.addEventListener("change", () => {
-        const valor = selector.value;
-        let filtrados = valor === "Completa" ? partidos : partidos.filter(p => p.ronda.toLowerCase() === valor.toLowerCase());
-        renderBracket(filtrados, valor);
-    });
+    selector.addEventListener("change", () => renderBracket(partidos, selector.value));
     renderBracket(partidos, "Completa");
 }
 
-// Colores solo borde neón por cuarto
 const coloresCuartos = [
-    { border:"#ffd700", glow:"rgba(255,215,0,0.7)"  },  // 1-8 oro
-    { border:"#c0c0c0", glow:"rgba(192,192,192,0.7)"},  // 2-7 plata
-    { border:"#b87333", glow:"rgba(184,115,51,0.7)" },  // 3-6 cobre
-    { border:"#39ff14", glow:"rgba(57,255,20,0.7)"  },  // 4-5 verde neón
+    { border:"#ffd700", glow:"rgba(255,215,0,0.7)"   },
+    { border:"#c0c0c0", glow:"rgba(192,192,192,0.7)" },
+    { border:"#b87333", glow:"rgba(184,115,51,0.7)"  },
+    { border:"#39ff14", glow:"rgba(57,255,20,0.7)"   },
 ];
 const colorSemi  = { border:"rgba(255,255,255,0.5)", glow:"rgba(255,255,255,0.2)" };
 const colorFinal = { border:"#ff9800", glow:"rgba(255,152,0,0.6)" };
 
-function esPorDefinir(val) {
+function esPD(val) {
     if (!val) return true;
-    return val.trim().toLowerCase().replace(/p+or/, "por") === "por definir";
+    return val.trim().toLowerCase().replace(/p+or/,"por") === "por definir";
 }
 
-// Equipo: escudo libre + píldora solo en nombre
 function crearEquipo(nombre, url, color) {
-    const nom = esPorDefinir(nombre) ? "Por Definir" : nombre.trim();
-    const logoHTML = (url && url.trim().startsWith("http"))
-        ? `<img src="${url.trim()}" style="width:52px;height:52px;object-fit:contain;border-radius:50%;filter:drop-shadow(0 0 6px ${color.border});" onerror="this.style.display='none'">`
-        : `<div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;">⚽</div>`;
+    const nom = esPD(nombre) ? "Por Definir" : nombre.trim();
+    const logo = (url && url.trim().startsWith("http"))
+        ? `<img src="${url.trim()}" style="width:52px;height:52px;object-fit:contain;border-radius:50%;flex-shrink:0;filter:drop-shadow(0 0 6px ${color.border});" onerror="this.style.display='none'">`
+        : `<div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⚽</div>`;
     return `<div style="display:flex;align-items:center;gap:10px;margin:5px 0;">
-        ${logoHTML}
-        <div style="
-            border:2px solid ${color.border};
-            border-radius:25px;
-            padding:7px 16px;
-            box-shadow:0 0 10px ${color.glow};
-            background:transparent;
-            flex:1;min-width:0;
-        ">
+        ${logo}
+        <div style="border:2px solid ${color.border};border-radius:25px;padding:7px 16px;
+            box-shadow:0 0 10px ${color.glow};background:transparent;flex:1;min-width:0;">
             <span style="color:#fff;font-weight:800;font-size:13px;letter-spacing:0.5px;
                 text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;">
-                ${nom}
-            </span>
+                ${nom}</span>
         </div>
     </div>`;
 }
 
-function crearMarcador(p) {
-    const esJugado = (p.estado||"").trim().toLowerCase() === "jugado";
+function crearVS(p) {
+    const esJ = (p.estado||"").trim().toLowerCase() === "jugado";
+    const marcador = esJ ? `${(p.golesLocal||0).trim()} - ${(p.golesVisita||0).trim()}` : "VS";
     return `<div style="text-align:center;padding:4px 0 4px 62px;font-weight:900;font-size:14px;
-        color:${esJugado ? '#ffd700' : 'rgba(255,255,255,0.25)'};">
-        ${esJugado ? `${p.golesLocal} - ${p.golesVisita}` : "VS"}
-    </div>`;
+        color:${esJ ? '#ffd700' : 'rgba(255,255,255,0.25)'};">${marcador}</div>`;
 }
 
-function crearCardEquipos(p, color) {
+function crearCard(p, color, subtitulo) {
     const card = document.createElement("div");
-    card.style.cssText = `
-        background:rgba(0,0,0,0.3);
-        border:2px solid ${color.border};
-        border-radius:14px;
-        padding:12px 14px;
-        box-shadow:0 0 16px ${color.glow};
-        flex:1;
-    `;
+    card.style.cssText = `background:rgba(0,0,0,0.3);border:2px solid ${color.border};
+        border-radius:14px;padding:12px 14px;box-shadow:0 0 16px ${color.glow};`;
+    if (subtitulo) {
+        const s = document.createElement("div");
+        s.style.cssText = "color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:2px;text-align:center;margin-bottom:6px;font-weight:700;font-style:italic;";
+        s.textContent = subtitulo;
+        card.appendChild(s);
+    }
     card.innerHTML += crearEquipo(p.equipoLocal, p.urlLocal, color);
-    card.innerHTML += crearMarcador(p);
+    card.innerHTML += crearVS(p);
     card.innerHTML += crearEquipo(p.equipoVisita, p.urlVisita, color);
     return card;
 }
 
-function crearCampeon(ganador) {
-    const hay = !esPorDefinir(ganador);
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
-        <div style="font-size:clamp(50px,8vw,80px);line-height:1;filter:drop-shadow(0 0 12px rgba(255,215,0,0.7));">🏆</div>
-        <div style="
-            color:${hay ? '#ffd700' : 'rgba(255,255,255,0.4)'};
-            font-weight:900;
-            font-size:${hay ? 'clamp(14px,2.5vw,20px)' : '13px'};
-            letter-spacing:2px;
-            text-transform:uppercase;
-            text-shadow:0 0 10px rgba(255,215,0,0.5);
-        ">${hay ? ganador.trim() : 'Por Definir'}</div>
-        <div style="color:#fff;font-weight:900;font-size:clamp(16px,3vw,24px);letter-spacing:3px;">CAMPEÓN</div>
+function crearCopa(ganador) {
+    const hay = !esPD(ganador);
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;">
+        <div style="font-size:clamp(60px,9vw,100px);line-height:1;filter:drop-shadow(0 0 18px rgba(255,215,0,0.8));">🏆</div>
+        <div style="color:${hay ? '#ffd700' : 'rgba(255,255,255,0.35)'};font-weight:900;
+            font-size:${hay ? 'clamp(14px,2.5vw,18px)' : '12px'};letter-spacing:2px;
+            text-transform:uppercase;text-shadow:0 0 10px rgba(255,215,0,0.5);">
+            ${hay ? ganador.trim() : 'Por Definir'}</div>
+        <div style="color:#fff;font-weight:900;font-size:clamp(18px,3vw,26px);letter-spacing:3px;">CAMPEÓN</div>
     </div>`;
 }
 
 function renderBracket(partidos, vista) {
     const contenedor = document.getElementById("contenedor-bracket");
     contenedor.innerHTML = "";
+
     const cuartos = partidos.filter(p => p.ronda.toLowerCase().trim() === "cuartos");
     const semi    = partidos.filter(p => p.ronda.toLowerCase().trim() === "semifinal");
     const finalP  = partidos.filter(p => p.ronda.toLowerCase().trim() === "final");
 
-    if (vista === "Completa" || vista === "Cuartos") renderCompleta(contenedor, cuartos, semi, finalP, vista);
-    else if (vista === "Semifinal") renderSemis(contenedor, semi);
-    else if (vista === "Final") renderFinalView(contenedor, finalP);
-}
+    // Opacidad por sección según vista
+    // Completa: todo normal
+    // Cuartos:  todo normal
+    // Semifinal: cuartos desvanecidos, semis+final normales
+    // Final:    cuartos+semis desvanecidos, final normal
+    const opQ = (vista === "Semifinal" || vista === "Final") ? "0.18" : "1";
+    const opS = (vista === "Final") ? "0.18" : "1";
+    const opF = "1";
 
-function renderCompleta(contenedor, cuartos, semi, finalP, vista) {
     const scroll = document.createElement("div");
     scroll.style.cssText = "overflow-x:auto;padding:10px 0 20px;";
 
     const row = document.createElement("div");
-    // align-items:stretch para que todo tenga la misma altura
     row.style.cssText = "display:flex;flex-direction:row;align-items:stretch;gap:0;min-width:760px;";
 
-    // ---- CUARTOS ----
+    // ======== CUARTOS ========
     const colQ = document.createElement("div");
-    colQ.style.cssText = "display:flex;flex-direction:column;gap:10px;min-width:250px;padding:10px;";
+    colQ.style.cssText = `display:flex;flex-direction:column;gap:10px;min-width:255px;padding:10px;opacity:${opQ};transition:opacity 0.4s;`;
     const titQ = document.createElement("div");
     titQ.style.cssText = "color:#ffd700;font-weight:900;font-size:11px;letter-spacing:3px;text-align:center;margin-bottom:6px;";
     titQ.textContent = "CUARTOS DE FINAL";
     colQ.appendChild(titQ);
-    cuartos.forEach((p, i) => {
-        colQ.appendChild(crearCardEquipos(p, coloresCuartos[i % 4]));
-    });
+    cuartos.forEach((p, i) => colQ.appendChild(crearCard(p, coloresCuartos[i%4])));
     row.appendChild(colQ);
 
-    if (vista === "Cuartos" || !semi.length) { scroll.appendChild(row); contenedor.appendChild(scroll); return; }
-
-    // ---- CONECTOR Q→S ----
-    // Necesitamos que semi[0] esté al nivel de cuartos[0]+cuartos[1] y semi[1] al nivel de cuartos[2]+cuartos[3]
+    // Conector Q→S
     const connQS = document.createElement("div");
-    connQS.style.cssText = "display:flex;flex-direction:column;justify-content:space-around;align-self:stretch;min-width:30px;padding:32px 0;";
+    connQS.style.cssText = `display:flex;flex-direction:column;align-self:stretch;min-width:28px;padding-top:34px;opacity:${opQ};transition:opacity 0.4s;`;
     connQS.innerHTML = `
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;align-items:flex-end;">
-            <div style="width:25px;height:2px;background:rgba(255,255,255,0.18);"></div>
-            <div style="width:25px;height:2px;background:rgba(255,255,255,0.18);"></div>
+        <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="flex:1;border-right:2px solid rgba(255,255,255,0.2);border-top:2px solid rgba(255,255,255,0.2);border-radius:0 6px 0 0;"></div>
+            <div style="height:2px;background:rgba(255,255,255,0.2);width:100%;"></div>
+            <div style="flex:1;border-right:2px solid rgba(255,255,255,0.2);border-bottom:2px solid rgba(255,255,255,0.2);border-radius:0 0 6px 0;"></div>
         </div>
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-around;align-items:flex-end;">
-            <div style="width:25px;height:2px;background:rgba(255,255,255,0.18);"></div>
-            <div style="width:25px;height:2px;background:rgba(255,255,255,0.18);"></div>
+        <div style="height:10px;"></div>
+        <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="flex:1;border-right:2px solid rgba(255,255,255,0.2);border-top:2px solid rgba(255,255,255,0.2);border-radius:0 6px 0 0;"></div>
+            <div style="height:2px;background:rgba(255,255,255,0.2);width:100%;"></div>
+            <div style="flex:1;border-right:2px solid rgba(255,255,255,0.2);border-bottom:2px solid rgba(255,255,255,0.2);border-radius:0 0 6px 0;"></div>
         </div>
     `;
     row.appendChild(connQS);
 
-    // ---- SEMIS ----
+    // ======== SEMIS ========
     const colS = document.createElement("div");
-    // justify-content:space-around centra cada semi entre sus dos cuartos
-    colS.style.cssText = "display:flex;flex-direction:column;justify-content:space-around;gap:10px;min-width:230px;padding:10px;align-self:stretch;";
+    colS.style.cssText = `display:flex;flex-direction:column;justify-content:space-around;gap:10px;min-width:235px;padding:10px;align-self:stretch;opacity:${opS};transition:opacity 0.4s;`;
     const titS = document.createElement("div");
     titS.style.cssText = "color:#ffd700;font-weight:900;font-size:11px;letter-spacing:3px;text-align:center;margin-bottom:6px;font-style:italic;";
     titS.textContent = "SEMIFINALES";
     colS.appendChild(titS);
-    semi.forEach((p, i) => {
-        const card = crearCardEquipos(p, colorSemi);
-        const tit = document.createElement("div");
-        tit.style.cssText = "color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:2px;text-align:center;margin-bottom:6px;font-weight:700;font-style:italic;";
-        tit.textContent = `SEMIFINAL ${i+1}`;
-        card.insertBefore(tit, card.firstChild);
-        colS.appendChild(card);
-    });
+    semi.forEach((p, i) => colS.appendChild(crearCard(p, colorSemi, `SEMIFINAL ${i+1}`)));
     row.appendChild(colS);
 
-    if (!finalP.length) { scroll.appendChild(row); contenedor.appendChild(scroll); return; }
-
-    // ---- CONECTOR S→F ----
+    // Conector S→F
     const connSF = document.createElement("div");
-    connSF.style.cssText = "display:flex;flex-direction:column;justify-content:center;align-items:center;align-self:stretch;min-width:30px;";
+    connSF.style.cssText = `display:flex;flex-direction:column;align-self:stretch;min-width:28px;padding-top:34px;opacity:${opS};transition:opacity 0.4s;`;
     connSF.innerHTML = `
-        <div style="flex:1;width:2px;background:rgba(255,152,0,0.35);"></div>
-        <div style="width:25px;height:2px;background:rgba(255,152,0,0.35);"></div>
-        <div style="flex:1;width:2px;background:rgba(255,152,0,0.35);"></div>
+        <div style="flex:1;display:flex;flex-direction:column;">
+            <div style="flex:1;border-right:2px solid rgba(255,152,0,0.4);border-top:2px solid rgba(255,152,0,0.4);border-radius:0 6px 0 0;"></div>
+            <div style="height:2px;background:rgba(255,152,0,0.4);width:100%;"></div>
+            <div style="flex:1;border-right:2px solid rgba(255,152,0,0.4);border-bottom:2px solid rgba(255,152,0,0.4);border-radius:0 0 6px 0;"></div>
+        </div>
     `;
     row.appendChild(connSF);
 
-    // ---- FINAL + CAMPEÓN (centrado verticalmente) ----
+    // ======== FINAL + COPA ========
     const colF = document.createElement("div");
-    colF.style.cssText = "display:flex;flex-direction:row;align-items:center;justify-content:center;min-width:280px;padding:10px;gap:20px;align-self:stretch;";
+    colF.style.cssText = `display:flex;flex-direction:row;align-items:center;justify-content:center;min-width:300px;padding:10px;gap:16px;align-self:stretch;opacity:${opF};transition:opacity 0.4s;`;
 
     const f = finalP[0];
     if (f) {
-        // Tarjeta final a la izquierda
-        const wrapFinal = document.createElement("div");
-        wrapFinal.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:8px;";
+        const wFinal = document.createElement("div");
+        wFinal.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:8px;";
         const titF = document.createElement("div");
         titF.style.cssText = "color:#fff;font-weight:900;font-size:clamp(13px,2vw,18px);letter-spacing:4px;font-style:italic;text-align:center;";
         titF.textContent = "FINAL";
-        wrapFinal.appendChild(titF);
-        wrapFinal.appendChild(crearCardEquipos(f, colorFinal));
-        colF.appendChild(wrapFinal);
+        wFinal.appendChild(titF);
+        wFinal.appendChild(crearCard(f, colorFinal));
+        colF.appendChild(wFinal);
 
-        // Copa + campeón a la derecha, centrado
-        const wrapCampeon = document.createElement("div");
-        wrapCampeon.style.cssText = "display:flex;align-items:center;";
-        // Línea conectora
-        wrapCampeon.innerHTML = `<div style="width:20px;height:2px;background:rgba(255,152,0,0.5);"></div>`;
-        const divCampeon = document.createElement("div");
-        divCampeon.innerHTML = crearCampeon(f.ganador);
-        wrapCampeon.appendChild(divCampeon);
-        colF.appendChild(wrapCampeon);
+        colF.innerHTML += `<div style="width:20px;height:2px;background:rgba(255,152,0,0.5);flex-shrink:0;"></div>`;
+
+        const wCopa = document.createElement("div");
+        wCopa.innerHTML = crearCopa(f.ganador);
+        colF.appendChild(wCopa);
     }
     row.appendChild(colF);
+
     scroll.appendChild(row);
     contenedor.appendChild(scroll);
-}
-
-function renderSemis(contenedor, semi) {
-    const wrap = document.createElement("div");
-    wrap.style.cssText = "display:flex;flex-direction:column;gap:20px;padding:20px;max-width:440px;margin:0 auto;";
-    const tit = document.createElement("div");
-    tit.style.cssText = "color:#ffd700;font-weight:900;font-size:16px;letter-spacing:3px;text-align:center;font-style:italic;";
-    tit.textContent = "SEMIFINALES";
-    wrap.appendChild(tit);
-    semi.forEach((p, i) => {
-        const card = crearCardEquipos(p, colorSemi);
-        const stit = document.createElement("div");
-        stit.style.cssText = "color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:2px;text-align:center;margin-bottom:8px;font-weight:700;font-style:italic;";
-        stit.textContent = `SEMIFINAL ${i+1}`;
-        card.insertBefore(stit, card.firstChild);
-        wrap.appendChild(card);
-    });
-    contenedor.appendChild(wrap);
-}
-
-function renderFinalView(contenedor, finalP) {
-    const wrap = document.createElement("div");
-    wrap.style.cssText = "display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px;max-width:500px;margin:0 auto;";
-    wrap.innerHTML = `<div style="text-align:center;margin-bottom:4px;">
-        <div style="color:#fff;font-weight:900;font-size:clamp(20px,5vw,34px);letter-spacing:4px;font-style:italic;line-height:1;">NEXT LEVEL 7</div>
-        <div style="color:#ff9800;font-weight:900;font-size:clamp(12px,3vw,18px);letter-spacing:2px;font-style:italic;">CAMPEÓN TORNEO DOMINICAL</div>
-    </div>`;
-    if (finalP[0]) {
-        const f = finalP[0];
-        const row = document.createElement("div");
-        row.style.cssText = "display:flex;flex-direction:row;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;";
-        const card = crearCardEquipos(f, colorFinal);
-        const stit = document.createElement("div");
-        stit.style.cssText = "color:rgba(255,255,255,0.4);font-size:10px;letter-spacing:2px;text-align:center;margin-bottom:8px;font-weight:700;font-style:italic;";
-        stit.textContent = "FINAL";
-        card.insertBefore(stit, card.firstChild);
-        row.appendChild(card);
-        row.innerHTML += `<div style="width:2px;height:60px;background:rgba(255,152,0,0.5);"></div>`;
-        const divC = document.createElement("div");
-        divC.innerHTML = crearCampeon(f.ganador);
-        row.appendChild(divC);
-        wrap.appendChild(row);
-    }
-    contenedor.appendChild(wrap);
 }
 
 cargarLiguilla();
