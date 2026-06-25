@@ -131,9 +131,9 @@ function renderBracket(partidos, vista){
 
     r0.append(
         tdEl(Q[0]?card(Q[0],CQ[0]):null,`padding:4px 8px;vertical-align:bottom;opacity:${oQ};transition:opacity 0.4s;width:280px;`),
-        tdEl(`<div style="height:100%;min-height:${connH};border-right:2px solid ${linW};border-bottom:2px solid ${linW};border-radius:0 0 8px 0;opacity:${oQ};transition:opacity 0.4s;"></div>`,"padding:0;vertical-align:bottom;width:32px;",2),
+        tdEl(`<div style="display:flex;flex-direction:column;min-height:calc(${connH} * 2);height:100%;opacity:${oQ};transition:opacity 0.4s;"><div style="flex:1;border-right:2px solid ${linW};border-bottom:2px solid ${linW};border-radius:0 0 8px 0;"></div><div style="flex:1;border-right:2px solid ${linW};border-top:2px solid ${linW};border-radius:0 8px 0 0;"></div></div>`,"padding:0;width:32px;",2),
         tdEl(S[0]?card(S[0],CS,"SEMIFINAL 1"):null,`padding:4px 8px;vertical-align:middle;opacity:${oS};transition:opacity 0.4s;width:260px;`,2),
-        tdEl(`<div style="height:100%;min-height:${connH};border-right:2px solid ${linO};border-bottom:2px solid ${linO};border-radius:0 0 8px 0;opacity:${oS};transition:opacity 0.4s;"></div>`,"padding:0;vertical-align:bottom;width:32px;",2),
+        tdEl(`<div style="display:flex;flex-direction:column;min-height:calc(${connH} * 2);height:100%;opacity:${oS};transition:opacity 0.4s;"><div style="flex:1;border-right:2px solid ${linO};border-bottom:2px solid ${linO};border-radius:0 0 8px 0;"></div><div style="flex:1;border-right:2px solid ${linO};border-top:2px solid ${linO};border-radius:0 8px 0 0;"></div></div>`,"padding:0;width:32px;",2),
         (()=>{const c=document.createElement("td");c.rowSpan=4;c.style.cssText="padding:8px;vertical-align:middle;text-align:center;";
             if(f){const w=document.createElement("div");w.style.cssText="display:flex;flex-direction:row;align-items:center;gap:16px;justify-content:center;";
                 w.appendChild(card(f,CF));
@@ -153,24 +153,16 @@ function renderBracket(partidos, vista){
         // Final (rowspan 4) ya insertado
     );
     // Agregar celda que "sube" (border-top + border-right)
-    const connQ1up=document.createElement("td");
-    connQ1up.style.cssText=`padding:0;vertical-align:top;width:32px;`;
-    connQ1up.innerHTML=`<div style="height:100%;min-height:${connH};border-right:2px solid ${linW};border-top:2px solid ${linW};border-radius:0 8px 0 0;opacity:${oQ};transition:opacity 0.4s;"></div>`;
-    r1.appendChild(connQ1up);
-    // Celda S[0] conn up
-    const connS1up=document.createElement("td");
-    connS1up.style.cssText=`padding:0;vertical-align:top;width:32px;`;
-    connS1up.innerHTML=`<div style="height:100%;min-height:${connH};border-right:2px solid ${linO};border-top:2px solid ${linO};border-radius:0 8px 0 0;opacity:${oS};transition:opacity 0.4s;"></div>`;
-    r1.appendChild(connS1up);
+    // connQ y connS tienen rowspan=2, no agregar más celdas
     tbl.appendChild(r1);
 
     // Fila Q[2]
     const r2=document.createElement("tr");
     r2.append(
         tdEl(Q[2]?card(Q[2],CQ[2]):null,`padding:4px 8px;vertical-align:bottom;opacity:${oQ};transition:opacity 0.4s;`),
-        tdEl(`<div style="height:100%;min-height:${connH};border-right:2px solid ${linW};border-bottom:2px solid ${linW};border-radius:0 0 8px 0;opacity:${oQ};transition:opacity 0.4s;"></div>`,"padding:0;vertical-align:bottom;width:32px;",2),
+        tdEl(`<div style="display:flex;flex-direction:column;min-height:calc(${connH} * 2);height:100%;opacity:${oQ};transition:opacity 0.4s;"><div style="flex:1;border-right:2px solid ${linW};border-bottom:2px solid ${linW};border-radius:0 0 8px 0;"></div><div style="flex:1;border-right:2px solid ${linW};border-top:2px solid ${linW};border-radius:0 8px 0 0;"></div></div>`,"padding:0;width:32px;",2),
         tdEl(S[1]?card(S[1],CS,"SEMIFINAL 2"):null,`padding:4px 8px;vertical-align:middle;opacity:${oS};transition:opacity 0.4s;`,2),
-        tdEl(`<div style="height:100%;min-height:${connH};border-right:2px solid ${linO};border-bottom:2px solid ${linO};border-radius:0 0 8px 0;opacity:${oS};transition:opacity 0.4s;"></div>`,"padding:0;vertical-align:bottom;width:32px;",2)
+        tdEl(`<div style="display:flex;flex-direction:column;min-height:calc(${connH} * 2);height:100%;opacity:${oS};transition:opacity 0.4s;"><div style="flex:1;border-right:2px solid ${linO};border-bottom:2px solid ${linO};border-radius:0 0 8px 0;"></div><div style="flex:1;border-right:2px solid ${linO};border-top:2px solid ${linO};border-radius:0 8px 0 0;"></div></div>`,"padding:0;width:32px;",2)
     );
     tbl.appendChild(r2);
 
@@ -179,14 +171,7 @@ function renderBracket(partidos, vista){
     r3.append(
         tdEl(Q[3]?card(Q[3],CQ[3]):null,`padding:4px 8px;vertical-align:top;opacity:${oQ};transition:opacity 0.4s;`)
     );
-    const connQ3up=document.createElement("td");
-    connQ3up.style.cssText=`padding:0;vertical-align:top;width:32px;`;
-    connQ3up.innerHTML=`<div style="height:100%;min-height:${connH};border-right:2px solid ${linW};border-top:2px solid ${linW};border-radius:0 8px 0 0;opacity:${oQ};transition:opacity 0.4s;"></div>`;
-    r3.appendChild(connQ3up);
-    const connS3up=document.createElement("td");
-    connS3up.style.cssText=`padding:0;vertical-align:top;width:32px;`;
-    connS3up.innerHTML=`<div style="height:100%;min-height:${connH};border-right:2px solid ${linO};border-top:2px solid ${linO};border-radius:0 8px 0 0;opacity:${oS};transition:opacity 0.4s;"></div>`;
-    r3.appendChild(connS3up);
+    // connQ y connS tienen rowspan=2, no agregar más celdas en r3
     tbl.appendChild(r3);
 
     scroll.appendChild(tbl);
