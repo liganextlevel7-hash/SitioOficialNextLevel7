@@ -367,7 +367,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
   </div>
 </div>
 
-<script type="module">
+<script>
 // ════════════════════════════════
 //  CONFIG
 // ════════════════════════════════
@@ -380,7 +380,7 @@ const MOD_PASS     = 'nl7admin'; // ← puedes cambiar esta contraseña
 // ════════════════════════════════
 //  ESTADO LOCAL
 // ════════════════════════════════
-window.S = {
+S = {
   teams: {},
   matches: [],
   capName: '',
@@ -500,7 +500,7 @@ function setP(pct,msg){
 let selectedTeamId=null;
 let isMod=false;
 
-window.toggleMod = function(){
+function toggleMod(){
   isMod=!isMod;
   const opt=document.getElementById('mod-option');
   const cap=document.getElementById('captain-section');
@@ -528,7 +528,7 @@ function renderTeamGrid(){
   });
 }
 
-window.updatePreview = function(){
+function updatePreview(){
   const name=document.getElementById('cap-name').value.trim();
   const preview=document.getElementById('cap-preview');
   const btn=document.getElementById('btn-enter');
@@ -571,7 +571,7 @@ window.updatePreview = function(){
   }
 };
 
-window.enterApp = async function(){
+async function enterApp(){
   const btn=document.getElementById('btn-enter');
   btn.disabled=true;
   btn.innerHTML='<span class="spinner"></span> Entrando...';
@@ -614,7 +614,7 @@ window.enterApp = async function(){
   startListeners();
 };
 
-window.logout = async function(){
+async function logout(){
   if(S.onlineKey) await fbDelete('online/'+S.onlineKey);
   S.capName=''; S.teamId=null; S.isMod=false; S.onlineKey=null;
   isMod=false; selectedTeamId=null;
@@ -664,7 +664,7 @@ async function loadOnline(){
 // ════════════════════════════════
 //  CHAT
 // ════════════════════════════════
-window.sendMsg = async function(){
+async function sendMsg(){
   const inp=document.getElementById('msg-input');
   const text=inp.value.trim();
   if(!text) return;
@@ -680,7 +680,7 @@ window.sendMsg = async function(){
   });
 };
 
-window.sendModMsg = async function(){
+async function sendModMsg(){
   const inp=document.getElementById('mod-msg-input');
   const text=inp.value.trim();
   if(!text) return;
@@ -855,14 +855,14 @@ function renderModPreview(){
   document.getElementById('mod-preview').innerHTML=html;
 }
 
-window.setVuelta = function(v){
+function setVuelta(v){
   S.vuelta=v;
   document.getElementById('vbtn1').className='vbtn'+(v===1?' active':'');
   document.getElementById('vbtn2').className='vbtn'+(v===2?' active':'');
   if(S.modTeamSelected) renderModPreview();
 };
 
-window.publicarAnuncio = async function(){
+async function publicarAnuncio(){
   const id=S.modTeamSelected;
   if(!id) return;
   const vuelta=String(S.vuelta);
@@ -883,7 +883,7 @@ window.publicarAnuncio = async function(){
 // ════════════════════════════════
 //  UI HELPERS
 // ════════════════════════════════
-window.switchTab = function(tab){
+function switchTab(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t=>{t.style.display='none';t.classList.remove('active');});
   document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
