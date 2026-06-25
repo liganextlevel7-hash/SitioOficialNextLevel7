@@ -363,6 +363,13 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
           <button class="btn-send" style="background:var(--mod)" onclick="sendModMsg()">Publicar</button>
         </div>
       </div>
+      <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
+        <div class="mod-section-title" style="color:#f87171">⚠️ Zona peligrosa</div>
+        <button class="btn-anunciar" id="btn-limpiar" onclick="limpiarChat()" style="background:#7f1d1d;border:1px solid #f87171;margin-top:0">
+          🗑️ Limpiar chat — Nueva sesión
+        </button>
+        <div style="font-size:11px;color:var(--g500);margin-top:8px;text-align:center">Se borran todos los mensajes anteriores. No se puede deshacer.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -879,9 +886,27 @@ async function publicarAnuncio(){
   switchTab('chat');
 };
 
-// ════════════════════════════════
-//  UI HELPERS
-// ════════════════════════════════
+async function limpiarChat(){
+  const confirmar = confirm('¿Seguro que quieres limpiar el chat?\n\nSe borrarán todos los mensajes anteriores y empezará sesión nueva.\n\nEsta acción no se puede deshacer.');
+  if(!confirmar) return;
+  const btn = document.getElementById('btn-limpiar');
+  btn.disabled=true;
+  btn.textContent='Limpiando...';
+  await fbDelete('chat');
+  lastMsgCount=0;
+  // Mensaje de bienvenida de nueva sesión
+  await fbPush('chat',{
+    type:'mod_msg',
+    senderName:'Moderador',
+    text:'🏁 Nueva sesión iniciada. ¡Buenas noches a todos! Coordinen sus partidos aquí.',
+    ts:Date.now(), time:now()
+  });
+  btn.disabled=false;
+  btn.innerHTML='🗑️ Limpiar chat — Nueva sesión';
+  switchTab('chat');
+}
+
+
 function switchTab(tab){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t=>{t.style.display='none';t.classList.remove('active');});
