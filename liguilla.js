@@ -52,8 +52,7 @@ function crearEquipo(nombre, url, color) {
         <div style="border:2px solid ${color.border};border-radius:25px;padding:6px 14px;
             box-shadow:0 0 10px ${color.glow};background:transparent;flex:1;">
             <span style="color:#fff;font-weight:800;font-size:12px;letter-spacing:0.5px;
-                text-transform:uppercase;white-space:nowrap;display:block;">
-                ${nom}</span>
+                text-transform:uppercase;white-space:nowrap;display:block;">${nom}</span>
         </div>
     </div>`;
 }
@@ -63,40 +62,44 @@ function crearVS(p) {
     const gl = (p.golesLocal||"0").trim();
     const gv = (p.golesVisita||"0").trim();
     return `<div style="text-align:center;padding:3px 0 3px 56px;font-weight:900;font-size:13px;
-        color:${esJ ? '#ffd700' : 'rgba(255,255,255,0.25)'};">
-        ${esJ ? `${gl} - ${gv}` : "VS"}</div>`;
+        color:${esJ?'#ffd700':'rgba(255,255,255,0.25)'};">${esJ?`${gl} - ${gv}`:"VS"}</div>`;
 }
 
-function crearCard(p, color, subtitulo) {
-    const card = document.createElement("div");
-    card.style.cssText = `background:rgba(0,0,0,0.3);border:2px solid ${color.border};
-        border-radius:14px;padding:10px 12px;box-shadow:0 0 16px ${color.glow};width:100%;box-sizing:border-box;`;
-    if (subtitulo) {
+function crearCard(p, color, sub) {
+    const d = document.createElement("div");
+    d.style.cssText = `background:rgba(0,0,0,0.3);border:2px solid ${color.border};border-radius:14px;padding:10px 12px;box-shadow:0 0 16px ${color.glow};`;
+    if (sub) {
         const s = document.createElement("div");
         s.style.cssText = "color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:2px;text-align:center;margin-bottom:5px;font-weight:700;font-style:italic;";
-        s.textContent = subtitulo;
-        card.appendChild(s);
+        s.textContent = sub;
+        d.appendChild(s);
     }
-    card.innerHTML += crearEquipo(p.equipoLocal, p.urlLocal, color);
-    card.innerHTML += crearVS(p);
-    card.innerHTML += crearEquipo(p.equipoVisita, p.urlVisita, color);
-    return card;
+    d.innerHTML += crearEquipo(p.equipoLocal, p.urlLocal, color);
+    d.innerHTML += crearVS(p);
+    d.innerHTML += crearEquipo(p.equipoVisita, p.urlVisita, color);
+    return d;
 }
 
-function crearCopa(ganador, urlGanador) {
+function crearCopa(ganador, urlG) {
     const hay = !esPD(ganador);
-    const logo = (hay && urlGanador && urlGanador.trim().startsWith("http"))
-        ? `<img src="${urlGanador.trim()}" style="width:54px;height:54px;object-fit:contain;border-radius:50%;border:2px solid #ffd700;box-shadow:0 0 12px rgba(255,215,0,0.8);" onerror="this.style.display='none'">`
-        : `<div style="width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,0.1);border:2px dashed rgba(255,215,0,0.4);display:flex;align-items:center;justify-content:center;font-size:22px;">⚽</div>`;
+    const logo = (hay && urlG && urlG.trim().startsWith("http"))
+        ? `<img src="${urlG.trim()}" style="width:56px;height:56px;object-fit:contain;border-radius:50%;border:2px solid #ffd700;box-shadow:0 0 12px rgba(255,215,0,0.8);" onerror="this.style.display='none'">`
+        : `<div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px dashed rgba(255,215,0,0.4);display:flex;align-items:center;justify-content:center;font-size:24px;">⚽</div>`;
     return `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;">
-        <div style="font-size:90px;line-height:1;filter:drop-shadow(0 0 22px rgba(255,215,0,0.9));">🏆</div>
+        <div style="font-size:100px;line-height:1;filter:drop-shadow(0 0 24px rgba(255,215,0,0.9));">🏆</div>
         ${logo}
-        <div style="color:${hay ? '#ffd700' : 'rgba(255,255,255,0.35)'};font-weight:900;
-            font-size:14px;letter-spacing:2px;text-transform:uppercase;
-            text-shadow:0 0 10px rgba(255,215,0,0.6);margin-top:2px;">
-            ${hay ? ganador.trim() : 'Por Definir'}</div>
-        <div style="color:#fff;font-weight:900;font-size:26px;letter-spacing:3px;
-            text-shadow:0 0 10px rgba(255,255,255,0.3);">CAMPEÓN</div>
+        <div style="color:${hay?'#ffd700':'rgba(255,255,255,0.35)'};font-weight:900;font-size:14px;
+            letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,215,0,0.6);">
+            ${hay?ganador.trim():'Por Definir'}</div>
+        <div style="color:#fff;font-weight:900;font-size:28px;letter-spacing:3px;">CAMPEÓN</div>
+    </div>`;
+}
+
+function conector(color, alto) {
+    // Dibuja el bracket en L usando borders CSS
+    return `<div style="display:flex;flex-direction:column;width:30px;height:${alto}px;">
+        <div style="flex:1;border-right:2px solid ${color};border-bottom:2px solid ${color};border-radius:0 0 8px 0;"></div>
+        <div style="flex:1;border-right:2px solid ${color};border-top:2px solid ${color};border-radius:0 8px 0 0;"></div>
     </div>`;
 }
 
@@ -108,154 +111,108 @@ function renderBracket(partidos, vista) {
     const semi    = partidos.filter(p => p.ronda.toLowerCase().trim() === "semifinal");
     const finalP  = partidos.filter(p => p.ronda.toLowerCase().trim() === "final");
 
-    const opQ = (vista === "Semifinal" || vista === "Final") ? 0.15 : 1;
-    const opS = (vista === "Final") ? 0.15 : 1;
+    const opQ = (vista==="Semifinal"||vista==="Final") ? "0.15" : "1";
+    const opS = (vista==="Final") ? "0.15" : "1";
 
-    const wrapper = document.createElement("div");
-    wrapper.style.cssText = "overflow-x:auto;padding:10px 0 30px;";
+    const scroll = document.createElement("div");
+    scroll.style.cssText = "overflow-x:auto;padding:10px 0 30px;";
 
-    // Layout principal con posición absoluta para controlar centrado exacto
-    // Usamos un contenedor con altura fija para poder posicionar todo
-    const outer = document.createElement("div");
-    outer.style.cssText = "position:relative;min-width:900px;min-height:600px;";
+    // Usamos TABLE para garantizar el centrado perfecto
+    // Estructura:
+    // | colQ par1 (Q0+Q1) | conn | colS semi1 | conn | colF final+copa |
+    // |                   |      |            |      |                 |
+    // | colQ par2 (Q2+Q3) |      | colS semi2 |      |                 |
 
-    // Cada card de cuartos tiene aprox 160px de alto
-    // Con gap de 10px entre cards y padding de 8px top
-    // Total colQ height: 8(pad) + 22(tit) + 4(mb) + 4*(160+10) = 34 + 680 = ~714px
-    // Pero usamos flexbox con position:absolute para las semis
+    const tbl = document.createElement("table");
+    tbl.style.cssText = "border-collapse:collapse;min-width:850px;";
 
-    // ===== CUARTOS (posición absoluta izquierda) =====
-    const colQ = document.createElement("div");
-    colQ.style.cssText = `position:absolute;left:0;top:0;width:270px;display:flex;flex-direction:column;gap:10px;padding:8px;opacity:${opQ};transition:opacity 0.4s;`;
-    const titQ = document.createElement("div");
-    titQ.style.cssText = "color:#ffd700;font-weight:900;font-size:11px;letter-spacing:3px;text-align:center;margin-bottom:4px;";
-    titQ.textContent = "CUARTOS DE FINAL";
-    colQ.appendChild(titQ);
-    cuartos.forEach((p, i) => colQ.appendChild(crearCard(p, coloresCuartos[i%4])));
-    outer.appendChild(colQ);
+    // Fila superior: Q0 | connQ top | S1 | connS top | F+copa (rowspan 2)
+    // Fila inferior: Q1 |           |    |           |
+    // Separador
+    // Fila: Q2 | connQ top | S2 | connS bot |
+    // Fila: Q3 |           |    |           |
 
-    // Para calcular posición de semis necesitamos saber la altura de las cards
-    // Usamos requestAnimationFrame para obtener medidas reales después del render
-    wrapper.appendChild(outer);
-    contenedor.appendChild(wrapper);
+    function td(content, style="", rowspan=1) {
+        const cell = document.createElement("td");
+        cell.style.cssText = style;
+        if (rowspan > 1) cell.rowSpan = rowspan;
+        if (typeof content === "string") cell.innerHTML = content;
+        else cell.appendChild(content);
+        return cell;
+    }
 
-    // Posicionamos después del render
-    requestAnimationFrame(() => {
-        const cards = colQ.querySelectorAll("div[style*='border-radius:14px']");
-        if (cards.length < 4) return;
+    // Título row
+    const trTit = document.createElement("tr");
+    const tdTitQ = td(`<div style="color:#ffd700;font-weight:900;font-size:11px;letter-spacing:3px;text-align:center;padding:4px 8px;opacity:${opQ};">CUARTOS DE FINAL</div>`, "", 1);
+    const tdTitQsp = td("", "width:30px;", 1);
+    const tdTitS = td(`<div style="color:#ffd700;font-weight:900;font-size:11px;letter-spacing:3px;text-align:center;padding:4px 8px;font-style:italic;opacity:${opS};">SEMIFINALES</div>`, "", 1);
+    const tdTitSsp = td("", "width:30px;", 1);
+    const tdTitF = td(`<div style="color:#fff;font-weight:900;font-size:16px;letter-spacing:4px;text-align:center;padding:4px 8px;font-style:italic;">FINAL</div>`, "text-align:center;", 1);
+    trTit.append(tdTitQ, tdTitQsp, tdTitS, tdTitSsp, tdTitF);
+    tbl.appendChild(trTit);
 
-        const colQRect = colQ.getBoundingClientRect();
-        const c0 = cards[0].getBoundingClientRect();
-        const c1 = cards[1].getBoundingClientRect();
-        const c2 = cards[2].getBoundingClientRect();
-        const c3 = cards[3].getBoundingClientRect();
+    // Q0 row
+    const trQ0 = document.createElement("tr");
+    const tdQ0 = td(cuartos[0] ? crearCard(cuartos[0], coloresCuartos[0]) : "", `padding:4px 8px;vertical-align:bottom;opacity:${opQ};transition:opacity 0.4s;width:270px;`);
+    // Conector Q→S: línea de Q0 baja hasta el centro → semi1
+    const tdConnQ1 = td(`<div style="height:100%;border-right:2px solid rgba(255,255,255,0.25);border-bottom:2px solid rgba(255,255,255,0.25);border-radius:0 0 8px 0;min-height:80px;opacity:${opQ};transition:opacity 0.4s;"></div>`, "width:30px;padding:0;vertical-align:bottom;", 2);
+    // Semi 1: rowspan 2 para estar centrada entre Q0 y Q1
+    const tdS1 = td(semi[0] ? crearCard(semi[0], colorSemi, "SEMIFINAL 1") : "", `padding:4px 8px;vertical-align:middle;opacity:${opS};transition:opacity 0.4s;width:255px;`, 2);
+    // Conector S→F top
+    const tdConnS1 = td(`<div style="height:100%;border-right:2px solid rgba(255,152,0,0.5);border-bottom:2px solid rgba(255,152,0,0.5);border-radius:0 0 8px 0;min-height:80px;opacity:${opS};transition:opacity 0.4s;"></div>`, "width:30px;padding:0;vertical-align:bottom;", 2);
+    // Final: rowspan 4 centrada entre las 2 semis
+    const f = finalP[0];
+    const urlG = f && !esPD(f.ganador) ? (f.urlLocal||"") : "";
+    const tdF = document.createElement("td");
+    tdF.rowSpan = 4;
+    tdF.style.cssText = "padding:8px;vertical-align:middle;text-align:center;";
+    if (f) {
+        const wF = document.createElement("div");
+        wF.style.cssText = "display:flex;flex-direction:row;align-items:center;gap:16px;justify-content:center;";
+        wF.appendChild(crearCard(f, colorFinal));
+        wF.innerHTML += `<div style="width:2px;height:60px;background:rgba(255,152,0,0.5);flex-shrink:0;"></div>`;
+        const divC = document.createElement("div");
+        divC.innerHTML = crearCopa(f.ganador, urlG);
+        wF.appendChild(divC);
+        tdF.appendChild(wF);
+    }
+    trQ0.append(tdQ0, tdConnQ1, tdS1, tdConnS1, tdF);
+    tbl.appendChild(trQ0);
 
-        // Centro entre card0 y card1 (relativo a colQ)
-        const midS1 = ((c0.top + c0.bottom)/2 + (c1.top + c1.bottom)/2) / 2 - colQRect.top;
-        // Centro entre card2 y card3
-        const midS2 = ((c2.top + c2.bottom)/2 + (c3.top + c3.bottom)/2) / 2 - colQRect.top;
-        // Centro entre Semi1 y Semi2 (para Final)
-        const midF = (midS1 + midS2) / 2;
+    // Q1 row
+    const trQ1 = document.createElement("tr");
+    const tdQ1 = td(cuartos[1] ? crearCard(cuartos[1], coloresCuartos[1]) : "", `padding:4px 8px;vertical-align:top;opacity:${opQ};transition:opacity 0.4s;`);
+    // tdConnQ1 continua (rowspan 2)
+    // tdS1 continua (rowspan 2)
+    // Conector S→F bottom row 1
+    const tdConnS1b = td(`<div style="height:100%;border-right:2px solid rgba(255,152,0,0.5);border-top:2px solid rgba(255,152,0,0.5);border-radius:0 8px 0 0;min-height:80px;opacity:${opS};transition:opacity 0.4s;"></div>`, "width:30px;padding:0;vertical-align:top;", 2);
+    trQ1.append(tdQ1, tdConnS1b);
+    tbl.appendChild(trQ1);
 
-        const totalH = Math.max(c3.bottom - colQRect.top + 20, 600);
-        outer.style.minHeight = totalH + "px";
+    // Separador row (espacio entre los dos pares)
+    const trSep = document.createElement("tr");
+    const tdSep = td("", `padding:5px;opacity:${opQ};`);
+    const tdConnQ2 = td(`<div style="height:100%;border-right:2px solid rgba(255,255,255,0.25);border-bottom:2px solid rgba(255,255,255,0.25);border-radius:0 0 8px 0;min-height:80px;opacity:${opQ};transition:opacity 0.4s;"></div>`, "width:30px;padding:0;vertical-align:bottom;", 2);
+    const tdS2 = td(semi[1] ? crearCard(semi[1], colorSemi, "SEMIFINAL 2") : "", `padding:4px 8px;vertical-align:middle;opacity:${opS};transition:opacity 0.4s;`, 2);
+    const tdConnS2 = td(`<div style="height:100%;border-right:2px solid rgba(255,152,0,0.5);border-bottom:2px solid rgba(255,152,0,0.5);border-radius:0 0 8px 0;min-height:80px;opacity:${opS};transition:opacity 0.4s;"></div>`, "width:30px;padding:0;vertical-align:bottom;", 2);
+    trSep.append(tdSep, tdConnQ2, tdS2, tdConnS2);
+    tbl.appendChild(trSep);
 
-        const leftS = 278; // después de cuartos + conector
-        const leftF = 278 + 260 + 36; // después de semis + conector
-        const leftCopa = leftF + 260 + 20; // después de final
+    // Q2 row
+    const trQ2 = document.createElement("tr");
+    const tdQ2 = td(cuartos[2] ? crearCard(cuartos[2], coloresCuartos[2]) : "", `padding:4px 8px;vertical-align:bottom;opacity:${opQ};transition:opacity 0.4s;`);
+    trQ2.append(tdQ2);
+    tbl.appendChild(trQ2);
 
-        // ===== TÍTULO SEMIS =====
-        const titS = document.createElement("div");
-        titS.style.cssText = `position:absolute;left:${leftS}px;top:8px;width:255px;color:#ffd700;font-weight:900;font-size:11px;letter-spacing:3px;text-align:center;font-style:italic;opacity:${opS};transition:opacity 0.4s;`;
-        titS.textContent = "SEMIFINALES";
-        outer.appendChild(titS);
+    // Q3 row
+    const trQ3 = document.createElement("tr");
+    const tdQ3 = td(cuartos[3] ? crearCard(cuartos[3], coloresCuartos[3]) : "", `padding:4px 8px;vertical-align:top;opacity:${opQ};transition:opacity 0.4s;`);
+    const tdConnS2b = td(`<div style="height:100%;border-right:2px solid rgba(255,152,0,0.5);border-top:2px solid rgba(255,152,0,0.5);border-radius:0 8px 0 0;min-height:80px;opacity:${opS};transition:opacity 0.4s;"></div>`, "width:30px;padding:0;vertical-align:top;");
+    trQ3.append(tdQ3, tdConnS2b);
+    tbl.appendChild(trQ3);
 
-        // ===== SEMI 1 =====
-        if (semi[0]) {
-            const cardS1 = crearCard(semi[0], colorSemi, "SEMIFINAL 1");
-            const s1H = 160; // altura estimada
-            cardS1.style.cssText += `position:absolute;left:${leftS}px;top:${midS1 - s1H/2}px;width:255px;opacity:${opS};transition:opacity 0.4s;`;
-            outer.appendChild(cardS1);
-        }
-
-        // ===== SEMI 2 =====
-        if (semi[1]) {
-            const cardS2 = crearCard(semi[1], colorSemi, "SEMIFINAL 2");
-            const s2H = 160;
-            cardS2.style.cssText += `position:absolute;left:${leftS}px;top:${midS2 - s2H/2}px;width:255px;opacity:${opS};transition:opacity 0.4s;`;
-            outer.appendChild(cardS2);
-        }
-
-        // ===== LÍNEAS CONECTOR Q→S (SVG) =====
-        const svgQS = document.createElementNS("http://www.w3.org/2000/svg","svg");
-        svgQS.style.cssText = `position:absolute;left:270px;top:0;width:36px;height:${totalH}px;opacity:${opQ};transition:opacity 0.4s;overflow:visible;`;
-        svgQS.setAttribute("xmlns","http://www.w3.org/2000/svg");
-
-        const midC0 = (c0.top + c0.bottom)/2 - colQRect.top;
-        const midC1 = (c1.top + c1.bottom)/2 - colQRect.top;
-        const midC2 = (c2.top + c2.bottom)/2 - colQRect.top;
-        const midC3 = (c3.top + c3.bottom)/2 - colQRect.top;
-
-        const linesQS = [
-            // Par superior → semi1
-            `<line x1="0" y1="${midC0}" x2="20" y2="${midC0}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midC0}" x2="20" y2="${midS1}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            `<line x1="0" y1="${midC1}" x2="20" y2="${midC1}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midC1}" x2="20" y2="${midS1}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midS1}" x2="36" y2="${midS1}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            // Par inferior → semi2
-            `<line x1="0" y1="${midC2}" x2="20" y2="${midC2}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midC2}" x2="20" y2="${midS2}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            `<line x1="0" y1="${midC3}" x2="20" y2="${midC3}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midC3}" x2="20" y2="${midS2}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midS2}" x2="36" y2="${midS2}" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>`,
-        ];
-        svgQS.innerHTML = linesQS.join("");
-        outer.appendChild(svgQS);
-
-        // ===== LÍNEAS CONECTOR S→F (SVG) =====
-        const svgSF = document.createElementNS("http://www.w3.org/2000/svg","svg");
-        svgSF.style.cssText = `position:absolute;left:${leftS+255}px;top:0;width:36px;height:${totalH}px;opacity:${opS};transition:opacity 0.4s;overflow:visible;`;
-
-        const linesSF = [
-            `<line x1="0" y1="${midS1}" x2="20" y2="${midS1}" stroke="rgba(255,152,0,0.5)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midS1}" x2="20" y2="${midF}" stroke="rgba(255,152,0,0.5)" stroke-width="2"/>`,
-            `<line x1="0" y1="${midS2}" x2="20" y2="${midS2}" stroke="rgba(255,152,0,0.5)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midS2}" x2="20" y2="${midF}" stroke="rgba(255,152,0,0.5)" stroke-width="2"/>`,
-            `<line x1="20" y1="${midF}" x2="36" y2="${midF}" stroke="rgba(255,152,0,0.5)" stroke-width="2"/>`,
-        ];
-        svgSF.innerHTML = linesSF.join("");
-        outer.appendChild(svgSF);
-
-        // ===== FINAL =====
-        const titF = document.createElement("div");
-        titF.style.cssText = `position:absolute;left:${leftF}px;top:${midF - 110}px;width:255px;color:#fff;font-weight:900;font-size:18px;letter-spacing:4px;font-style:italic;text-align:center;`;
-        titF.textContent = "FINAL";
-        outer.appendChild(titF);
-
-        if (finalP[0]) {
-            const f = finalP[0];
-            const cardF = crearCard(f, colorFinal);
-            const fH = 160;
-            cardF.style.cssText += `position:absolute;left:${leftF}px;top:${midF - fH/2}px;width:255px;`;
-            outer.appendChild(cardF);
-
-            // Línea final → copa
-            const svgFC = document.createElementNS("http://www.w3.org/2000/svg","svg");
-            svgFC.style.cssText = `position:absolute;left:${leftF+255}px;top:0;width:20px;height:${totalH}px;overflow:visible;`;
-            svgFC.innerHTML = `<line x1="0" y1="${midF}" x2="20" y2="${midF}" stroke="rgba(255,152,0,0.5)" stroke-width="2"/>`;
-            outer.appendChild(svgFC);
-
-            // Copa centrada verticalmente
-            const urlGanador = !esPD(f.ganador) ? (f.urlLocal||"") : "";
-            const copaDiv = document.createElement("div");
-            copaDiv.style.cssText = `position:absolute;left:${leftCopa}px;top:0;height:${totalH}px;display:flex;align-items:center;justify-content:center;padding:10px;`;
-            copaDiv.innerHTML = crearCopa(f.ganador, urlGanador);
-            outer.appendChild(copaDiv);
-        }
-
-        outer.style.minWidth = (leftCopa + 200) + "px";
-    });
+    scroll.appendChild(tbl);
+    contenedor.appendChild(scroll);
 }
 
 cargarLiguilla();
