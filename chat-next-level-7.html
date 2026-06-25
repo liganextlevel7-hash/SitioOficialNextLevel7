@@ -323,11 +323,11 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 
   <!-- TAB CHAT -->
   <div id="tab-chat" class="tab-content active" style="display:flex">
-    <div id="chat-main" style="display:flex;flex-direction:column;flex:1">
+    <div id="chat-main" style="display:flex;flex-direction:column;flex:1;position:relative">
       <div class="chat-messages" id="chat-messages"></div>
-      <div class="chat-footer">
+      <div class="chat-footer"><div id="mention-list" style="display:none;position:absolute;bottom:70px;left:14px;right:14px;background:#1a1a1a;border:1px solid rgba(57,255,20,0.4);border-radius:10px;overflow:hidden;z-index:20;box-shadow:0 -4px 20px rgba(0,0,0,0.5);"></div>
         <div class="msg-row">
-          <input type="text" class="msg-input" id="msg-input" placeholder="Escribe un mensaje para todos..." onkeydown="if(event.key==='Enter')sendMsg()">
+          <input type="text" class="msg-input" id="msg-input" placeholder="Escribe @ para mencionar un equipo..." onkeydown="if(event.key==='Enter')sendMsg()" oninput="onMsgInput(this)">
           <button class="btn-send" onclick="sendMsg()">Enviar</button>
         </div>
       </div>
@@ -341,35 +341,76 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 
   <!-- TAB MOD PANEL -->
   <div id="tab-modpanel" class="tab-content">
-    <div id="mod-panel" style="display:flex;flex-direction:column;padding:20px">
-      <div class="mod-section-title">📅 Vuelta</div>
-      <div class="vuelta-toggle">
-        <button class="vbtn active" id="vbtn1" onclick="setVuelta(1)">🔜 Vuelta 1 (Actual)</button>
-        <button class="vbtn" id="vbtn2" onclick="setVuelta(2)">🔄 Vuelta 2</button>
+    <div id="mod-panel" style="display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:auto;max-height:600px">
+
+      <!-- VUELTA -->
+      <div>
+        <div class="mod-section-title">📅 Vuelta</div>
+        <div class="vuelta-toggle">
+          <button class="vbtn active" id="vbtn1" onclick="setVuelta(1)">🔜 Vuelta 1 (Actual)</button>
+          <button class="vbtn" id="vbtn2" onclick="setVuelta(2)">🔄 Vuelta 2</button>
+        </div>
       </div>
-      <div class="mod-section-title">👕 Selecciona un equipo para mostrar sus partidos</div>
-      <div class="mod-team-select" id="mod-team-select"></div>
-      <div class="mod-section-title">📋 Partidos pendientes del equipo seleccionado</div>
-      <div class="mod-preview" id="mod-preview">
-        <div class="mod-preview-empty">Selecciona un equipo para ver sus partidos pendientes</div>
+
+      <!-- ROL DEL DOMINGO -->
+      <div>
+        <div class="mod-section-title" style="color:var(--neon)">📋 Armar Rol del Domingo</div>
+        
+        <!-- Fecha -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <label style="font-size:12px;color:var(--g400);white-space:nowrap">📆 Fecha:</label>
+          <input type="date" id="rol-fecha" class="msg-input" style="flex:1;padding:8px 12px;font-size:13px">
+        </div>
+
+        <!-- Slots de horario -->
+        <div id="rol-slots" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+
+        <!-- Botones -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="addSlot()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(57,255,20,0.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:600;cursor:pointer">+ Agregar horario</button>
+          <button onclick="autoRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(167,139,250,0.3);border-radius:var(--rs);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer">⚡ Auto-proponer rol</button>
+        </div>
       </div>
-      <button class="btn-anunciar" id="btn-anunciar" disabled onclick="publicarAnuncio()">
-        📣 Publicar en el chat general
-      </button>
-      <div style="margin-top:12px">
-        <div class="mod-section-title">✍️ Mensaje especial del moderador</div>
+
+      <!-- PREVIEW DEL ROL -->
+      <div id="rol-preview-wrap" style="display:none">
+        <div class="mod-section-title">👁️ Vista previa</div>
+        <div id="rol-preview" style="background:var(--dark2);border:1px solid rgba(57,255,20,0.2);border-radius:var(--r);padding:14px"></div>
+        <button class="btn-anunciar" onclick="publicarRol()" style="margin-top:10px">
+          📣 Publicar Rol en el chat
+        </button>
+      </div>
+
+      <!-- ANUNCIO POR EQUIPO -->
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
+        <div class="mod-section-title">👕 Mostrar partidos de un equipo</div>
+        <div class="mod-team-select" id="mod-team-select"></div>
+        <div class="mod-preview" id="mod-preview" style="margin-top:10px">
+          <div class="mod-preview-empty">Selecciona un equipo</div>
+        </div>
+        <button class="btn-anunciar" id="btn-anunciar" disabled onclick="publicarAnuncio()" style="margin-top:10px">
+          📣 Publicar en el chat
+        </button>
+      </div>
+
+      <!-- MENSAJE MODERADOR -->
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
+        <div class="mod-section-title">✍️ Mensaje del moderador</div>
         <div class="msg-row">
           <input type="text" class="msg-input" id="mod-msg-input" placeholder="Escribe un anuncio o aviso..." onkeydown="if(event.key==='Enter')sendModMsg()">
           <button class="btn-send" style="background:var(--mod)" onclick="sendModMsg()">Publicar</button>
         </div>
       </div>
-      <div style="margin-top:20px;border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
+
+      <!-- ZONA PELIGROSA -->
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
         <div class="mod-section-title" style="color:#f87171">⚠️ Zona peligrosa</div>
         <button class="btn-anunciar" id="btn-limpiar" onclick="limpiarChat()" style="background:#7f1d1d;border:1px solid #f87171;margin-top:0">
           🗑️ Limpiar chat — Nueva sesión
         </button>
-        <div style="font-size:11px;color:var(--g500);margin-top:8px;text-align:center">Se borran todos los mensajes anteriores. No se puede deshacer.</div>
+        <div style="font-size:11px;color:var(--g500);margin-top:8px;text-align:center">Se borran todos los mensajes. No se puede deshacer.</div>
       </div>
+
     </div>
   </div>
 </div>
@@ -609,6 +650,7 @@ async function enterApp(){
   if(S.isMod){
     document.querySelector('.mod-tab').style.display='block';
     renderModPanel();
+    initRol();
   }
 
   renderPartidos();
@@ -668,6 +710,78 @@ async function pollOnline(){
 }
 
 // ════════════════════════════════
+//  MENCIONES
+// ════════════════════════════════
+function onMsgInput(inp){
+  const val=inp.value;
+  const atIdx=val.lastIndexOf('@');
+  if(atIdx===-1){ hideMentions(); return; }
+  const query=val.slice(atIdx+1).toLowerCase();
+  const matches=Object.values(S.teams).filter(t=>t.nombre.toLowerCase().includes(query)).slice(0,5);
+  if(!matches.length){ hideMentions(); return; }
+  const list=document.getElementById('mention-list');
+  list.style.display='block';
+  list.innerHTML=matches.map(t=>`
+    <div onclick="insertMention('${t.nombre}')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);transition:background .1s" onmouseover="this.style.background='rgba(57,255,20,0.08)'" onmouseout="this.style.background='transparent'">
+      <img src="${t.logo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(57,255,20,0.3)">
+      <span style="font-size:13px;font-weight:600;color:#fff">@${t.nombre}</span>
+    </div>`).join('');
+}
+
+function insertMention(nombre){
+  const inp=document.getElementById('msg-input');
+  const val=inp.value;
+  const atIdx=val.lastIndexOf('@');
+  inp.value=val.slice(0,atIdx)+'@'+nombre+' ';
+  hideMentions();
+  inp.focus();
+}
+
+function hideMentions(){
+  const list=document.getElementById('mention-list');
+  if(list) list.style.display='none';
+}
+
+// Extraer menciones del texto
+function extractMentions(text){
+  const found=[];
+  Object.values(S.teams).forEach(t=>{
+    if(text.includes('@'+t.nombre)) found.push(t.id);
+  });
+  return found;
+}
+
+// Sonido de notificación (Web Audio API)
+function playNotif(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880,ctx.currentTime);
+    osc.frequency.setValueAtTime(1100,ctx.currentTime+0.1);
+    gain.gain.setValueAtTime(0.3,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.4);
+  }catch(e){}
+}
+
+// Resaltar menciones en el texto
+function resaltarMenciones(text){
+  let result=esc(text);
+  Object.values(S.teams).forEach(t=>{
+    const tag='@'+t.nombre;
+    const esTag=esc(tag);
+    const isMine=t.id===S.teamId;
+    const color=isMine?'#39ff14':'#a78bfa';
+    const bg=isMine?'rgba(57,255,20,0.15)':'rgba(167,139,250,0.15)';
+    result=result.split(esTag).join(`<span style="color:${color};background:${bg};padding:1px 6px;border-radius:6px;font-weight:700">${esTag}</span>`);
+  });
+  return result;
+}
+
+// ════════════════════════════════
 //  CHAT
 // ════════════════════════════════
 async function sendMsg(){
@@ -675,13 +789,15 @@ async function sendMsg(){
   const text=inp.value.trim();
   if(!text) return;
   inp.value='';
+  hideMentions();
+  const mentions=extractMentions(text);
   await fbPush('chat',{
     type:'msg',
     sender: S.isMod?'mod':S.teamId,
     senderName: S.isMod?'Moderador':S.capName+' ('+tname(S.teamId)+')',
     senderLogo: S.isMod?'':tlogo(S.teamId),
     isMod: S.isMod,
-    text, ts:Date.now(),
+    mentions, text, ts:Date.now(),
     time: now()
   });
 };
@@ -702,28 +818,47 @@ function renderMessages(data){
   const container=document.getElementById('chat-messages');
   if(!data){ container.innerHTML='<div class="empty"><div class="empty-icon">💬</div><div>Sé el primero en escribir</div></div>'; return; }
   const msgs=Object.values(data).sort((a,b)=>(a.ts||0)-(b.ts||0));
+
+  // Detectar si hay mensajes nuevos que me mencionan
+  const newCount=msgs.length;
+  if(newCount>lastMsgCount && lastMsgCount>0){
+    const newMsgs=msgs.slice(lastMsgCount);
+    newMsgs.forEach(msg=>{
+      if(msg.mentions && Array.isArray(msg.mentions) && msg.mentions.includes(S.teamId) && msg.sender!==S.teamId){
+        playNotif();
+        // Flash en el tab
+        const tab=document.querySelector('[data-tab="chat"]');
+        if(tab){ tab.style.background='rgba(57,255,20,0.2)'; setTimeout(()=>tab.style.background='',1500); }
+      }
+    });
+  }
+
   let html='';
   let lastDate='';
   msgs.forEach(msg=>{
-    // separador de fecha
     const d=msg.ts?new Date(msg.ts).toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'}):'';
     if(d&&d!==lastDate){ html+=`<div class="date-sep">${d}</div>`; lastDate=d; }
 
     if(msg.type==='anuncio'){
       html+=renderAnuncio(msg);
+    }else if(msg.type==='rol'){
+      html+=renderRol(msg);
     }else if(msg.type==='mod_msg'){
       html+=`<div class="bubble sys-bubble">
-        <div class="bub-text">🛡️ <strong>Moderador:</strong> ${esc(msg.text)}</div>
+        <div class="bub-text">🛡️ <strong>Moderador:</strong> ${resaltarMenciones(msg.text)}</div>
         <div class="bub-time">${msg.time||''}</div>
       </div>`;
     }else{
       const mine=(!S.isMod&&msg.sender===S.teamId)||(S.isMod&&msg.sender==='mod');
-      html+=`<div class="bubble ${mine?'mine':'theirs'}">
+      // Resaltar burbuja si me mencionan
+      const mecionaMe=msg.mentions&&Array.isArray(msg.mentions)&&msg.mentions.includes(S.teamId)&&!mine;
+      html+=`<div class="bubble ${mine?'mine':'theirs'}" style="${mecionaMe?'border-left:3px solid #39ff14;padding-left:8px;':''}" >
         <div class="bub-meta">
           <img class="bub-av" src="${msg.senderLogo||''}" onerror="this.style.opacity='.2'">
           <span class="bub-name${msg.isMod?' mod-name':''}">${esc(msg.senderName||'')}</span>
+          ${mecionaMe?'<span style="font-size:10px;background:rgba(57,255,20,0.2);color:#39ff14;padding:1px 6px;border-radius:8px;margin-left:4px;">@ te mencionaron</span>':''}
         </div>
-        <div class="bub-text">${esc(msg.text)}</div>
+        <div class="bub-text">${resaltarMenciones(msg.text)}</div>
         <div class="bub-time">${msg.time||''}</div>
       </div>`;
     }
@@ -817,8 +952,235 @@ function matchCardHTML(m){
 }
 
 // ════════════════════════════════
-//  PANEL MODERADOR
+//  ROL DEL DOMINGO
 // ════════════════════════════════
+const HORARIOS_DEFAULT = ['09:00','10:00','11:00','12:00'];
+let rolSlots = []; // [{hora, matchId, localId, visitaId}]
+
+function initRol(){
+  // Fecha default: próximo domingo
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const diasHastaDom = dia===0 ? 7 : 7-dia;
+  const dom = new Date(hoy);
+  dom.setDate(hoy.getDate()+diasHastaDom);
+  document.getElementById('rol-fecha').value = dom.toISOString().split('T')[0];
+  rolSlots = [];
+  document.getElementById('rol-slots').innerHTML = '';
+  document.getElementById('rol-preview-wrap').style.display = 'none';
+}
+
+function addSlot(hora, matchId){
+  const vuelta = String(S.vuelta);
+  const pending = S.matches.filter(m => m.vuelta===vuelta);
+  const idx = rolSlots.length;
+  const horaDefault = hora || HORARIOS_DEFAULT[idx] || '09:00';
+
+  // Equipos ya usados (los que jugaron ya ese domingo) — permitir hasta 2 veces
+  const usados = {};
+  rolSlots.forEach(s=>{
+    if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
+    if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
+  });
+
+  // Partidos disponibles (ningún equipo más de 2 veces)
+  const disponibles = pending.filter(m=>{
+    const lUsos = usados[m.local]||0;
+    const vUsos = usados[m.visita]||0;
+    return lUsos < 2 && vUsos < 2;
+  });
+
+  const slot = { hora: horaDefault, matchId: matchId || (disponibles[0]?.id||''), localId:'', visitaId:'' };
+  if(slot.matchId){
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(m){ slot.localId=m.local; slot.visitaId=m.visita; }
+  }
+  rolSlots.push(slot);
+  renderSlots();
+}
+
+function removeSlot(idx){
+  rolSlots.splice(idx,1);
+  renderSlots();
+}
+
+function renderSlots(){
+  const vuelta = String(S.vuelta);
+  const pending = S.matches.filter(m=>m.vuelta===vuelta);
+  const container = document.getElementById('rol-slots');
+
+  container.innerHTML = rolSlots.map((slot,idx)=>{
+    // Calcular usos excluyendo este slot
+    const usados = {};
+    rolSlots.forEach((s,i)=>{
+      if(i===idx) return;
+      if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
+      if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
+    });
+
+    const disponibles = pending.filter(m=>{
+      const lUsos = usados[m.local]||0;
+      const vUsos = usados[m.visita]||0;
+      return lUsos<2 && vUsos<2;
+    });
+
+    const options = disponibles.map(m=>
+      `<option value="${m.id}" ${m.id===slot.matchId?'selected':''}>
+        ${tname(m.local)} vs ${tname(m.visita)} (J${m.jornada})
+      </option>`
+    ).join('');
+
+    const ll = slot.localId ? (S.matches.find(m=>m.id===slot.matchId)?.ll || tlogo(slot.localId)) : '';
+    const lv = slot.visitaId ? (S.matches.find(m=>m.id===slot.matchId)?.lv || tlogo(slot.visitaId)) : '';
+
+    return `<div style="display:flex;align-items:center;gap:8px;background:var(--dark2);border:1px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:10px 12px;">
+      <input type="time" value="${slot.hora}" onchange="updateSlotHora(${idx},this.value)" style="padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--neon);font-size:13px;font-weight:700;width:90px;flex-shrink:0">
+      ${ll?`<img src="${ll}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <select onchange="updateSlotMatch(${idx},this.value)" style="flex:1;padding:7px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;min-width:0">
+        <option value="">-- Seleccionar partido --</option>
+        ${options}
+      </select>
+      ${lv?`<img src="${lv}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <button onclick="removeSlot(${idx})" style="background:none;border:none;color:#f87171;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 4px">✕</button>
+    </div>`;
+  }).join('');
+
+  updateRolPreview();
+}
+
+function updateSlotHora(idx, hora){
+  rolSlots[idx].hora = hora;
+  updateRolPreview();
+}
+
+function updateSlotMatch(idx, matchId){
+  rolSlots[idx].matchId = matchId;
+  if(matchId){
+    const m = S.matches.find(x=>x.id===matchId);
+    if(m){ rolSlots[idx].localId=m.local; rolSlots[idx].visitaId=m.visita; }
+  } else {
+    rolSlots[idx].localId=''; rolSlots[idx].visitaId='';
+  }
+  renderSlots();
+}
+
+function autoRol(){
+  // Auto-proponer 4 partidos pendientes sin repetir equipo
+  const vuelta = String(S.vuelta);
+  const pending = [...S.matches.filter(m=>m.vuelta===vuelta)];
+  rolSlots = [];
+  const usados = new Set();
+  const seleccionados = [];
+
+  for(let m of pending){
+    if(seleccionados.length>=4) break;
+    if(!usados.has(m.local) && !usados.has(m.visita)){
+      seleccionados.push(m);
+      usados.add(m.local);
+      usados.add(m.visita);
+    }
+  }
+
+  seleccionados.forEach((m,i)=>{
+    rolSlots.push({
+      hora: HORARIOS_DEFAULT[i]||'09:00',
+      matchId: m.id,
+      localId: m.local,
+      visitaId: m.visita
+    });
+  });
+
+  renderSlots();
+  document.getElementById('rol-preview-wrap').style.display='block';
+}
+
+function updateRolPreview(){
+  const fecha = document.getElementById('rol-fecha').value;
+  const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) : 'Domingo pendiente';
+  const filled = rolSlots.filter(s=>s.matchId);
+
+  if(!filled.length){
+    document.getElementById('rol-preview-wrap').style.display='none';
+    return;
+  }
+  document.getElementById('rol-preview-wrap').style.display='block';
+
+  let html = `<div style="text-align:center;font-size:13px;font-weight:700;color:var(--neon);margin-bottom:12px;text-transform:capitalize">📅 ${fechaStr}</div>`;
+  filled.forEach(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    const ll = m.ll||tlogo(m.local);
+    const lv = m.lv||tlogo(m.visita);
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
+      <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${slot.hora}</span>
+      <img src="${ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${tname(m.local)}</span>
+      <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${tname(m.visita)}</span>
+      <img src="${lv}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+    </div>`;
+  });
+  document.getElementById('rol-preview').innerHTML = html;
+}
+
+async function publicarRol(){
+  const fecha = document.getElementById('rol-fecha').value;
+  const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) : 'Domingo';
+  const filled = rolSlots.filter(s=>s.matchId);
+  if(!filled.length) return;
+
+  const partidos = filled.map(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    return {
+      hora: slot.hora,
+      local: tname(m.local),
+      visita: tname(m.visita),
+      ll: m.ll||tlogo(m.local),
+      lv: m.lv||tlogo(m.visita),
+      jornada: m.jornada,
+      vuelta: m.vuelta
+    };
+  });
+
+  await fbPush('chat',{
+    type:'rol',
+    fecha: fechaStr,
+    fechaRaw: fecha,
+    partidos,
+    ts: Date.now(),
+    time: now()
+  });
+
+  switchTab('chat');
+}
+
+// Render del rol en el chat
+function renderRol(msg){
+  const partidos = msg.partidos||[];
+  let html=`<div class="anuncio-card" style="border-color:rgba(57,255,20,0.4)">
+    <div class="anuncio-header">
+      <span class="anuncio-badge" style="background:var(--neon-dim);color:var(--neon);border-color:rgba(57,255,20,0.3)">📋 Rol del Domingo</span>
+    </div>
+    <div style="text-align:center;font-size:14px;font-weight:700;color:var(--neon);margin-bottom:10px;text-transform:capitalize">📅 ${esc(msg.fecha||'')}</div>`;
+
+  partidos.forEach(p=>{
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
+      <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${esc(p.hora)}</span>
+      <img src="${p.ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${esc(p.local)}</span>
+      <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${esc(p.visita)}</span>
+      <img src="${p.lv}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+    </div>`;
+  });
+
+  html+=`<div class="anuncio-time">${msg.time||''} · Vuelta ${partidos[0]?.vuelta||1}</div></div>`;
+  return html;
+}
+
+
 function renderModPanel(){
   const grid=document.getElementById('mod-team-select');
   grid.innerHTML='';
