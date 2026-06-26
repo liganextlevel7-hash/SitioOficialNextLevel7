@@ -84,6 +84,22 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 .empty{text-align:center;color:var(--text2);padding:24px;font-size:13px;line-height:1.8;}
 .loading{text-align:center;color:var(--text2);padding:20px;font-size:13px;}
 </style>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCDStSLESm2UbqcIRpqrnHGfTsZJUtCVwc",
+  authDomain: "liga-next-level-7.firebaseapp.com",
+  databaseURL: "https://liga-next-level-7-default-rtdb.firebaseio.com",
+  projectId: "liga-next-level-7",
+  storageBucket: "liga-next-level-7.firebasestorage.app",
+  messagingSenderId: "463941548215",
+  appId: "1:463941548215:web:0d9eb7e517cbc33352b532"
+};
+firebase.initializeApp(firebaseConfig);
+var db = firebase.database();
+</script>
 </head>
 <body>
 
@@ -385,6 +401,7 @@ function addEvent(type,side){
   if(type==='red'){if(side==='local')live.rL++;else live.rV++;}
   live.min=min;
   renderLive();
+  pushToFirebase();
 }
 
 function removeGoal(side){
@@ -455,6 +472,27 @@ function setStatus(s){
   if(s==='fin'){
     pauseTimer();
   }
+}
+
+function pushToFirebase(){
+  if(!live.pid) return;
+  db.ref('transmision').set({
+    activo: true,
+    nombreLocal: live.nL,
+    nombreVisita: live.nV,
+    logoLocal: live.logoL,
+    logoVisita: live.logoV,
+    scoreLocal: live.sL,
+    scoreVisita: live.sV,
+    yellowLocal: live.yL,
+    redLocal: live.rL,
+    yellowVisita: live.yV,
+    redVisita: live.rV,
+    minuto: live.min,
+    status: live.status,
+    events: live.events.slice(0,20),
+    timestamp: Date.now()
+  });
 }
 
 function renderLive(){
