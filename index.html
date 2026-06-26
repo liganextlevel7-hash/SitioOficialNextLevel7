@@ -218,7 +218,7 @@
       </div>
       <!-- Botones dinamicos -->
       <div id="envivo-publico" style="position:absolute;bottom:14px;left:18px;right:18px;z-index:5;display:none;flex-direction:column;gap:6px;">
-        <a href="nextlevelenvivo.html" class="car-btn" style="background:rgba(224,48,48,0.2);color:#ff6060;border:1px solid #e03030;">🔴 VER TRANSMISIÓN EN VIVO</a>
+        <a href="nextlevelenvivo.html" class="car-btn" style="background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid #ffd700;">🔴 VER TRANSMISIÓN EN VIVO</a>
       </div>
       <div id="envivo-offline" style="position:absolute;bottom:14px;left:18px;right:18px;z-index:5;">
         <div class="car-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);cursor:default;">Sin transmisión activa</div>
@@ -393,8 +393,11 @@ cargarCarrusel();
   fetch(url).then(function(r){return r.text();}).then(function(t){
     var lines = t.trim().split('\n');
     var estado = '';
+    // line 0 = header row, line 1 = data row
+    // each line has two columns: A,B
     if(lines.length > 1){
-      estado = lines[1].replace(/"/g,'').trim().toLowerCase();
+      var cols = lines[1].split(',');
+      estado = (cols[1]||cols[0]||'').replace(/"/g,'').trim().toLowerCase();
     }
     var publico = document.getElementById('envivo-publico');
     var offline = document.getElementById('envivo-offline');
