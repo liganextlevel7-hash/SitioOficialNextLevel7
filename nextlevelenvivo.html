@@ -177,7 +177,7 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
     <div class="events-list" id="events-list"><div class="no-ev">Los eventos aparecerán aquí</div></div>
   </div>
 
-  <div style="text-align:center;margin-top:10px;padding-bottom:20px;">
+  <div style="text-align:center;margin-top:10px;padding-bottom:20px;"><div style="margin-bottom:10px;"><p style="font-size:12px;color:var(--text2);margin-bottom:7px;">¿Cómo se definió el partido?</p><div style="display:flex;gap:8px;justify-content:center;"><button class="mbtn" id="btn-normal" onclick="setDefinicion('Normal')">⚽ Normal</button><button class="mbtn" id="btn-penales" onclick="setDefinicion('Penales')">🥅 Penales</button><button class="mbtn" id="btn-default" onclick="setDefinicion('Default')">⚠️ Default</button></div><span id="def-pill" style="display:inline-block;margin-top:6px;font-size:11px;color:var(--text2);">Sin seleccionar</span></div>
     <button class="save-btn" onclick="guardarPartido()">💾 Guardar partido</button>
     <button class="danger-btn" onclick="resetLive()">🗑 Reiniciar</button>
     <div class="saved-ok" id="saved-ok">✅ Partido guardado correctamente</div>
@@ -203,7 +203,7 @@ var GID_JUGADORES = '1940220650';
 var GID_PARTIDOS  = '1362473459';
 
 var DB = { equipos:{}, jugadores:[], partidos:[] };
-var live = {sL:0,sV:0,yL:0,rL:0,yV:0,rV:0,events:[],min:0,status:'sin',pid:null,nL:'',nV:'',logoL:'',logoV:''};
+var live = {sL:0,sV:0,yL:0,rL:0,yV:0,rV:0,events:[],min:0,status:"sin",pid:null,nL:"",nV:"",logoL:"",logoV:"",definicion:""};
 
 function csvUrl(gid){ return 'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&gid='+gid; }
 
@@ -321,7 +321,7 @@ function selectPartido(pid){
   ['btn-inicio','btn-medio','btn-fin'].forEach(function(id){document.getElementById(id).classList.remove('active');});
   document.getElementById('spill').textContent='Sin iniciar';
   document.getElementById('match-time').textContent="0'";
-  document.getElementById('saved-ok').style.display='none';
+  document.getElementById('saved-ok').style.display='none'; live.definicion=''; ['btn-normal','btn-penales','btn-default'].forEach(function(id){document.getElementById(id).classList.remove('active');}); document.getElementById('def-pill').textContent='Sin seleccionar';
   renderLive();
   showTab('live');
 }
@@ -404,10 +404,11 @@ function renderLive(){
   }).join('');
 }
 
+function setDefinicion(d){ live.definicion=d; ["btn-normal","btn-penales","btn-default"].forEach(function(id){document.getElementById(id).classList.remove("active");}); document.getElementById("btn-"+d.toLowerCase()).classList.add("active"); document.getElementById("def-pill").textContent="✅ "+d; }
 function guardarPartido(){
   if(!live.pid){alert('Primero selecciona un partido.');return;}
   var hist=JSON.parse(localStorage.getItem('nl7_hist')||'[]');
-  hist.unshift({id:Date.now(),fecha:new Date().toLocaleDateString('es-MX'),nL:live.nL,nV:live.nV,logoL:live.logoL,logoV:live.logoV,sL:live.sL,sV:live.sV,yL:live.yL,rL:live.rL,yV:live.yV,rV:live.rV,events:live.events.slice()});
+  hist.unshift({id:Date.now(),definicion:live.definicion,fecha:new Date().toLocaleDateString('es-MX'),nL:live.nL,nV:live.nV,logoL:live.logoL,logoV:live.logoV,sL:live.sL,sV:live.sV,yL:live.yL,rL:live.rL,yV:live.yV,rV:live.rV,events:live.events.slice()});
   localStorage.setItem('nl7_hist',JSON.stringify(hist));
   var ok=document.getElementById('saved-ok');
   ok.style.display='block';
@@ -423,7 +424,7 @@ function renderHistorial(){
     var evHtml=r.events.map(function(e){return '<span>'+e.minute+"' "+icons[e.type]+' '+(e.player||e.teamName)+'</span>';}).join(' · ');
     return '<div class="hist-item"><button class="del-btn" onclick="borrarPartido('+r.id+')">🗑 Borrar</button>'
       +'<h4>'+r.nL+' '+r.sL+' - '+r.sV+' '+r.nV+'</h4>'
-      +'<p>📅 '+r.fecha+' &nbsp;|&nbsp; 🟨 L:'+r.yL+' V:'+r.yV+' &nbsp;|&nbsp; 🟥 L:'+r.rL+' V:'+r.rV+'</p>'
+      +'<p>📅 '+r.fecha+' &nbsp;|&nbsp; '+(r.definicion?'🏆 '+r.definicion:'Sin definir')+' &nbsp;|&nbsp; 🟨 L:'+r.yL+' V:'+r.yV+' &nbsp;|&nbsp; 🟥 L:'+r.rL+' V:'+r.rV+'</p>'
       +(r.events.length?'<div style="margin-top:7px;font-size:11px;color:var(--text2);line-height:2;">'+evHtml+'</div>':'')
       +'</div>';
   }).join('');
