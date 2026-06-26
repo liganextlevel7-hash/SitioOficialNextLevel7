@@ -132,9 +132,9 @@ function abrirPopup(e) {
   document.getElementById("popup-jg").textContent = e.jg;
   document.getElementById("popup-je").textContent = e.je;
   document.getElementById("popup-jp").textContent = e.jp;
+  document.getElementById("popup-pts").textContent = e.pts;
   document.getElementById("popup-gf").textContent = e.gf;
   document.getElementById("popup-gc").textContent = e.gc;
-  document.getElementById("popup-pts").textContent = e.pts;
   document.getElementById("equipo-popup").classList.add("active");
 }
 
