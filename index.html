@@ -387,9 +387,7 @@ cargarCarrusel();
 
 // Verificar estado de transmision
 (function checkTransmision(){
-  var SHEET_ID = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
-  var GID_CONFIG = '200886667';
-  var url = 'https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&gid='+GID_CONFIG;
+  var url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=200886667&single=true&output=csv';
   fetch(url).then(function(r){return r.text();}).then(function(t){
     var lines = t.trim().split('\n');
     var estado = '';
