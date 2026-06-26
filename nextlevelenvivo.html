@@ -348,13 +348,11 @@ function cargarJugadoresPorEquipo(){
      return eqField.toString().trim() === idV.toString().trim() || eqField.toString().trim() === nombreV.toString().trim();
   });
   
-  // DETECTOR ULTRA AGRESIVO DE NÚMEROS / DORSALES
   function obtenerTextoEstructurado(jugadorObj) {
      var keys = Object.keys(jugadorObj);
      var num = "";
      var nom = jugadorObj.Nombre || jugadorObj.nombre || "Jugador";
      
-     // 1. Busca cualquier columna relacionada a números, playeras o dorsales
      for(var i=0; i<keys.length; i++) {
         var k = keys[i].toLowerCase().trim();
         if(k==='dorsal' || k==='playera' || k==='número' || k==='numero' || k==='num' || k==='#' || k==='no' || k.startsWith('num')) {
@@ -365,7 +363,6 @@ function cargarJugadoresPorEquipo(){
         }
      }
      
-     // 2. Si no la encuentra, extrae cualquier valor numérico suelto dentro del objeto
      if(!num){
        for(var i=0; i<keys.length; i++){
          var val = (jugadorObj[keys[i]] || '').toString().trim();
@@ -376,7 +373,7 @@ function cargarJugadoresPorEquipo(){
        }
      }
      
-     if(!num) num = "0"; // Respaldo definitivo
+     if(!num) num = "0";
      return `# ${num} - ${nom}`;
   }
 
@@ -428,7 +425,6 @@ function addEvent(type, team){
   var selectId = 'sel-' + type + '-' + team;
   var pName = document.getElementById(selectId).value;
   
-  // SI NO HAY JUGADOR SELECCIONADO, ASIGNA UN VALOR "ANÓNIMO" PARA QUE LA FUNCIÓN NUNCA SE DETENGA
   if(!pName || pName.trim() === ""){
      pName = "Jugador de Equipo";
   }
@@ -445,12 +441,12 @@ function addEvent(type, team){
   var evs = liveState.events || [];
   evs.push(newEv);
   
-  var sL = parseInt(liveState.scoreLocal || 0) || 0;
-  var sV = parseInt(liveState.scoreVisita || 0) || 0;
-  var yL = parseInt(liveState.yellowLocal || 0) || 0;
-  var rL = parseInt(liveState.redLocal || 0) || 0;
-  var yV = parseInt(liveState.yellowVisita || 0) || 0;
-  var rV = parseInt(liveState.redVisita || 0) || 0;
+  var sL = parseInt(liveState.scoreLocal === undefined ? 0 : liveState.scoreLocal) || 0;
+  var sV = parseInt(liveState.scoreVisita === undefined ? 0 : liveState.scoreVisita) || 0;
+  var yL = parseInt(liveState.yellowLocal === undefined ? 0 : liveState.yellowLocal) || 0;
+  var rL = parseInt(liveState.redLocal === undefined ? 0 : liveState.redLocal) || 0;
+  var yV = parseInt(liveState.yellowVisita === undefined ? 0 : liveState.yellowVisita) || 0;
+  var rV = parseInt(liveState.redVisita === undefined ? 0 : liveState.redVisita) || 0;
 
   if(type === 'goal') { if(team === 'local') sL = sL + 1; else sV = sV + 1; }
   if(type === 'yellow') { if(team === 'local') yL = yL + 1; else yV = yV + 1; }
