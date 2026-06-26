@@ -476,8 +476,9 @@ function setStatus(s){
 
 function pushToFirebase(){
   if(!live.pid) return;
-  db.ref('transmision').set({
-    activo: true,
+  var key = 'partido_'+live.pid;
+  db.ref('transmision/'+key).set({
+    activo: live.status !== 'fin',
     nombreLocal: live.nL,
     nombreVisita: live.nV,
     logoLocal: live.logoL,
@@ -489,6 +490,8 @@ function pushToFirebase(){
     yellowVisita: live.yV,
     redVisita: live.rV,
     minuto: live.min,
+    segundosAlIniciar: live.segundosAlIniciar||0,
+    inicioTimestamp: live.inicioTimestamp||null,
     status: live.status,
     events: live.events.slice(0,20),
     timestamp: Date.now()
