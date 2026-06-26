@@ -122,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
         <span class="ssep">-</span>
         <span class="snum" id="score-visita">0</span>
       </div>
-      <div class="stime" id="match-time">0'</div>
+      <div class="stime" id="match-time">0:00</div>
     </div>
     <div class="team-card">
       <div class="tlogo-box"><img id="logo-visita" src="" alt="visita"></div>
@@ -139,10 +139,7 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 
   <div class="section">
     <h3>Registrar evento</h3>
-    <div class="min-row">
-      <label>Minuto:</label>
-      <input type="number" class="min-input" id="inp-minuto" placeholder="ej: 23" min="0" max="120">
-    </div>
+
     <div class="actions-grid">
       <div class="act-col">
         <div class="act-title"><img id="act-logo-local" class="act-logo" src="" alt=""><span id="act-name-local">Local</span></div>
@@ -320,8 +317,8 @@ function selectPartido(pid){
   fillJugadores(eid_l, eid_v);
   ['btn-inicio','btn-medio','btn-fin'].forEach(function(id){document.getElementById(id).classList.remove('active');});
   document.getElementById('spill').textContent='Sin iniciar';
-  document.getElementById('match-time').textContent="0'";
-  document.getElementById('saved-ok').style.display='none'; live.definicion=''; ['btn-normal','btn-penales','btn-default'].forEach(function(id){document.getElementById(id).classList.remove('active');}); document.getElementById('def-pill').textContent='Sin seleccionar';
+  resetTimer();
+  document.getElementById('saved-ok').style.display='none'; live.definicion=''; ['btn-normal','btn-penales','btn-default'].forEach(function(id){document.getElementById(id).classList.remove('active');}); document.getElementById('def-pill').textContent='Sin seleccionar'; resetTimer();
   renderLive();
   showTab('live');
 }
@@ -348,7 +345,7 @@ function fillJugadores(eid_l, eid_v){
   ['sel-gol-visita','sel-yellow-visita','sel-red-visita'].forEach(function(id){document.getElementById(id).innerHTML=opts(jV);});
 }
 
-function getMin(){ var v=document.getElementById('inp-minuto').value; return v?parseInt(v):live.min; }
+
 
 function getPlayer(side,type){
   var sel=document.getElementById('sel-'+type+'-'+side);
@@ -376,15 +373,67 @@ function removeGoal(side){
   renderLive();
 }
 
+// CRONOMETRO
+var timer = null;
+var timerSeconds = 0;
+var timerRunning = false;
+var HALF_SECS = 20 * 60; // 20 minutos
+
+function startTimer(){
+  if(timer) clearInterval(timer);
+  timerRunning = true;
+  timer = setInterval(function(){
+    timerSeconds++;
+    updateTimerDisplay();
+    if(timerSeconds >= HALF_SECS){
+      clearInterval(timer);
+      timerRunning = false;
+      // Aviso fin de tiempo
+      document.getElementById('spill').textContent = '⏰ Tiempo completo';
+    }
+  }, 1000);
+}
+
+function pauseTimer(){
+  if(timer) clearInterval(timer);
+  timerRunning = false;
+}
+
+function resetTimer(){
+  if(timer) clearInterval(timer);
+  timerRunning = false;
+  timerSeconds = 0;
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay(){
+  var mins = Math.floor(timerSeconds / 60);
+  var secs = timerSeconds % 60;
+  var display = mins + ":" + (secs < 10 ? "0" : "") + secs;
+  document.getElementById('match-time').textContent = display;
+  live.min = mins;
+}
+
+function getMin(){ return live.min; }
+
 function setStatus(s){
   var labels={inicio:'En juego ▶',medio:'Medio tiempo ⏸',fin:'Finalizado 🏁'};
   live.status=s;
   document.getElementById('spill').textContent=labels[s];
   ['btn-inicio','btn-medio','btn-fin'].forEach(function(id){document.getElementById(id).classList.remove('active');});
   document.getElementById('btn-'+s).classList.add('active');
-  if(s==='inicio'&&live.min===0){live.min=1;document.getElementById('match-time').textContent="1'";}
-  if(s==='medio')document.getElementById('match-time').textContent="45'";
-  if(s==='fin')document.getElementById('match-time').textContent="90'";
+  if(s==='inicio'){
+    if(timerSeconds >= HALF_SECS) timerSeconds = 0; // reinicia para 2do tiempo
+    startTimer();
+  }
+  if(s==='medio'){
+    pauseTimer();
+    timerSeconds = HALF_SECS;
+    updateTimerDisplay();
+  }
+  if(s==='fin'){
+    pauseTimer();
+  }
 }
 
 function renderLive(){
@@ -442,7 +491,7 @@ function resetLive(){
   live.sL=0;live.sV=0;live.yL=0;live.rL=0;live.yV=0;live.rV=0;live.events=[];live.min=0;live.status='sin';
   ['btn-inicio','btn-medio','btn-fin'].forEach(function(id){document.getElementById(id).classList.remove('active');});
   document.getElementById('spill').textContent='Sin iniciar';
-  document.getElementById('match-time').textContent="0'";
+  resetTimer();
   renderLive();
 }
 
