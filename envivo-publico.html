@@ -23,7 +23,7 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 .score-nums{display:flex;align-items:center;justify-content:center;gap:5px;}
 .snum{font-size:44px;font-weight:900;color:#fff;line-height:1;}
 .ssep{font-size:22px;color:rgba(255,255,255,.4);}
-.stime{font-size:13px;color:rgba(255,255,255,.8);margin-top:4px;font-weight:700;}
+.stime{font-size:22px;color:#fff;margin-top:4px;font-weight:900;letter-spacing:2px;}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px;}
 .stat-mini{background:#1a2a1e;border:1px solid #2d4035;border-radius:10px;padding:10px;text-align:center;}
 .stat-num{font-size:20px;font-weight:900;color:#e8f0ea;}
@@ -117,6 +117,29 @@ var icons={goal:'⚽',yellow:'🟨',red:'🟥',undo:'↩️'};
 var labels={goal:'Gol',yellow:'Tarjeta amarilla',red:'Tarjeta roja',undo:'Gol anulado'};
 var statusLabels={inicio:'En juego ▶',medio:'Medio tiempo ⏸',fin:'Finalizado 🏁',sin:'Sin iniciar'};
 
+// Local timer that runs independently
+var localTimer = null;
+var localSeconds = 0;
+var isRunning = false;
+
+function startLocalTimer(seconds){
+  if(localTimer) clearInterval(localTimer);
+  localSeconds = seconds;
+  isRunning = true;
+  localTimer = setInterval(function(){
+    localSeconds++;
+    var mins = Math.floor(localSeconds/60);
+    var secs = localSeconds%60;
+    var display = mins+':'+(secs<10?'0':'')+secs;
+    document.getElementById('match-time').textContent = display;
+  },1000);
+}
+
+function pauseLocalTimer(){
+  if(localTimer) clearInterval(localTimer);
+  isRunning = false;
+}
+
 db.ref('transmision').on('value', function(snap){
   var d = snap.val();
   if(!d || !d.activo){
@@ -133,8 +156,17 @@ db.ref('transmision').on('value', function(snap){
   document.getElementById('name-visita').textContent = d.nombreVisita||'Visita';
   document.getElementById('score-local').textContent = d.scoreLocal||0;
   document.getElementById('score-visita').textContent = d.scoreVisita||0;
-  document.getElementById('match-time').textContent = (d.minuto||0)+':00';
+  if(d.status !== 'inicio') document.getElementById('match-time').textContent = (d.minuto||0)+':00';
   document.getElementById('spill').textContent = statusLabels[d.status]||'En juego';
+  // Control local timer based on status
+  if(d.status === 'inicio'){
+    var currentSecs = (d.minuto||0)*60;
+    if(!isRunning) startLocalTimer(currentSecs);
+  } else {
+    pauseLocalTimer();
+    var mins = d.minuto||0;
+    document.getElementById('match-time').textContent = mins+':00';
+  }
   document.getElementById('st-yl').textContent = d.yellowLocal||0;
   document.getElementById('st-rl').textContent = d.redLocal||0;
   document.getElementById('st-yv').textContent = d.yellowVisita||0;
