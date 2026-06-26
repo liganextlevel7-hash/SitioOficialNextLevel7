@@ -6,15 +6,29 @@
 <title>Next Level 7 — EN VIVO</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
-.wrap{max-width:420px;width:100%;padding:16px;}
+body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:100vh;}
+.wrap{max-width:440px;margin:0 auto;padding:14px;}
 .header{background:linear-gradient(135deg,#1a5c2a,#2d8a45);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;}
 .header h1{font-size:22px;font-weight:900;letter-spacing:2px;color:#fff;}
 .header p{font-size:11px;opacity:.8;color:#fff;margin-top:3px;}
 .live-badge{display:inline-flex;align-items:center;gap:6px;background:#e03030;color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px;}
 .live-dot{width:7px;height:7px;background:white;border-radius:50%;animation:blink 1.2s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
-.scoreboard{display:grid;grid-template-columns:1fr 90px 1fr;gap:10px;align-items:center;margin-bottom:12px;}
+
+/* SELECCION */
+.partido-card{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all .2s;}
+.partido-card:hover{border-color:#2d8a45;}
+.partido-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.partido-logos{display:flex;align-items:center;gap:10px;flex:1;justify-content:center;}
+.partido-logos img{width:40px;height:40px;object-fit:contain;background:#0f1a13;border-radius:6px;padding:2px;}
+.partido-score{font-size:22px;font-weight:900;color:#fff;padding:0 10px;}
+.partido-names{display:flex;justify-content:space-between;font-size:11px;color:#8aab91;margin-bottom:8px;}
+.partido-status{text-align:center;font-size:11px;}
+.partido-timer{font-size:18px;font-weight:900;color:#fff;background:#1a5c2a;border-radius:8px;padding:4px 12px;display:inline-block;}
+.ver-btn{display:block;width:100%;text-align:center;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid #ffd700;border-radius:8px;padding:8px;font-size:12px;font-weight:700;margin-top:10px;cursor:pointer;}
+
+/* MARCADOR */
+.scoreboard{display:grid;grid-template-columns:1fr 100px 1fr;gap:10px;align-items:center;margin-bottom:12px;}
 .team-card{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:12px 8px;text-align:center;}
 .tlogo-box{width:56px;height:56px;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:#0f1a13;border-radius:8px;padding:4px;}
 .tlogo-box img{width:100%;height:100%;object-fit:contain;}
@@ -23,7 +37,7 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 .score-nums{display:flex;align-items:center;justify-content:center;gap:5px;}
 .snum{font-size:44px;font-weight:900;color:#fff;line-height:1;}
 .ssep{font-size:22px;color:rgba(255,255,255,.4);}
-.stime{font-size:22px;color:#fff;margin-top:4px;font-weight:900;letter-spacing:2px;}
+.stime{font-size:24px;color:#fff;margin-top:6px;font-weight:900;letter-spacing:2px;}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px;}
 .stat-mini{background:#1a2a1e;border:1px solid #2d4035;border-radius:10px;padding:10px;text-align:center;}
 .stat-num{font-size:20px;font-weight:900;color:#e8f0ea;}
@@ -37,14 +51,16 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 .ev.goal{border-left-color:#4caf50;}
 .ev.yellow{border-left-color:#f9a825;}
 .ev.red{border-left-color:#ef5350;}
-.ev-min{font-size:11px;color:#8aab91;min-width:28px;font-weight:700;}
+.ev-min{font-size:11px;color:#8aab91;min-width:32px;font-weight:700;}
 .ev-txt{color:#e8f0ea;flex:1;}
 .ev-team{font-size:11px;color:#8aab91;}
 .no-ev{text-align:center;color:#8aab91;font-size:13px;padding:22px;}
 .spill{display:inline-block;font-size:11px;padding:4px 12px;border-radius:20px;background:#243028;color:#8aab91;border:1px solid #2d4035;margin-bottom:10px;}
-.offline{text-align:center;padding:40px 20px;}
+.back-btn{border:1px solid #2d4035;background:#1a2a1e;color:#8aab91;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;margin-bottom:12px;}
+.offline{text-align:center;padding:60px 20px;}
 .offline h2{font-size:20px;color:#8aab91;margin-bottom:10px;}
-.offline p{font-size:13px;color:#8aab91;line-height:1.7;}
+.offline p{font-size:13px;color:#8aab91;line-height:1.8;}
+.hidden{display:none!important;}
 </style>
 </head>
 <body>
@@ -55,9 +71,24 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
     <p>Torneo Dominical — Puebla</p>
   </div>
 
-  <div id="vista-live" style="display:none;">
+  <!-- VISTA: Sin transmision -->
+  <div id="vista-offline" class="offline">
+    <div style="font-size:50px;margin-bottom:16px;">📡</div>
+    <h2>Sin transmisión activa</h2>
+    <p>Cuando comience el partido<br>podrás seguirlo aquí<br>en tiempo real.</p>
+  </div>
+
+  <!-- VISTA: Seleccion de partido -->
+  <div id="vista-seleccion" class="hidden">
+    <p style="font-size:12px;color:#8aab91;margin-bottom:10px;text-align:center;">Partidos en vivo — elige uno para ver</p>
+    <div id="lista-partidos-vivo"></div>
+  </div>
+
+  <!-- VISTA: Partido en vivo -->
+  <div id="vista-live" class="hidden">
+    <button class="back-btn" onclick="volverSeleccion()">← Volver</button>
     <div style="text-align:center;margin-bottom:10px;">
-      <span class="spill" id="spill">Sin iniciar</span>
+      <span class="spill" id="spill">En juego</span>
     </div>
     <div class="scoreboard">
       <div class="team-card">
@@ -77,24 +108,16 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
         <div class="tname" id="name-visita">Visita</div>
       </div>
     </div>
-
     <div class="stats-row">
       <div class="stat-mini"><div class="stat-num" id="st-yl">0</div><div class="stat-lbl"><span class="yb"></span>Local</div></div>
       <div class="stat-mini"><div class="stat-num" id="st-rl">0</div><div class="stat-lbl"><span class="rb"></span>Local</div></div>
       <div class="stat-mini"><div class="stat-num" id="st-yv">0</div><div class="stat-lbl"><span class="yb"></span>Visita</div></div>
       <div class="stat-mini"><div class="stat-num" id="st-rv">0</div><div class="stat-lbl"><span class="rb"></span>Visita</div></div>
     </div>
-
     <div class="section">
       <h3>Bitácora del partido</h3>
       <div class="events-list" id="events-list"><div class="no-ev">Esperando eventos...</div></div>
     </div>
-  </div>
-
-  <div id="vista-offline" class="offline">
-    <div style="font-size:50px;margin-bottom:16px;">📡</div>
-    <h2>Sin transmisión activa</h2>
-    <p>Cuando comience el partido<br>podrás seguirlo aquí en tiempo real.</p>
   </div>
 </div>
 
@@ -117,67 +140,147 @@ var icons={goal:'⚽',yellow:'🟨',red:'🟥',undo:'↩️'};
 var labels={goal:'Gol',yellow:'Tarjeta amarilla',red:'Tarjeta roja',undo:'Gol anulado'};
 var statusLabels={inicio:'En juego ▶',medio:'Medio tiempo ⏸',fin:'Finalizado 🏁',sin:'Sin iniciar'};
 
-// Local timer that runs independently
 var localTimer = null;
-var localSeconds = 0;
-var isRunning = false;
+var partidoActual = null;
+var todosPartidos = {};
 
-function startLocalTimer(seconds){
-  if(localTimer) clearInterval(localTimer);
-  localSeconds = seconds;
-  isRunning = true;
-  localTimer = setInterval(function(){
-    localSeconds++;
-    var mins = Math.floor(localSeconds/60);
-    var secs = localSeconds%60;
-    var display = mins+':'+(secs<10?'0':'')+secs;
-    document.getElementById('match-time').textContent = display;
-  },1000);
+// Calcular segundos reales desde que inicio
+function calcularSegundos(data){
+  if(data.status !== 'inicio' || !data.inicioTimestamp) return (data.minuto||0)*60;
+  var ahora = Date.now();
+  var transcurrido = Math.floor((ahora - data.inicioTimestamp) / 1000);
+  return (data.segundosAlIniciar||0) + transcurrido;
 }
 
-function pauseLocalTimer(){
+function startTimer(segundosIniciales){
   if(localTimer) clearInterval(localTimer);
-  isRunning = false;
+  var s = segundosIniciales;
+  function tick(){
+    var mins = Math.floor(s/60);
+    var secs = s%60;
+    document.getElementById('match-time').textContent = mins+':'+(secs<10?'0':'')+secs;
+    s++;
+  }
+  tick();
+  localTimer = setInterval(tick, 1000);
 }
 
+function stopTimer(texto){
+  if(localTimer) clearInterval(localTimer);
+  localTimer = null;
+  document.getElementById('match-time').textContent = texto||'0:00';
+}
+
+function mostrarPartido(key){
+  partidoActual = key;
+  document.getElementById('vista-seleccion').classList.add('hidden');
+  document.getElementById('vista-live').classList.remove('hidden');
+  escucharPartido(key);
+}
+
+function volverSeleccion(){
+  if(localTimer) clearInterval(localTimer);
+  partidoActual = null;
+  document.getElementById('vista-live').classList.add('hidden');
+  document.getElementById('vista-seleccion').classList.remove('hidden');
+}
+
+function escucharPartido(key){
+  db.ref('transmision/'+key).on('value', function(snap){
+    var d = snap.val();
+    if(!d) return;
+    document.getElementById('logo-local').src = d.logoLocal||'';
+    document.getElementById('logo-visita').src = d.logoVisita||'';
+    document.getElementById('name-local').textContent = d.nombreLocal||'Local';
+    document.getElementById('name-visita').textContent = d.nombreVisita||'Visita';
+    document.getElementById('score-local').textContent = d.scoreLocal||0;
+    document.getElementById('score-visita').textContent = d.scoreVisita||0;
+    document.getElementById('spill').textContent = statusLabels[d.status]||'En juego';
+    document.getElementById('st-yl').textContent = d.yellowLocal||0;
+    document.getElementById('st-rl').textContent = d.redLocal||0;
+    document.getElementById('st-yv').textContent = d.yellowVisita||0;
+    document.getElementById('st-rv').textContent = d.redVisita||0;
+
+    if(d.status === 'inicio'){
+      var segs = calcularSegundos(d);
+      startTimer(segs);
+    } else if(d.status === 'medio'){
+      stopTimer('20:00');
+    } else if(d.status === 'fin'){
+      stopTimer('FIN');
+    } else {
+      stopTimer('0:00');
+    }
+
+    var evs = d.events||[];
+    var list = document.getElementById('events-list');
+    if(evs.length===0){list.innerHTML='<div class="no-ev">Esperando eventos...</div>';return;}
+    list.innerHTML = evs.map(function(e){
+      var mins = Math.floor((e.minute||0));
+      return '<div class="ev '+(e.type||'')+'"><span class="ev-min">'+mins+"'</span><span>"+(icons[e.type]||'')+'</span><span class="ev-txt">'+(labels[e.type]||e.type)+(e.player?' — '+e.player:'')+'</span><span class="ev-team">'+(e.teamName||'')+'</span></div>';
+    }).join('');
+  });
+}
+
+// Escuchar todos los partidos en vivo
 db.ref('transmision').on('value', function(snap){
-  var d = snap.val();
-  if(!d || !d.activo){
-    document.getElementById('vista-live').style.display='none';
-    document.getElementById('vista-offline').style.display='block';
+  var data = snap.val();
+  todosPartidos = {};
+
+  if(!data){
+    document.getElementById('vista-offline').classList.remove('hidden');
+    document.getElementById('vista-seleccion').classList.add('hidden');
+    document.getElementById('vista-live').classList.add('hidden');
     return;
   }
-  document.getElementById('vista-live').style.display='block';
-  document.getElementById('vista-offline').style.display='none';
 
-  document.getElementById('logo-local').src = d.logoLocal||'';
-  document.getElementById('logo-visita').src = d.logoVisita||'';
-  document.getElementById('name-local').textContent = d.nombreLocal||'Local';
-  document.getElementById('name-visita').textContent = d.nombreVisita||'Visita';
-  document.getElementById('score-local').textContent = d.scoreLocal||0;
-  document.getElementById('score-visita').textContent = d.scoreVisita||0;
-  if(d.status !== 'inicio') document.getElementById('match-time').textContent = (d.minuto||0)+':00';
-  document.getElementById('spill').textContent = statusLabels[d.status]||'En juego';
-  // Control local timer based on status
-  if(d.status === 'inicio'){
-    var currentSecs = (d.minuto||0)*60;
-    if(!isRunning) startLocalTimer(currentSecs);
-  } else {
-    pauseLocalTimer();
-    var mins = d.minuto||0;
-    document.getElementById('match-time').textContent = mins+':00';
+  // Recopilar partidos activos
+  Object.keys(data).forEach(function(key){
+    var p = data[key];
+    if(p && p.activo && p.status !== 'fin') todosPartidos[key] = p;
+  });
+
+  var keys = Object.keys(todosPartidos);
+
+  if(keys.length === 0){
+    document.getElementById('vista-offline').classList.remove('hidden');
+    document.getElementById('vista-seleccion').classList.add('hidden');
+    if(!partidoActual) document.getElementById('vista-live').classList.add('hidden');
+    return;
   }
-  document.getElementById('st-yl').textContent = d.yellowLocal||0;
-  document.getElementById('st-rl').textContent = d.redLocal||0;
-  document.getElementById('st-yv').textContent = d.yellowVisita||0;
-  document.getElementById('st-rv').textContent = d.redVisita||0;
 
-  var evs = d.events||[];
-  var list = document.getElementById('events-list');
-  if(evs.length===0){list.innerHTML='<div class="no-ev">Esperando eventos...</div>';return;}
-  list.innerHTML = evs.map(function(e){
-    return '<div class="ev '+(e.type||'')+'"><span class="ev-min">'+(e.minute||0)+"'</span><span>"+(icons[e.type]||'')+'</span><span class="ev-txt">'+(labels[e.type]||e.type)+(e.player?' — '+e.player:'')+'</span><span class="ev-team">'+(e.teamName||'')+'</span></div>';
-  }).join('');
+  document.getElementById('vista-offline').classList.add('hidden');
+
+  // Si solo hay un partido y no hay seleccion, entrar directo
+  if(keys.length === 1 && !partidoActual){
+    mostrarPartido(keys[0]);
+    return;
+  }
+
+  // Si hay varios mostrar seleccion
+  if(!partidoActual){
+    document.getElementById('vista-seleccion').classList.remove('hidden');
+    document.getElementById('vista-live').classList.add('hidden');
+    var html = '';
+    keys.forEach(function(key){
+      var p = todosPartidos[key];
+      var segs = calcularSegundos(p);
+      var mins = Math.floor(segs/60);
+      var secs = segs%60;
+      var timerStr = mins+':'+(secs<10?'0':'')+secs;
+      html += '<div class="partido-card" onclick="mostrarPartido(\''+key+'\')">'
+        +'<div class="partido-logos">'
+        +'<img src="'+(p.logoLocal||'')+'" onerror="this.style.opacity=0">'
+        +'<span class="partido-score">'+(p.scoreLocal||0)+' - '+(p.scoreVisita||0)+'</span>'
+        +'<img src="'+(p.logoVisita||'')+'" onerror="this.style.opacity=0">'
+        +'</div>'
+        +'<div class="partido-names"><span>'+(p.nombreLocal||'Local')+'</span><span>'+(p.nombreVisita||'Visita')+'</span></div>'
+        +'<div class="partido-status"><span class="partido-timer">⏱ '+timerStr+'</span></div>'
+        +'<div class="ver-btn">Ver este partido →</div>'
+        +'</div>';
+    });
+    document.getElementById('lista-partidos-vivo').innerHTML = html;
+  }
 });
 </script>
 </body>
