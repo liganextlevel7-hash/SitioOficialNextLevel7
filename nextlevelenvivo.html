@@ -459,24 +459,26 @@ function addEvent(type, team){
   var evs = liveState.events || [];
   evs.push(newEv);
   
-  // SOLUCIÓN MATEMÁTICA AGRESIVA PARA FORZAR LA SUMA NUMÉRICA DE GOLES
-  var sL = Number(liveState.scoreLocal || 0);
-  var sV = Number(liveState.scoreVisita || 0);
-  var yL = Number(liveState.yellowLocal || 0);
-  var rL = Number(liveState.redLocal || 0);
-  var yV = Number(liveState.yellowVisita || 0);
-  var rV = Number(liveState.redVisita || 0);
+  // SECCIÓN SÚPER-BLINDADA MEDIANTE TRANSACCIONES DE FIREBASE (FUERZA EL FORMATO NÚMERO)
+  if (type === 'goal') {
+     var caminoScore = team === 'local' ? 'scoreLocal' : 'scoreVisita';
+     db.ref('transmision/' + caminoScore).transaction(function(valorActual) {
+        return (Number(valorActual) || 0) + 1;
+     });
+  } else if (type === 'yellow') {
+     var caminoYel = team === 'local' ? 'yellowLocal' : 'yellowVisita';
+     db.ref('transmision/' + caminoYel).transaction(function(valorActual) {
+        return (Number(valorActual) || 0) + 1;
+     });
+  } else if (type === 'red') {
+     var caminoRed = team === 'local' ? 'redLocal' : 'redVisita';
+     db.ref('transmision/' + caminoRed).transaction(function(valorActual) {
+        return (Number(valorActual) || 0) + 1;
+     });
+  }
 
-  if(type === 'goal') { if(team === 'local') sL += 1; else sV += 1; }
-  if(type === 'yellow') { if(team === 'local') yL += 1; else yV += 1; }
-  if(type === 'red') { if(team === 'local') rL += 1; else rV += 1; }
-
-  db.ref('transmision').update({ 
-     events: evs,
-     scoreLocal: sL, scoreVisita: sV,
-     yellowLocal: yL, redLocal: rL,
-     yellowVisita: yV, redVisita: rV
-  }).then(() => {
+  // Guardamos la bitácora de forma paralela
+  db.ref('transmision').update({ events: evs }).then(function() {
      document.getElementById(selectId).value = "";
   });
 }
