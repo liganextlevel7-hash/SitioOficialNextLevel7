@@ -61,6 +61,7 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 .stat-num{font-size:22px;font-weight:900;color:var(--text);}
 .stat-lbl{font-size:10px;color:var(--text2);margin-top:2px;}
 .events-list{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+.events-list{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
 .ev{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--border);}
 .ev.goal{border-left-color:#4caf50;}
 .ev.yellow{border-left-color:var(--yellow);}
@@ -432,7 +433,7 @@ function cargarJugadoresPorEquipo(){
   if(divAsistL && divAsistL.children.length === 0) {
      jL.forEach(j => {
         var jId = j.ID_Jugador || j.id_jugador || j.ID || j.id;
-        var textoFinal = obtenerTextoEstructured(j);
+        var textoFinal = obtenerTextoEstructurado(j);
         htmlAsistLocal += `<div class="check-item">
            <input type="checkbox" id="chk_${jId}" checked>
            <label for="chk_${jId}">${textoFinal}</label>
@@ -567,7 +568,6 @@ function guardarPartidoFirebase(){
 function enviarDatosAGoogleSheets() {
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyA7BShK_4c49DAUiHpfXyfEGOToulPoVjzEXGKrSaVjQCJgUixODSM2qtzPFk5HRbG/exec";
   
-  // LEER DE FORMA FIJA EL ID REAL Y LA JORNADA DESDE FIREBASE (TRAÍDOS DE TU HOJA DE GOOGLE SHEETS)
   var idPartidoActual = liveState.idPartidoReal || (liveState.idLocal + "_" + liveState.idVisita);
   var jornadaPartido  = liveState.jornadaReal || "1";
   
@@ -616,7 +616,7 @@ function enviarDatosAGoogleSheets() {
      listaEventos.push({
         idPartido: idPartidoActual,
         idJugador: idJugadorReal,
-        tipoEvento: e.type === 'goal' ? 'Gol' : (e.type === 'yellow' ? 'Yellow' : 'Red'),
+        typeEvento: e.type === 'goal' ? 'Gol' : (e.type === 'yellow' ? 'Yellow' : 'Red'),
         minuto: e.minute
      });
   });
@@ -676,43 +676,68 @@ function actualizarUI(){
   document.getElementById('st-yv').textContent = d.yellowVisita ?? 0;
   document.getElementById('st-rv').textContent = d.redVisita ?? 0;
   
-  if(d.metodoFin) document.getElementById('sel-metodo-fin').value = d.metodoFin;
-
-  var labels = {inicio:'En juego ▶', medio:'Medio tiempo ⏸', fin:'Finalizado 🏁', sin:'Sin iniciar'};
-  document.getElementById('spill').textContent = labels[d.status] || 'Sin iniciar';
-
-  ['btn-inicio','btn-medio','btn-fin'].forEach(b=>document.getElementById(b).classList.remove('active'));
-  if(d.status==='inicio'){ document.getElementById('btn-inicio').classList.add('active'); startTimer(d.inicioTimestamp); }
-  else if(d.status==='medio'){ document.getElementById('btn-medio').classList.add('active'); stopTimer(); document.getElementById('match-time').textContent="20:00"; }
-  else if(d.status==='fin'){ document.getElementById('btn-fin').classList.add('active'); stopTimer(); document.getElementById('match-time').textContent="FIN"; }
-  else { stopTimer(); document.getElementById('match-time').textContent="0:00"; }
-
-  var list = document.getElementById('events-list');
+  var lbl = document.getElementById('spill');
+  if(d.status === 'sin') { lbl.textContent = "Sin Iniciar"; stopTimer(); document.getElementById('match-time').textContent = "0:00"; }
+  else if(d.status === 'inicio') { lbl.textContent = "En Juego"; startTimer(d.inicioTimestamp); }
+  else if(d.status === 'medio') { lbl.textContent = "Medio Tiempo"; stopTimer(); document.getElementById('match-time').textContent = (d.minuto || 0) + "' MT"; }
+  else if(d.status === 'fin') { lbl.textContent = "Finalizado"; stopTimer(); document.getElementById('match-time').textContent = "Fin"; }
+  
+  var btns = ['btn-inicio','btn-medio','btn-fin'];
+  btns.forEach(b => document.getElementById(b).classList.remove('active'));
+  if(d.status==='inicio') document.getElementById('btn-inicio').classList.add('active');
+  if(d.status==='medio') document.getElementById('btn-medio').classList.add('active');
+  if(d.status==='fin') document.getElementById('btn-fin').classList.add('active');
+  
+  if(document.getElementById('sel-metodo-fin')) document.getElementById('sel-metodo-fin').value = d.metodoFin || "Normal";
+  
+  var htmlEvs = '';
   var evs = d.events || [];
-  if(!evs.length){ list.innerHTML = '<div class="no-ev">Los eventos aparecerán aquí</div>'; return; }
-  var icons={goal:'⚽',yellow:'🟨',red:'🟥'};
-  var lbls={goal:'Gol',yellow:'Tarjeta amarilla',red:'Tarjeta roja'};
-  list.innerHTML = evs.map(e => `<div class="ev ${e.type}"><span class="ev-min">${e.minute}'</span><span>${icons[e.type]}</span><span class="ev-txt">${lbls[e.type]} — ${e.player}</span><span class="ev-team">${e.teamName}</span></div>`).join('');
-}
-
-function resetLive(){
-  if(confirm("¿Seguro que quieres limpiar la transmisión activa? Esto la quitará de la pantalla en vivo pública.")){
-    db.ref('transmision').remove().then(() => {
-       partidoSeleccionado = null;
-       liveState = null;
-       stopTimer();
-       document.getElementById('lista-asist-local').innerHTML = '';
-       document.getElementById('lista-asist-visita').innerHTML = '';
-       showTab('partidos');
+  if(!evs.length) {
+    document.getElementById('events-list').innerHTML = '<div class="no-ev">Los eventos aparecerán aquí</div>';
+  } else {
+    evs.forEach(e => {
+       var cls = e.type;
+       var icon = e.type === 'goal' ? '⚽' : (e.type === 'yellow' ? '<span class="yb"></span>' : '<span class="rb"></span>');
+       htmlEvs += `<div class="ev ${cls}">
+         <span class="ev-min">${e.minute}'</span>
+         <span class="ev-txt">${icon} ${e.player}</span>
+         <span class="ev-team">${e.teamName}</span>
+       </div>`;
     });
+    document.getElementById('events-list').innerHTML = htmlEvs;
   }
 }
 
-function showTab(tab){
-  document.getElementById('tab-partidos').classList.toggle('hidden', tab !== 'partidos');
-  document.getElementById('tab-live').classList.toggle('hidden', tab !== 'live');
-  document.getElementById('t-partidos').classList.toggle('active', tab === 'partidos');
-  document.getElementById('t-live').classList.toggle('active', tab === 'live');
+function showTab(t){
+  document.getElementById('tab-partidos').classList.add('hidden');
+  document.getElementById('tab-live').classList.add('hidden');
+  document.getElementById('t-partidos').classList.remove('active');
+  document.getElementById('t-live').classList.remove('active');
+  
+  if(t==='partidos') {
+    document.getElementById('tab-partidos').classList.remove('hidden');
+    document.getElementById('t-partidos').classList.add('active');
+  } else {
+    document.getElementById('tab-live').classList.remove('hidden');
+    document.getElementById('t-live').classList.add('active');
+  }
+}
+
+function resetLive(){
+  if(confirm("¿Seguro que deseas limpiar la transmisión activa? Esto borrará el marcador actual de la pantalla pública.")){
+     db.ref('transmision').set({activo:false}).then(() => {
+        partidoSeleccionado = null;
+        document.getElementById('lista-asist-local').innerHTML = '';
+        document.getElementById('lista-asist-visita').innerHTML = '';
+        document.getElementById('sel-goal-local').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
+        document.getElementById('sel-yellow-local').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
+        document.getElementById('sel-red-local').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
+        document.getElementById('sel-goal-visita').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
+        document.getElementById('sel-yellow-visita').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
+        document.getElementById('sel-red-visita').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
+        showTab('partidos');
+     });
+  }
 }
 </script>
 </body>
