@@ -243,8 +243,8 @@ var partidoSeleccionado = null;
 var liveState = null;
 var localTimer = null;
 
-// REEMPLAZAR ESTA URL CON LA DE TU HOJA NORMAL/REAL CUANDO HAGAS LA NUEVA IMPLEMENTACIÓN
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyA7BShK_4c49DAUiHpfXyfEGOToulPoVjzEXGKrSaVjQCJgUixODSM2qtzPFk5HRbG/exec";
+// CONFIGURADA CORRECTAMENTE CON TU NUEVA URL DE LA HOJA REAL
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbykgkOKIei9y4NMElbHHOeTef9OjB0bVZO7SHatKjqIm9ppdk9SZLTLrjl-oVJ4jrln/exec";
 
 function csvUrl(gid){ return 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid='+gid+'&single=true&output=csv'; }
 
@@ -607,7 +607,6 @@ function enviarSoloAsistencia() {
   });
 }
 
-// FUNCIÓN CORREGIDA TRADUCIENDO EVENTOS A ESPAÑOL ("Amarilla" y "Roja")
 function guardarPartidoFirebase(){
   if(!liveState) return;
   if(confirm("¿Deseas guardar los eventos (Goles y Tarjetas) finales de este partido en Google Sheets?")){
@@ -625,7 +624,7 @@ function guardarPartidoFirebase(){
          });
          var idJugadorReal = jugadorEncontrado ? (jugadorEncontrado.ID_Jugador || jugadorEncontrado.id_jugador || jugadorEncontrado.ID || jugadorEncontrado.id) : "ANONIMO";
 
-         // Mapeo corregido a Español para coincidir con tu reporte visual
+         // CAMBIADO CORRECTAMENTE A ESPAÑOL PARA LA TRANSMISIÓN DE EVENTOS REALES
          var eventoEspañol = 'Gol';
          if (e.type === 'yellow') {
             eventoEspañol = 'Amarilla';
