@@ -189,6 +189,17 @@ var db = firebase.database();
     </div>
 
     <div class="section">
+      <h3>Método de Finalización</h3>
+      <div style="display: flex; gap: 8px;">
+        <select class="psel" id="sel-metodo-fin" onchange="cambiarMetodoFin()" style="padding: 10px; font-size: 13px; color: #fff; background: var(--bg3);">
+          <option value="Normal">Ganado Regular (Tiempo Normal)</option>
+          <option value="Penales">Ganado en Penales</option>
+          <option value="Default">Ganado por Default (W.O.)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
       <h3>Bitácora del partido</h3>
       <div class="events-list" id="events-list"><div class="no-ev">Los eventos aparecerán aquí</div></div>
     </div>
@@ -322,6 +333,7 @@ function seleccionarPartido(idx){
     yellowVisita: 0, redVisita: 0,
     minuto: 0,
     inicioTimestamp: 0,
+    metodoFin: "Normal",
     events: []
   };
   
@@ -380,7 +392,7 @@ function cargarJugadoresPorEquipo(){
   var idsL = ['sel-gol-local','sel-yellow-local','sel-red-local'];
   idsL.forEach(id => {
     var s = document.getElementById(id);
-    if(s) {
+    if(s && s.children.length <= 1) {
       s.innerHTML = '<option value="">— Seleccionar Jugador —</option>';
       jL.forEach(j => { 
         var textoFinal = obtenerTextoEstructurado(j);
@@ -392,7 +404,7 @@ function cargarJugadoresPorEquipo(){
   var idsV = ['sel-gol-visita','sel-yellow-visita','sel-red-visita'];
   idsV.forEach(id => {
     var s = document.getElementById(id);
-    if(s) {
+    if(s && s.children.length <= 1) {
       s.innerHTML = '<option value="">— Seleccionar Jugador —</option>';
       jV.forEach(j => { 
         var textoFinal = obtenerTextoEstructurado(j);
@@ -420,13 +432,19 @@ function setStatus(st){
   db.ref('transmision').update(updates);
 }
 
+function cambiarMetodoFin() {
+  if(!liveState) return;
+  var met = document.getElementById('sel-metodo-fin').value;
+  db.ref('transmision').update({ metodoFin: met });
+}
+
 function addEvent(type, team){
   if(!liveState) return;
   var selectId = 'sel-' + type + '-' + team;
   var pName = document.getElementById(selectId).value;
   
   if(!pName || pName.trim() === ""){
-     pName = "Jugador de Equipo";
+     pName = "Jugador Anónimo";
   }
   
   var min = 0;
@@ -441,26 +459,26 @@ function addEvent(type, team){
   var evs = liveState.events || [];
   evs.push(newEv);
   
-  var sL = parseInt(liveState.scoreLocal === undefined ? 0 : liveState.scoreLocal) || 0;
-  var sV = parseInt(liveState.scoreVisita === undefined ? 0 : liveState.scoreVisita) || 0;
-  var yL = parseInt(liveState.yellowLocal === undefined ? 0 : liveState.yellowLocal) || 0;
-  var rL = parseInt(liveState.redLocal === undefined ? 0 : liveState.redLocal) || 0;
-  var yV = parseInt(liveState.yellowVisita === undefined ? 0 : liveState.yellowVisita) || 0;
-  var rV = parseInt(liveState.redVisita === undefined ? 0 : liveState.redVisita) || 0;
+  // SOLUCIÓN MATEMÁTICA AGRESIVA PARA FORZAR LA SUMA NUMÉRICA DE GOLES
+  var sL = Number(liveState.scoreLocal || 0);
+  var sV = Number(liveState.scoreVisita || 0);
+  var yL = Number(liveState.yellowLocal || 0);
+  var rL = Number(liveState.redLocal || 0);
+  var yV = Number(liveState.yellowVisita || 0);
+  var rV = Number(liveState.redVisita || 0);
 
-  if(type === 'goal') { if(team === 'local') sL = sL + 1; else sV = sV + 1; }
-  if(type === 'yellow') { if(team === 'local') yL = yL + 1; else yV = yV + 1; }
-  if(type === 'red') { if(team === 'local') rL = rL + 1; else rV = rV + 1; }
+  if(type === 'goal') { if(team === 'local') sL += 1; else sV += 1; }
+  if(type === 'yellow') { if(team === 'local') yL += 1; else yV += 1; }
+  if(type === 'red') { if(team === 'local') rL += 1; else rV += 1; }
 
-  var updates = { 
+  db.ref('transmision').update({ 
      events: evs,
      scoreLocal: sL, scoreVisita: sV,
      yellowLocal: yL, redLocal: rL,
      yellowVisita: yV, redVisita: rV
-  };
-  
-  db.ref('transmision').update(updates);
-  document.getElementById(selectId).value = "";
+  }).then(() => {
+     document.getElementById(selectId).value = "";
+  });
 }
 
 function guardarPartidoFirebase(){
@@ -492,13 +510,17 @@ function actualizarUI(){
   document.getElementById('logo-visita').src = d.logoVisita || '';
   document.getElementById('name-local').textContent = d.nombreLocal || 'Local';
   document.getElementById('name-visita').textContent = d.nombreVisita || 'Visita';
+  
   document.getElementById('score-local').textContent = d.scoreLocal ?? 0;
   document.getElementById('score-visita').textContent = d.scoreVisita ?? 0;
+  
   document.getElementById('st-yl').textContent = d.yellowLocal ?? 0;
   document.getElementById('st-rl').textContent = d.redLocal ?? 0;
   document.getElementById('st-yv').textContent = d.yellowVisita ?? 0;
   document.getElementById('st-rv').textContent = d.redVisita ?? 0;
   
+  if(d.metodoFin) document.getElementById('sel-metodo-fin').value = d.metodoFin;
+
   var labels = {inicio:'En juego ▶', medio:'Medio tiempo ⏸', fin:'Finalizado 🏁', sin:'Sin iniciar'};
   document.getElementById('spill').textContent = labels[d.status] || 'Sin iniciar';
 
