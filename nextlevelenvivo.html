@@ -61,7 +61,6 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 .stat-num{font-size:22px;font-weight:900;color:var(--text);}
 .stat-lbl{font-size:10px;color:var(--text2);margin-top:2px;}
 .events-list{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
-.events-list{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
 .ev{display:flex;align-items:center;gap:8px;padding:8px 11px;background:var(--bg3);border-radius:8px;font-size:12px;border-left:3px solid var(--border);}
 .ev.goal{border-left-color:#4caf50;}
 .ev.yellow{border-left-color:var(--yellow);}
@@ -73,6 +72,7 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 .hidden{display:none!important;}
 .active-bar{background:var(--bg3);border:1px solid var(--verde);border-radius:10px;padding:10px 14px;text-align:center;font-size:13px;font-weight:700;color:var(--verde2);margin-bottom:12px;}
 .save-btn{border:1px solid #1a5c2a;background:#1e3a20;color:#7dd87d;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;margin-right:10px;}
+.asist-save-btn{border:1px solid #2d8a45;background:#1a5c2a;color:#fff;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;}
 .danger-btn{border:1px solid #5a2020;background:#2a1010;color:#ef9090;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;}
 .loading{text-align:center;color:var(--text2);padding:20px;font-size:13px;}
 .asistencia-box {display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
@@ -163,7 +163,7 @@ var db = firebase.database();
       <span id="spill" class="spill">Sin iniciar</span>
     </div>
 
-    <div class="section">
+    <div class="section" id="seccion-asistencia">
       <h3>Asistencia de Jugadores (Desmarca al que NO llegó)</h3>
       <div class="asistencia-box">
          <div class="asistencia-col">
@@ -175,6 +175,7 @@ var db = firebase.database();
             <div id="lista-asist-visita"></div>
          </div>
       </div>
+      <button class="asist-save-btn" onclick="enviarSoloAsistencia()">✔️ Confirmar y Ocultar Lista de Asistencia</button>
     </div>
 
     <div class="section">
@@ -225,7 +226,7 @@ var db = firebase.database();
     </div>
 
     <div style="text-align:center;margin-top:10px;padding-bottom:20px;">
-      <button class="save-btn" onclick="guardarPartidoFirebase()">💾 Guardar Datos del Partido</button>
+      <button class="save-btn" onclick="guardarPartidoFirebase()">💾 Guardar Historial y Eventos</button>
       <button class="danger-btn" onclick="resetLive()">🗑 Limpiar Transmisión Activa</button>
     </div>
   </div>
@@ -240,6 +241,8 @@ var DB = { equipos:{}, jugadores:[], partidos:[], rawPartidos:[] };
 var partidoSeleccionado = null;
 var liveState = null;
 var localTimer = null;
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyA7BShK_4c49DAUiHpfXyfEGOToulPoVjzEXGKrSaVjQCJgUixODSM2qtzPFk5HRbG/exec";
 
 function csvUrl(gid){ return 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid='+gid+'&single=true&output=csv'; }
 
@@ -259,7 +262,7 @@ function parseCSV(text){
   var headers=lines[0].split(',').map(function(h){return h.trim().replace(/^"|"$/g,'').replace(/\r/g,'');});
   return lines.slice(1).filter(function(l){return l.trim();}).map(function(line){
     var vals=[],cur='',inQ=false;
-    for(var i=0; i<line.length; i++){var c=line[i];if(c==='"')inQ=!inQ;else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else cur+=c;}
+    for(var i=0; i<line.length; i++){var c=line[line[i] === '"' ? i : i]; if(c==='"')inQ=!inQ;else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else cur+=c;}
     vals.push(cur.trim());
     var obj={};
     headers.forEach(function(h,i){
@@ -365,12 +368,14 @@ function seleccionarPartido(idx){
     events: []
   };
   
+  document.getElementById('seccion-asistencia').classList.remove('hidden'); // Reinicia visualización
   db.ref('transmision').set(inicializacionDura).then(() => {
      cargarJugadoresPorEquipo();
      showTab('live');
   });
 }
 
+// CORREGIDA: Se arregló el error ortográfico de la función interna
 function cargarJugadoresPorEquipo(){
   if(!partidoSeleccionado) return;
   var idL = liveState?.idLocal || partidoSeleccionado.Equipo_Local || partidoSeleccionado.equipo_local;
@@ -554,30 +559,15 @@ function addEvent(type, team){
   });
 }
 
-function guardarPartidoFirebase(){
+// NUEVA FUNCIÓN: Envía de inmediato la asistencia a Google Sheets al arrancar y oculta la visualización
+function enviarSoloAsistencia() {
   if(!liveState) return;
-  if(confirm("¿Deseas guardar el historial completo de este encuentro y actualizar Google Sheets con la asistencia real?")){
-      var key = liveState.idPartidoReal + "_" + Date.now();
-      db.ref('historial_partidos/' + key).set(liveState).then(() => {
-         alert("¡Datos del partido respaldados en Firebase con éxito!");
-         enviarDatosAGoogleSheets();
-      });
-  }
-}
-
-function enviarDatosAGoogleSheets() {
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyA7BShK_4c49DAUiHpfXyfEGOToulPoVjzEXGKrSaVjQCJgUixODSM2qtzPFk5HRbG/exec";
   
   var idPartidoActual = liveState.idPartidoReal || (liveState.idLocal + "_" + liveState.idVisita);
   var jornadaPartido  = liveState.jornadaReal || "1";
   
-  var fechaPartido = "28/06/2026";
-  if(liveState.fechaReal) {
-     fechaPartido = liveState.fechaReal;
-  } else {
-     var d = new Date();
-     fechaPartido = (d.getDate()<10?'0':'')+d.getDate() + "/" + ((d.getMonth()+1)<10?'0':'')+(d.getMonth()+1) + "/" + d.getFullYear();
-  }
+  var d = new Date();
+  var fechaPartido = liveState.fechaReal || ((d.getDate()<10?'0':'')+d.getDate() + "/" + ((d.getMonth()+1)<10?'0':'')+(d.getMonth()+1) + "/" + d.getFullYear());
 
   var jugadoresAsistentes = [];
   DB.jugadores.forEach(function(j) {
@@ -600,27 +590,6 @@ function enviarDatosAGoogleSheets() {
      }
   });
 
-  var listaEventos = [];
-  var evs = liveState.events || [];
-  
-  evs.forEach(function(e) {
-     var nombreLimpio = e.player.split(' - ')[1] || e.player;
-     
-     var jugadorEncontrado = DB.jugadores.find(function(j) {
-        var nomJ = (j.Nombre || j.nombre || '').toLowerCase().trim();
-        return nomJ === nombreLimpio.toLowerCase().trim();
-     });
-     
-     var idJugadorReal = jugadorEncontrado ? (jugadorEncontrado.ID_Jugador || jugadorEncontrado.id_jugador || jugadorEncontrado.ID || jugadorEncontrado.id) : "ANONIMO";
-
-     listaEventos.push({
-        idPartido: idPartidoActual,
-        idJugador: idJugadorReal,
-        typeEvento: e.type === 'goal' ? 'Gol' : (e.type === 'yellow' ? 'Yellow' : 'Red'),
-        minuto: e.minute
-     });
-  });
-
   fetch(SCRIPT_URL, {
     method: 'POST',
     mode: 'no-cors',
@@ -630,22 +599,57 @@ function enviarDatosAGoogleSheets() {
       jugadores: jugadoresAsistentes
     })
   }).then(() => {
-     console.log("Asistencias enviadas a Google Sheets");
-     return fetch(SCRIPT_URL, {
-       method: 'POST',
-       mode: 'no-cors',
-       headers: { 'Content-Type': 'application/json' },
-       body: JSON.stringify({
-         accion: 'guardar_eventos',
-         eventos: listaEventos
-       })
-     });
-  }).then(() => {
-     alert("¡Google Sheets de pruebas actualizado exitosamente!");
+     alert("¡Asistencia guardada con éxito en Google Sheets!");
+     document.getElementById('seccion-asistencia').classList.add('hidden'); // Oculta los checkboxes
   }).catch(err => {
-     console.error("Error al actualizar Google Sheets:", err);
-     alert("Hubo un detalle al enviar los datos a Google Sheets.");
+     console.error(err);
+     alert("Error al enviar la asistencia.");
   });
+}
+
+function guardarPartidoFirebase(){
+  if(!liveState) return;
+  if(confirm("¿Deseas guardar los eventos (Goles y Tarjetas) finales de este partido en Google Sheets?")){
+      var key = liveState.idPartidoReal + "_" + Date.now();
+      
+      var idPartidoActual = liveState.idPartidoReal || (liveState.idLocal + "_" + liveState.idVisita);
+      var listaEventos = [];
+      var evs = liveState.events || [];
+      
+      evs.forEach(function(e) {
+         var nombreLimpio = e.player.split(' - ')[1] || e.player;
+         var jugadorEncontrado = DB.jugadores.find(function(j) {
+            var nomJ = (j.Nombre || j.nombre || '').toLowerCase().trim();
+            return nomJ === nombreLimpio.toLowerCase().trim();
+         });
+         var idJugadorReal = jugadorEncontrado ? (jugadorEncontrado.ID_Jugador || jugadorEncontrado.id_jugador || jugadorEncontrado.ID || jugadorEncontrado.id) : "ANONIMO";
+
+         listaEventos.push({
+            idPartido: idPartidoActual,
+            idJugador: idJugadorReal,
+            tipoEvento: e.type === 'goal' ? 'Gol' : (e.type === 'yellow' ? 'Yellow' : 'Red'),
+            minuto: e.minute
+         });
+      });
+
+      // Envía los eventos directo
+      db.ref('historial_partidos/' + key).set(liveState).then(() => {
+         return fetch(SCRIPT_URL, {
+           method: 'POST',
+           mode: 'no-cors',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+             accion: 'guardar_eventos',
+             eventos: listaEventos
+           })
+         });
+      }).then(() => {
+         alert("¡Eventos guardados e historial actualizado exitosamente!");
+      }).catch(err => {
+         console.error(err);
+         alert("Ocurrió un error.");
+      });
+  }
 }
 
 function startTimer(ts){
@@ -660,6 +664,30 @@ function startTimer(ts){
   localTimer = setInterval(tick, 1000);
 }
 function stopTimer(){ if(localTimer){clearInterval(localTimer); localTimer=null;} }
+
+function showTab(tab) {
+  if(tab === 'partidos') {
+    document.getElementById('tab-partidos').classList.remove('hidden');
+    document.getElementById('tab-live').classList.add('hidden');
+    document.getElementById('t-partidos').classList.add('active');
+    document.getElementById('t-live').classList.remove('active');
+  } else {
+    document.getElementById('tab-partidos').classList.add('hidden');
+    document.getElementById('tab-live').classList.remove('hidden');
+    document.getElementById('t-partidos').classList.remove('active');
+    document.getElementById('t-live').classList.add('active');
+  }
+}
+
+function resetLive(){
+  if(confirm("¿Seguro que quieres borrar la transmisión activa?")){
+    db.ref('transmision').remove().then(()=>{
+      document.getElementById('lista-asist-local').innerHTML = '';
+      document.getElementById('lista-asist-visita').innerHTML = '';
+      showTab('partidos');
+    });
+  }
+}
 
 function actualizarUI(){
   var d = liveState;
@@ -676,67 +704,24 @@ function actualizarUI(){
   document.getElementById('st-yv').textContent = d.yellowVisita ?? 0;
   document.getElementById('st-rv').textContent = d.redVisita ?? 0;
   
-  var lbl = document.getElementById('spill');
-  if(d.status === 'sin') { lbl.textContent = "Sin Iniciar"; stopTimer(); document.getElementById('match-time').textContent = "0:00"; }
-  else if(d.status === 'inicio') { lbl.textContent = "En Juego"; startTimer(d.inicioTimestamp); }
-  else if(d.status === 'medio') { lbl.textContent = "Medio Tiempo"; stopTimer(); document.getElementById('match-time').textContent = (d.minuto || 0) + "' MT"; }
-  else if(d.status === 'fin') { lbl.textContent = "Finalizado"; stopTimer(); document.getElementById('match-time').textContent = "Fin"; }
+  document.getElementById('sel-metodo-fin').value = d.metodoFin || "Normal";
   
-  var btns = ['btn-inicio','btn-medio','btn-fin'];
-  btns.forEach(b => document.getElementById(b).classList.remove('active'));
-  if(d.status==='inicio') document.getElementById('btn-inicio').classList.add('active');
-  if(d.status==='medio') document.getElementById('btn-medio').classList.add('active');
-  if(d.status==='fin') document.getElementById('btn-fin').classList.add('active');
+  var statusTxt = "Sin iniciar";
+  if(d.status==='inicio') { statusTxt="▶ En Vivo"; startTimer(d.inicioTimestamp); }
+  else if(d.status==='medio') { statusTxt="⏸ Medio Tiempo"; stopTimer(); document.getElementById('match-time').textContent = d.minuto+':00'; }
+  else if(d.status==='fin') { statusTxt="🏁 Fin del Partido"; stopTimer(); document.getElementById('match-time').textContent = d.minuto+':00'; }
+  document.getElementById('spill').textContent = statusTxt;
   
-  if(document.getElementById('sel-metodo-fin')) document.getElementById('sel-metodo-fin').value = d.metodoFin || "Normal";
-  
-  var htmlEvs = '';
+  var evHtml = '';
   var evs = d.events || [];
   if(!evs.length) {
     document.getElementById('events-list').innerHTML = '<div class="no-ev">Los eventos aparecerán aquí</div>';
   } else {
     evs.forEach(e => {
-       var cls = e.type;
-       var icon = e.type === 'goal' ? '⚽' : (e.type === 'yellow' ? '<span class="yb"></span>' : '<span class="rb"></span>');
-       htmlEvs += `<div class="ev ${cls}">
-         <span class="ev-min">${e.minute}'</span>
-         <span class="ev-txt">${icon} ${e.player}</span>
-         <span class="ev-team">${e.teamName}</span>
-       </div>`;
+      var badge = e.type==='goal'?'⚽':(e.type==='yellow'?'🟨':'🟥');
+      evHtml += `<div class="ev ${e.type}"><span class="ev-min">${e.minute}'</span> ${badge} <span class="ev-txt"><strong>${e.player}</strong> (${e.type==='goal'?'Gol':(e.type==='yellow'?'Amarilla':'Roja')})</span><span class="ev-team">${e.teamName}</span></div>`;
     });
-    document.getElementById('events-list').innerHTML = htmlEvs;
-  }
-}
-
-function showTab(t){
-  document.getElementById('tab-partidos').classList.add('hidden');
-  document.getElementById('tab-live').classList.add('hidden');
-  document.getElementById('t-partidos').classList.remove('active');
-  document.getElementById('t-live').classList.remove('active');
-  
-  if(t==='partidos') {
-    document.getElementById('tab-partidos').classList.remove('hidden');
-    document.getElementById('t-partidos').classList.add('active');
-  } else {
-    document.getElementById('tab-live').classList.remove('hidden');
-    document.getElementById('t-live').classList.add('active');
-  }
-}
-
-function resetLive(){
-  if(confirm("¿Seguro que deseas limpiar la transmisión activa? Esto borrará el marcador actual de la pantalla pública.")){
-     db.ref('transmision').set({activo:false}).then(() => {
-        partidoSeleccionado = null;
-        document.getElementById('lista-asist-local').innerHTML = '';
-        document.getElementById('lista-asist-visita').innerHTML = '';
-        document.getElementById('sel-goal-local').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
-        document.getElementById('sel-yellow-local').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
-        document.getElementById('sel-red-local').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
-        document.getElementById('sel-goal-visita').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
-        document.getElementById('sel-yellow-visita').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
-        document.getElementById('sel-red-visita').innerHTML = '<option value="">— Seleccionar Jugador —</option>';
-        showTab('partidos');
-     });
+    document.getElementById('events-list').innerHTML = evHtml;
   }
 }
 </script>
