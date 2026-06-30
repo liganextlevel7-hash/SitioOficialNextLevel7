@@ -143,7 +143,7 @@ var viendoLive = false;
 var datosFirebase = null;
 var partidos = [];
 var equipos = {};
-var eventosPreviosCount = 0; 
+var eventosPreviosCount = 0; // Variable para detectar nuevos goles
 var icons={goal:'⚽',yellow:'🟨',red:'🟥'};
 var labels={goal:'Gol',yellow:'Tarjeta amarilla',red:'Tarjeta roja'};
 var statusLabels={inicio:'En juego ▶',medio:'Medio tiempo ⏸',fin:'Finalizado 🏁',sin:'Sin iniciar'};
@@ -199,15 +199,17 @@ function renderSeleccion(){
 }
 db.ref('transmision').on('value', function(snap){
   var nuevoDatos = snap.val();
+  // Lógica para detectar GOL y mostrar animación
   if(nuevoDatos && nuevoDatos.events && nuevoDatos.events.length > eventosPreviosCount) {
-    var ultimo = nuevoDatos.events[nuevoDatos.events.length - 1];
-    if(ultimo.type === 'goal') {
+    var ultimoEvento = nuevoDatos.events[nuevoDatos.events.length - 1];
+    if(ultimoEvento.type === 'goal') {
       var anim = document.getElementById('animacion-gol');
       anim.style.display = 'flex';
       setTimeout(function(){ anim.style.display = 'none'; }, 3500);
     }
   }
   eventosPreviosCount = (nuevoDatos && nuevoDatos.events) ? nuevoDatos.events.length : 0;
+  
   datosFirebase = nuevoDatos;
   var hayLive = datosFirebase && datosFirebase.activo === true;
   if(!hayLive && !partidos.length){ document.getElementById('vista-offline').style.display='block'; return; }
