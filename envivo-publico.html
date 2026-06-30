@@ -66,9 +66,7 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 </style>
 </head>
 <body>
-<!-- ANIMACIÓN GOL INTEGRADA -->
 <div id="animacion-gol"><div id="gol-texto">¡GOL!</div></div>
-
 <div class="wrap">
   <div class="header">
     <div class="live-badge"><span class="live-dot"></span> EN VIVO</div>
@@ -78,25 +76,28 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
   <div id="vista-offline" class="offline">
     <div style="font-size:50px;margin-bottom:16px;">📡</div>
     <h2>Sin transmisión activa</h2>
+    <p>Cuando comience el partido<br>podrás seguirlo aquí<br>en tiempo real.</p>
   </div>
   <div id="vista-seleccion" style="display:none;">
+    <p style="font-size:12px;color:#8aab91;margin-bottom:10px;text-align:center;">Encuentros Programados de la Fecha</p>
     <div id="lista-encuentros"></div>
   </div>
   <div id="vista-live" style="display:none;">
     <button class="back-btn" onclick="volverSeleccion()">← Ver todos los encuentros</button>
+    <div style="text-align:center;margin-bottom:10px;"><span class="spill" id="spill">En juego ▶</span></div>
     <div class="scoreboard">
-      <div class="team-card"><div class="tlogo-box"><img id="logo-local" src="" alt="L"></div><div class="tname" id="name-local">Local</div></div>
+      <div class="team-card"><div class="tlogo-box"><img id="logo-local" src="" alt="local"></div><div class="tname" id="name-local">Local</div></div>
       <div class="score-box">
         <div class="score-nums"><span class="snum" id="score-local">0</span><span class="ssep">-</span><span class="snum" id="score-visita">0</span></div>
         <div class="stime" id="match-time">0:00</div>
       </div>
-      <div class="team-card"><div class="tlogo-box"><img id="logo-visita" src="" alt="V"></div><div class="tname" id="name-visita">Visita</div></div>
+      <div class="team-card"><div class="tlogo-box"><img id="logo-visita" src="" alt="visita"></div><div class="tname" id="name-visita">Visita</div></div>
     </div>
     <div class="stats-row">
-      <div class="stat-mini"><div class="stat-num" id="st-yl">0</div><div class="stat-lbl"><span class="yb"></span>Loc</div></div>
-      <div class="stat-mini"><div class="stat-num" id="st-rl">0</div><div class="stat-lbl"><span class="rb"></span>Loc</div></div>
-      <div class="stat-mini"><div class="stat-num" id="st-yv">0</div><div class="stat-lbl"><span class="yb"></span>Vis</div></div>
-      <div class="stat-mini"><div class="stat-num" id="st-rv">0</div><div class="stat-lbl"><span class="rb"></span>Vis</div></div>
+      <div class="stat-mini"><div class="stat-num" id="st-yl">0</div><div class="stat-lbl"><span class="yb"></span>Local</div></div>
+      <div class="stat-mini"><div class="stat-num" id="st-rl">0</div><div class="stat-lbl"><span class="rb"></span>Local</div></div>
+      <div class="stat-mini"><div class="stat-num" id="st-yv">0</div><div class="stat-lbl"><span class="yb"></span>Visita</div></div>
+      <div class="stat-mini"><div class="stat-num" id="st-rv">0</div><div class="stat-lbl"><span class="rb"></span>Visita</div></div>
     </div>
     <div class="section">
       <h3>Bitácora del partido</h3>
@@ -104,57 +105,88 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
     </div>
   </div>
 </div>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
 var GID_PARTIDOS = '1362473459';
 var GID_EQUIPOS = '1894947293';
-var eventosPreviosCount = 0;
-var db = firebase.database();
-
+var eventosPreviosCount = 0; // Necesario para la animación
 firebase.initializeApp({
   apiKey: "AIzaSyCDStSLESm2UbqcIRpqrnHGfTsZJUtCVwc",
+  authDomain: "liga-next-level-7.firebaseapp.com",
   databaseURL: "https://liga-next-level-7-default-rtdb.firebaseio.com",
-  projectId: "liga-next-level-7"
+  projectId: "liga-next-level-7",
+  storageBucket: "liga-next-level-7.firebasestorage.app",
+  messagingSenderId: "463941548215",
+  appId: "1:463941548215:web:0d9eb7e517cbc33352b532"
 });
+var db = firebase.database();
+var localTimer = null, viendoLive = false, datosFirebase = null, partidos = [], equipos = {};
+var icons={goal:'⚽',yellow:'🟨',red:'🟥'}, labels={goal:'Gol',yellow:'Tarjeta amarilla',red:'Tarjeta roja'}, statusLabels={inicio:'En juego ▶',medio:'Medio tiempo ⏸',fin:'Finalizado 🏁',sin:'Sin iniciar'};
 
-// Funciones auxiliares
 function csvUrl(gid){ return 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid='+gid+'&single=true&output=csv'; }
-
 function parseCSV(text){
   var lines=text.trim().split('\n');
-  var headers=lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).map(line=>{
-    var vals=line.split(',').map(v=>v.trim().replace(/^"|"$/g,''));
-    var obj={}; headers.forEach((h,i)=>obj[h]=vals[i]); return obj;
+  var headers=lines[0].split(',').map(function(h){return h.trim().replace(/^"|"$/g,'').replace(/\r/g,'');});
+  return lines.slice(1).filter(function(l){return l.trim();}).map(function(line){
+    var vals=[],cur='',inQ=false;
+    for(var i=0;i<line.length;i++){var c=line[i];if(c==='"')inQ=!inQ;else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else cur+=c;}
+    vals.push(cur.trim());
+    var obj={}; headers.forEach(function(h,i){ obj[h]=(vals[i]||'').replace(/^"|"$/g,'').replace(/\r/g,'').trim(); });
+    return obj;
   });
 }
-
 function cargarPartidos(){
-  Promise.all([fetch(csvUrl(GID_EQUIPOS)).then(r=>r.text()), fetch(csvUrl(GID_PARTIDOS)).then(r=>r.text())]).then(res=>{
-    // Lógica original de renderizado
+  Promise.all([fetch(csvUrl(GID_EQUIPOS)).then(function(r){return r.text();}), fetch(csvUrl(GID_PARTIDOS)).then(function(r){return r.text();})]).then(function(results){
+    var eqs = parseCSV(results[0]);
+    eqs.forEach(function(e){ var id = e.ID_Equipo || e.id_equipo || e.ID || e.id; if(id) equipos[id]={nombre:e.Nombre || e.nombre, logo:e.URL || e.url || e.Logo || e.logo}; });
+    partidos = parseCSV(results[1]).filter(function(p){ var est = (p.Estado || p.estado || '').toLowerCase(); return est === 'programado'; });
     renderSeleccion();
-  });
+  }).catch(function(){ renderSeleccion(); });
 }
-
+function startTimer(seg){ if(localTimer) clearInterval(localTimer); var s=seg; function tick(){ var m=Math.floor(s/60),sc=s%60; document.getElementById('match-time').textContent=m+':'+(sc<10?'0':'')+sc; s++; } tick(); localTimer=setInterval(tick,1000); }
+function stopTimer(txt){ if(localTimer){clearInterval(localTimer);localTimer=null;} if(document.getElementById('match-time')) document.getElementById('match-time').textContent=txt||'0:00'; }
+function volverSeleccion(){ viendoLive=false; stopTimer('0:00'); document.getElementById('vista-live').style.display='none'; document.getElementById('vista-seleccion').style.display='block'; renderSeleccion(); }
+function verEnVivo(){ if(!datosFirebase||!datosFirebase.activo) return; viendoLive=true; document.getElementById('vista-seleccion').style.display='none'; document.getElementById('vista-live').style.display='block'; actualizarMarcador(datosFirebase); }
+function actualizarMarcador(d){
+  document.getElementById('logo-local').src=d.logoLocal||''; document.getElementById('logo-visita').src=d.logoVisita||''; document.getElementById('name-local').textContent=d.nombreLocal||'Local'; document.getElementById('name-visita').textContent=d.nombreVisita||'Visita'; document.getElementById('score-local').textContent=d.scoreLocal||0; document.getElementById('score-visita').textContent=d.scoreVisita||0; document.getElementById('spill').textContent=statusLabels[d.status]||'En juego'; document.getElementById('st-yl').textContent=d.yellowLocal||0; document.getElementById('st-rl').textContent=d.redLocal||0; document.getElementById('st-yv').textContent=d.yellowVisita||0; document.getElementById('st-rv').textContent=d.redVisita||0;
+  if(d.status==='inicio'){ var segs=(d.minuto||0)*60; if(d.inicioTimestamp) segs=Math.floor((Date.now()-d.inicioTimestamp)/1000); if(segs < 0) segs = 0; startTimer(segs); } else if(d.status==='medio'){stopTimer('20:00');} else if(d.status==='fin'){stopTimer('FIN');} else{stopTimer('0:00');}
+  var evs=d.events||[]; var list=document.getElementById('events-list'); if(!evs.length){list.innerHTML='<div class="no-ev">Esperando eventos...</div>';return;}
+  list.innerHTML=evs.map(function(e){ return '<div class="ev '+(e.type||'')+'"><span class="ev-min">'+(e.minute||0)+"'</span><span>"+(icons[e.type]||'')+'</span><span class="ev-txt">'+(labels[e.type]||e.type)+(e.player?' — '+e.player:'')+'</span><span class="ev-team">'+(e.teamName||'')+'</span></div>'; }).join('');
+}
+function renderSeleccion(){
+  var html=''; var hayLive = datosFirebase && datosFirebase.activo === true;
+  if(hayLive){
+    var d=datosFirebase, esFin = d.status === 'fin', badgeClase = esFin ? 'estado-fin' : 'estado-live', badgeTexto = esFin ? '🏁 FINALIZADO' : '🔴 EN VIVO', cardClase = esFin ? 'finalizado-card' : 'transmitiendo', btnClase = esFin ? 'ver-btn fin-btn' : 'ver-btn', btnTexto = esFin ? 'Ver Resumen Final →' : '🔴 Ver en vivo →';
+    html+='<div class="encuentro-card '+cardClase+'" onclick="verEnVivo()"><div style="text-align:center;margin-bottom:8px;"><span class="estado-badge '+badgeClase+'">'+badgeTexto+'</span></div><div class="encuentro-logos"><img src="'+(d.logoLocal||'')+'" onerror="this.style.opacity=0"><span class="encuentro-score">'+(d.scoreLocal||0)+' - '+(d.scoreVisita||0)+'</span><img src="'+(d.logoVisita||'')+'" onerror="this.style.opacity=0"></div><div class="encuentro-names"><span>'+(d.nombreLocal||'Local')+'</span><span>'+(d.nombreVisita||'Visita')+'</span></div><div class="'+btnClase+'">'+btnTexto+'</div></div>';
+  }
+  var porTransmitir = partidos.filter(function(p){ if(!hayLive) return true; return !( (p.Equipo_Local||p.equipo_local) === datosFirebase.idLocal && (p.Equipo_Visita||p.equipo_visita) === datosFirebase.idVisita ); });
+  if(porTransmitir.length){ porTransmitir.forEach(function(p){ var idL = p.Equipo_Local || p.equipo_local, idV = p.Equipo_Visita || p.equipo_visita, eL=equipos[idL]||{nombre:idL,logo:''}, eV=equipos[idV]||{nombre:idV,logo:''}; html+='<div class="encuentro-card"><div style="text-align:center;margin-bottom:8px;"><span class="estado-badge estado-espera">⏳ Programado</span></div><div class="encuentro-logos"><img src="'+eL.logo+'" onerror="this.style.opacity=0"><span class="encuentro-score" style="color:#8aab91;">VS</span><img src="'+eV.logo+'" onerror="this.style.opacity=0"></div><div class="encuentro-names"><span>'+eL.nombre+'</span><span>'+eV.nombre+'</span></div></div>'; }); }
+  if(!html) html='<div style="text-align:center;color:#8aab91;padding:20px;font-size:13px;">No hay partidos programados libres para hoy</div>';
+  document.getElementById('lista-encuentros').innerHTML=html;
+}
 db.ref('transmision').on('value', function(snap){
-  var d = snap.val();
-  if(!d) return;
-
+  datosFirebase=snap.val();
+  var hayLive = datosFirebase && datosFirebase.activo === true;
+  
   // Lógica de Animación GOL
-  if(d.events && d.events.length > eventosPreviosCount) {
-    var ultimo = d.events[d.events.length - 1];
+  if(hayLive && datosFirebase.events && datosFirebase.events.length > eventosPreviosCount) {
+    var ultimo = datosFirebase.events[datosFirebase.events.length - 1];
     if(ultimo.type === 'goal') {
       document.getElementById('animacion-gol').style.display = 'flex';
-      setTimeout(()=>{ document.getElementById('animacion-gol').style.display = 'none'; }, 3500);
+      setTimeout(function(){ document.getElementById('animacion-gol').style.display = 'none'; }, 3500);
     }
   }
-  eventosPreviosCount = d.events ? d.events.length : 0;
-  
-  // (Mantén aquí tu lógica original de renderizado de marcador y eventos)
-});
+  eventosPreviosCount = (datosFirebase && datosFirebase.events) ? datosFirebase.events.length : 0;
 
+  if(!hayLive && !partidos.length){ document.getElementById('vista-offline').style.display='block'; document.getElementById('vista-seleccion').style.display='none'; document.getElementById('vista-live').style.display='none'; return; }
+  document.getElementById('vista-offline').style.display='none';
+  if(viendoLive && !hayLive) viendoLive = false;
+  document.getElementById('vista-seleccion').style.display=viendoLive?'none':'block';
+  document.getElementById('vista-live').style.display=viendoLive?'block':'none';
+  if(viendoLive && hayLive) actualizarMarcador(datosFirebase);
+  if(!viendoLive) renderSeleccion();
+});
 cargarPartidos();
 </script>
 </body>
