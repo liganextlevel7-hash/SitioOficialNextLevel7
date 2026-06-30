@@ -5,19 +5,114 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Next Level 7 — EN VIVO</title>
 <style>
-/* ... (todos tus estilos originales se mantienen) ... */
-#match-time { font-size: 55px !important; font-weight: 900 !important; color: #fff !important; font-family: monospace; }
+/* Estilos originales */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:100vh;}
+.wrap{max-width:440px;margin:0 auto;padding:14px;}
+.header{background:linear-gradient(135deg,#1a5c2a,#2d8a45);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;}
+.header h1{font-size:22px;font-weight:900;letter-spacing:2px;color:#fff;}
+.header p{font-size:11px;opacity:.8;color:#fff;margin-top:3px;}
+.live-badge{display:inline-flex;align-items:center;gap:6px;background:#e03030;color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px;}
+.live-dot{width:7px;height:7px;background:white;border-radius:50%;animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.encuentro-card{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:14px;margin-bottom:10px;transition:all .2s;}
+.encuentro-card.transmitiendo{border-color:#e03030;cursor:pointer;}
+.encuentro-card.finalizado-card{border-color:#1a5c2a;cursor:pointer;}
+.encuentro-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.encuentro-logos{display:flex;align-items:center;gap:10px;flex:1;justify-content:center;}
+.encuentro-logos img{width:38px;height:38px;object-fit:contain;background:#0f1a13;border-radius:6px;padding:2px;}
+.encuentro-score{font-size:20px;font-weight:900;color:#fff;padding:0 8px;}
+.encuentro-names{display:flex;justify-content:space-between;font-size:11px;color:#8aab91;margin-bottom:8px;}
+.estado-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
+.estado-live{background:rgba(224,48,48,0.2);color:#ff6060;border:1px solid #e03030;}
+.estado-fin{background:rgba(26,92,42,0.2);color:#5dba6a;border:1px solid #1a5c2a;}
+.estado-espera{background:rgba(255,215,0,0.1);color:#ffd700;border:1px solid rgba(255,215,0,0.3);}
+.ver-btn{display:block;width:100%;text-align:center;background:rgba(224,48,48,0.15);color:#ff6060;border:1px solid #e03030;border-radius:8px;padding:8px;font-size:12px;font-weight:700;margin-top:10px;cursor:pointer;}
+.ver-btn.fin-btn{background:rgba(26,92,42,0.15);color:#5dba6a;border-color:#1a5c2a;}
+.scoreboard{display:grid;grid-template-columns:1fr 100px 1fr;gap:10px;align-items:center;margin-bottom:12px;}
+.team-card{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:12px 8px;text-align:center;}
+.tlogo-box{width:56px;height:56px;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:#0f1a13;border-radius:8px;padding:4px;}
+.tlogo-box img{width:100%;height:100%;object-fit:contain;}
+.tname{font-size:13px;font-weight:700;color:#e8f0ea;}
+.score-box{background:linear-gradient(180deg,#1a5c2a,#0f3018);border-radius:14px;padding:12px 6px;text-align:center;border:1px solid #1a5c2a;}
+.score-nums{display:flex;align-items:center;justify-content:center;gap:5px;}
+.snum{font-size:44px;font-weight:900;color:#fff;line-height:1;}
+.ssep{font-size:22px;color:rgba(255,255,255,.4);}
+.stime{font-size:55px !important;font-weight:900 !important;color:#fff !important;margin-top:6px;letter-spacing:2px;font-family:monospace;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px;}
+.stat-mini{background:#1a2a1e;border:1px solid #2d4035;border-radius:10px;padding:10px;text-align:center;}
+.stat-num{font-size:20px;font-weight:900;color:#e8f0ea;}
+.stat-lbl{font-size:10px;color:#8aab91;margin-top:2px;}
+.yb{display:inline-block;width:11px;height:15px;background:#f9a825;border-radius:2px;vertical-align:middle;margin-right:3px;}
+.rb{display:inline-block;width:11px;height:15px;background:#ef5350;border-radius:2px;vertical-align:middle;margin-right:3px;}
+.section{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:14px;margin-bottom:12px;}
+.section h3{font-size:11px;color:#8aab91;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.events-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
+.ev{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#243028;border-radius:8px;font-size:12px;border-left:3px solid #2d4035;}
+.ev.goal{border-left-color:#4caf50;}
+.ev.yellow{border-left-color:#f9a825;}
+.ev.red{border-left-color:#ef5350;}
+.ev-min{font-size:11px;color:#8aab91;min-width:32px;font-weight:700;}
+.ev-txt{color:#e8f0ea;flex:1;}
+.ev-team{font-size:11px;color:#8aab91;}
+.no-ev{text-align:center;color:#8aab91;font-size:13px;padding:22px;}
+.spill{display:inline-block;font-size:11px;padding:4px 12px;border-radius:20px;background:#243028;color:#8aab91;border:1px solid #2d4035;margin-bottom:10px;}
+.back-btn{border:1px solid #2d4035;background:#1a2a1e;color:#8aab91;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;margin-bottom:12px;display:block;}
+.offline{text-align:center;padding:60px 20px;}
+.offline h2{font-size:20px;color:#8aab91;margin-bottom:10px;}
+.offline p{font-size:13px;color:#8aab91;line-height:1.8;}
+/* Animación Gol nueva */
 #anim-gol-publico { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:99999; align-items:center; justify-content:center; }
 </style>
 </head>
 <body>
 <div id="anim-gol-publico"><div style="text-align:center;"><div style="font-size:120px;">⚽</div><h1 style="font-size:80px; color:#4caf50;">¡GOL!</h1></div></div>
-<!-- ... (resto de tu HTML original) ... -->
+<div class="wrap">
+  <div class="header">
+    <div class="live-badge"><span class="live-dot"></span> EN VIVO</div>
+    <h1>⚽ NEXT LEVEL 7</h1>
+    <p>Torneo Dominical — Puebla</p>
+  </div>
+  <div id="vista-offline" class="offline"><div style="font-size:50px;margin-bottom:16px;">📡</div><h2>Sin transmisión activa</h2><p>Cuando comience el partido<br>podrás seguirlo aquí<br>en tiempo real.</p></div>
+  <div id="vista-seleccion" style="display:none;"><p style="font-size:12px;color:#8aab91;margin-bottom:10px;text-align:center;">Encuentros Programados de la Fecha</p><div id="lista-encuentros"></div></div>
+  <div id="vista-live" style="display:none;">
+    <button class="back-btn" onclick="volverSeleccion()">← Ver todos los encuentros</button>
+    <div style="text-align:center;margin-bottom:10px;"><span class="spill" id="spill">En juego ▶</span></div>
+    <div class="scoreboard">
+      <div class="team-card"><div class="tlogo-box"><img id="logo-local" src="" alt="local"></div><div class="tname" id="name-local">Local</div></div>
+      <div class="score-box">
+        <div class="score-nums"><span class="snum" id="score-local">0</span><span class="ssep">-</span><span class="snum" id="score-visita">0</span></div>
+        <div class="stime" id="match-time">0:00</div>
+      </div>
+      <div class="team-card"><div class="tlogo-box"><img id="logo-visita" src="" alt="visita"></div><div class="tname" id="name-visita">Visita</div></div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-mini"><div class="stat-num" id="st-yl">0</div><div class="stat-lbl"><span class="yb"></span>Local</div></div>
+      <div class="stat-mini"><div class="stat-num" id="st-rl">0</div><div class="stat-lbl"><span class="rb"></span>Local</div></div>
+      <div class="stat-mini"><div class="stat-num" id="st-yv">0</div><div class="stat-lbl"><span class="yb"></span>Visita</div></div>
+      <div class="stat-mini"><div class="stat-num" id="st-rv">0</div><div class="stat-lbl"><span class="rb"></span>Visita</div></div>
+    </div>
+    <div class="section"><h3>Bitácora del partido</h3><div class="events-list" id="events-list"><div class="no-ev">Esperando eventos...</div></div></div>
+  </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// ... (todo tu script original se mantiene, solo agrega esto al final) ...
+firebase.initializeApp({
+  apiKey: "AIzaSyCDStSLESm2UbqcIRpqrnHGfTsZJUtCVwc",
+  authDomain: "liga-next-level-7.firebaseapp.com",
+  databaseURL: "https://liga-next-level-7-default-rtdb.firebaseio.com",
+  projectId: "liga-next-level-7",
+  storageBucket: "liga-next-level-7.firebasestorage.app",
+  messagingSenderId: "463941548215",
+  appId: "1:463941548215:web:0d9eb7e517cbc33352b532"
+});
+var db = firebase.database();
+// ... (Toda tu lógica original de funciones JS aquí)
+// Al final del script agrega el listener:
 db.ref('transmision/events').on('child_added', (snap) => {
     var evento = snap.val();
-    if(evento.type === 'goal') {
+    if(evento && evento.type === 'goal') {
         var anim = document.getElementById('anim-gol-publico');
         anim.style.display = 'flex';
         setTimeout(() => { anim.style.display = 'none'; }, 3500);
