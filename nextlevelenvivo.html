@@ -647,7 +647,7 @@ function guardarPartidoFirebase(){
              accion: 'guardar_eventos',
              eventos: listaEventos,
              idPartido: idPartidoActual, // <--- ESTA LÍNEA CONECTA CON EL SCRIPT
-             guardadoPor: liveState.metodoFin || "Normal" // <--- NUEVO: manda el método de finalización (Normal/Penales/Default)
+             guardadoPor: liveState.metodoFin || "Normal" // Método de finalización (Normal/Penales/Default)
            })
          });
       }).then(() => {
