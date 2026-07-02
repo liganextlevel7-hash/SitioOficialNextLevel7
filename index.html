@@ -6,6 +6,8 @@
 <title>Liga Next Level 7</title>
 <link rel="stylesheet" href="styles.css">
 <style>
+
+/* ===== ANIMACION TITULO ===== */
 #titulo-letras { display:inline; }
 .titulo-letra { display: inline-block; opacity: 0; }
 .titulo-letra.animar { animation: letraCae 0.5s cubic-bezier(0.36,0.07,0.19,0.97) forwards; }
@@ -22,6 +24,8 @@
 @keyframes balonGira { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
 .balon-sombra { width: 20px; height: 5px; background: rgba(57,255,20,0.4); border-radius: 50%; margin: 0 auto; animation: sombraBalon 0.55s ease infinite alternate; }
 @keyframes sombraBalon { 0% { transform: scaleX(0.3); opacity: 0.1; } 100% { transform: scaleX(1); opacity: 0.5; } }
+
+/* ===== CARRUSEL ===== */
 .carrusel-seccion { max-width: 1100px; margin: 20px auto 30px; padding: 0 10px; position: relative; height: 480px; }
 .card-sec { position: absolute; top: 50%; left: 50%; width: 320px; border-radius: 22px; cursor: pointer; transition: all 0.6s cubic-bezier(0.25,0.46,0.45,0.94); transform: translate(-50%,-50%) scale(0.4); opacity: 0; pointer-events: none; overflow: hidden; border: 1px solid #39ff14; box-shadow: 0 0 10px #39ff14, 0 0 20px rgba(57,255,20,0.3); }
 .card-sec.c  { transform:translate(-50%,-50%) scale(1); opacity:1; z-index:5; pointer-events:all; }
@@ -34,43 +38,29 @@
 .card-contenido { flex:1; font-size:12px; font-family:Arial,sans-serif; }
 .car-btn { display:block; text-align:center; padding:10px; border-radius:20px; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-decoration:none; cursor:pointer; border:none; width:100%; transition:filter 0.3s; touch-action:manipulation; }
 .car-btn:hover { filter:brightness(1.3); }
-.c-tabla .card-body { background:#0a0a0a; position:relative; overflow:hidden; }
-.c-tabla .card-titulo { color:#ffd700; position:relative; z-index:2; }
-.c-tabla .car-btn { background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid #ffd700; position:relative; z-index:2; }
-.c-goles .card-body { background:#0a0a0a; position:relative; overflow:hidden; }
-.c-goles .card-titulo { color:#ffd700; position:relative; z-index:2; }
-.c-goles .car-btn { background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid #ffd700; position:relative; z-index:2; }
-.c-partidos .card-body { background:#0a0a0a; position:relative; overflow:hidden; }
-.c-partidos .card-titulo { color:#ffd700; position:relative; z-index:2; }
-.c-partidos .car-btn { background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid #ffd700; position:relative; z-index:2; }
-.c-proxima .card-body { background:#0a0a0a; position:relative; overflow:hidden; }
-.c-proxima .card-titulo { color:#ffd700; position:relative; z-index:2; }
-.c-proxima .car-btn { background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid #ffd700; position:relative; z-index:2; }
+.c-tabla .card-body, .c-goles .card-body, .c-partidos .card-body, .c-proxima .card-body { background:#0a0a0a; position:relative; overflow:hidden; }
+.c-tabla .card-titulo, .c-goles .card-titulo, .c-partidos .card-titulo, .c-proxima .card-titulo { color:#ffd700; position:relative; z-index:2; }
+.c-tabla .car-btn, .c-goles .car-btn, .c-partidos .car-btn, .c-proxima .car-btn { background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid #ffd700; position:relative; z-index:2; }
 .card-fondo-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; opacity:0.45; }
 .card-overlay-color { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; }
 .card-contenido, .card-contenido + .car-btn { position:relative; z-index:2; }
 .c-equipos .card-body { background:linear-gradient(rgba(10,20,30,0.88),rgba(10,25,40,0.92)), url('fondo-partidos.png'); background-size:cover; background-position:center; }
 .c-equipos .card-titulo { color:#ffd700; }
 .c-equipos .car-btn { background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid #ffd700; }
-.c-liguilla .card-body { background:#000; padding:0 !important; }
-.c-liguilla .card-titulo { color:#ffd700; position:absolute; top:14px; left:0; right:0; z-index:2; text-shadow:0 2px 6px rgba(0,0,0,0.8); }
-.c-liguilla .car-btn { background:rgba(255,215,0,0.85); color:#000; border:1px solid #ffd700; position:absolute; bottom:14px; left:18px; right:18px; z-index:2; width:auto; }
-.c-liguilla .liguilla-img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; }
-.c-cedula .card-body { background:#000; padding:0 !important; }
-.c-cedula .card-titulo { color:#ffd700; position:absolute; top:14px; left:0; right:0; z-index:2; text-shadow:0 2px 6px rgba(0,0,0,0.8); }
-.c-cedula .car-btn { background:rgba(255,215,0,0.85); color:#000; border:1px solid #ffd700; position:absolute; bottom:14px; left:18px; right:18px; z-index:2; width:auto; }
-.c-cedula .cedula-img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; }
+.c-liguilla .card-body, .c-cedula .card-body { background:#000; padding:0 !important; }
+.c-liguilla .card-titulo, .c-cedula .card-titulo { color:#ffd700; position:absolute; top:14px; left:0; right:0; z-index:2; text-shadow:0 2px 6px rgba(0,0,0,0.8); }
+.c-liguilla .car-btn, .c-cedula .car-btn { background:rgba(255,215,0,0.85); color:#000; border:1px solid #ffd700; position:absolute; bottom:14px; left:18px; right:18px; z-index:2; width:auto; }
+.c-liguilla .liguilla-img, .c-cedula .cedula-img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; }
 .c-chat .card-body { background: #000; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
 .c-chat .card-titulo { color: #39ff14; position: relative; z-index: 2; }
 .c-chat .car-btn { background: rgba(57,255,20,0.15); color: #39ff14; border: 1px solid #39ff14; position: relative; z-index: 10; }
 .c-chat .car-btn:hover { background: #39ff14; color: #000; }
-.c-chat .chat-card-bg,.c-chat .chat-card-logos,.c-chat .chat-card-desc,.c-chat .chat-card-bubbles,.c-chat .card-titulo { pointer-events: none; }
 .mini-fila { display:flex; align-items:center; gap:8px; padding:7px 4px; border-bottom:1px solid rgba(255,255,255,0.07); font-size:12px; color:rgba(255,255,255,0.85); }
 .mini-fila img { width:28px; height:28px; object-fit:contain; }
 .mini-rank { font-weight:900; color:#ffd700; min-width:20px; text-align:center; }
-.mini-pts  { font-weight:900; color:#39ff14; margin-left:auto; }
+.mini-pts { font-weight:900; color:#39ff14; margin-left:auto; }
 .mini-marcador { font-weight:900; color:#ffd700; margin-left:auto; font-size:13px; }
-.mini-vs   { font-weight:900; color:#ffd700; margin-left:auto; }
+.mini-vs { font-weight:900; color:#ffd700; margin-left:auto; }
 .car-cargando { color:rgba(255,255,255,0.3); text-align:center; padding:20px; font-size:12px; }
 .car-flecha { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; color:#fff; z-index:10; transition:all 0.3s; touch-action:manipulation; user-select:none; }
 .car-flecha:hover { background:rgba(255,255,255,0.2); }
@@ -79,22 +69,22 @@
 .car-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.2); cursor:pointer; transition:all 0.3s; }
 .car-dot.on { background:#39ff14; transform:scale(1.3); }
 .fifa-mini { width:75px; height:120px; border-radius:10px 10px 6px 6px; position:relative; display:flex; flex-direction:column; align-items:center; overflow:hidden; }
-.fifa-mini.gold   { background:linear-gradient(160deg,#ffe566,#f5a500,#b8720a,#f5d020); border:1.5px solid #ffd700; box-shadow:0 0 10px #ffd700; }
+.fifa-mini.gold { background:linear-gradient(160deg,#ffe566,#f5a500,#b8720a,#f5d020); border:1.5px solid #ffd700; box-shadow:0 0 10px #ffd700; }
 .fifa-mini.silver { background:linear-gradient(160deg,#f0f0f0,#c0c0c0,#808080,#d8d8d8); border:1.5px solid #c0c0c0; box-shadow:0 0 8px #bbb; }
-.fifa-mini.blue   { background:linear-gradient(160deg,#64d0ff,#0288d1,#01579b,#29b6f6); border:1.5px solid #29b6f6; box-shadow:0 0 8px #29b6f6; }
+.fifa-mini.blue { background:linear-gradient(160deg,#64d0ff,#0288d1,#01579b,#29b6f6); border:1.5px solid #29b6f6; box-shadow:0 0 8px #29b6f6; }
 .fifa-mini .mn-shimmer { position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(255,255,255,0.2) 0%,transparent 50%);pointer-events:none;border-radius:inherit; }
-.fifa-mini .mn-svg  { width:70px; height:80px; z-index:1; }
+.fifa-mini .mn-svg { width:70px; height:80px; z-index:1; }
 .fifa-mini .mn-nombre { font-size:6.5px; font-weight:900; text-align:center; padding:1px 4px; line-height:1.2; z-index:1; text-transform:uppercase; max-width:70px; word-break:break-word; }
-.fifa-mini .mn-sep  { width:80%; height:1px; opacity:0.3; margin:2px 0; z-index:1; }
+.fifa-mini .mn-sep { width:80%; height:1px; opacity:0.3; margin:2px 0; z-index:1; }
 .fifa-mini .mn-stats { display:flex; gap:8px; z-index:1; margin-bottom:4px; }
 .fifa-mini .mn-stat { text-align:center; }
-.fifa-mini .mn-val  { font-size:11px; font-weight:900; line-height:1; }
-.fifa-mini .mn-lbl  { font-size:5.5px; opacity:0.8; }
-.fifa-mini.gold .mn-nombre,.fifa-mini.gold .mn-val,.fifa-mini.gold .mn-lbl { color:#3d2200; }
+.fifa-mini .mn-val { font-size:11px; font-weight:900; line-height:1; }
+.fifa-mini .mn-lbl { font-size:5.5px; opacity:0.8; }
+.fifa-mini.gold .mn-nombre, .fifa-mini.gold .mn-val, .fifa-mini.gold .mn-lbl { color:#3d2200; }
 .fifa-mini.gold .mn-sep { background:#3d2200; }
-.fifa-mini.silver .mn-nombre,.fifa-mini.silver .mn-val,.fifa-mini.silver .mn-lbl { color:#1a1a1a; }
+.fifa-mini.silver .mn-nombre, .fifa-mini.silver .mn-val, .fifa-mini.silver .mn-lbl { color:#1a1a1a; }
 .fifa-mini.silver .mn-sep { background:#1a1a1a; }
-.fifa-mini.blue .mn-nombre,.fifa-mini.blue .mn-val,.fifa-mini.blue .mn-lbl { color:#fff; }
+.fifa-mini.blue .mn-nombre, .fifa-mini.blue .mn-val, .fifa-mini.blue .mn-lbl { color:#fff; }
 .fifa-mini.blue .mn-sep { background:#fff; }
 .fifa-mini-wrap { display:flex; flex-direction:column; align-items:center; gap:4px; }
 .fifa-mini-medal { font-size:20px; }
@@ -110,6 +100,7 @@
 .podio-frame img.podio-bg { width: 100%; display: block; }
 .podio-frame .podio-content-box { position: absolute; top: 34%; left: 50%; transform: translate(-50%, -50%); width: 42%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .podio-content-box .pc-escudo { width: 100%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)); }
+.podio-content-box .pc-jersey { width: 100%; }
 .podio-medal-num { position: absolute; top: 99%; left: 50%; transform: translate(-50%, 0); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: #000; z-index: 4; border: 2px solid #000; }
 .piramide-1 .podio-medal-num { background: #ffd700; }
 .piramide-2 .podio-medal-num { background: #c0c0c0; }
@@ -121,7 +112,35 @@
 .piramide-1 .podio-pts2 { font-size: 14px; color: #ffd700; }
 .piramide-2 .podio-pts2 { color: #c0c0c0; }
 .piramide-3 .podio-pts2 { color: #cd7f32; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+
+/* ===== MATCH CARD REPLAY ANIMATION ===== */
+.mcr-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; position: relative; overflow: hidden; min-height: 220px; padding: 6px 0; }
+.mcr-jornada { font-size: 10px; letter-spacing: 3px; color: #ff5096; text-transform: uppercase; border: 1px solid rgba(255,80,150,0.4); padding: 4px 14px; border-radius: 30px; font-family: Arial, sans-serif; }
+.mcr-teams { display: flex; align-items: center; justify-content: center; width: 100%; gap: 4px; }
+.mcr-team { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.mcr-shield-ring { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,80,150,0.35); }
+.mcr-shield-ring img { width: 48px; height: 48px; object-fit: contain; }
+.mcr-team-name { font-size: 11px; font-weight: 900; color: #fff; text-align: center; text-transform: uppercase; max-width: 90px; line-height: 1.2; }
+.mcr-center-vs { padding: 0 0.6rem; display: flex; flex-direction: column; align-items: center; }
+.mcr-vs-text { font-size: 32px; color: #ff5096; font-weight: 900; line-height: 1; text-shadow: 0 0 18px rgba(255,80,150,0.55); }
+.mcr-info-bar { display: flex; border: 1px solid rgba(255,255,255,0.12); border-radius: 30px; overflow: hidden; }
+.mcr-info-cell { padding: 5px 10px; display: flex; flex-direction: column; align-items: center; gap: 1px; border-right: 1px solid rgba(255,255,255,0.1); }
+.mcr-info-cell:last-child { border-right: none; }
+.mcr-info-lbl { font-size: 8px; letter-spacing: 1px; color: rgba(255,80,150,0.8); text-transform: uppercase; }
+.mcr-info-val { font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap; }
+.mcr-hidden { opacity: 0; }
+.mcr-anim-jornada { animation: mcrFadeDown 0.6s ease forwards; }
+.mcr-anim-home { animation: mcrFromRight 1s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+.mcr-anim-away { animation: mcrFromLeft 1s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
+.mcr-anim-vs { animation: mcrPopIn 0.7s cubic-bezier(0.34,1.56,0.64,1) 1s both; }
+.mcr-anim-info { animation: mcrFadeUp 0.6s ease 1.4s both; }
+@keyframes mcrFromRight { 0% { transform: translateX(90px) scale(0.6); opacity:0; } 65% { transform: translateX(-6px) scale(1.05); opacity:1; } 100% { transform: translateX(0) scale(1); } }
+@keyframes mcrFromLeft { 0% { transform: translateX(-90px) scale(0.6); opacity:0; } 65% { transform: translateX(6px) scale(1.05); opacity:1; } 100% { transform: translateX(0) scale(1); } }
+@keyframes mcrPopIn { 0% { transform: scale(0) rotate(-15deg); opacity:0; } 100% { transform: scale(1) rotate(0deg); opacity:1; } }
+@keyframes mcrFadeDown { from { transform: translateY(-15px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+@keyframes mcrFadeUp { from { transform: translateY(15px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+.mcr-spark { position: absolute; border-radius: 50%; background: #ff5096; pointer-events: none; animation: mcrSparkOut linear forwards; }
+@keyframes mcrSparkOut { 0% { transform: translate(0,0) scale(1); opacity:1; } 100% { transform: translate(var(--dx),var(--dy)) scale(0); opacity:0; } }
 </style>
 </head>
 <body>
@@ -174,7 +193,29 @@
       <img src="fondo-partidos.png" class="card-fondo-img" onerror="this.style.display='none'">
       <div class="card-overlay-color" style="background:linear-gradient(rgba(30,10,20,0.55),rgba(35,15,25,0.65));"></div>
       <div class="card-titulo">📅 Próxima Jornada</div>
-      <div class="card-contenido" id="car-proxima"><div class="car-cargando">Cargando...</div></div>
+      <div class="card-contenido" id="car-proxima">
+        <div class="mcr-card" id="mcrCard">
+          <div class="mcr-jornada mcr-hidden" id="mcrJornada"></div>
+          <div class="mcr-teams">
+            <div class="mcr-team mcr-hidden" id="mcrHome">
+              <div class="mcr-shield-ring"><img id="mcrHomeImg" src=""></div>
+              <div class="mcr-team-name" id="mcrHomeName"></div>
+            </div>
+            <div class="mcr-center-vs mcr-hidden" id="mcrVsBlock">
+              <div class="mcr-vs-text">VS</div>
+            </div>
+            <div class="mcr-team mcr-hidden" id="mcrAway">
+              <div class="mcr-shield-ring"><img id="mcrAwayImg" src=""></div>
+              <div class="mcr-team-name" id="mcrAwayName"></div>
+            </div>
+          </div>
+          <div class="mcr-info-bar mcr-hidden" id="mcrInfoBar">
+            <div class="mcr-info-cell"><span class="mcr-info-lbl">Fecha</span><span class="mcr-info-val" id="mcrFecha">-</span></div>
+            <div class="mcr-info-cell"><span class="mcr-info-lbl">Hora</span><span class="mcr-info-val" id="mcrHora">-</span></div>
+            <div class="mcr-info-cell"><span class="mcr-info-lbl">Cancha</span><span class="mcr-info-val" id="mcrCancha">-</span></div>
+          </div>
+        </div>
+      </div>
       <a href="partidos.html" class="car-btn">VER JORNADA</a>
     </div>
   </div>
@@ -203,56 +244,28 @@
     </div>
   </div>
 
-  <!-- ===== CARD: EN VIVO ===== -->
-  <div class="card-sec c-envivo" id="ccard-7">
-    <div class="card-body" style="position:relative;padding:0 !important;background:#0a0a0a;min-height:440px;overflow:hidden;">
-      <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 30%,rgba(224,48,48,0.15) 0%,transparent 65%);pointer-events:none;z-index:0;"></div>
-      <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px;z-index:1;pointer-events:none;">
-        <div style="display:inline-flex;align-items:center;gap:8px;background:#e03030;color:white;font-size:14px;font-weight:900;padding:6px 18px;border-radius:20px;letter-spacing:1px;">
-          <span style="width:9px;height:9px;background:white;border-radius:50%;animation:blink 1.2s infinite;display:inline-block;"></span> EN VIVO
+  <div class="card-sec c-chat" id="ccard-7">
+    <div class="card-body" style="position:relative;padding:0 !important;background:#000;min-height:440px;">
+      <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 30%,rgba(57,255,20,0.12) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
+      <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;pointer-events:none;z-index:1;">
+        <div style="font-size:15px;font-weight:900;letter-spacing:2px;text-transform:uppercase;text-align:center;color:#39ff14;">💬 Chat Next Level 7</div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
+          <img src="https://i.imgur.com/gBvmM4v.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
+          <img src="https://i.imgur.com/fGQAhE5.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
+          <img src="https://i.imgur.com/5TAVBS7.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
+          <img src="https://i.imgur.com/Qrx4JSj.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
+          <img src="https://i.imgur.com/KTMLCv9.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
+          <img src="https://i.imgur.com/hqOAa7J.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
+          <img src="https://i.imgur.com/5TARJkD.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
+          <img src="https://i.imgur.com/ddKmNL6.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
+          <img src="https://i.imgur.com/8BWFWBW.png" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.4);">
         </div>
-        <div style="font-size:60px;">📡</div>
-        <div style="font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;text-align:center;color:#fff;">Transmisión<br>en Vivo</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.7;font-family:Arial,sans-serif;">Sigue el partido en tiempo real.<br>Marcador, goles y tarjetas<br>al instante. ⚽🟨🟥</div>
-
-      </div>
-      <!-- Botones dinamicos -->
-      <div id="envivo-publico" style="position:absolute;bottom:14px;left:18px;right:18px;z-index:5;display:none;">
-        <a href="envivo-publico.html" class="car-btn" style="background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid #ffd700;">🔴 VER TRANSMISIÓN EN VIVO</a>
-      </div>
-      <div id="envivo-offline" style="position:absolute;bottom:14px;left:18px;right:18px;z-index:5;">
-        <div class="car-btn" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);border:1px solid rgba(255,255,255,0.1);cursor:default;">Sin transmisión activa</div>
-      </div>
-      <a href="envivo-publico.html" id="envivo-admin-btn" style="position:absolute;top:14px;right:14px;z-index:6;background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid #ffd700;border-radius:20px;padding:4px 12px;font-size:10px;font-weight:700;text-decoration:none;display:none;">⚙️ ADMIN</a>
-    </div>
-  </div>
-  <!-- ===== FIN CARD EN VIVO ===== -->
-
-  <!-- ===== CARD CHAT ===== -->
-  <div class="card-sec c-chat" id="ccard-8">
-    <div class="card-body" style="position:relative;padding:0 !important;background:#0a0a0a;min-height:440px;overflow:hidden;">
-      <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 20%,rgba(57,255,20,0.07) 0%,transparent 65%);pointer-events:none;z-index:0;"></div>
-      <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;padding:16px 14px 60px;pointer-events:none;z-index:1;gap:6px;overflow:hidden;">
-        <div style="font-size:13px;font-weight:900;letter-spacing:2px;text-transform:uppercase;text-align:center;color:#39ff14;margin-bottom:4px;">💬 Chat Next Level 7</div>
-        <div style="display:flex;align-items:flex-end;gap:6px;">
-          <div style="position:relative;flex-shrink:0;"><img src="https://i.imgur.com/gBvmM4v.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.5);display:block;"><div style="position:absolute;bottom:-2px;left:-2px;width:9px;height:9px;background:#111;border-radius:50% 0 50% 50%;transform:rotate(45deg);"></div></div>
-          <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:12px 12px 12px 2px;padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.75);max-width:75%;">¿A qué hora juegan el domingo? ⚽</div>
+        <div style="text-align:center;color:rgba(255,255,255,0.6);font-size:11px;font-family:Arial,sans-serif;line-height:1.6;">
+          Coordina el horario de tus partidos<br>directamente con el <span style="color:#39ff14">equipo rival</span>
         </div>
-        <div style="display:flex;align-items:flex-end;gap:6px;flex-direction:row-reverse;">
-          <div style="position:relative;flex-shrink:0;"><img src="https://i.imgur.com/fGQAhE5.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.5);display:block;"><div style="position:absolute;bottom:-2px;right:-2px;width:9px;height:9px;background:#111;border-radius:50% 50% 0 50%;transform:rotate(-45deg);"></div></div>
-          <div style="background:rgba(57,255,20,0.15);border:1px solid rgba(57,255,20,0.3);border-radius:12px 12px 2px 12px;padding:6px 10px;font-size:10px;color:#39ff14;max-width:75%;">Nosotros a las 9am 👍</div>
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:6px;">
-          <div style="position:relative;flex-shrink:0;"><img src="https://i.imgur.com/5TAVBS7.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.5);display:block;"><div style="position:absolute;bottom:-2px;left:-2px;width:9px;height:9px;background:#111;border-radius:50% 0 50% 50%;transform:rotate(45deg);"></div></div>
-          <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:12px 12px 12px 2px;padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.75);max-width:75%;">Confirmado ✅ nos vemos!</div>
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:6px;flex-direction:row-reverse;">
-          <div style="position:relative;flex-shrink:0;"><img src="https://i.imgur.com/Qrx4JSj.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.5);display:block;"><div style="position:absolute;bottom:-2px;right:-2px;width:9px;height:9px;background:#111;border-radius:50% 50% 0 50%;transform:rotate(-45deg);"></div></div>
-          <div style="background:rgba(57,255,20,0.15);border:1px solid rgba(57,255,20,0.3);border-radius:12px 12px 2px 12px;padding:6px 10px;font-size:10px;color:#39ff14;max-width:75%;">🗓️ Dom · 9:00 am · Campo 1</div>
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:6px;">
-          <div style="position:relative;flex-shrink:0;"><img src="https://i.imgur.com/KTMLCv9.png" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid rgba(57,255,20,0.5);display:block;"><div style="position:absolute;bottom:-2px;left:-2px;width:9px;height:9px;background:#111;border-radius:50% 0 50% 50%;transform:rotate(45deg);"></div></div>
-          <div style="background:#1a1a1a;border:1px solid rgba(255,255,255,0.08);border-radius:12px 12px 12px 2px;padding:6px 10px;font-size:10px;color:rgba(255,255,255,0.75);max-width:75%;">Ahí estaremos 💪🏽</div>
+        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;width:100%;">
+          <div style="background:rgba(255,255,255,0.08);border-radius:10px;padding:7px 10px;font-size:11px;color:rgba(255,255,255,0.7);margin-bottom:5px;">¿Pueden el domingo a las 9am? ⚽</div>
+          <div style="background:rgba(57,255,20,0.15);border-radius:10px;padding:7px 10px;font-size:11px;color:#39ff14;text-align:right;">✅ Confirmado — 9:00 am</div>
         </div>
       </div>
       <a href="chat-next-level-7.html" class="car-btn" style="position:absolute;bottom:14px;left:18px;right:18px;width:auto;z-index:5;background:rgba(57,255,20,0.2);color:#39ff14;border:1px solid #39ff14;">ENTRAR AL CHAT</a>
@@ -271,16 +284,16 @@ let letraIEl = null;
 let totalLetras = 0;
 palabras.forEach((palabra, pi) => {
   if (pi > 0) { const esp = document.createElement('span'); esp.className = 'titulo-espacio'; letrasEl.appendChild(esp); }
-  palabra.split('').forEach((ch, ci) => {
-    const span = document.createElement('span'); span.className = 'titulo-letra'; span.textContent = ch; span.dataset.idx = totalLetras;
+  palabra.split('').forEach((ch) => {
+    const span = document.createElement('span');
+    span.className = 'titulo-letra'; span.textContent = ch;
     if (pi === 0 && ch === 'I' && !letraIEl) letraIEl = span;
     letrasEl.appendChild(span); totalLetras++;
   });
 });
 let delay = 300;
-const todasLetras = document.querySelectorAll('.titulo-letra');
-todasLetras.forEach((letra, i) => {
-  setTimeout(() => { letra.classList.add('animar'); if (letra === letraIEl) { setTimeout(() => posicionarBalon(), 200); } }, delay);
+document.querySelectorAll('.titulo-letra').forEach((letra) => {
+  setTimeout(() => { letra.classList.add('animar'); if (letra === letraIEl) setTimeout(() => posicionarBalon(), 200); }, delay);
   delay += 80;
 });
 function posicionarBalon() {
@@ -297,13 +310,14 @@ function posicionarBalon() {
 window.addEventListener('resize', () => { if (letraIEl) posicionarBalon(); });
 
 const CAR_ESTADISTICAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=979195152&single=true&output=csv";
-const CAR_PARTIDOS     = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv";
-const CAR_JUGADORES    = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1940220650&single=true&output=csv";
-const CAR_EVENTOS      = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=645868286&single=true&output=csv";
-const CAR_PARTIC       = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv";
+const CAR_PARTIDOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv";
+const CAR_JUGADORES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1940220650&single=true&output=csv";
+const CAR_EVENTOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=645868286&single=true&output=csv";
+const CAR_PARTIC = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv";
 const carLogos = {"Soldados Del Amor":"https://i.imgur.com/gBvmM4v.png","Cuervos F.C":"https://i.imgur.com/fGQAhE5.png","Unión 8":"https://i.imgur.com/Qrx4JSj.png","La Garra":"https://i.imgur.com/8BWFWBW.png","Pumas KAP":"https://i.imgur.com/5TAVBS7.png","Los Chipotles":"https://i.imgur.com/KTMLCv9.png","Deportivo CT":"https://i.imgur.com/hqOAa7J.png","Gusanitos":"https://i.imgur.com/5TARJkD.png","Bacachitos":"https://i.imgur.com/ddKmNL6.png"};
-const carEqID  = {1:"Soldados Del Amor",2:"Cuervos F.C",3:"Unión 8",4:"La Garra",5:"Pumas KAP",6:"Los Chipotles",7:"Deportivo CT",8:"Gusanitos",9:"Bacachitos"};
+const carEqID = {1:"Soldados Del Amor",2:"Cuervos F.C",3:"Unión 8",4:"La Garra",5:"Pumas KAP",6:"Los Chipotles",7:"Deportivo CT",8:"Gusanitos",9:"Bacachitos"};
 const carLogosID = {1:"https://i.imgur.com/gBvmM4v.png",2:"https://i.imgur.com/fGQAhE5.png",3:"https://i.imgur.com/Qrx4JSj.png",4:"https://i.imgur.com/8BWFWBW.png",5:"https://i.imgur.com/5TAVBS7.png",6:"https://i.imgur.com/KTMLCv9.png",7:"https://i.imgur.com/hqOAa7J.png",8:"https://i.imgur.com/5TARJkD.png",9:"https://i.imgur.com/ddKmNL6.png"};
+
 function carParseCSV(text) {
   const lines = text.replace(/\r/g,'').trim().split('\n');
   const headers = lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
@@ -316,50 +330,168 @@ function carParseCSV(text) {
     return obj;
   });
 }
+
 function svgMini(tipo, num, logoUrl) {
   const c={gold:{main:"#b8860b",detail:"#ffd700",glow:"#ffd700",text:"#3d2200"},silver:{main:"#777",detail:"#ddd",glow:"#c0c0c0",text:"#111"},blue:{main:"#0277bd",detail:"#29b6f6",glow:"#29b6f6",text:"#fff"}}[tipo];
   const li=logoUrl?`<image href="${logoUrl}" x="255" y="120" width="100" height="100"/>`:'';
-  return `<svg viewBox="0 0 448 448" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;filter:drop-shadow(0 0 6px ${c.glow});"><path fill="${c.main}" d="M176,8c-0.677-0.005-1.378,0-2.031,0.256l-95.906,24.563c-1.85,0.432-3.475,1.52-4.594,3.063L1.445,138.779c-2.195,3.145-1.86,7.406,0.813,10.156l48.063,48.906c3.126,3.139,8.217,3.139,11.344,0l18.437-18.438v192.594h15.938v52H80.101v8.063c-0.016,4.445,3.585,8.049,8.031,8.031l272.125-0.16c4.396,0,7.984-3.512,8.031-7.906l-0.064-127.781h-16.031v-52h16l-0.032-72.75l18.188,18.188c3.139,3.217,8.329,3.217,11.469,0l47.938-48.906c2.739-2.77,3.105-7.111,0.843-10.281l-72.062-102.625c-1.07-1.568-2.643-2.691-4.469-3.188l-96.031-24.437c-0.659-0.192-1.354-0.256-2.031-0.256h-6.375c-2.879-0.011-5.534,1.504-6.969,4c-7.177,12.67-20.361,20.427-34.594,20.438c-14.233-0.012-27.323-7.768-34.5-20.438c-1.451-2.533-4.142-4.055-7.063-4H176z"/><path fill="${c.detail}" opacity="0.35" d="M181.744,24.269l0.874,1.312c10.5,13.323,24.314,20.104,41.456,20.118c17.147-0.014,31.074-6.787,41.575-20.118l1.43-1.629l96.126,23.511l66.496,94.844l-37.677,38.385l-26.221-26.34c-5.037-5.115-13.747-1.52-13.701,5.668l0.242,263.977h-256.3v-263.977c-0.058-7.045-8.534-10.58-13.582-5.668l-26.457,26.457l-37.559-38.387l66.496-94.842c30.742-7.834,66.078-15.486,96.801-23.316z"/><text x="224" y="310" text-anchor="middle" font-family="Arial" font-weight="900" font-size="90" fill="${c.text}" opacity="0.85">${num}</text>${li}</svg>`;
+  return `<svg viewBox="0 0 448 448" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;filter:drop-shadow(0 0 6px ${c.glow});">
+    <path fill="${c.main}" d="M176,8c-0.677-0.005-1.378,0-2.031,0.256l-95.906,24.563c-1.85,0.432-3.475,1.52-4.594,3.063L1.445,138.779c-2.195,3.145-1.86,7.406,0.813,10.156l48.063,48.906c3.126,3.139,8.217,3.139,11.344,0l18.437-18.438v192.594h15.938v52H80.101v8.063c-0.016,4.445,3.585,8.049,8.031,8.031l272.125-0.16c4.396,0,7.984-3.512,8.031-7.906l-0.064-127.781h-16.031v-52h16l-0.032-72.75l18.188,18.188c3.139,3.217,8.329,3.217,11.469,0l47.938-48.906c2.739-2.77,3.105-7.111,0.843-10.281l-72.062-102.625c-1.07-1.568-2.643-2.691-4.469-3.188l-96.031-24.437c-0.659-0.192-1.354-0.256-2.031-0.256h-6.375c-2.879-0.011-5.534,1.504-6.969,4c-7.177,12.67-20.361,20.427-34.594,20.438c-14.233-0.012-27.323-7.768-34.5-20.438c-1.451-2.533-4.142-4.055-7.063-4H176z"/>
+    <path fill="${c.detail}" opacity="0.35" d="M181.744,24.269l0.874,1.312c10.5,13.323,24.314,20.104,41.456,20.118c17.147-0.014,31.074-6.787,41.575-20.118l1.43-1.629l96.126,23.511l66.496,94.844l-37.677,38.385l-26.221-26.34c-5.037-5.115-13.747-1.52-13.701,5.668l0.242,263.977h-256.3v-263.977c-0.058-7.045-8.534-10.58-13.582-5.668l-26.457,26.457l-37.559-38.387l66.496-94.842c30.742-7.834,66.078-15.486,96.801-23.316z"/>
+    <text x="224" y="310" text-anchor="middle" font-family="Arial" font-weight="900" font-size="90" fill="${c.text}" opacity="0.85">${num}</text>
+    ${li}
+  </svg>`;
 }
+
+function mcrClearAnims() {
+  ['mcrJornada','mcrHome','mcrAway','mcrVsBlock','mcrInfoBar'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('mcr-anim-jornada','mcr-anim-home','mcr-anim-away','mcr-anim-vs','mcr-anim-info');
+    el.classList.add('mcr-hidden');
+    void el.offsetWidth;
+  });
+}
+
+function mcrAddSparks() {
+  const card = document.getElementById('mcrCard');
+  if (!card) return;
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('div');
+    s.className = 'mcr-spark';
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 30 + Math.random() * 70;
+    s.style.setProperty('--dx', Math.cos(angle)*dist + 'px');
+    s.style.setProperty('--dy', Math.sin(angle)*dist + 'px');
+    s.style.width  = s.style.height = (1.5 + Math.random()*2.5) + 'px';
+    s.style.left   = (40 + Math.random()*20) + '%';
+    s.style.top    = (38 + Math.random()*24) + '%';
+    s.style.animationDuration = (0.7 + Math.random()*1) + 's';
+    s.style.animationDelay   = (1.0 + Math.random()*0.5) + 's';
+    card.appendChild(s);
+    setTimeout(() => s.remove(), 2400);
+  }
+}
+
+function mcrPlayAnim() {
+  mcrClearAnims();
+  setTimeout(() => {
+    const jornada  = document.getElementById('mcrJornada');
+    const home     = document.getElementById('mcrHome');
+    const away     = document.getElementById('mcrAway');
+    const vsBlock  = document.getElementById('mcrVsBlock');
+    const infoBar  = document.getElementById('mcrInfoBar');
+    if (!jornada) return;
+    jornada.classList.remove('mcr-hidden');
+    jornada.classList.add('mcr-anim-jornada');
+    setTimeout(() => {
+      home.classList.remove('mcr-hidden'); home.classList.add('mcr-anim-home');
+      away.classList.remove('mcr-hidden'); away.classList.add('mcr-anim-away');
+    }, 300);
+    setTimeout(() => {
+      vsBlock.classList.remove('mcr-hidden'); vsBlock.classList.add('mcr-anim-vs');
+      mcrAddSparks();
+    }, 1000);
+    setTimeout(() => {
+      infoBar.classList.remove('mcr-hidden'); infoBar.classList.add('mcr-anim-info');
+    }, 1400);
+  }, 80);
+}
+
 async function cargarCarrusel() {
   try {
-    const [resE,resP,resJ,resEv,resPart] = await Promise.all([fetch(CAR_ESTADISTICAS),fetch(CAR_PARTIDOS),fetch(CAR_JUGADORES),fetch(CAR_EVENTOS),fetch(CAR_PARTIC)]);
+    const [resE,resP,resJ,resEv,resPart] = await Promise.all([
+      fetch(CAR_ESTADISTICAS),fetch(CAR_PARTIDOS),fetch(CAR_JUGADORES),fetch(CAR_EVENTOS),fetch(CAR_PARTIC)
+    ]);
     const [tE,tP,tJ,tEv,tPart] = await Promise.all([resE.text(),resP.text(),resJ.text(),resEv.text(),resPart.text()]);
+
     const filasE=tE.trim().split('\n'); const equipos=[];
-    for(let i=1;i<filasE.length;i++){ const c=filasE[i].split(','); const n=(c[1]||'').trim(); if(n==='Descansa'||!n) continue; equipos.push({ranking:Number(c[10])||999,nombre:n,pts:Number(c[9])||0}); }
+    for(let i=1;i<filasE.length;i++){
+      const c=filasE[i].split(','); const n=(c[1]||'').trim();
+      if(n==='Descansa'||!n) continue;
+      equipos.push({ranking:Number(c[10])||999,nombre:n,pts:Number(c[9])||0});
+    }
     equipos.sort((a,b)=>a.ranking-b.ranking);
     const top3eq = equipos.slice(0,3);
     let htmlTabla='';
     if (top3eq.length) {
       const claves = ['piramide-1','piramide-2','piramide-3'];
       htmlTabla = '<div class="piramide-wrap">';
-      top3eq.forEach((e, i) => { htmlTabla += `<div class="${claves[i]}"><div class="podio-frame"><img src="podio.png" class="podio-bg" onerror="this.style.display='none'"><div class="podio-content-box"><span class="podio-medal-num">${i+1}</span><img src="${carLogos[e.nombre]||''}" class="pc-escudo" onerror="this.style.display='none'"></div></div><div class="podio-info"><div class="podio-nombre2">${e.nombre}</div><div class="podio-pts2">${e.pts} PTS</div></div></div>`; });
+      top3eq.forEach((e, i) => {
+        htmlTabla += `<div class="${claves[i]}"><div class="podio-frame"><img src="podio.png" class="podio-bg" onerror="this.style.display='none'"><div class="podio-content-box"><span class="podio-medal-num">${i+1}</span><img src="${carLogos[e.nombre]||''}" class="pc-escudo" onerror="this.style.display='none'"></div></div><div class="podio-info"><div class="podio-nombre2">${e.nombre}</div><div class="podio-pts2">${e.pts} PTS</div></div></div>`;
+      });
       htmlTabla += '</div>';
     }
     document.getElementById('car-tabla').innerHTML=htmlTabla||'<div class="car-cargando">Sin datos</div>';
+
     const filasP=tP.trim().split('\n'); const jugados=[],programados=[];
-    for(let i=1;i<filasP.length;i++){ const c=filasP[i].split(','); const estado=(c[6]||'').trim(); const local=carEqID[Number(c[2])]||'', visita=carEqID[Number(c[3])]||''; const p={local,visita,gl:c[4]||'',gv:c[5]||'',fecha:(c[8]||'').trim()}; if(estado==='Jugado') jugados.push(p); if(estado==='Programado') programados.push(p); }
+    for(let i=1;i<filasP.length;i++){
+      const c=filasP[i].split(','); const estado=(c[6]||'').trim();
+      const local=carEqID[Number(c[2])]||'', visita=carEqID[Number(c[3])]||'';
+      const p={local,visita,gl:c[4]||'',gv:c[5]||'',fecha:(c[8]||'').trim(),hora:(c[9]||'').trim(),cancha:(c[7]||'').trim(),jornada:(c[1]||'').trim()};
+      if(estado==='Jugado') jugados.push(p);
+      if(estado==='Programado') programados.push(p);
+    }
+
     let htmlRes='';
-    if(jugados.length){ const fu=jugados[jugados.length-1].fecha; if(fu) htmlRes=`<div style="font-size:10px;color:#ffd700;text-align:center;margin-bottom:6px;">${fu}</div>`; jugados.filter(p=>p.fecha===fu).slice(0,4).forEach(p=>{ htmlRes+=`<div class="mini-fila"><img src="${carLogos[p.local]||''}" onerror="this.style.display='none'"><span style="flex:1;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.local}</span><span class="mini-marcador">${p.gl}-${p.gv}</span><span style="flex:1;font-size:10px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.visita}</span><img src="${carLogos[p.visita]||''}" onerror="this.style.display='none'"></div>`; }); }
+    if(jugados.length){
+      const fu=jugados[jugados.length-1].fecha;
+      if(fu) htmlRes=`<div style="font-size:10px;color:#ffd700;text-align:center;margin-bottom:6px;">${fu}</div>`;
+      jugados.filter(p=>p.fecha===fu).slice(0,4).forEach(p=>{
+        htmlRes+=`<div class="mini-fila"><img src="${carLogos[p.local]||''}" onerror="this.style.display='none'"><span style="flex:1;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.local}</span><span class="mini-marcador">${p.gl}-${p.gv}</span><span style="flex:1;font-size:10px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.visita}</span><img src="${carLogos[p.visita]||''}" onerror="this.style.display='none'"></div>`;
+      });
+    }
     document.getElementById('car-resultados').innerHTML=htmlRes||'<div class="car-cargando">Sin resultados</div>';
-    let htmlProx='';
-    if(programados.length){ const fp=programados[0].fecha; if(fp) htmlProx=`<div style="font-size:10px;color:#ff5096;text-align:center;margin-bottom:6px;">${fp}</div>`; programados.filter(p=>p.fecha===fp).slice(0,4).forEach(p=>{ htmlProx+=`<div class="mini-fila"><img src="${carLogos[p.local]||''}" onerror="this.style.display='none'"><span style="flex:1;font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.local}</span><span class="mini-vs">VS</span><span style="flex:1;font-size:10px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.visita}</span><img src="${carLogos[p.visita]||''}" onerror="this.style.display='none'"></div>`; }); }
-    document.getElementById('car-proxima').innerHTML=htmlProx||'<div class="car-cargando">Sin partidos programados</div>';
+
+    if (programados.length) {
+      const p = programados[0];
+      document.getElementById('mcrJornada').textContent = p.jornada ? `⚽ Jornada ${p.jornada} — Next Level Dominical` : '⚽ Next Level Dominical';
+      document.getElementById('mcrHomeImg').src = carLogos[p.local] || '';
+      document.getElementById('mcrAwayImg').src = carLogos[p.visita] || '';
+      document.getElementById('mcrHomeName').textContent = p.local || '?';
+      document.getElementById('mcrAwayName').textContent = p.visita || '?';
+      document.getElementById('mcrFecha').textContent = p.fecha || '-';
+      document.getElementById('mcrHora').textContent = p.hora || '-';
+      document.getElementById('mcrCancha').textContent = p.cancha || '-';
+      mcrPlayAnim();
+    } else {
+      document.getElementById('car-proxima').innerHTML = '<div class="car-cargando">Sin partidos programados</div>';
+    }
+
     const jugadores=carParseCSV(tJ), eventos=carParseCSV(tEv), partic=carParseCSV(tPart);
     const golMap={}, partMap={};
     eventos.filter(e=>e.Tipo_Evento==='Gol').forEach(e=>{golMap[e.Jugador]=(golMap[e.Jugador]||0)+1;});
     partic.filter(p=>p.Asistio==='TRUE').forEach(p=>{partMap[p.Jugador]=(partMap[p.Jugador]||0)+1;});
+
     const jornadasJugadas = new Set();
-    filasP.slice(1).forEach(line => { const c = line.split(','); if ((c[6]||'').trim() === 'Jugado' && c[1]) jornadasJugadas.add(c[1].trim()); });
+    filasP.slice(1).forEach(line => {
+      const c = line.split(',');
+      if ((c[6]||'').trim() === 'Jugado' && c[1]) jornadasJugadas.add(c[1].trim());
+    });
     const totalJornadas = jornadasJugadas.size || 1;
-    const top3=jugadores.filter(j=>golMap[j.ID_Jugador]>0).map(j=>({nombre:j.Nombre||'',equipoID:Number(j.Equipo),numero:j.Numero||'-',goles:golMap[j.ID_Jugador]||0,partidosJugados:partMap[j.ID_Jugador]||0})).sort((a,b)=>b.goles-a.goles).slice(0,3);
+
+    const top3=jugadores.filter(j=>golMap[j.ID_Jugador]>0)
+      .map(j=>({nombre:j.Nombre||'',equipoID:Number(j.Equipo),numero:j.Numero||'-',goles:golMap[j.ID_Jugador]||0,partidosJugados:partMap[j.ID_Jugador]||0}))
+      .sort((a,b)=>b.goles-a.goles).slice(0,3);
+
     let htmlGoles='';
-    if(top3.length){ const tg=['gold','silver','blue'], med=['🥇','🥈','🥉']; const claves = ['piramide-1','piramide-2','piramide-3']; htmlGoles = '<div class="piramide-wrap">'; top3.forEach((j,i)=>{ const pct = Math.min(100, Math.round((j.partidosJugados / totalJornadas) * 100)); htmlGoles += `<div class="${claves[i]}"><div class="fifa-mini-medal">${med[i]}</div><div class="fifa-mini ${tg[i]}"><div class="mn-shimmer"></div><div class="mn-svg">${svgMini(tg[i],j.numero,carLogosID[j.equipoID]||'')}</div><div class="mn-nombre">${j.nombre}</div><div class="mn-sep"></div><div class="mn-stats"><div class="mn-stat"><div class="mn-val">${j.goles}</div><div class="mn-lbl">GOLES</div></div><div class="mn-stat"><div class="mn-val">${pct}%</div><div class="mn-lbl">ASIST</div></div></div></div></div>`; }); htmlGoles += '</div>'; } else { htmlGoles='<div class="car-cargando">Sin goles aún</div>'; }
+    if(top3.length){
+      const tg=['gold','silver','blue'], med=['🥇','🥈','🥉'];
+      const claves = ['piramide-1','piramide-2','piramide-3'];
+      htmlGoles = '<div class="piramide-wrap">';
+      top3.forEach((j,i)=>{
+        const pct = Math.min(100, Math.round((j.partidosJugados / totalJornadas) * 100));
+        htmlGoles += `<div class="${claves[i]}"><div class="fifa-mini-medal">${med[i]}</div><div class="fifa-mini ${tg[i]}"><div class="mn-shimmer"></div><div class="mn-svg">${svgMini(tg[i],j.numero,carLogosID[j.equipoID]||'')}</div><div class="mn-nombre">${j.nombre}</div><div class="mn-sep"></div><div class="mn-stats"><div class="mn-stat"><div class="mn-val">${j.goles}</div><div class="mn-lbl">GOLES</div></div><div class="mn-stat"><div class="mn-val">${pct}%</div><div class="mn-lbl">ASIST</div></div></div></div></div>`;
+      });
+      htmlGoles += '</div>';
+    } else { htmlGoles='<div class="car-cargando">Sin goles aún</div>'; }
     document.getElementById('car-goles').innerHTML=htmlGoles;
+
   } catch(e){ console.error(e); }
 }
+
 const carCards=document.querySelectorAll('.card-sec'), carTotal=carCards.length;
 let carActivo=0;
+
 function carActualizar(){
   carCards.forEach((card,i)=>{
     card.className=card.className.replace(/\b(c|l1|l2|r1|r2)\b/g,'').trim();
@@ -374,40 +506,30 @@ function carActualizar(){
   });
   document.querySelectorAll('.car-dot').forEach((d,i)=>d.classList.toggle('on',i===carActivo));
 }
+
 function carMover(dir){ carActivo=((carActivo+dir)%carTotal+carTotal)%carTotal; carActualizar(); }
+
 const carDotsEl=document.getElementById('car-dots');
-carCards.forEach((_,i)=>{ const d=document.createElement('div'); d.className='car-dot'+(i===0?' on':''); d.onclick=()=>{carActivo=i;carActualizar();}; carDotsEl.appendChild(d); });
-carCards.forEach((card,i)=>{ card.addEventListener('click',e=>{ if(!card.classList.contains('c')){ e.preventDefault(); e.stopPropagation(); carActivo=i; carActualizar(); } }); });
+carCards.forEach((_,i)=>{
+  const d=document.createElement('div'); d.className='car-dot'+(i===0?' on':'');
+  d.onclick=()=>{carActivo=i;carActualizar();}; carDotsEl.appendChild(d);
+});
+
+carCards.forEach((card,i)=>{
+  card.addEventListener('click',e=>{
+    if(!card.classList.contains('c')){ e.preventDefault(); e.stopPropagation(); carActivo=i; carActualizar(); }
+  });
+});
+
 let carTx=0;
 document.getElementById('carrusel-wrap').addEventListener('touchstart',e=>{carTx=e.touches[0].clientX;});
-document.getElementById('carrusel-wrap').addEventListener('touchend',e=>{ const d=carTx-e.changedTouches[0].clientX; if(Math.abs(d)>50) carMover(d>0?1:-1); });
+document.getElementById('carrusel-wrap').addEventListener('touchend',e=>{
+  const d=carTx-e.changedTouches[0].clientX; if(Math.abs(d)>50) carMover(d>0?1:-1);
+});
+
 setInterval(()=>carMover(1),5000);
 carActualizar();
 cargarCarrusel();
-
-// Verificar estado de transmision
-(function checkTransmision(){
-  var url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=200886667&single=true&output=csv';
-  fetch(url).then(function(r){return r.text();}).then(function(t){
-    var lines = t.trim().split('\n');
-    var estado = '';
-    // A1 = "Transmitiendo", A2 = "Si" o "No"
-    if(lines.length > 1){
-      estado = lines[1].replace(/"/g,'').trim().toLowerCase();
-    }
-    var publico = document.getElementById('envivo-publico');
-    var offline = document.getElementById('envivo-offline');
-    if(estado === 'si' || estado === 'sí' || estado === 'true' || estado === '1'){
-      publico.style.display='block';
-      offline.style.display='none';
-    } else {
-      publico.style.display='none';
-      offline.style.display='block';
-    }
-  }).catch(function(){ 
-    document.getElementById('envivo-offline').style.display='block';
-  });
-})();
 </script>
 </body>
 </html>
