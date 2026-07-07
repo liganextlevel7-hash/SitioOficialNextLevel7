@@ -320,7 +320,7 @@ function carParseCSV(text) {
 function svgMini(tipo, num, logoUrl) {
   const c={gold:{main:"#b8860b",detail:"#ffd700",glow:"#ffd700",text:"#3d2200"},silver:{main:"#777",detail:"#ddd",glow:"#c0c0c0",text:"#111"},blue:{main:"#0277bd",detail:"#29b6f6",glow:"#29b6f6",text:"#fff"}}[tipo];
   const li=logoUrl?`<image href="${logoUrl}" x="255" y="120" width="100" height="100"/>`:'';
-  return `<svg viewBox="0 0 448 448" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;filter:drop-shadow(0 0 6px ${c.glow});"><path fill="${c.main}" d="M176,8c-0.677-0.005-1.378,0-2.031,0.256l-95.906,24.563c-1.85,0.432-3.475,1.52-4.594,3.063L1.445,138.779c-2.195,3.145-1.86,7.406,0.813,10.156l48.063,48.906c3.126,3.139,8.217,3.139,11.344,0l18.437-18.438v192.594h15.938v52H80.101v8.063c-0.016,4.445,3.585,8.049,8.031,8.031l272.125-0.16c4.396,0,7.984-3.512,8.031-7.906l-0.064-127.781h-16.031v-52h16l-0.032-72.75l18.188,18.188c3.139,3.217,8.329,3.217,11.469,0l47.938-48.906c2.739-2.77,3.105-7.111,0.843-10.281l-72.062-102.625c-1.07-1.568-2.643-2.691-4.469-3.188l-96.031-24.437c-0.659-0.192-1.354-0.256-2.031-0.256h-6.375c-2.879-0.011-5.534,1.504-6.969,4c-7.177,12.67-20.361,20.427-34.594,20.438c-14.233-0.012-27.323-7.768-34.5-20.438c-1.451-2.533-4.142-4.055-7.063-4H176z"/><path fill="${c.detail}" opacity="0.35" d="M181.744,24.269l0.874,1.312c10.5,13.323,24.314,20.104,41.456,20.118c17.147-0.014,31.074-6.787,41.575-20.118l1.43-1.629l96.126,23.511l66.496,94.844l-37.677,38.385l-26.221-26.34c-5.037-5.115-13.747-1.52-13.701,5.668l0.242,263.977h-256.3v-263.977c-0.058-7.045-8.534-10.58-13.582-5.668l-26.457,26.457l-37.559-38.387l66.496-94.842c30.742-7.834,66.078-15.486,96.801-23.316z"/><text x="224" y="310" text-anchor="middle" font-family="Arial" font-weight="900" font-size="90" fill="${c.text}" opacity="0.85">${num}</text>${li}</svg>`;
+  return `<svg viewBox="0 0 448 448" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;filter:drop-shadow(0 0 6px ${c.glow});"><path fill="${c.main}" d="M176,8c-0.677-0.005-1.378,0-2.031,0.256l-95.906,24.563c-1.85,0.432-3.475,1.52-4.594,3.063L1.445,138.779c-2.195,3.145-1.86,7.406,0.813,10.156l48.063,48.906c3.126,3.139,8.217,3.139,11.344,0l18.437-18.438v192.594h15.938v52H80.101v8.063c-0.016,4.445,3.585,8.049,8.031,8.031l272.125-0.16c4.396,0,7.984-3.512,8.031-7.906l-0.064-127.781h-16.031v-52h16l-0.032-72.75l18.188,18.188c3.139,3.217,8.329,3.217,11.469,0l47.938-48.906c2.739-2.77,3.105-7.111,0.843-10.281l-72.062-102.625c-1.07-1.568-2.643-2.691-4.469-3.188l-96.031-24.437c-0.659-0.192-1.354-0.256-2.031-0.256H176z"/><path fill="${c.detail}" opacity="0.35" d="M181.744,24.269l0.874,1.312c10.5,13.323,24.314,20.104,41.456,20.118c17.147-0.014,31.074-6.787,41.575-20.118l1.43-1.629l96.126,23.511l66.496,94.844l-37.677,38.385l-26.221-26.34c-5.037-5.115-13.747-1.52-13.701,5.668l0.242,263.977h-256.3v-263.977c-0.058-7.045-8.534-10.58-13.582-5.668l-26.457,26.457l-37.559-38.387l66.496-94.842c30.742-7.834,66.078-15.486,96.801-23.316z"/><text x="224" y="310" text-anchor="middle" font-family="Arial" font-weight="900" font-size="90" fill="${c.text}" opacity="0.85">${num}</text>${li}</svg>`;
 }
 async function cargarCarrusel() {
   try {
@@ -386,28 +386,36 @@ setInterval(()=>carMover(1),5000);
 carActualizar();
 cargarCarrusel();
 
-// Verificar estado de transmision
+// Verificar estado de transmision — consulta Firebase directamente (Cancha 1 y Cancha 2),
+// en vez de depender de una celda del Sheet que no reflejaba la transmisión real.
 (function checkTransmision(){
-  var url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=200886667&single=true&output=csv';
-  fetch(url).then(function(r){return r.text();}).then(function(t){
-    var lines = t.trim().split('\n');
-    var estado = '';
-    // A1 = "Transmitiendo", A2 = "Si" o "No"
-    if(lines.length > 1){
-      estado = lines[1].replace(/"/g,'').trim().toLowerCase();
-    }
-    var publico = document.getElementById('envivo-publico');
-    var offline = document.getElementById('envivo-offline');
-    if(estado === 'si' || estado === 'sí' || estado === 'true' || estado === '1'){
-      publico.style.display='block';
-      offline.style.display='none';
-    } else {
-      publico.style.display='none';
-      offline.style.display='block';
-    }
-  }).catch(function(){ 
-    document.getElementById('envivo-offline').style.display='block';
-  });
+  var FIREBASE_URL = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
+
+  function hayAlgunaEnVivo(){
+    return Promise.all([
+      fetch(FIREBASE_URL + '/transmision/cancha1.json').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+      fetch(FIREBASE_URL + '/transmision/cancha2.json').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+    ]).then(function(resultados){
+      return resultados.some(function(d){ return d && d.activo === true; });
+    });
+  }
+
+  function actualizarBotonEnVivo(){
+    hayAlgunaEnVivo().then(function(activa){
+      var publico = document.getElementById('envivo-publico');
+      var offline = document.getElementById('envivo-offline');
+      if(activa){
+        publico.style.display='block';
+        offline.style.display='none';
+      } else {
+        publico.style.display='none';
+        offline.style.display='block';
+      }
+    });
+  }
+
+  actualizarBotonEnVivo();
+  setInterval(actualizarBotonEnVivo, 15000); // revisa cada 15s por si empieza/termina una transmisión
 })();
 </script>
 </body>
