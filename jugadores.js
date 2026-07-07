@@ -142,8 +142,8 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     }
     .pcard-lbl { font-size: 8px; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; }
     .pcard-val { font-size: 20px; font-weight: 900; color: #fff; line-height: 1.1; }
-    .pcard-center { flex: 1; display: flex; justify-content: center; }
-    .pcard-jersey-wrap { position: relative; width: 120px; height: 130px; }
+    .pcard-center { flex: 1; display: flex; justify-content: center; min-width: 0; }
+    .pcard-jersey-wrap { position: relative; width: 120px; height: 130px; max-width: 100%; }
     .pcard-jersey-svg { width: 100%; height: 100%; }
     .pcard-foto-circle {
       position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
@@ -175,7 +175,7 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
       align-items: center; gap: 8px;
       width: 100%; height: 100%; box-sizing: border-box;
     }
-    .jugador-jersey-wrap { position: relative; width: 130px; height: 140px; }
+    .jugador-jersey-wrap { position: relative; width: 130px; height: 140px; max-width: 100%; }
     .jugador-jersey-svg { width: 100%; height: 100%; }
     .jugador-foto-circle {
       position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
@@ -256,16 +256,26 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     }
     .pj-dot.pj-on { background: #39ff14; transform: scale(1.3); }
 
+    /* ===== MÓVIL: proporciones recalculadas para que el jersey ya no se recorte =====
+       Antes el jersey-wrap tenía un ancho fijo mayor que el espacio real disponible
+       dentro de la tarjeta angosta, y como .pcard tiene overflow:hidden, se veía cortado. */
     @media(max-width: 600px) {
-      .pj-carrusel-wrap { height: 330px; }
-      .pj-slide { width: 175px; }
-      .pj-slide.pj-l1 { transform: translate(calc(-50% - 130px),-50%) scale(0.72) rotateY(18deg); }
-      .pj-slide.pj-r1 { transform: translate(calc(-50% + 130px),-50%) scale(0.72) rotateY(-18deg); }
-      .pj-slide.pj-l2 { transform: translate(calc(-50% - 200px),-50%) scale(0.5) rotateY(28deg); }
-      .pj-slide.pj-r2 { transform: translate(calc(-50% + 200px),-50%) scale(0.5) rotateY(-28deg); }
-      .pcard-jersey-wrap { width: 95px; height: 105px; }
-      .pcard-foto-circle { width: 50px; height: 50px; top: -18px; }
-      .pcard-val { font-size: 16px; }
+      .pj-carrusel-wrap { height: 340px; }
+      .pj-slide { width: 190px; }
+      .pj-slide.pj-l1 { transform: translate(calc(-50% - 140px),-50%) scale(0.72) rotateY(18deg); }
+      .pj-slide.pj-r1 { transform: translate(calc(-50% + 140px),-50%) scale(0.72) rotateY(-18deg); }
+      .pj-slide.pj-l2 { transform: translate(calc(-50% - 215px),-50%) scale(0.5) rotateY(28deg); }
+      .pj-slide.pj-r2 { transform: translate(calc(-50% + 215px),-50%) scale(0.5) rotateY(-28deg); }
+
+      .pcard-body { padding: 10px 8px; gap: 6px; }
+      .pcard-stats-left { width: 56px; gap: 4px; }
+      .pcard-stat { padding: 4px 3px; }
+      .pcard-lbl { font-size: 6.5px; }
+      .pcard-val { font-size: 15px; }
+      .pcard-jersey-wrap { width: 90px; height: 98px; }
+      .pcard-foto-circle { width: 44px; height: 44px; top: -15px; }
+      .pcard-nombre { font-size: 11px; }
+
       .jugador-jersey-wrap { width: 110px; height: 118px; }
       .jugador-foto-circle { width: 50px; height: 50px; top: -24px; }
       .jugador-info h3 { font-size: 11px; }
