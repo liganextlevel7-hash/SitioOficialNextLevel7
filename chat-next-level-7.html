@@ -3,414 +3,1482 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Next Level 7 — EN VIVO</title>
+<title>Chat Next Level 7</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:100vh;}
-/* ANIMACIÓN GOL */
-#animacion-gol{display:none;position:fixed;inset:0;z-index:9999;background:#0a0f0a;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;animation:bgIn .25s ease-out;}
-@keyframes bgIn{0%{background:rgba(10,15,10,0);}100%{background:#0a0f0a;}}
-.gol-destello{position:absolute;width:120vmax;height:120vmax;border-radius:50%;background:radial-gradient(circle,var(--c1,rgba(255,209,102,.35)) 0%,var(--c2,rgba(76,175,80,.18)) 35%,rgba(10,15,10,0) 68%);animation:destello 1.8s ease-out forwards;}
-@keyframes destello{0%{transform:scale(0);opacity:0;}30%{opacity:1;}100%{transform:scale(1);opacity:0;}}
-.gol-anillo{position:absolute;width:60px;height:60px;border-radius:50%;border:3px solid var(--ring1,#ffd166);opacity:0;animation:anillo 1.4s ease-out forwards;}
-.gol-anillo.a2{animation-delay:.18s;border-color:var(--ring2,#4caf50);}
-.gol-anillo.a3{animation-delay:.36s;border-color:var(--ring1,#ffd166);}
-@keyframes anillo{0%{width:60px;height:60px;opacity:.9;}100%{width:900px;height:900px;opacity:0;}}
-.gol-confeti{position:absolute;top:-5%;width:9px;height:16px;opacity:0;animation:caer linear forwards;}
-@keyframes caer{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(115vh) rotate(720deg);opacity:.9;}}
-#gol-contenido{position:relative;text-align:center;padding:0 24px;}
-#gol-balon{font-size:52px;display:block;margin-bottom:2px;animation:balonRebota .6s ease-out;filter:drop-shadow(0 0 18px var(--glow,rgba(255,209,102,.7)));}
-@keyframes balonRebota{0%{transform:translateY(-140px) rotate(-30deg);opacity:0;}55%{transform:translateY(10px) rotate(15deg);opacity:1;}75%{transform:translateY(-14px) rotate(-6deg);}100%{transform:translateY(0) rotate(0deg);}}
-#gol-texto{font-size:15vw;line-height:.95;font-weight:900;letter-spacing:1px;color:#fff;background:linear-gradient(180deg,#fff 0%,var(--txt-mid,#ffe9a8) 55%,var(--txt-end,#ffd166) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 46px var(--glow,rgba(255,209,102,.55));animation:golPop .55s cubic-bezier(.34,1.56,.64,1);}
-@media(min-width:440px){#gol-texto{font-size:60px;}}
-@keyframes golPop{0%{transform:scale(0.2) rotate(-6deg);opacity:0;}55%{transform:scale(1.15) rotate(2deg);opacity:1;}80%{transform:scale(.95) rotate(-1deg);}100%{transform:scale(1) rotate(0deg);}}
-#gol-subtexto{font-size:12px;font-weight:800;letter-spacing:3px;color:var(--accent,#ffd166);text-transform:uppercase;margin-top:2px;opacity:0;animation:detalleIn .4s ease-out .15s forwards;}
-#gol-detalle{margin-top:10px;opacity:0;animation:detalleIn .5s ease-out .35s forwards;}
-#gol-jugador{font-size:17px;font-weight:800;color:#fff;letter-spacing:.5px;}
-#gol-equipo{font-size:12px;font-weight:700;color:var(--accent,#ffd166);text-transform:uppercase;letter-spacing:2px;margin-top:3px;}
-#gol-marcador{margin-top:16px;display:inline-flex;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,209,102,.3);border-radius:12px;padding:8px 18px;opacity:0;animation:detalleIn .5s ease-out .5s forwards;font-size:13px;font-weight:700;color:#8aab91;letter-spacing:.3px;}
-#gol-marcador .gol-num{font-size:22px;font-weight:900;color:#ffd166;padding:0 8px;}
-@keyframes detalleIn{0%{opacity:0;transform:translateY(8px);}100%{opacity:1;transform:translateY(0);}}
-.inicio-btn{position:fixed;top:12px;left:12px;z-index:500;display:inline-flex;align-items:center;gap:5px;background:#000;color:#ffd166;border:1px solid #ffd166;border-radius:20px;padding:6px 13px;font-size:11px;font-weight:700;text-decoration:none;}
-.wrap{max-width:440px;margin:0 auto;padding:14px;}
-.header{background:linear-gradient(135deg,#1a5c2a,#2d8a45);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;}
-.header h1{font-size:22px;font-weight:900;letter-spacing:2px;color:#fff;}
-.header p{font-size:11px;opacity:.8;color:#fff;margin-top:3px;}
-.live-badge{display:inline-flex;align-items:center;gap:6px;background:#e03030;color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px;}
-.live-dot{width:7px;height:7px;background:white;border-radius:50%;animation:blink 1.2s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
-.encuentro-card{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:14px;margin-bottom:10px;transition:all .2s;}
-.encuentro-card.transmitiendo{border-color:#e03030;cursor:pointer;}
-.encuentro-card.finalizado-card{border-color:#1a5c2a;cursor:pointer;}
-.encuentro-logos{display:flex;align-items:center;gap:10px;flex:1;justify-content:center;}
-.encuentro-logos img{width:38px;height:38px;object-fit:contain;background:#0f1a13;border-radius:6px;padding:2px;}
-.encuentro-score{font-size:20px;font-weight:900;color:#fff;padding:0 8px;}
-.encuentro-names{display:flex;justify-content:space-between;font-size:11px;color:#8aab91;margin-bottom:8px;}
-.estado-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
-.estado-live{background:rgba(224,48,48,0.2);color:#ff6060;border:1px solid #e03030;}
-.estado-fin{background:rgba(26,92,42,0.2);color:#5dba6a;border:1px solid #1a5c2a;}
-.estado-espera{background:rgba(255,215,0,0.1);color:#ffd700;border:1px solid rgba(255,215,0,0.3);}
-.ver-btn{display:block;width:100%;text-align:center;background:rgba(224,48,48,0.15);color:#ff6060;border:1px solid #e03030;border-radius:8px;padding:8px;font-size:12px;font-weight:700;margin-top:10px;cursor:pointer;}
-.ver-btn.fin-btn{background:rgba(26,92,42,0.15);color:#5dba6a;border-color:#1a5c2a;}
-.scoreboard{display:grid;grid-template-columns:1fr 100px 1fr;gap:10px;align-items:center;margin-bottom:12px;}
-.team-card{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:12px 8px;text-align:center;}
-.tlogo-box{width:56px;height:56px;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:#0f1a13;border-radius:8px;padding:4px;}
-.tlogo-box img{width:100%;height:100%;object-fit:contain;}
-.tname{font-size:13px;font-weight:700;color:#e8f0ea;}
-.score-box{background:linear-gradient(180deg,#1a5c2a,#0f3018);border-radius:14px;padding:12px 6px;text-align:center;border:1px solid #1a5c2a;}
-.score-nums{display:flex;align-items:center;justify-content:center;gap:5px;}
-.snum{font-size:44px;font-weight:900;color:#fff;line-height:1;}
-.ssep{font-size:22px;color:rgba(255,255,255,.4);}
-.stime{font-size:24px;color:#fff;margin-top:6px;font-weight:900;letter-spacing:2px;}
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px;}
-.stat-mini{background:#1a2a1e;border:1px solid #2d4035;border-radius:10px;padding:10px;text-align:center;}
-.stat-num{font-size:20px;font-weight:900;color:#e8f0ea;}
-.stat-lbl{font-size:10px;color:#8aab91;margin-top:2px;}
-.yb{display:inline-block;width:11px;height:15px;background:#f9a825;border-radius:2px;vertical-align:middle;margin-right:3px;}
-.rb{display:inline-block;width:11px;height:15px;background:#ef5350;border-radius:2px;vertical-align:middle;margin-right:3px;}
-.section{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:14px;margin-bottom:12px;}
-.section h3{font-size:11px;color:#8aab91;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
-.events-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
-.ev{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#243028;border-radius:8px;font-size:12px;border-left:3px solid #2d4035;}
-.ev.goal{border-left-color:#4caf50;}
-.ev.yellow{border-left-color:#f9a825;}
-.ev.red{border-left-color:#ef5350;}
-.ev-min{font-size:11px;color:#8aab91;min-width:32px;font-weight:700;}
-.ev-txt{color:#e8f0ea;flex:1;}
-.ev-team{font-size:11px;color:#8aab91;}
-.no-ev{text-align:center;color:#8aab91;font-size:13px;padding:22px;}
-.spill{display:inline-block;font-size:11px;padding:4px 12px;border-radius:20px;background:#243028;color:#8aab91;border:1px solid #2d4035;margin-bottom:10px;}
-.cancha-label{display:block;font-size:11px;color:#8aab91;margin-top:4px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
-.back-btn{border:1px solid #2d4035;background:#1a2a1e;color:#8aab91;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;margin-bottom:12px;display:block;}
-.offline{text-align:center;padding:60px 20px;}
-.offline h2{font-size:20px;color:#8aab91;margin-bottom:10px;}
-.offline p{font-size:13px;color:#8aab91;line-height:1.8;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --verde:#166534;--vm:#16a34a;--vl:#dcfce7;--vb:#bbf7d0;
+  --neon:#39ff14;--neon-dim:rgba(57,255,20,0.15);
+  --gold:#ffd700;--gold-dim:rgba(255,215,0,0.15);
+  --mod:#7c3aed;--mod-dim:rgba(124,58,237,0.15);--mod-border:#a78bfa;
+  --g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g400:#94a3b8;--g500:#64748b;--g700:#334155;--g900:#0f172a;
+  --dark:#0a0a0a;--dark2:#111;--dark3:#1a1a1a;
+  --w:#fff;--r:12px;--rs:8px;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+
+body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a1628 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px 16px}
+
+/* ── PANTALLA CARGA ── */
+#loading-screen{background:var(--dark);border:1px solid rgba(57,255,20,.2);border-radius:20px;padding:48px 32px;width:100%;max-width:400px;margin-top:40px;text-align:center}
+.load-ball{font-size:48px;margin-bottom:16px;animation:bounce 1s infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-12px)}}
+.load-title{font-size:20px;font-weight:800;color:var(--neon);margin-bottom:6px}
+.load-sub{font-size:13px;color:var(--g400);margin-bottom:24px}
+.progress-bar{background:var(--dark3);border-radius:10px;height:6px;overflow:hidden;margin-bottom:12px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--verde),var(--neon));border-radius:10px;transition:width .4s ease;width:0%}
+.load-msg{font-size:12px;color:var(--g400)}
+
+/* ── LOGIN ── */
+#login-screen{display:none;background:var(--dark);border:1px solid rgba(57,255,20,.2);border-radius:20px;width:100%;max-width:480px;margin-top:20px;overflow:hidden}
+.login-hero{background:linear-gradient(135deg,#064e26,#0a1628);padding:28px;text-align:center;border-bottom:1px solid rgba(57,255,20,.15)}
+.login-hero-icon{font-size:40px;margin-bottom:10px}
+.login-hero-title{font-size:22px;font-weight:800;color:var(--neon);margin-bottom:4px;letter-spacing:1px}
+.login-hero-sub{font-size:13px;color:var(--g400)}
+.login-body{padding:24px 28px 28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.field input{width:100%;padding:11px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark2);outline:none;transition:border .15s}
+.field input:focus{border-color:var(--neon)}
+.field input::placeholder{color:var(--g500)}
+.select-label{font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;max-height:300px;overflow-y:auto}
+.team-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--dark3);border-radius:var(--r);background:var(--dark2);cursor:pointer;transition:all .15s;text-align:left}
+.team-btn:hover{border-color:var(--neon);background:var(--neon-dim)}
+.team-btn.selected{border-color:var(--neon);background:var(--neon-dim)}
+.team-btn img{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid var(--dark3)}
+.team-btn-name{font-size:13px;font-weight:600;color:var(--w);line-height:1.2}
+.team-btn.selected .team-btn-name{color:var(--neon)}
+.team-btn-city{font-size:11px;color:var(--g500)}
+
+/* MOD option */
+.mod-option{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--dark3);border-radius:var(--r);background:var(--dark2);cursor:pointer;margin-bottom:20px;transition:all .15s}
+.mod-option:hover,.mod-option.selected{border-color:var(--mod-border);background:var(--mod-dim)}
+.mod-icon{font-size:28px;flex-shrink:0}
+.mod-info-name{font-size:14px;font-weight:700;color:var(--w)}
+.mod-option.selected .mod-info-name{color:var(--mod-border)}
+.mod-info-sub{font-size:11px;color:var(--g500)}
+
+/* password field */
+.mod-pass{display:none;margin-bottom:16px}
+.mod-pass.show{display:block}
+
+/* preview */
+.cap-preview{display:none;background:var(--dark2);border:1px solid var(--dark3);border-radius:var(--r);padding:14px 16px;margin-bottom:18px;align-items:center;gap:12px}
+.cap-preview.show{display:flex}
+.cap-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--neon);flex-shrink:0}
+.cap-avatar.mod-av{border-color:var(--mod-border)}
+.cap-name-txt{font-size:15px;font-weight:700;color:var(--w)}
+.cap-team-txt{font-size:12px;color:var(--g400);margin-top:2px}
+.cap-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;display:inline-block;margin-top:4px}
+.cap-badge.eq{background:var(--neon-dim);color:var(--neon)}
+.cap-badge.mod{background:var(--mod-dim);color:var(--mod-border)}
+
+.btn-enter{width:100%;padding:14px;background:var(--verde);color:white;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-enter:hover{background:var(--vm)}
+.btn-enter:disabled{background:var(--dark3);color:var(--g500);cursor:not-allowed}
+.login-msg{font-size:12px;color:var(--g400);text-align:center;margin-top:10px;min-height:18px}
+.err{color:#f87171!important}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── APP ── */
+#app-screen{display:none;width:100%;max-width:920px;background:var(--dark);border:1px solid rgba(57,255,20,.15);border-radius:20px;overflow:hidden;margin-top:20px}
+
+.app-header{background:linear-gradient(135deg,#064e26,#0a1628);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(57,255,20,.15)}
+.app-header-left{display:flex;align-items:center;gap:12px;min-width:0}
+.hdr-avatar-wrap{position:relative;flex-shrink:0}
+.hdr-logo{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--neon)}
+.hdr-logo.mod-hdr{border-color:var(--mod-border)}
+.hdr-dot{width:18px;height:18px;border-radius:50%;background:var(--vm);border:2px solid var(--dark);position:absolute;bottom:-1px;right:-1px;display:flex;align-items:center;justify-content:center;font-size:9px;color:white;font-weight:700}
+.hdr-dot.mod-dot{background:var(--mod)}
+.hdr-capname{font-size:15px;font-weight:700;color:var(--w)}
+.hdr-teamname{font-size:12px;color:var(--g400);margin-top:1px}
+.btn-logout{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:var(--g400);padding:7px 14px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap}
+.btn-logout:hover{color:var(--w)}
+
+/* online users bar */
+.online-bar{padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--dark2)}
+.online-label{font-size:11px;color:var(--g500);font-weight:600;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.online-avatars{display:flex;gap:6px;flex-wrap:wrap}
+.online-chip{display:flex;align-items:center;gap:5px;background:var(--dark3);border-radius:20px;padding:3px 8px 3px 3px;border:1px solid rgba(255,255,255,.06)}
+.online-chip img{width:20px;height:20px;border-radius:50%;object-fit:cover}
+.online-chip span{font-size:11px;color:var(--g400)}
+.online-chip.mod-chip{border-color:rgba(124,58,237,.3);background:rgba(124,58,237,.1)}
+.online-chip.mod-chip span{color:var(--mod-border)}
+.online-dot{width:6px;height:6px;border-radius:50%;background:var(--neon);margin-left:2px;flex-shrink:0}
+
+/* tabs */
+.tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.06);background:var(--dark2);overflow-x:auto}
+.tab{padding:12px 16px;font-size:13px;font-weight:500;color:var(--g500);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;flex-shrink:0}
+.tab.active{color:var(--neon);border-bottom-color:var(--neon)}
+.tab:hover:not(.active){color:var(--w)}
+.nbadge{background:rgba(255,165,0,.2);color:#ffa500;font-size:11px;padding:1px 7px;border-radius:10px;font-weight:700;margin-left:4px}
+
+.tab-content{display:none}
+.tab-content.active{display:flex;flex-direction:column}
+
+/* ── CHAT PRINCIPAL ── */
+#chat-main{flex-direction:column;height:580px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:8px;background:var(--dark)}
+.chat-messages::-webkit-scrollbar{width:4px}
+.chat-messages::-webkit-scrollbar-track{background:transparent}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+/* bubbles */
+.bubble{max-width:72%}
+.bubble.mine{align-self:flex-end}
+.bubble.theirs{align-self:flex-start}
+.bubble.sys-bubble{align-self:center;max-width:90%}
+.bub-meta{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.bubble.mine .bub-meta{flex-direction:row-reverse}
+.bub-av{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.1);flex-shrink:0}
+.bub-name{font-size:11px;color:var(--g500);font-weight:600}
+.bub-name.mod-name{color:var(--mod-border)}
+.bub-text{padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.5;word-break:break-word}
+.bubble.mine .bub-text{background:var(--verde);color:white;border-bottom-right-radius:3px}
+.bubble.theirs .bub-text{background:var(--dark3);color:var(--w);border:1px solid rgba(255,255,255,.07);border-bottom-left-radius:3px}
+.bubble.sys-bubble .bub-text{background:var(--mod-dim);color:var(--mod-border);border:1px solid rgba(124,58,237,.3);border-radius:12px;text-align:center;font-size:13px}
+.bub-time{font-size:10px;color:var(--g500);margin-top:3px}
+.bubble.mine .bub-time{text-align:right}
+
+/* anuncio moderador */
+.anuncio-card{background:var(--dark2);border:1px solid rgba(124,58,237,.4);border-radius:var(--r);padding:14px 16px;margin:4px 0;align-self:center;width:92%;max-width:600px}
+.anuncio-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.anuncio-badge{background:var(--mod-dim);color:var(--mod-border);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;border:1px solid rgba(124,58,237,.3)}
+.anuncio-team{font-size:13px;font-weight:700;color:var(--w);margin-bottom:8px}
+.anuncio-matches{display:flex;flex-direction:column;gap:6px}
+.anuncio-match{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark3);border-radius:var(--rs);border:1px solid rgba(255,255,255,.05)}
+.anuncio-logos{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.anuncio-logos img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.anuncio-vs{font-size:10px;color:var(--g500);font-weight:700}
+.anuncio-info{flex:1;min-width:0}
+.anuncio-teams{font-size:12px;font-weight:600;color:var(--w)}
+.anuncio-meta{font-size:11px;color:var(--g500);margin-top:2px}
+.anuncio-time{font-size:10px;color:var(--g500);margin-top:6px;text-align:right}
+
+/* fecha separador */
+.date-sep{text-align:center;font-size:11px;color:var(--g500);padding:8px 0;display:flex;align-items:center;gap:10px}
+.date-sep::before,.date-sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
+
+/* chat input */
+.chat-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.06);background:var(--dark2)}
+.msg-row{display:flex;gap:8px}
+.msg-input{flex:1;padding:10px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark);outline:none;transition:border .15s}
+.msg-input:focus{border-color:var(--neon)}
+.msg-input::placeholder{color:var(--g500)}
+.btn-send{background:var(--verde);color:white;border:none;border-radius:var(--rs);padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;white-space:nowrap}
+.btn-send:hover{background:var(--vm)}
+
+/* ── PANEL MODERADOR ── */
+#mod-panel{flex-direction:column;padding:20px}
+.mod-section-title{font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;margin-top:4px}
+.mod-team-select{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.mod-team-btn{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--dark3);border-radius:var(--rs);background:var(--dark2);cursor:pointer;transition:all .15s}
+.mod-team-btn:hover{border-color:var(--mod-border);background:var(--mod-dim)}
+.mod-team-btn.selected{border-color:var(--mod-border);background:var(--mod-dim)}
+.mod-team-btn img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.mod-team-btn span{font-size:12px;font-weight:600;color:var(--w)}
+.mod-team-btn.selected span{color:var(--mod-border)}
+.mod-preview{background:var(--dark2);border:1px solid rgba(124,58,237,.3);border-radius:var(--r);padding:14px;margin-bottom:14px;min-height:80px}
+.mod-preview-empty{font-size:13px;color:var(--g500);text-align:center;padding:20px 0}
+.mod-match-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark3);border-radius:var(--rs);border:1px solid rgba(255,255,255,.05);margin-bottom:6px;transition:all .15s}
+.mod-match-row.clickable{cursor:pointer}
+.mod-match-row.clickable:hover{border-color:var(--neon);background:rgba(57,255,20,.06)}
+.mod-match-row img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+.mod-match-name{flex:1;font-size:12px;font-weight:600;color:var(--w);min-width:0}
+.mod-match-meta{font-size:11px;color:var(--g500)}
+.btn-anunciar{width:100%;padding:12px;background:var(--mod);color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-anunciar:hover{background:#6d28d9}
+.btn-anunciar:disabled{background:var(--dark3);color:var(--g500);cursor:not-allowed}
+
+/* programar partido */
+.programar-box{display:none;margin-top:12px;background:var(--dark2);border:1px solid rgba(57,255,20,.25);border-radius:var(--r);padding:16px}
+.programar-box label{display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.programar-hint{font-size:12px;color:var(--neon);background:var(--neon-dim);border:1px solid rgba(57,255,20,.25);border-radius:var(--rs);padding:8px 10px;margin-bottom:14px}
+.programar-cancel{width:100%;margin-top:8px;background:none;border:none;color:var(--g500);font-size:12px;cursor:pointer;padding:6px}
+.programar-cancel:hover{color:var(--w)}
+
+/* vuelta toggle */
+.vuelta-toggle{display:flex;gap:8px;margin-bottom:16px}
+.vbtn{flex:1;padding:9px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--dark3);background:var(--dark2);color:var(--g500);transition:all .15s}
+.vbtn.active{border-color:var(--neon);background:var(--neon-dim);color:var(--neon)}
+
+/* ── PARTIDOS TAB ── */
+#tab-partidos-content{flex-direction:column;padding:20px}
+.match-card{border:1px solid rgba(255,255,255,.07);border-radius:var(--r);padding:12px 14px;margin-bottom:7px;display:flex;align-items:center;gap:12px;background:var(--dark2);transition:all .15s}
+.match-card:hover{border-color:rgba(57,255,20,.2)}
+.match-card.pend{border-left:3px solid #f59e0b}
+.match-card.ok{border-left:3px solid var(--vm)}
+.logos-vs{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.logo-sm{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--dark3);border:1px solid rgba(255,255,255,.08)}
+.vs-lbl{font-size:10px;font-weight:700;color:var(--g500)}
+.match-info{flex:1;min-width:0}
+.match-teams{font-size:13px;font-weight:600;color:var(--w)}
+.match-meta{font-size:11px;color:var(--g500);margin-top:3px}
+.hora-ok{color:var(--vm);font-weight:700}
+.badge{font-size:11px;padding:3px 10px;border-radius:20px;white-space:nowrap;font-weight:600;flex-shrink:0}
+.bp{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}
+.bo{background:var(--vl);color:var(--verde);border:1px solid var(--vb)}
+.sec-title{font-size:11px;font-weight:700;color:var(--g500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;margin-top:4px}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat-card{background:var(--dark2);border-radius:var(--r);padding:14px;text-align:center;border:1px solid rgba(255,255,255,.06)}
+.stat-num{font-size:26px;font-weight:800;color:var(--w)}
+.stat-label{font-size:11px;color:var(--g500);margin-top:2px}
+
+.empty{text-align:center;padding:40px 20px;color:var(--g500)}
+.empty-icon{font-size:32px;margin-bottom:10px}
+
+/* ── POPUP PARTIDOS PENDIENTES ── */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:2000;align-items:center;justify-content:center;padding:20px}
+.popup-overlay.show{display:flex}
+.popup-box{background:var(--dark);border:1px solid rgba(57,255,20,.3);border-radius:16px;max-width:480px;width:100%;max-height:82vh;overflow-y:auto;padding:20px}
+.popup-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.popup-title{font-size:16px;font-weight:800;color:var(--neon)}
+.popup-close{background:none;border:none;color:var(--g400);font-size:22px;cursor:pointer;line-height:1;padding:4px}
+.popup-close:hover{color:var(--w)}
+
+@media(max-width:580px){
+  body{padding:0;align-items:flex-start}
+  #login-screen,#app-screen{border-radius:0;margin-top:0}
+  .team-grid,.mod-team-select{grid-template-columns:1fr}
+  .match-card{flex-wrap:wrap}
+  .logos-vs{display:none}
+  .stats-row{grid-template-columns:1fr 1fr}
+  #chat-main{height:calc(100vh - 200px)}
+}
 </style>
 </head>
 <body>
-<a href="index.html" class="inicio-btn">← Inicio</a>
-<div id="animacion-gol">
-  <div id="gol-contenido">
-    <span id="gol-balon">⚽</span>
-    <div id="gol-texto">¡GOOOL!</div>
-    <div id="gol-subtexto"></div>
-    <div id="gol-detalle">
-      <div id="gol-jugador"></div>
-      <div id="gol-equipo"></div>
-    </div>
-    <div id="gol-marcador"><span id="gol-marcador-num"></span></div>
-  </div>
+
+<!-- CARGA -->
+<div id="loading-screen">
+  <div class="load-ball">⚽</div>
+  <div class="load-title">LIGA NEXT LEVEL 7</div>
+  <div class="load-sub">Torneo Dominical · Cargando datos...</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  <div class="load-msg" id="load-msg">Conectando...</div>
 </div>
-<div class="wrap">
-  <div class="header">
-    <div class="live-badge"><span class="live-dot"></span> EN VIVO</div>
-    <h1>⚽ NEXT LEVEL 7</h1>
-    <p>Torneo Dominical — Puebla</p>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-hero">
+    <div class="login-hero-icon">⚽</div>
+    <div class="login-hero-title">LIGA NEXT LEVEL 7</div>
+    <div class="login-hero-sub">Torneo Dominical · Chat de coordinación</div>
   </div>
-  <div id="vista-offline" class="offline">
-    <div style="font-size:50px;margin-bottom:16px;">📡</div>
-    <h2>Sin transmisión activa</h2>
-    <p>Cuando comience el partido<br>podrás seguirlo aquí<br>en tiempo real.</p>
-  </div>
-  <div id="vista-seleccion" style="display:none;">
-    <p style="font-size:12px;color:#8aab91;margin-bottom:10px;text-align:center;">Encuentros Programados de la Fecha</p>
-    <div id="lista-encuentros"></div>
-  </div>
-  <div id="vista-live" style="display:none;">
-    <button class="back-btn" onclick="volverSeleccion()">← Ver todos los encuentros</button>
-    <div style="text-align:center;margin-bottom:10px;">
-      <span class="spill" id="spill">En juego ▶</span>
-      <span class="cancha-label" id="cancha-label"></span>
-    </div>
-    <div class="scoreboard">
-      <div class="team-card"><div class="tlogo-box"><img id="logo-local" src="" alt="local"></div><div class="tname" id="name-local">Local</div></div>
-      <div class="score-box">
-        <div class="score-nums"><span class="snum" id="score-local">0</span><span class="ssep">-</span><span class="snum" id="score-visita">0</span></div>
-        <div class="stime" id="match-time">0:00</div>
+  <div class="login-body">
+
+    <!-- Moderador -->
+    <div class="select-label" style="margin-bottom:8px">¿Cómo entras?</div>
+    <div class="mod-option" id="mod-option" onclick="toggleMod()">
+      <div class="mod-icon">🛡️</div>
+      <div>
+        <div class="mod-info-name">Entrar como Moderador</div>
+        <div class="mod-info-sub">Administrador de la liga · Panel especial</div>
       </div>
-      <div class="team-card"><div class="tlogo-box"><img id="logo-visita" src="" alt="visita"></div><div class="tname" id="name-visita">Visita</div></div>
     </div>
-    <div class="stats-row">
-      <div class="stat-mini"><div class="stat-num" id="st-yl">0</div><div class="stat-lbl"><span class="yb"></span>Local</div></div>
-      <div class="stat-mini"><div class="stat-num" id="st-rl">0</div><div class="stat-lbl"><span class="rb"></span>Local</div></div>
-      <div class="stat-mini"><div class="stat-num" id="st-yv">0</div><div class="stat-lbl"><span class="yb"></span>Visita</div></div>
-      <div class="stat-mini"><div class="stat-num" id="st-rv">0</div><div class="stat-lbl"><span class="rb"></span>Visita</div></div>
+
+    <div class="mod-pass" id="mod-pass">
+      <div class="field">
+        <label>Contraseña del moderador</label>
+        <input type="password" id="mod-password" placeholder="Ingresa la contraseña..." oninput="updatePreview()">
+      </div>
     </div>
-    <div class="section">
-      <h3>Bitácora del partido</h3>
-      <div class="events-list" id="events-list"><div class="no-ev">Esperando eventos...</div></div>
+
+    <!-- Capitán -->
+    <div id="captain-section">
+      <div class="field">
+        <label>Tu nombre (capitán)</label>
+        <input type="text" id="cap-name" placeholder="Ej: Carlos López" oninput="updatePreview()" maxlength="40">
+      </div>
+      <div class="select-label">Selecciona tu equipo</div>
+      <div class="team-grid" id="team-grid"></div>
+    </div>
+
+    <div class="cap-preview" id="cap-preview">
+      <img class="cap-avatar" id="cap-avatar-img" src="" alt="">
+      <div>
+        <div class="cap-name-txt" id="cap-preview-name"></div>
+        <div class="cap-team-txt" id="cap-preview-team"></div>
+        <span class="cap-badge eq" id="cap-preview-badge">Capitán</span>
+      </div>
+    </div>
+
+    <button class="btn-enter" id="btn-enter" disabled onclick="enterApp()">Entrar →</button>
+    <div class="login-msg" id="login-msg"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="app-header">
+    <div class="app-header-left">
+      <div class="hdr-avatar-wrap">
+        <img class="hdr-logo" id="hdr-logo" src="" alt="">
+        <div class="hdr-dot" id="hdr-dot">C</div>
+      </div>
+      <div>
+        <div class="hdr-capname" id="hdr-capname"></div>
+        <div class="hdr-teamname" id="hdr-teamname"></div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">← Salir</button>
+  </div>
+
+  <!-- Usuarios online -->
+  <div class="online-bar">
+    <span class="online-label">🟢 En línea:</span>
+    <div class="online-avatars" id="online-avatars"></div>
+  </div>
+
+  <div class="tabs" id="tabs-bar">
+    <div class="tab active" data-tab="chat" onclick="switchTab('chat')">💬 Chat General</div>
+    <div class="tab" data-tab="partidos" onclick="switchTab('partidos')">⚽ Mis partidos</div>
+    <div class="tab mod-tab" data-tab="modpanel" onclick="switchTab('modpanel')" style="display:none">🛡️ Panel Mod</div>
+  </div>
+
+  <!-- TAB CHAT -->
+  <div id="tab-chat" class="tab-content active" style="display:flex">
+    <div id="chat-main" style="display:flex;flex-direction:column;flex:1;position:relative">
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-footer"><div id="mention-list" style="display:none;position:absolute;bottom:70px;left:14px;right:14px;background:#1a1a1a;border:1px solid rgba(57,255,20,0.4);border-radius:10px;overflow:hidden;z-index:20;box-shadow:0 -4px 20px rgba(0,0,0,0.5);"></div>
+        <div class="msg-row">
+          <input type="text" class="msg-input" id="msg-input" placeholder="Escribe @ para mencionar un equipo..." onkeydown="if(event.key==='Enter')sendMsg()" oninput="onMsgInput(this)">
+          <button class="btn-send" onclick="sendMsg()">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB PARTIDOS -->
+  <div id="tab-partidos" class="tab-content">
+    <div id="tab-partidos-content" style="display:flex;flex-direction:column;padding:20px"></div>
+  </div>
+
+  <!-- TAB MOD PANEL -->
+  <div id="tab-modpanel" class="tab-content">
+    <div id="mod-panel" style="display:flex;flex-direction:column;padding:20px;gap:16px;overflow-y:auto;max-height:600px">
+
+      <!-- VUELTA -->
+      <div>
+        <div class="mod-section-title">📅 Vuelta (para el Rol del Domingo)</div>
+        <div class="vuelta-toggle">
+          <button class="vbtn active" id="vbtn1" onclick="setVuelta(1)">🔜 Vuelta 1 (Actual)</button>
+          <button class="vbtn" id="vbtn2" onclick="setVuelta(2)">🔄 Vuelta 2</button>
+        </div>
+      </div>
+
+      <!-- ROL DEL DOMINGO -->
+      <div>
+        <div class="mod-section-title" style="color:var(--neon)">📋 Armar Rol del Domingo</div>
+        
+        <!-- Fecha -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <label style="font-size:12px;color:var(--g400);white-space:nowrap">📆 Fecha:</label>
+          <input type="date" id="rol-fecha" class="msg-input" style="flex:1;padding:8px 12px;font-size:13px">
+        </div>
+
+        <!-- Slots de horario -->
+        <div id="rol-slots" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+
+        <!-- Botones -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="addSlot()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(57,255,20,0.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:600;cursor:pointer">+ Agregar horario</button>
+          <button onclick="autoRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(167,139,250,0.3);border-radius:var(--rs);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer">⚡ Auto-proponer rol</button>
+        </div>
+      </div>
+
+      <!-- PREVIEW DEL ROL -->
+      <div id="rol-preview-wrap" style="display:none">
+        <div class="mod-section-title">👁️ Vista previa</div>
+        <div id="rol-preview" style="background:var(--dark2);border:1px solid rgba(57,255,20,0.2);border-radius:var(--r);padding:14px"></div>
+        <button class="btn-anunciar" onclick="publicarRol()" style="margin-top:10px">
+          📣 Publicar Rol en el chat
+        </button>
+      </div>
+
+      <!-- REGISTRAR PARTIDO (fecha, hora, campo) -->
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
+        <div class="mod-section-title" style="color:var(--neon)">📝 Registrar partido (Fecha, Hora, Campo)</div>
+        <div style="font-size:11px;color:var(--g500);margin-bottom:12px">Elige un equipo, toca el partido acordado y captura fecha/hora/campo. La jornada se asigna sola.</div>
+        <div class="mod-team-select" id="mod-team-select"></div>
+        <div class="mod-preview" id="mod-preview" style="margin-top:10px">
+          <div class="mod-preview-empty">Selecciona un equipo</div>
+        </div>
+        <div class="programar-box" id="programar-form"></div>
+      </div>
+
+      <!-- MENSAJE MODERADOR -->
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
+        <div class="mod-section-title">✍️ Mensaje del moderador</div>
+        <div class="msg-row">
+          <input type="text" class="msg-input" id="mod-msg-input" placeholder="Escribe un anuncio o aviso..." onkeydown="if(event.key==='Enter')sendModMsg()">
+          <button class="btn-send" style="background:var(--mod)" onclick="sendModMsg()">Publicar</button>
+        </div>
+      </div>
+
+      <!-- ZONA PELIGROSA -->
+      <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
+        <div class="mod-section-title" style="color:#f87171">⚠️ Zona peligrosa</div>
+        <button class="btn-anunciar" id="btn-limpiar" onclick="limpiarChat()" style="background:#7f1d1d;border:1px solid #f87171;margin-top:0">
+          🗑️ Limpiar chat — Nueva sesión
+        </button>
+        <div style="font-size:11px;color:var(--g500);margin-top:8px;text-align:center">Se borran todos los mensajes. No se puede deshacer.</div>
+      </div>
+
     </div>
   </div>
 </div>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<!-- POPUP: PARTIDOS PENDIENTES (se abre solo al entrar el capitán) -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup-box">
+    <div class="popup-header">
+      <div class="popup-title">⚽ Tus partidos pendientes</div>
+      <button class="popup-close" onclick="closePopupPartidos()">✕</button>
+    </div>
+    <div id="popup-partidos-content"></div>
+  </div>
+</div>
+
 <script>
-var GID_PARTIDOS = '1362473459';
-var GID_EQUIPOS = '1894947293';
-firebase.initializeApp({
-  apiKey: "AIzaSyCDStSLESm2UbqcIRpqrnHGfTsZJUtCVwc",
-  authDomain: "liga-next-level-7.firebaseapp.com",
-  databaseURL: "https://liga-next-level-7-default-rtdb.firebaseio.com",
-  projectId: "liga-next-level-7",
-  storageBucket: "liga-next-level-7.firebasestorage.app",
-  messagingSenderId: "463941548215",
-  appId: "1:463941548215:web:0d9eb7e517cbc33352b532"
-});
-var db = firebase.database();
-var localTimer = null, partidos = [], equipos = {};
+// ════════════════════════════════
+//  CONFIG
+// ════════════════════════════════
+const FIREBASE_URL = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
+const SHEET_ID     = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
+const GID_EQUIPOS  = '1894947293';
+const GID_PARTIDOS = '1362473459';
+const MOD_PASS     = 'nl7admin'; // ← puedes cambiar esta contraseña
+const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd1NDZg1IY2_y_VGc5xX7b_pmV85PE69c_10Aw58vG8mFPO79K2/exec'; // mismo Apps Script de nextlevelenvivo.html
 
-// ── Estado de cada cancha por separado (para poder ver 2 transmisiones a la vez) ──
-var estados = {1:null, 2:null};
-var eventosPreviosCount = {1:0, 2:0};
-var viendoCancha = null; // null = pantalla de selección, 1 o 2 = viendo esa cancha en vivo
-
-var icons={goal:'⚽',yellow:'🟨',red:'🟥'}, labels={goal:'Gol',yellow:'Tarjeta amarilla',red:'Tarjeta roja'}, statusLabels={inicio:'En juego ▶',medio:'Medio tiempo ⏸',fin:'Finalizado 🏁',sin:'Sin iniciar'};
-
-function csvUrl(gid){ return 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid='+gid+'&single=true&output=csv'; }
-function parseCSV(text){
-  var lines=text.trim().split('\n');
-  var headers=lines[0].split(',').map(function(h){return h.trim().replace(/^"|"$/g,'').replace(/\r/g,'');});
-  return lines.slice(1).filter(function(l){return l.trim();}).map(function(line){
-    var vals=[],cur='',inQ=false;
-    for(var i=0;i<line.length;i++){var c=line[i];if(c==='"')inQ=!inQ;else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else cur+=c;}
-    vals.push(cur.trim());
-    var obj={}; headers.forEach(function(h,i){ obj[h]=(vals[i]||'').replace(/^"|"$/g,'').replace(/\r/g,'').trim(); });
-    return obj;
-  });
-}
-function cargarPartidos(){
-  Promise.all([fetch(csvUrl(GID_EQUIPOS)).then(function(r){return r.text();}), fetch(csvUrl(GID_PARTIDOS)).then(function(r){return r.text();})]).then(function(results){
-    var eqs = parseCSV(results[0]);
-    eqs.forEach(function(e){ var id = e.ID_Equipo || e.id_equipo || e.ID || e.id; if(id) equipos[id]={nombre:e.Nombre || e.nombre, logo:e.URL || e.url || e.Logo || e.logo}; });
-    partidos = parseCSV(results[1]).filter(function(p){ var est = (p.Estado || p.estado || '').toLowerCase(); return est === 'programado'; });
-    if(viendoCancha === null) renderSeleccion();
-  }).catch(function(){ if(viendoCancha === null) renderSeleccion(); });
-}
-function startTimer(seg){ if(localTimer) clearInterval(localTimer); var s=seg; function tick(){ var m=Math.floor(s/60),sc=s%60; document.getElementById('match-time').textContent=m+':'+(sc<10?'0':'')+sc; s++; } tick(); localTimer=setInterval(tick,1000); }
-function stopTimer(txt){ if(localTimer){clearInterval(localTimer);localTimer=null;} if(document.getElementById('match-time')) document.getElementById('match-time').textContent=txt||'0:00'; }
-
-function volverSeleccion(){
-  viendoCancha = null;
-  stopTimer('0:00');
-  document.getElementById('vista-live').style.display='none';
-  document.getElementById('vista-seleccion').style.display='block';
-  renderSeleccion();
-}
-
-function verEnVivo(n){
-  var d = estados[n];
-  if(!d || !d.activo) return;
-  viendoCancha = n;
-  document.getElementById('cancha-label').textContent = 'CANCHA ' + n;
-  document.getElementById('vista-seleccion').style.display='none';
-  document.getElementById('vista-live').style.display='block';
-  actualizarMarcador(d);
-}
-
-function actualizarMarcador(d){
-  document.getElementById('logo-local').src=d.logoLocal||''; document.getElementById('logo-visita').src=d.logoVisita||''; document.getElementById('name-local').textContent=d.nombreLocal||'Local'; document.getElementById('name-visita').textContent=d.nombreVisita||'Visita'; document.getElementById('score-local').textContent=d.scoreLocal||0; document.getElementById('score-visita').textContent=d.scoreVisita||0; document.getElementById('spill').textContent=statusLabels[d.status]||'En juego'; document.getElementById('st-yl').textContent=d.yellowLocal||0; document.getElementById('st-rl').textContent=d.redLocal||0; document.getElementById('st-yv').textContent=d.yellowVisita||0; document.getElementById('st-rv').textContent=d.redVisita||0;
-  if(d.status==='inicio'){ var segs=(d.minuto||0)*60; if(d.inicioTimestamp) segs=Math.floor((Date.now()-d.inicioTimestamp)/1000); if(segs < 0) segs = 0; startTimer(segs); } else if(d.status==='medio'){stopTimer('20:00');} else if(d.status==='fin'){stopTimer('FIN');} else{stopTimer('0:00');}
-  var evs=d.events||[]; var list=document.getElementById('events-list'); if(!evs.length){list.innerHTML='<div class="no-ev">Esperando eventos...</div>';return;}
-  list.innerHTML=evs.map(function(e){ return '<div class="ev '+(e.type||'')+'"><span class="ev-min">'+(e.minute||0)+"'</span><span>"+(icons[e.type]||'')+'</span><span class="ev-txt">'+(labels[e.type]||e.type)+(e.player?' — '+e.player:'')+'</span><span class="ev-team">'+(e.teamName||'')+'</span></div>'; }).join('');
-}
-// ===== SONIDO (generado con Web Audio API, no depende de archivos externos) =====
-var audioCtx = null;
-function habilitarAudio(){ if(!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(audioCtx && audioCtx.state==='suspended'){ audioCtx.resume(); } }
-document.addEventListener('click', habilitarAudio, {once:true});
-document.addEventListener('touchstart', habilitarAudio, {once:true});
-function tono(freq, inicio, dur, tipo, vol){
-  if(!audioCtx) return;
-  var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-  osc.type = tipo || 'sine'; osc.frequency.setValueAtTime(freq, audioCtx.currentTime + inicio);
-  gain.gain.setValueAtTime(0, audioCtx.currentTime + inicio);
-  gain.gain.linearRampToValueAtTime(vol||0.2, audioCtx.currentTime + inicio + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + inicio + dur);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(audioCtx.currentTime + inicio); osc.stop(audioCtx.currentTime + inicio + dur + 0.05);
-}
-function sonidoGol(){ tono(523,0,.16,'triangle',.22); tono(659,.13,.16,'triangle',.22); tono(784,.26,.28,'triangle',.25); }
-function sonidoAmarilla(){ tono(600,0,.22,'square',.15); }
-function sonidoRoja(){ tono(220,0,.3,'sawtooth',.18); tono(160,.22,.4,'sawtooth',.2); }
-
-// ===== VOZ (anuncia el evento en español usando la voz integrada del navegador) =====
-var vocesDisponibles = [];
-function cargarVoces(){ if('speechSynthesis' in window) vocesDisponibles = speechSynthesis.getVoices(); }
-cargarVoces();
-if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged = cargarVoces; }
-function decir(texto){
-  if(!('speechSynthesis' in window) || !texto) return;
-  var utter = new SpeechSynthesisUtterance(texto);
-  var esVoice = vocesDisponibles.find(function(v){ return v.lang && v.lang.toLowerCase().indexOf('es') === 0; });
-  if(esVoice) utter.voice = esVoice;
-  utter.lang = esVoice ? esVoice.lang : 'es-MX';
-  utter.rate = 1.02; utter.pitch = 1.05; utter.volume = 1;
-  speechSynthesis.cancel();
-  speechSynthesis.speak(utter);
-}
-
-// ===== CONFIGURACIÓN POR TIPO DE EVENTO =====
-var eventoConfig = {
-  goal:   { icono:'⚽', titulo:'¡GOOOL!', sub:'', confeti:true, colores:['#ffd166','#4caf50','#ffffff','#2d8a45'],
-            css:{c1:'rgba(255,209,102,.35)',c2:'rgba(76,175,80,.18)',ring1:'#ffd166',ring2:'#4caf50',txtMid:'#ffe9a8',txtEnd:'#ffd166',glow:'rgba(255,209,102,.55)',accent:'#ffd166'}, sonido:sonidoGol, voz:'¡Goool!', mostrarMarcador:true },
-  yellow: { icono:'🟨', titulo:'TARJETA', sub:'AMONESTADO', confeti:false, colores:['#f9a825','#000000','#ffffff'],
-            css:{c1:'rgba(249,168,37,.4)',c2:'rgba(0,0,0,.3)',ring1:'#f9a825',ring2:'#ffe082',txtMid:'#ffe082',txtEnd:'#f9a825',glow:'rgba(249,168,37,.6)',accent:'#f9a825'}, sonido:sonidoAmarilla, voz:'Tarjeta amarilla, amonestado', mostrarMarcador:false },
-  red:    { icono:'🟥', titulo:'TARJETA', sub:'EXPULSADO', confeti:false, colores:['#ef5350','#000000','#ffffff'],
-            css:{c1:'rgba(239,83,80,.42)',c2:'rgba(0,0,0,.3)',ring1:'#ef5350',ring2:'#ff8a80',txtMid:'#ffab91',txtEnd:'#ef5350',glow:'rgba(239,83,80,.65)',accent:'#ef5350'}, sonido:sonidoRoja, voz:'Tarjeta roja, expulsado', mostrarMarcador:false }
+// ════════════════════════════════
+//  ESTADO LOCAL
+// ════════════════════════════════
+S = {
+  teams: {},
+  allMatches: [],   // TODOS los partidos (pendiente/programado/jugado)
+  matches: [],      // solo los pendientes (para armar el chat/popup)
+  capName: '',
+  teamId: null,
+  isMod: false,
+  vuelta: 1,
+  modTeamSelected: null,
+  matchToProgram: null,
+  onlineKey: null
 };
 
-function mostrarAnimacionEvento(tipo, evento, d){
-  var cfg = eventoConfig[tipo]; if(!cfg) return;
-  var cont = document.getElementById('animacion-gol');
+// ════════════════════════════════
+//  FIREBASE HELPERS
+// ════════════════════════════════
+async function fbGet(path){
+  const r = await fetch(`${FIREBASE_URL}/${path}.json`);
+  return r.ok ? r.json() : null;
+}
+async function fbPush(path, data){
+  const r = await fetch(`${FIREBASE_URL}/${path}.json`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+  });
+  return r.ok ? r.json() : null;
+}
+async function fbSet(path, data){
+  await fetch(`${FIREBASE_URL}/${path}.json`, {
+    method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+  });
+}
+async function fbDelete(path){
+  await fetch(`${FIREBASE_URL}/${path}.json`, {method:'DELETE'});
+}
 
-  // Limpiar cualquier destello/anillo/confeti de una animación anterior
-  cont.querySelectorAll('.gol-destello,.gol-anillo,.gol-confeti').forEach(function(n){ n.remove(); });
 
-  // Aplicar paleta de color del tipo de evento
-  cont.style.setProperty('--c1', cfg.css.c1);
-  cont.style.setProperty('--c2', cfg.css.c2);
-  cont.style.setProperty('--ring1', cfg.css.ring1);
-  cont.style.setProperty('--ring2', cfg.css.ring2);
-  cont.style.setProperty('--txt-mid', cfg.css.txtMid);
-  cont.style.setProperty('--txt-end', cfg.css.txtEnd);
-  cont.style.setProperty('--glow', cfg.css.glow);
-  cont.style.setProperty('--accent', cfg.css.accent);
 
-  // Destello radial
-  var destello = document.createElement('div'); destello.className='gol-destello'; cont.appendChild(destello);
+// ════════════════════════════════
+//  GOOGLE SHEETS
+// ════════════════════════════════
+async function fetchCSV(gid){
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`);
+  if(!r.ok) throw new Error('No se pudo leer el Sheet (gid='+gid+'). Asegúrate de que sea público.');
+  return parseCSV(await r.text());
+}
+function parseCSV(text){
+  const lines=text.trim().split('\n');
+  if(lines.length<2)return[];
+  const sep=lines[0].includes('\t')?'\t':',';
+  const headers=csvLine(lines[0],sep).map(h=>h.toLowerCase().trim().replace(/\s+/g,'_'));
+  return lines.slice(1).map(l=>{
+    const vals=csvLine(l,sep);
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=(vals[i]||'').trim().replace(/^"|"$/g,''));
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v));
+}
+function csvLine(line,sep){
+  const res=[];let cur='';let q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){q=!q}else if(c===sep&&!q){res.push(cur);cur=''}else{cur+=c}
+  }
+  res.push(cur);
+  return res;
+}
 
-  // Anillos de choque
-  ['','a2','a3'].forEach(function(cls){ var an=document.createElement('div'); an.className='gol-anillo '+cls; cont.appendChild(an); });
+// ════════════════════════════════
+//  INIT
+// ════════════════════════════════
+async function init(){
+  setP(10,'Conectando con Google Sheets...');
+  try{
+    setP(30,'Cargando equipos...');
+    const eq = await fetchCSV(GID_EQUIPOS);
+    eq.forEach(r=>{
+      const id=r['id_equipo']||r['id'];
+      if(!id||id==='10') return;
+      S.teams[id]={id, nombre:r['nombre']||'Equipo '+id, ciudad:r['ciudad']||'', logo:r['url']||r['logo']||''};
+    });
+    setP(65,'Cargando partidos...');
+    const pt = await fetchCSV(GID_PARTIDOS);
+    S.allMatches = pt
+      .map(r=>({
+        id:r['id_partido']||r['id']||'',
+        jornada:r['jornada']||'',
+        local:r['equipo_local']||r['local']||'',
+        visita:r['equipo_visita']||r['visita']||'',
+        ll:r['ll']||'', lv:r['lv']||'',
+        vuelta:r['vuelta']||'1',
+        estado:r['estado']||'',
+        fecha:r['fecha']||'',
+        hora:r['hora']||'',
+        cancha:r['cancha']||''
+      }))
+      .filter(m=>m.local&&m.visita&&m.local!=='10'&&m.visita!=='10');
+    S.matches = S.allMatches.filter(m=>(m.estado||'').toLowerCase()==='pendiente');
+    setP(100,'¡Listo!');
+    setTimeout(()=>{
+      document.getElementById('loading-screen').style.display='none';
+      document.getElementById('login-screen').style.display='block';
+      renderTeamGrid();
+    },400);
+  }catch(e){
+    setP(100,'');
+    document.getElementById('load-msg').innerHTML=`<span style="color:#f87171">❌ ${e.message}</span>`;
+  }
+}
 
-  // Confeti (solo goles)
-  if(cfg.confeti){
-    for(var i=0;i<38;i++){
-      var pieza = document.createElement('div');
-      pieza.className='gol-confeti';
-      pieza.style.left = (Math.random()*100)+'vw';
-      pieza.style.background = cfg.colores[Math.floor(Math.random()*cfg.colores.length)];
-      pieza.style.animationDuration = (1.8 + Math.random()*1.4)+'s';
-      pieza.style.animationDelay = (Math.random()*0.5)+'s';
-      pieza.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
-      cont.appendChild(pieza);
+function setP(pct,msg){
+  document.getElementById('progress').style.width=pct+'%';
+  if(msg) document.getElementById('load-msg').textContent=msg;
+}
+
+// ════════════════════════════════
+//  LOGIN
+// ════════════════════════════════
+let selectedTeamId=null;
+let isMod=false;
+
+function toggleMod(){
+  isMod=!isMod;
+  const opt=document.getElementById('mod-option');
+  const cap=document.getElementById('captain-section');
+  const pass=document.getElementById('mod-pass');
+  opt.classList.toggle('selected',isMod);
+  cap.style.display=isMod?'none':'block';
+  pass.classList.toggle('show',isMod);
+  selectedTeamId=null;
+  document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));
+  updatePreview();
+};
+
+function renderTeamGrid(){
+  const used=new Set();
+  S.matches.forEach(m=>{used.add(m.local);used.add(m.visita);});
+  const teams=Object.values(S.teams).filter(t=>used.has(t.id)).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  const grid=document.getElementById('team-grid');
+  grid.innerHTML='';
+  teams.forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='team-btn';
+    btn.innerHTML=`<img src="${t.logo}" onerror="this.style.opacity='.3'"><div><div class="team-btn-name">${t.nombre}</div><div class="team-btn-city">${t.ciudad}</div></div>`;
+    btn.onclick=()=>{selectedTeamId=t.id;document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');updatePreview();};
+    grid.appendChild(btn);
+  });
+}
+
+function updatePreview(){
+  const name=document.getElementById('cap-name').value.trim();
+  const preview=document.getElementById('cap-preview');
+  const btn=document.getElementById('btn-enter');
+  const badge=document.getElementById('cap-preview-badge');
+  if(isMod){
+    const pass=document.getElementById('mod-password').value;
+    if(pass===MOD_PASS){
+      document.getElementById('cap-avatar-img').src='https://i.imgur.com/placeholder.png';
+      document.getElementById('cap-avatar-img').style.border='2px solid #a78bfa';
+      document.getElementById('cap-preview-name').textContent='Moderador';
+      document.getElementById('cap-preview-team').textContent='Liga Next Level 7 · Panel Admin';
+      badge.textContent='Moderador'; badge.className='cap-badge mod';
+      preview.classList.add('show');
+      btn.disabled=false;
+      document.getElementById('login-msg').textContent='';
+    }else if(pass.length>0){
+      document.getElementById('login-msg').className='login-msg err';
+      document.getElementById('login-msg').textContent='Contraseña incorrecta';
+      preview.classList.remove('show');
+      btn.disabled=true;
+    }else{
+      preview.classList.remove('show');
+      btn.disabled=true;
+    }
+    return;
+  }
+  document.getElementById('login-msg').textContent='';
+  if(name&&selectedTeamId){
+    const t=S.teams[selectedTeamId];
+    document.getElementById('cap-avatar-img').src=t.logo;
+    document.getElementById('cap-avatar-img').style.border='2px solid #39ff14';
+    document.getElementById('cap-preview-name').textContent=name;
+    document.getElementById('cap-preview-team').textContent=t.nombre+' · '+t.ciudad;
+    badge.textContent='Capitán'; badge.className='cap-badge eq';
+    preview.classList.add('show');
+    btn.disabled=false;
+  }else{
+    preview.classList.remove('show');
+    btn.disabled=true;
+  }
+};
+
+async function enterApp(){
+  const btn=document.getElementById('btn-enter');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> Entrando...';
+  S.isMod=isMod;
+  if(isMod){
+    S.capName='Moderador'; S.teamId='mod';
+  }else{
+    S.capName=document.getElementById('cap-name').value.trim();
+    S.teamId=selectedTeamId;
+  }
+  // Registrar online
+  const onlineData={
+    name: S.isMod?'Moderador':S.capName,
+    team: S.isMod?'mod':S.teamId,
+    teamName: S.isMod?'Moderador':tname(S.teamId),
+    logo: S.isMod?'':tlogo(S.teamId),
+    isMod: S.isMod,
+    ts: Date.now()
+  };
+  const res=await fbPush('online',onlineData);
+  S.onlineKey=res?.name;
+
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+
+  // Header
+  document.getElementById('hdr-logo').src=S.isMod?'':tlogo(S.teamId);
+  document.getElementById('hdr-logo').className='hdr-logo'+(S.isMod?' mod-hdr':'');
+  document.getElementById('hdr-dot').className='hdr-dot'+(S.isMod?' mod-dot':'');
+  document.getElementById('hdr-dot').textContent=S.isMod?'🛡':'C';
+  document.getElementById('hdr-capname').textContent=S.isMod?'Moderador':S.capName;
+  document.getElementById('hdr-teamname').textContent=S.isMod?'Panel de administración':'Capitán · '+tname(S.teamId);
+
+  if(S.isMod){
+    document.querySelector('.mod-tab').style.display='block';
+    renderModPanel();
+    initRol();
+  }
+
+  renderPartidos();
+  startListeners();
+
+  // Popup automático de partidos pendientes (solo para capitanes)
+  if(!S.isMod){
+    setTimeout(()=>{ showPopupPartidos(); }, 500);
+  }
+};
+
+async function logout(){
+  if(pollInterval){ clearInterval(pollInterval); pollInterval=null; lastMsgCount=0; }
+  if(S.onlineKey) await fbDelete('online/'+S.onlineKey);
+  S.capName=''; S.teamId=null; S.isMod=false; S.onlineKey=null;
+  isMod=false; selectedTeamId=null;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='block';
+  document.getElementById('cap-name').value='';
+  document.getElementById('mod-password').value='';
+  document.getElementById('cap-preview').classList.remove('show');
+  document.getElementById('btn-enter').disabled=true;
+  document.getElementById('btn-enter').textContent='Entrar →';
+  document.getElementById('mod-option').classList.remove('selected');
+  document.getElementById('captain-section').style.display='block';
+  document.getElementById('mod-pass').classList.remove('show');
+  document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('login-msg').textContent='';
+  document.querySelector('.mod-tab').style.display='none';
+  closePopupPartidos();
+};
+
+// ════════════════════════════════
+//  POLLING (tiempo real cada 2s)
+// ════════════════════════════════
+let pollInterval=null;
+let lastMsgCount=0;
+
+function startListeners(){
+  // Carga inicial
+  pollChat();
+  pollOnline();
+  // Polling cada 2 segundos
+  pollInterval=setInterval(()=>{
+    pollChat();
+    pollOnline();
+  },2000);
+}
+
+async function pollChat(){
+  const data=await fbGet('chat');
+  const count=data?Object.keys(data).length:0;
+  // Solo re-renderizar si hay mensajes nuevos
+  if(count!==lastMsgCount){
+    lastMsgCount=count;
+    renderMessages(data);
+  }
+}
+
+async function pollOnline(){
+  const data=await fbGet('online');
+  renderOnline(data);
+}
+
+// ════════════════════════════════
+//  MENCIONES
+// ════════════════════════════════
+function onMsgInput(inp){
+  const val=inp.value;
+  const atIdx=val.lastIndexOf('@');
+  if(atIdx===-1){ hideMentions(); return; }
+  const query=val.slice(atIdx+1).toLowerCase();
+  const matches=Object.values(S.teams).filter(t=>t.nombre.toLowerCase().includes(query)).slice(0,5);
+  if(!matches.length){ hideMentions(); return; }
+  const list=document.getElementById('mention-list');
+  list.style.display='block';
+  list.innerHTML=matches.map(t=>`
+    <div onclick="insertMention('${t.nombre}')" style="display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);transition:background .1s" onmouseover="this.style.background='rgba(57,255,20,0.08)'" onmouseout="this.style.background='transparent'">
+      <img src="${t.logo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid rgba(57,255,20,0.3)">
+      <span style="font-size:13px;font-weight:600;color:#fff">@${t.nombre}</span>
+    </div>`).join('');
+}
+
+function insertMention(nombre){
+  const inp=document.getElementById('msg-input');
+  const val=inp.value;
+  const atIdx=val.lastIndexOf('@');
+  inp.value=val.slice(0,atIdx)+'@'+nombre+' ';
+  hideMentions();
+  inp.focus();
+}
+
+function hideMentions(){
+  const list=document.getElementById('mention-list');
+  if(list) list.style.display='none';
+}
+
+// Extraer menciones del texto
+function extractMentions(text){
+  const found=[];
+  Object.values(S.teams).forEach(t=>{
+    if(text.includes('@'+t.nombre)) found.push(t.id);
+  });
+  return found;
+}
+
+// Sonido de notificación (Web Audio API)
+function playNotif(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880,ctx.currentTime);
+    osc.frequency.setValueAtTime(1100,ctx.currentTime+0.1);
+    gain.gain.setValueAtTime(0.3,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime+0.4);
+  }catch(e){}
+}
+
+// Resaltar menciones en el texto
+function resaltarMenciones(text){
+  let result=esc(text);
+  Object.values(S.teams).forEach(t=>{
+    const tag='@'+t.nombre;
+    const esTag=esc(tag);
+    const isMine=t.id===S.teamId;
+    const color=isMine?'#39ff14':'#a78bfa';
+    const bg=isMine?'rgba(57,255,20,0.15)':'rgba(167,139,250,0.15)';
+    result=result.split(esTag).join(`<span style="color:${color};background:${bg};padding:1px 6px;border-radius:6px;font-weight:700">${esTag}</span>`);
+  });
+  return result;
+}
+
+// ════════════════════════════════
+//  CHAT
+// ════════════════════════════════
+async function sendMsg(){
+  const inp=document.getElementById('msg-input');
+  const text=inp.value.trim();
+  if(!text) return;
+  inp.value='';
+  hideMentions();
+  const mentions=extractMentions(text);
+  await fbPush('chat',{
+    type:'msg',
+    sender: S.isMod?'mod':S.teamId,
+    senderName: S.isMod?'Moderador':S.capName+' ('+tname(S.teamId)+')',
+    senderLogo: S.isMod?'':tlogo(S.teamId),
+    isMod: S.isMod,
+    mentions, text, ts:Date.now(),
+    time: now()
+  });
+};
+
+async function sendModMsg(){
+  const inp=document.getElementById('mod-msg-input');
+  const text=inp.value.trim();
+  if(!text) return;
+  inp.value='';
+  await fbPush('chat',{
+    type:'mod_msg',
+    senderName:'Moderador',
+    text, ts:Date.now(), time:now()
+  });
+};
+
+function renderMessages(data){
+  const container=document.getElementById('chat-messages');
+  if(!data){ container.innerHTML='<div class="empty"><div class="empty-icon">💬</div><div>Sé el primero en escribir</div></div>'; return; }
+  const msgs=Object.values(data).sort((a,b)=>(a.ts||0)-(b.ts||0));
+
+  // Detectar si hay mensajes nuevos que me mencionan
+  const newCount=msgs.length;
+  if(newCount>lastMsgCount && lastMsgCount>0){
+    const newMsgs=msgs.slice(lastMsgCount);
+    newMsgs.forEach(msg=>{
+      if(msg.mentions && Array.isArray(msg.mentions) && msg.mentions.includes(S.teamId) && msg.sender!==S.teamId){
+        playNotif();
+        // Flash en el tab
+        const tab=document.querySelector('[data-tab="chat"]');
+        if(tab){ tab.style.background='rgba(57,255,20,0.2)'; setTimeout(()=>tab.style.background='',1500); }
+      }
+    });
+  }
+
+  let html='';
+  let lastDate='';
+  msgs.forEach(msg=>{
+    const d=msg.ts?new Date(msg.ts).toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'}):'';
+    if(d&&d!==lastDate){ html+=`<div class="date-sep">${d}</div>`; lastDate=d; }
+
+    if(msg.type==='anuncio'){
+      html+=renderAnuncio(msg);
+    }else if(msg.type==='rol'){
+      html+=renderRol(msg);
+    }else if(msg.type==='partido_programado'){
+      html+=renderPartidoProgramado(msg);
+    }else if(msg.type==='mod_msg'){
+      html+=`<div class="bubble sys-bubble">
+        <div class="bub-text">🛡️ <strong>Moderador:</strong> ${resaltarMenciones(msg.text)}</div>
+        <div class="bub-time">${msg.time||''}</div>
+      </div>`;
+    }else{
+      const mine=(!S.isMod&&msg.sender===S.teamId)||(S.isMod&&msg.sender==='mod');
+      // Resaltar burbuja si me mencionan
+      const mecionaMe=msg.mentions&&Array.isArray(msg.mentions)&&msg.mentions.includes(S.teamId)&&!mine;
+      html+=`<div class="bubble ${mine?'mine':'theirs'}" style="${mecionaMe?'border-left:3px solid #39ff14;padding-left:8px;':''}" >
+        <div class="bub-meta">
+          <img class="bub-av" src="${msg.senderLogo||''}" onerror="this.style.opacity='.2'">
+          <span class="bub-name${msg.isMod?' mod-name':''}">${esc(msg.senderName||'')}</span>
+          ${mecionaMe?'<span style="font-size:10px;background:rgba(57,255,20,0.2);color:#39ff14;padding:1px 6px;border-radius:8px;margin-left:4px;">@ te mencionaron</span>':''}
+        </div>
+        <div class="bub-text">${resaltarMenciones(msg.text)}</div>
+        <div class="bub-time">${msg.time||''}</div>
+      </div>`;
+    }
+  });
+  container.innerHTML=html||'<div class="empty"><div class="empty-icon">💬</div><div>Sé el primero en escribir</div></div>';
+  container.scrollTop=container.scrollHeight;
+}
+
+function renderAnuncio(msg){
+  const matches=msg.matches||[];
+  let matchesHtml='';
+  matches.forEach(m=>{
+    matchesHtml+=`<div class="anuncio-match">
+      <div class="anuncio-logos">
+        <img src="${m.ll||''}" width="28" height="28" style="border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+        <span class="anuncio-vs">vs</span>
+        <img src="${m.lv||''}" width="28" height="28" style="border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+      </div>
+      <div class="anuncio-info">
+        <div class="anuncio-teams">${esc(m.local)} vs ${esc(m.visita)}</div>
+        <div class="anuncio-meta">Jornada ${m.jornada||'?'}</div>
+      </div>
+    </div>`;
+  });
+  return `<div class="anuncio-card">
+    <div class="anuncio-header">
+      <span class="anuncio-badge">🛡️ Moderador</span>
+    </div>
+    <div class="anuncio-team">📋 Partidos pendientes: <strong>${esc(msg.teamName||'')}</strong></div>
+    <div class="anuncio-matches">${matchesHtml}</div>
+    <div class="anuncio-time">${msg.time||''}</div>
+  </div>`;
+}
+
+function renderPartidoProgramado(msg){
+  return `<div class="anuncio-card" style="border-color:rgba(57,255,20,.4)">
+    <div class="anuncio-header">
+      <span class="anuncio-badge" style="background:var(--neon-dim);color:var(--neon);border-color:rgba(57,255,20,.3)">✅ Partido Programado</span>
+    </div>
+    <div class="anuncio-match">
+      <div class="anuncio-logos">
+        <img src="${msg.ll||''}" width="28" height="28" style="border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+        <span class="anuncio-vs">vs</span>
+        <img src="${msg.lv||''}" width="28" height="28" style="border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+      </div>
+      <div class="anuncio-info">
+        <div class="anuncio-teams">${esc(msg.local)} vs ${esc(msg.visita)}</div>
+        <div class="anuncio-meta">📅 ${esc(msg.fecha)} · 🕐 ${esc(msg.hora)} · 📍 ${esc(msg.cancha)} · Jornada ${esc(msg.jornada||'?')}</div>
+      </div>
+    </div>
+    <div class="anuncio-time">${msg.time||''}</div>
+  </div>`;
+}
+
+// ════════════════════════════════
+//  ONLINE USERS
+// ════════════════════════════════
+function renderOnline(data){
+  const container=document.getElementById('online-avatars');
+  if(!data){ container.innerHTML=''; return; }
+  // Limpiar entradas viejas (>5 min)
+  const now5=Date.now()-5*60*1000;
+  const users=Object.values(data).filter(u=>!u.ts||u.ts>now5);
+  if(!users.length){ container.innerHTML='<span style="font-size:12px;color:var(--g500)">Nadie conectado aún</span>'; return; }
+  container.innerHTML=users.map(u=>`
+    <div class="online-chip ${u.isMod?'mod-chip':''}">
+      <img src="${u.logo||''}" onerror="this.style.display='none'">
+      <span>${esc(u.isMod?'🛡️ Mod':u.name)}</span>
+      <div class="online-dot"></div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════
+//  PARTIDOS (del capitán) — sin separar vueltas
+// ════════════════════════════════
+function buildPartidosHTML(){
+  const tid=S.teamId;
+  const mine=S.matches.filter(m=>(m.local===tid||m.visita===tid))
+    .sort((a,b)=>(parseInt(a.jornada,10)||999)-(parseInt(b.jornada,10)||999));
+  if(!mine.length){
+    return '<div class="empty"><div class="empty-icon">🎉</div><div>No tienes partidos pendientes</div></div>';
+  }
+  let html=`<div class="stats-row" style="grid-template-columns:1fr">
+    <div class="stat-card"><div class="stat-num">${mine.length}</div><div class="stat-label">Partidos pendientes</div></div>
+  </div>`;
+  html+='<div class="sec-title">⚽ Partidos que te faltan</div>';
+  mine.forEach(m=>{html+=matchCardHTML(m);});
+  return html;
+}
+
+function renderPartidos(){
+  document.getElementById('tab-partidos-content').innerHTML=buildPartidosHTML();
+}
+
+function showPopupPartidos(){
+  document.getElementById('popup-partidos-content').innerHTML=buildPartidosHTML();
+  document.getElementById('popup-overlay').classList.add('show');
+}
+
+function closePopupPartidos(){
+  document.getElementById('popup-overlay').classList.remove('show');
+}
+
+function matchCardHTML(m){
+  const ll=m.ll||tlogo(m.local); const lv=m.lv||tlogo(m.visita);
+  return `<div class="match-card pend">
+    <div class="logos-vs">
+      <img class="logo-sm" src="${ll}" onerror="this.style.opacity='.2'">
+      <span class="vs-lbl">VS</span>
+      <img class="logo-sm" src="${lv}" onerror="this.style.opacity='.2'">
+    </div>
+    <div class="match-info">
+      <div class="match-teams">${tname(m.local)} vs ${tname(m.visita)}</div>
+      <div class="match-meta">Jornada ${m.jornada||'?'}</div>
+    </div>
+    <span class="badge bp">Pendiente</span>
+  </div>`;
+}
+
+// ════════════════════════════════
+//  ROL DEL DOMINGO
+// ════════════════════════════════
+const HORARIOS_DEFAULT = ['09:00','10:00','11:00','12:00'];
+let rolSlots = []; // [{hora, matchId, localId, visitaId}]
+
+function initRol(){
+  // Fecha default: próximo domingo
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const diasHastaDom = dia===0 ? 7 : 7-dia;
+  const dom = new Date(hoy);
+  dom.setDate(hoy.getDate()+diasHastaDom);
+  document.getElementById('rol-fecha').value = dom.toISOString().split('T')[0];
+  rolSlots = [];
+  document.getElementById('rol-slots').innerHTML = '';
+  document.getElementById('rol-preview-wrap').style.display = 'none';
+}
+
+function addSlot(hora, matchId){
+  const vuelta = String(S.vuelta);
+  const pending = S.matches.filter(m => m.vuelta===vuelta);
+  const idx = rolSlots.length;
+  const horaDefault = hora || HORARIOS_DEFAULT[idx] || '09:00';
+
+  // Equipos ya usados (los que jugaron ya ese domingo) — permitir hasta 2 veces
+  const usados = {};
+  rolSlots.forEach(s=>{
+    if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
+    if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
+  });
+
+  // Partidos disponibles (ningún equipo más de 2 veces)
+  const disponibles = pending.filter(m=>{
+    const lUsos = usados[m.local]||0;
+    const vUsos = usados[m.visita]||0;
+    return lUsos < 2 && vUsos < 2;
+  });
+
+  const slot = { hora: horaDefault, matchId: matchId || (disponibles[0]?.id||''), localId:'', visitaId:'' };
+  if(slot.matchId){
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(m){ slot.localId=m.local; slot.visitaId=m.visita; }
+  }
+  rolSlots.push(slot);
+  renderSlots();
+}
+
+function removeSlot(idx){
+  rolSlots.splice(idx,1);
+  renderSlots();
+}
+
+function renderSlots(){
+  const vuelta = String(S.vuelta);
+  const pending = S.matches.filter(m=>m.vuelta===vuelta);
+  const container = document.getElementById('rol-slots');
+
+  container.innerHTML = rolSlots.map((slot,idx)=>{
+    // Calcular usos excluyendo este slot
+    const usados = {};
+    rolSlots.forEach((s,i)=>{
+      if(i===idx) return;
+      if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
+      if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
+    });
+
+    const disponibles = pending.filter(m=>{
+      const lUsos = usados[m.local]||0;
+      const vUsos = usados[m.visita]||0;
+      return lUsos<2 && vUsos<2;
+    });
+
+    const options = disponibles.map(m=>
+      `<option value="${m.id}" ${m.id===slot.matchId?'selected':''}>
+        ${tname(m.local)} vs ${tname(m.visita)} (J${m.jornada})
+      </option>`
+    ).join('');
+
+    const ll = slot.localId ? (S.matches.find(m=>m.id===slot.matchId)?.ll || tlogo(slot.localId)) : '';
+    const lv = slot.visitaId ? (S.matches.find(m=>m.id===slot.matchId)?.lv || tlogo(slot.visitaId)) : '';
+
+    return `<div style="display:flex;align-items:center;gap:8px;background:var(--dark2);border:1px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:10px 12px;">
+      <input type="time" value="${slot.hora}" onchange="updateSlotHora(${idx},this.value)" style="padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--neon);font-size:13px;font-weight:700;width:90px;flex-shrink:0">
+      ${ll?`<img src="${ll}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <select onchange="updateSlotMatch(${idx},this.value)" style="flex:1;padding:7px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;min-width:0">
+        <option value="">-- Seleccionar partido --</option>
+        ${options}
+      </select>
+      ${lv?`<img src="${lv}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <button onclick="removeSlot(${idx})" style="background:none;border:none;color:#f87171;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 4px">✕</button>
+    </div>`;
+  }).join('');
+
+  updateRolPreview();
+}
+
+function updateSlotHora(idx, hora){
+  rolSlots[idx].hora = hora;
+  updateRolPreview();
+}
+
+function updateSlotMatch(idx, matchId){
+  rolSlots[idx].matchId = matchId;
+  if(matchId){
+    const m = S.matches.find(x=>x.id===matchId);
+    if(m){ rolSlots[idx].localId=m.local; rolSlots[idx].visitaId=m.visita; }
+  } else {
+    rolSlots[idx].localId=''; rolSlots[idx].visitaId='';
+  }
+  renderSlots();
+}
+
+function autoRol(){
+  // Auto-proponer 4 partidos pendientes sin repetir equipo
+  const vuelta = String(S.vuelta);
+  const pending = [...S.matches.filter(m=>m.vuelta===vuelta)];
+  rolSlots = [];
+  const usados = new Set();
+  const seleccionados = [];
+
+  for(let m of pending){
+    if(seleccionados.length>=4) break;
+    if(!usados.has(m.local) && !usados.has(m.visita)){
+      seleccionados.push(m);
+      usados.add(m.local);
+      usados.add(m.visita);
     }
   }
 
-  // Textos
-  document.getElementById('gol-balon').textContent = cfg.icono;
-  document.getElementById('gol-texto').textContent = cfg.titulo;
-  document.getElementById('gol-subtexto').textContent = cfg.sub;
-  document.getElementById('gol-jugador').textContent = evento.player || '';
-  document.getElementById('gol-equipo').textContent = evento.teamName || '';
-
-  // Marcador (solo goles)
-  var cajaMarcador = document.getElementById('gol-marcador');
-  if(cfg.mostrarMarcador){
-    cajaMarcador.style.display = 'inline-flex';
-    document.getElementById('gol-marcador-num').innerHTML = (d.nombreLocal||'Local')+' <span class="gol-num">'+(d.scoreLocal||0)+' - '+(d.scoreVisita||0)+'</span> '+(d.nombreVisita||'Visita');
-  } else {
-    cajaMarcador.style.display = 'none';
-  }
-
-  // Sonido y voz
-  habilitarAudio();
-  if(cfg.sonido) cfg.sonido();
-  setTimeout(function(){ decir(cfg.voz); }, 350); // Pequeño retraso para que no se empalme con el tono
-
-  cont.style.display = 'flex';
-  var duracion = cfg.confeti ? 3800 : 2600;
-  setTimeout(function(){ cont.style.display = 'none'; }, duracion);
-}
-
-function renderSeleccion(){
-  var html='';
-  var liveCanchas = [];
-  [1,2].forEach(function(n){
-    var d = estados[n];
-    if(d && d.activo === true) liveCanchas.push({n:n, d:d});
-  });
-
-  liveCanchas.forEach(function(item){
-    var n = item.n, d = item.d;
-    var esFin = d.status === 'fin';
-    var badgeClase = esFin ? 'estado-fin' : 'estado-live';
-    var badgeTexto = (esFin ? '🏁 FINALIZADO' : '🔴 EN VIVO') + ' · CANCHA ' + n;
-    var cardClase = esFin ? 'finalizado-card' : 'transmitiendo';
-    var btnClase = esFin ? 'ver-btn fin-btn' : 'ver-btn';
-    var btnTexto = esFin ? 'Ver Resumen Final →' : '🔴 Ver en vivo →';
-    html += '<div class="encuentro-card '+cardClase+'" onclick="verEnVivo('+n+')">'
-      + '<div style="text-align:center;margin-bottom:8px;"><span class="estado-badge '+badgeClase+'">'+badgeTexto+'</span></div>'
-      + '<div class="encuentro-logos"><img src="'+(d.logoLocal||'')+'" onerror="this.style.opacity=0"><span class="encuentro-score">'+(d.scoreLocal||0)+' - '+(d.scoreVisita||0)+'</span><img src="'+(d.logoVisita||'')+'" onerror="this.style.opacity=0"></div>'
-      + '<div class="encuentro-names"><span>'+(d.nombreLocal||'Local')+'</span><span>'+(d.nombreVisita||'Visita')+'</span></div>'
-      + '<div class="'+btnClase+'">'+btnTexto+'</div></div>';
-  });
-
-  var porTransmitir = partidos.filter(function(p){
-    var idL = p.Equipo_Local || p.equipo_local, idV = p.Equipo_Visita || p.equipo_visita;
-    return !liveCanchas.some(function(item){
-      return item.d.idLocal === idL && item.d.idVisita === idV;
+  seleccionados.forEach((m,i)=>{
+    rolSlots.push({
+      hora: HORARIOS_DEFAULT[i]||'09:00',
+      matchId: m.id,
+      localId: m.local,
+      visitaId: m.visita
     });
   });
 
-  porTransmitir.forEach(function(p){
-    var idL = p.Equipo_Local || p.equipo_local, idV = p.Equipo_Visita || p.equipo_visita;
-    var eL = equipos[idL]||{nombre:idL,logo:''}, eV = equipos[idV]||{nombre:idV,logo:''};
-    html += '<div class="encuentro-card"><div style="text-align:center;margin-bottom:8px;"><span class="estado-badge estado-espera">⏳ Programado</span></div>'
-      + '<div class="encuentro-logos"><img src="'+eL.logo+'" onerror="this.style.opacity=0"><span class="encuentro-score" style="color:#8aab91;">VS</span><img src="'+eV.logo+'" onerror="this.style.opacity=0"></div>'
-      + '<div class="encuentro-names"><span>'+eL.nombre+'</span><span>'+eV.nombre+'</span></div></div>';
-  });
-
-  if(!html) html='<div style="text-align:center;color:#8aab91;padding:20px;font-size:13px;">No hay partidos programados libres para hoy</div>';
-  document.getElementById('lista-encuentros').innerHTML=html;
+  renderSlots();
+  document.getElementById('rol-preview-wrap').style.display='block';
 }
 
-// Actualiza la pantalla general (offline / selección) según el estado de ambas canchas
-function refrescarPantallaGeneral(){
-  var algunaLive = (estados[1] && estados[1].activo === true) || (estados[2] && estados[2].activo === true);
-  if(!algunaLive && !partidos.length){
-    document.getElementById('vista-offline').style.display='block';
-    document.getElementById('vista-seleccion').style.display='none';
-    document.getElementById('vista-live').style.display='none';
+function updateRolPreview(){
+  const fecha = document.getElementById('rol-fecha').value;
+  const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) : 'Domingo pendiente';
+  const filled = rolSlots.filter(s=>s.matchId);
+
+  if(!filled.length){
+    document.getElementById('rol-preview-wrap').style.display='none';
     return;
   }
-  document.getElementById('vista-offline').style.display='none';
-  document.getElementById('vista-seleccion').style.display='block';
-  document.getElementById('vista-live').style.display='none';
-  renderSeleccion();
+  document.getElementById('rol-preview-wrap').style.display='block';
+
+  let html = `<div style="text-align:center;font-size:13px;font-weight:700;color:var(--neon);margin-bottom:12px;text-transform:capitalize">📅 ${fechaStr}</div>`;
+  filled.forEach(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    const ll = m.ll||tlogo(m.local);
+    const lv = m.lv||tlogo(m.visita);
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
+      <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${slot.hora}</span>
+      <img src="${ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${tname(m.local)}</span>
+      <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${tname(m.visita)}</span>
+      <img src="${lv}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+    </div>`;
+  });
+  document.getElementById('rol-preview').innerHTML = html;
 }
 
-// Conecta el listener en tiempo real de una cancha (1 o 2)
-function engancharCancha(n){
-  db.ref('transmision/cancha'+n).on('value', function(snap){
-    var d = snap.val();
-    estados[n] = d;
-    var hayLive = d && d.activo === true;
+async function publicarRol(){
+  const fecha = document.getElementById('rol-fecha').value;
+  const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) : 'Domingo';
+  const filled = rolSlots.filter(s=>s.matchId);
+  if(!filled.length) return;
 
-    // La animación de gol/tarjeta solo se muestra si estoy viendo justo esta cancha
-    if(viendoCancha === n && hayLive && d.events && d.events.length > eventosPreviosCount[n]){
-      var ultimo = d.events[d.events.length - 1];
-      if(ultimo.type === 'goal' || ultimo.type === 'yellow' || ultimo.type === 'red'){
-        mostrarAnimacionEvento(ultimo.type, ultimo, d);
-      }
-    }
-    eventosPreviosCount[n] = (d && d.events) ? d.events.length : 0;
+  const partidos = filled.map(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    return {
+      hora: slot.hora,
+      local: tname(m.local),
+      visita: tname(m.visita),
+      ll: m.ll||tlogo(m.local),
+      lv: m.lv||tlogo(m.visita),
+      jornada: m.jornada,
+      vuelta: m.vuelta
+    };
+  });
 
-    if(viendoCancha === n){
-      if(hayLive){
-        actualizarMarcador(d);
-      } else {
-        // Esta transmisión se apagó mientras la veía: regreso a la selección
-        volverSeleccion();
-      }
-    } else if(viendoCancha === null){
-      refrescarPantallaGeneral();
-    }
-    // Si estoy viendo la OTRA cancha, no toco la pantalla actual; solo se actualizó el estado guardado.
+  await fbPush('chat',{
+    type:'rol',
+    fecha: fechaStr,
+    fechaRaw: fecha,
+    partidos,
+    ts: Date.now(),
+    time: now()
+  });
+
+  switchTab('chat');
+}
+
+// Render del rol en el chat
+function renderRol(msg){
+  const partidos = msg.partidos||[];
+  let html=`<div class="anuncio-card" style="border-color:rgba(57,255,20,0.4)">
+    <div class="anuncio-header">
+      <span class="anuncio-badge" style="background:var(--neon-dim);color:var(--neon);border-color:rgba(57,255,20,0.3)">📋 Rol del Domingo</span>
+    </div>
+    <div style="text-align:center;font-size:14px;font-weight:700;color:var(--neon);margin-bottom:10px;text-transform:capitalize">📅 ${esc(msg.fecha||'')}</div>`;
+
+  partidos.forEach(p=>{
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
+      <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${esc(p.hora)}</span>
+      <img src="${p.ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${esc(p.local)}</span>
+      <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${esc(p.visita)}</span>
+      <img src="${p.lv}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+    </div>`;
+  });
+
+  html+=`<div class="anuncio-time">${msg.time||''} · Vuelta ${partidos[0]?.vuelta||1}</div></div>`;
+  return html;
+}
+
+
+function renderModPanel(){
+  const grid=document.getElementById('mod-team-select');
+  grid.innerHTML='';
+  Object.values(S.teams).sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='mod-team-btn';
+    btn.innerHTML=`<img src="${t.logo}" onerror="this.style.opacity='.3'"><span>${t.nombre}</span>`;
+    btn.onclick=()=>{
+      S.modTeamSelected=t.id;
+      document.querySelectorAll('.mod-team-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      cancelarProgramar();
+      renderModPreview();
+    };
+    grid.appendChild(btn);
   });
 }
 
-engancharCancha(1);
-engancharCancha(2);
-cargarPartidos();
+// Lista de partidos pendientes del equipo elegido — sin separar vueltas.
+// Cada fila es clicable y abre el formulario para registrar fecha/hora/campo.
+function renderModPreview(){
+  const id=S.modTeamSelected;
+  if(!id){ document.getElementById('mod-preview').innerHTML='<div class="mod-preview-empty">Selecciona un equipo</div>'; return; }
+  const mine=S.matches.filter(m=>(m.local===id||m.visita===id));
+  let html='';
+  if(!mine.length){
+    html='<div class="mod-preview-empty">Este equipo no tiene partidos pendientes</div>';
+  }else{
+    mine.forEach(m=>{
+      html+=`<div class="mod-match-row clickable" onclick="seleccionarPartidoAProgramar('${m.id}')">
+        <img src="${m.ll||tlogo(m.local)}" onerror="this.style.opacity='.2'">
+        <div>
+          <div class="mod-match-name">${tname(m.local)} vs ${tname(m.visita)}</div>
+          <div class="mod-match-meta">Jornada actual: ${m.jornada||'?'}</div>
+        </div>
+        <img src="${m.lv||tlogo(m.visita)}" onerror="this.style.opacity='.2'">
+        <span style="font-size:11px;color:var(--neon);font-weight:700;white-space:nowrap">Programar →</span>
+      </div>`;
+    });
+  }
+  document.getElementById('mod-preview').innerHTML=html;
+}
+
+function setVuelta(v){
+  S.vuelta=v;
+  document.getElementById('vbtn1').className='vbtn'+(v===1?' active':'');
+  document.getElementById('vbtn2').className='vbtn'+(v===2?' active':'');
+};
+
+// ════════════════════════════════
+//  REGISTRAR PARTIDO (Fecha, Hora, Campo) + jornada automática
+// ════════════════════════════════
+
+// Calcula, para dos equipos, la jornada más baja que NINGUNO de los dos
+// haya usado todavía en un partido Jugado o Programado. Esto es solo un
+// estimado para mostrar en pantalla — el valor real y definitivo lo calcula
+// el Apps Script al momento de guardar (por si la hoja cambió mientras tanto).
+function estimarJornada(localId, visitaId, idPartidoExcluir){
+  const usadas = {};
+  S.allMatches.forEach(m=>{
+    const est=(m.estado||'').toLowerCase();
+    if((est==='jugado'||est==='programado') && m.id!==idPartidoExcluir){
+      const j=parseInt(m.jornada,10);
+      if(!isNaN(j)){
+        [m.local,m.visita].forEach(tid=>{
+          if(!usadas[tid]) usadas[tid]=new Set();
+          usadas[tid].add(j);
+        });
+      }
+    }
+  });
+  const usL = usadas[localId]||new Set();
+  const usV = usadas[visitaId]||new Set();
+  let n=1;
+  while(usL.has(n)||usV.has(n)) n++;
+  return n;
+}
+
+function pad2(n){ return n<10 ? '0'+n : ''+n; }
+
+// Menús de Hora/Minutos (evita el bug de los inputs nativos type="time"
+// que en algunos navegadores exigen AM/PM y se quedan "vacíos" aunque se vean llenos)
+function buildHoraSelects(defaultH, defaultM){
+  let hOpts=''; for(let h=0;h<24;h++){ hOpts+=`<option value="${pad2(h)}" ${h===defaultH?'selected':''}>${pad2(h)}</option>`; }
+  let mOpts=''; for(let m=0;m<60;m+=5){ mOpts+=`<option value="${pad2(m)}" ${m===defaultM?'selected':''}>${pad2(m)}</option>`; }
+  return {hOpts,mOpts};
+}
+
+function seleccionarPartidoAProgramar(matchId){
+  const m=S.matches.find(x=>x.id===matchId);
+  if(!m) return;
+  S.matchToProgram=m;
+  const jest=estimarJornada(m.local,m.visita,m.id);
+  const {hOpts,mOpts}=buildHoraSelects(9,0);
+
+  // Fecha por defecto: próximo domingo (para que ya no llegue vacía)
+  const hoy=new Date();
+  const dia=hoy.getDay();
+  const diasHastaDom = dia===0 ? 7 : 7-dia;
+  const dom=new Date(hoy);
+  dom.setDate(hoy.getDate()+diasHastaDom);
+  const fechaDefault=dom.toISOString().split('T')[0];
+
+  const form=document.getElementById('programar-form');
+  form.style.display='block';
+  form.innerHTML=`
+    <div style="font-size:14px;font-weight:700;color:var(--w);margin-bottom:10px">${tname(m.local)} vs ${tname(m.visita)}</div>
+    <div class="programar-hint">📅 Se asignará automáticamente la Jornada ${jest} (la primera disponible para ambos equipos)</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <label>Fecha</label>
+        <input type="date" id="prog-fecha" class="msg-input" style="width:100%" value="${fechaDefault}">
+      </div>
+      <div>
+        <label>Hora</label>
+        <div style="display:flex;align-items:center;gap:8px">
+          <select id="prog-hora-h" class="msg-input" style="flex:1;text-align:center">${hOpts}</select>
+          <span style="color:var(--g400);font-weight:700">:</span>
+          <select id="prog-hora-m" class="msg-input" style="flex:1;text-align:center">${mOpts}</select>
+        </div>
+      </div>
+      <div>
+        <label>Campo / Cancha</label>
+        <input type="text" id="prog-cancha" class="msg-input" placeholder="Ej: Cancha 2" style="width:100%">
+      </div>
+    </div>
+    <button class="btn-anunciar" id="btn-guardar-programar" style="margin-top:14px" onclick="guardarPartidoProgramado()">✅ Guardar y programar partido</button>
+    <button class="programar-cancel" onclick="cancelarProgramar()">Cancelar</button>
+  `;
+  form.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function cancelarProgramar(){
+  S.matchToProgram=null;
+  const form=document.getElementById('programar-form');
+  form.style.display='none';
+  form.innerHTML='';
+}
+
+async function guardarPartidoProgramado(){
+  const m=S.matchToProgram;
+  if(!m) return;
+  const fecha=document.getElementById('prog-fecha').value; // formato del input: AAAA-MM-DD
+  const horaH=document.getElementById('prog-hora-h').value;
+  const horaM=document.getElementById('prog-hora-m').value;
+  const hora=(horaH&&horaM)?`${horaH}:${horaM}:00`:'';
+  const cancha=document.getElementById('prog-cancha').value.trim();
+  if(!fecha||!hora||!cancha){
+    alert('Completa fecha, hora y campo antes de guardar.');
+    return;
+  }
+  // Tu hoja usa día/mes/año (ej. 05/07/2026), no año-mes-día como entrega el input
+  const [anioF,mesF,diaF]=fecha.split('-');
+  const fechaSheet=`${diaF}/${mesF}/${anioF}`;
+
+  const jestimada=estimarJornada(m.local,m.visita,m.id);
+  const btn=document.getElementById('btn-guardar-programar');
+  if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
+
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({accion:'programar_partido', idPartido:m.id, fecha:fechaSheet, hora, cancha})
+    });
+  }catch(e){
+    console.error(e);
+  }
+
+  // Actualización local optimista (el Apps Script confirma la jornada real en la hoja)
+  m.estado='programado';
+  m.fecha=fechaSheet; m.hora=hora; m.cancha=cancha; m.jornada=String(jestimada);
+  S.matches = S.allMatches.filter(x=>(x.estado||'').toLowerCase()==='pendiente');
+
+  const fechaFmt = new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+  await fbPush('chat',{
+    type:'partido_programado',
+    local: tname(m.local), visita: tname(m.visita),
+    ll: m.ll||tlogo(m.local), lv: m.lv||tlogo(m.visita),
+    fecha: fechaFmt, hora, cancha, jornada: jestimada,
+    ts: Date.now(), time: now()
+  });
+
+  cancelarProgramar();
+  renderModPreview();
+  alert('✅ Partido programado. Se guardó en la hoja de Partidos (Estado: Programado, Jornada '+jestimada+').');
+  switchTab('chat');
+}
+
+async function limpiarChat(){
+  const confirmar = confirm('¿Seguro que quieres limpiar el chat?\n\nSe borrarán todos los mensajes anteriores y empezará sesión nueva.\n\nEsta acción no se puede deshacer.');
+  if(!confirmar) return;
+  const btn = document.getElementById('btn-limpiar');
+  btn.disabled=true;
+  btn.textContent='Limpiando...';
+  await fbDelete('chat');
+  lastMsgCount=0;
+  // Mensaje de bienvenida de nueva sesión
+  await fbPush('chat',{
+    type:'mod_msg',
+    senderName:'Moderador',
+    text:'🏁 Nueva sesión iniciada. ¡Buenas noches a todos! Coordinen sus partidos aquí.',
+    ts:Date.now(), time:now()
+  });
+  btn.disabled=false;
+  btn.innerHTML='🗑️ Limpiar chat — Nueva sesión';
+  switchTab('chat');
+}
+
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>{t.style.display='none';t.classList.remove('active');});
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  const el=document.getElementById('tab-'+tab);
+  el.style.display='flex'; el.classList.add('active');
+  if(tab==='chat'){ setTimeout(()=>{ const c=document.getElementById('chat-messages'); c.scrollTop=c.scrollHeight; },100); }
+};
+
+function tname(id){ return (S.teams[id]||{}).nombre||'Equipo '+id; }
+function tlogo(id){ return (S.teams[id]||{}).logo||''; }
+function now(){ return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Limpiar online al cerrar
+window.addEventListener('beforeunload',()=>{ if(S.onlineKey) fbDelete('online/'+S.onlineKey); });
+
+init();
 </script>
 </body>
 </html>
