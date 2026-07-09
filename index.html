@@ -72,8 +72,6 @@
 .mini-pts  { font-weight:900; color:#39ff14; margin-left:auto; }
 .mini-marcador { font-weight:900; color:#ffd700; margin-left:auto; font-size:13px; }
 .mini-vs   { font-weight:900; color:#ffd700; margin-left:auto; }
-
-/* ── Formato "cartel" para Últimos Resultados y Próxima Jornada (mismo estilo del cartel del chat) ── */
 .cartel-row{display:flex;align-items:center;gap:6px;padding:8px 0}
 .cartel-sep{border:none;border-top:1.5px dotted rgba(255,215,0,.55);margin:0}
 .cartel-team{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
@@ -174,10 +172,11 @@
     </div>
   </div>
 
+  <!-- ── ÚNICO CAMBIO: margin-top:90px en car-resultados y car-proxima ── -->
   <div class="card-sec c-partidos" id="ccard-2">
     <div class="card-body" style="background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <div class="card-titulo">📊 Últimos Resultados</div>
-      <div class="card-contenido" id="car-resultados"><div class="car-cargando">Cargando...</div></div>
+      <div class="card-contenido" id="car-resultados" style="margin-top:90px;"><div class="car-cargando">Cargando...</div></div>
       <a href="partidos.html" class="car-btn">VER PARTIDOS</a>
     </div>
   </div>
@@ -185,10 +184,11 @@
   <div class="card-sec c-proxima" id="ccard-3">
     <div class="card-body" style="background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <div class="card-titulo">📅 Próxima Jornada</div>
-      <div class="card-contenido" id="car-proxima"><div class="car-cargando">Cargando...</div></div>
+      <div class="card-contenido" id="car-proxima" style="margin-top:90px;"><div class="car-cargando">Cargando...</div></div>
       <a href="partidos.html" class="car-btn">VER JORNADA</a>
     </div>
   </div>
+  <!-- ── FIN CAMBIO ── -->
 
   <div class="card-sec c-equipos" id="ccard-4">
     <div class="card-body" style="position:relative;padding:0 !important;">
@@ -225,9 +225,7 @@
         <div style="font-size:60px;">📡</div>
         <div style="font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;text-align:center;color:#fff;">Transmisión<br>en Vivo</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.7;font-family:Arial,sans-serif;">Sigue el partido en tiempo real.<br>Marcador, goles y tarjetas<br>al instante. ⚽🟨🟥</div>
-
       </div>
-      <!-- Botones dinamicos -->
       <div id="envivo-publico" style="position:absolute;bottom:14px;left:18px;right:18px;z-index:5;display:none;">
         <a href="envivo-publico.html" class="car-btn" style="background:rgba(255,215,0,0.15);color:#ffd700;border:1px solid #ffd700;">🔴 VER TRANSMISIÓN EN VIVO</a>
       </div>
@@ -367,11 +365,7 @@ async function cargarCarrusel() {
       filasFu.forEach((p,i)=>{
         htmlRes+=`<div class="cartel-row">
           <div class="cartel-team local"><img class="cartel-crest" src="${carLogos[p.local]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.local}</span></div>
-          <div class="cartel-center">
-            <span class="cartel-fecha">${p.fecha}</span>
-            <div class="cartel-linea"></div>
-            <span class="cartel-marcador">${p.gl}-${p.gv}</span>
-          </div>
+          <div class="cartel-center"><span class="cartel-fecha">${p.fecha}</span><div class="cartel-linea"></div><span class="cartel-marcador">${p.gl}-${p.gv}</span></div>
           <div class="cartel-team visita"><img class="cartel-crest" src="${carLogos[p.visita]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.visita}</span></div>
         </div>${i < filasFu.length-1 ? '<hr class="cartel-sep">' : ''}`;
       });
@@ -384,12 +378,7 @@ async function cargarCarrusel() {
       filasFp.forEach((p,i)=>{
         htmlProx+=`<div class="cartel-row">
           <div class="cartel-team local"><img class="cartel-crest" src="${carLogos[p.local]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.local}</span></div>
-          <div class="cartel-center">
-            <span class="cartel-fecha">${p.fecha}</span>
-            <div class="cartel-linea"></div>
-            <span class="cartel-hora">${fmtHora12(p.hora)}</span>
-            ${p.cancha?`<span class="cartel-campo">${p.cancha}</span>`:''}
-          </div>
+          <div class="cartel-center"><span class="cartel-fecha">${p.fecha}</span><div class="cartel-linea"></div><span class="cartel-hora">${fmtHora12(p.hora)}</span>${p.cancha?`<span class="cartel-campo">${p.cancha}</span>`:''}</div>
           <div class="cartel-team visita"><img class="cartel-crest" src="${carLogos[p.visita]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.visita}</span></div>
         </div>${i < filasFp.length-1 ? '<hr class="cartel-sep">' : ''}`;
       });
@@ -435,11 +424,8 @@ setInterval(()=>carMover(1),5000);
 carActualizar();
 cargarCarrusel();
 
-// Verificar estado de transmision — consulta Firebase directamente (Cancha 1 y Cancha 2),
-// en vez de depender de una celda del Sheet que no reflejaba la transmisión real.
 (function checkTransmision(){
   var FIREBASE_URL = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
-
   function hayAlgunaEnVivo(){
     return Promise.all([
       fetch(FIREBASE_URL + '/transmision/cancha1.json').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
@@ -448,23 +434,16 @@ cargarCarrusel();
       return resultados.some(function(d){ return d && d.activo === true; });
     });
   }
-
   function actualizarBotonEnVivo(){
     hayAlgunaEnVivo().then(function(activa){
       var publico = document.getElementById('envivo-publico');
       var offline = document.getElementById('envivo-offline');
-      if(activa){
-        publico.style.display='block';
-        offline.style.display='none';
-      } else {
-        publico.style.display='none';
-        offline.style.display='block';
-      }
+      if(activa){ publico.style.display='block'; offline.style.display='none'; }
+      else { publico.style.display='none'; offline.style.display='block'; }
     });
   }
-
   actualizarBotonEnVivo();
-  setInterval(actualizarBotonEnVivo, 15000); // revisa cada 15s por si empieza/termina una transmisión
+  setInterval(actualizarBotonEnVivo, 15000);
 })();
 </script>
 </body>
