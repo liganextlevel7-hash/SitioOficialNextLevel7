@@ -182,22 +182,13 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 .mod-team-btn.selected span{color:var(--mod-border)}
 .mod-preview{background:var(--dark2);border:1px solid rgba(124,58,237,.3);border-radius:var(--r);padding:14px;margin-bottom:14px;min-height:80px}
 .mod-preview-empty{font-size:13px;color:var(--g500);text-align:center;padding:20px 0}
-.mod-match-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark3);border-radius:var(--rs);border:1px solid rgba(255,255,255,.05);margin-bottom:6px;transition:all .15s}
-.mod-match-row.clickable{cursor:pointer}
-.mod-match-row.clickable:hover{border-color:var(--neon);background:rgba(57,255,20,.06)}
+.mod-match-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark3);border-radius:var(--rs);border:1px solid rgba(255,255,255,.05);margin-bottom:6px}
 .mod-match-row img{width:28px;height:28px;border-radius:50%;object-fit:cover}
 .mod-match-name{flex:1;font-size:12px;font-weight:600;color:var(--w);min-width:0}
 .mod-match-meta{font-size:11px;color:var(--g500)}
 .btn-anunciar{width:100%;padding:12px;background:var(--mod);color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-anunciar:hover{background:#6d28d9}
 .btn-anunciar:disabled{background:var(--dark3);color:var(--g500);cursor:not-allowed}
-
-/* programar partido */
-.programar-box{display:none;margin-top:12px;background:var(--dark2);border:1px solid rgba(57,255,20,.25);border-radius:var(--r);padding:16px}
-.programar-box label{display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
-.programar-hint{font-size:12px;color:var(--neon);background:var(--neon-dim);border:1px solid rgba(57,255,20,.25);border-radius:var(--rs);padding:8px 10px;margin-bottom:14px}
-.programar-cancel{width:100%;margin-top:8px;background:none;border:none;color:var(--g500);font-size:12px;cursor:pointer;padding:6px}
-.programar-cancel:hover{color:var(--w)}
 
 /* vuelta toggle */
 .vuelta-toggle{display:flex;gap:8px;margin-bottom:16px}
@@ -230,47 +221,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 .empty{text-align:center;padding:40px 20px;color:var(--g500)}
 .empty-icon{font-size:32px;margin-bottom:10px}
 
-/* ── POPUP PARTIDOS PENDIENTES ── */
-.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:2000;align-items:center;justify-content:center;padding:20px}
-.popup-overlay.show{display:flex}
-.popup-box{background:var(--dark);border:1px solid rgba(57,255,20,.3);border-radius:16px;max-width:480px;width:100%;max-height:82vh;overflow-y:auto;padding:20px}
-.popup-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.popup-title{font-size:16px;font-weight:800;color:var(--neon)}
-.popup-close{background:none;border:none;color:var(--g400);font-size:22px;cursor:pointer;line-height:1;padding:4px}
-.popup-close:hover{color:var(--w)}
-
-/* ── CARTEL DE JORNADA (poster descargable) ── */
-.cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
-.cartel-poster{position:relative;width:551px;height:713px;margin:0 auto;border-radius:10px;overflow:hidden;
-  background-image:url('fondonuevo.png');
-  background-size:cover;
-  background-position:center;
-  font-family:'Arial Black',Arial,sans-serif;
-  padding:222px 30px 0;
-  box-sizing:border-box;
-}
-.cartel-header{position:absolute;top:14px;left:0;right:0;z-index:2;text-align:center}
-.cartel-h1{font-size:19px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 14px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
-.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;margin-top:8px}
-.cartel-row{display:flex;align-items:center;gap:8px;padding:10px 0}
-.cartel-sep{border:none;border-top:2px dotted rgba(243,201,74,.55);margin:0}
-.cartel-team{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
-.cartel-team.visita{flex-direction:row-reverse;text-align:right}
-.cartel-crest{width:38px;height:38px;object-fit:contain;flex-shrink:0}
-.cartel-name{font-size:14px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
-.cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:104px;text-align:center;gap:2px}
-.cartel-jv{font-size:11px;color:#8fe89a;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
-.cartel-fecha{font-size:10px;color:#d9d9d9;font-weight:700}
-.cartel-hora{font-size:15px;color:#fff;font-weight:900;white-space:nowrap}
-.cartel-campo{font-size:11px;color:#8fe89a;font-weight:700}
-.cartel-linea{width:24px;height:3px;background:#39ff14;border-radius:2px;margin:2px 0}
-.btn-descargar-cartel{width:100%;padding:12px;background:#f3c94a;color:#1a1200;border:none;border-radius:var(--r);font-size:14px;font-weight:800;cursor:pointer;margin-top:10px}
-.btn-descargar-cartel:hover{filter:brightness(1.08)}
-
 @media(max-width:580px){
-  .cartel-poster{width:100%;min-width:340px;height:auto;aspect-ratio:1103/1426}
-
-
   body{padding:0;align-items:flex-start}
   #login-screen,#app-screen{border-radius:0;margin-top:0}
   .team-grid,.mod-team-select{grid-template-columns:1fr}
@@ -279,12 +230,9 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
   .stats-row{grid-template-columns:1fr 1fr}
   #chat-main{height:calc(100vh - 200px)}
 }
-.inicio-btn{position:fixed;top:12px;left:12px;z-index:3000;display:inline-flex;align-items:center;gap:5px;background:#000;color:#ffd166;border:1px solid #ffd166;border-radius:20px;padding:6px 13px;font-size:11px;font-weight:700;text-decoration:none;}
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-<a href="index.html" class="inicio-btn">← Inicio</a>
 
 <!-- CARGA -->
 <div id="loading-screen">
@@ -397,7 +345,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 
       <!-- VUELTA -->
       <div>
-        <div class="mod-section-title">📅 Vuelta (para el Rol del Domingo)</div>
+        <div class="mod-section-title">📅 Vuelta</div>
         <div class="vuelta-toggle">
           <button class="vbtn active" id="vbtn1" onclick="setVuelta(1)">🔜 Vuelta 1 (Actual)</button>
           <button class="vbtn" id="vbtn2" onclick="setVuelta(2)">🔄 Vuelta 2</button>
@@ -417,40 +365,38 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
         <!-- Slots de horario -->
         <div id="rol-slots" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
 
-        <!-- Botones -->
+        <!-- Botones siempre visibles -->
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button onclick="addSlot()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(57,255,20,0.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:600;cursor:pointer">+ Agregar horario</button>
-          <button onclick="autoRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(167,139,250,0.3);border-radius:var(--rs);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer">⚡ Auto-proponer rol</button>
+          <button onclick="addSlot()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(57,255,20,0.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:600;cursor:pointer">+ Agregar partido</button>
+          <button onclick="autoRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(167,139,250,0.3);border-radius:var(--rs);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer">⚡ Auto-proponer base</button>
+          <button onclick="limpiarRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(255,68,68,0.3);border-radius:var(--rs);color:#f87171;font-size:12px;font-weight:600;cursor:pointer">🗑 Limpiar</button>
         </div>
       </div>
 
-      <!-- PREVIEW DEL ROL -->
+      <!-- PREVIEW DEL ROL — siempre visible en cuanto hay partidos -->
       <div id="rol-preview-wrap" style="display:none">
-        <div class="mod-section-title">👁️ Vista previa</div>
+        <div class="mod-section-title">👁️ Vista previa · ordenado por hora y campo</div>
         <div id="rol-preview" style="background:var(--dark2);border:1px solid rgba(57,255,20,0.2);border-radius:var(--r);padding:14px"></div>
-
-        <div class="mod-section-title" style="margin-top:16px">🖼️ Cartel de la jornada</div>
-        <div class="cartel-wrap-scroll">
-          <div class="cartel-poster" id="cartel-poster"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn-anunciar" onclick="publicarRol()" style="flex:1">
+            📣 Publicar Rol en el chat
+          </button>
+          <button class="btn-anunciar" onclick="descargarRolPNG()" style="flex:1;background:#166534;border:1px solid var(--neon)">
+            📥 Descargar PNG
+          </button>
         </div>
-
-        <button class="btn-anunciar" onclick="publicarRol()" style="margin-top:10px">
-          📣 Publicar Rol en el chat
-        </button>
-        <button class="btn-descargar-cartel" onclick="descargarCartelPNG()">
-          📥 Descargar cartel PNG
-        </button>
       </div>
 
-      <!-- REGISTRAR PARTIDO (fecha, hora, campo) -->
+      <!-- ANUNCIO POR EQUIPO -->
       <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:16px">
-        <div class="mod-section-title" style="color:var(--neon)">📝 Registrar partido (Fecha, Hora, Campo)</div>
-        <div style="font-size:11px;color:var(--g500);margin-bottom:12px">Elige un equipo, toca el partido acordado y captura fecha/hora/campo. La jornada se asigna sola.</div>
+        <div class="mod-section-title">👕 Mostrar partidos de un equipo</div>
         <div class="mod-team-select" id="mod-team-select"></div>
         <div class="mod-preview" id="mod-preview" style="margin-top:10px">
           <div class="mod-preview-empty">Selecciona un equipo</div>
         </div>
-        <div class="programar-box" id="programar-form"></div>
+        <button class="btn-anunciar" id="btn-anunciar" disabled onclick="publicarAnuncio()" style="margin-top:10px">
+          📣 Publicar en el chat
+        </button>
       </div>
 
       <!-- MENSAJE MODERADOR -->
@@ -475,17 +421,6 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
   </div>
 </div>
 
-<!-- POPUP: PARTIDOS PENDIENTES (se abre solo al entrar el capitán) -->
-<div class="popup-overlay" id="popup-overlay">
-  <div class="popup-box">
-    <div class="popup-header">
-      <div class="popup-title">⚽ Tus partidos pendientes</div>
-      <button class="popup-close" onclick="closePopupPartidos()">✕</button>
-    </div>
-    <div id="popup-partidos-content"></div>
-  </div>
-</div>
-
 <script>
 // ════════════════════════════════
 //  CONFIG
@@ -495,21 +430,18 @@ const SHEET_ID     = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
 const GID_EQUIPOS  = '1894947293';
 const GID_PARTIDOS = '1362473459';
 const MOD_PASS     = 'nl7admin'; // ← puedes cambiar esta contraseña
-const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd1NDZg1IY2_y_VGc5xX7b_pmV85PE69c_10Aw58vG8mFPO79K2/exec'; // mismo Apps Script de nextlevelenvivo.html
 
 // ════════════════════════════════
 //  ESTADO LOCAL
 // ════════════════════════════════
 S = {
   teams: {},
-  allMatches: [],   // TODOS los partidos (pendiente/programado/jugado)
-  matches: [],      // solo los pendientes (para armar el chat/popup)
+  matches: [],
   capName: '',
   teamId: null,
   isMod: false,
   vuelta: 1,
   modTeamSelected: null,
-  matchToProgram: null,
   onlineKey: null
 };
 
@@ -582,21 +514,17 @@ async function init(){
     });
     setP(65,'Cargando partidos...');
     const pt = await fetchCSV(GID_PARTIDOS);
-    S.allMatches = pt
+    S.matches = pt
+      .filter(r=>(r['estado']||'').toLowerCase()==='pendiente')
       .map(r=>({
         id:r['id_partido']||r['id']||'',
         jornada:r['jornada']||'',
         local:r['equipo_local']||r['local']||'',
         visita:r['equipo_visita']||r['visita']||'',
         ll:r['ll']||'', lv:r['lv']||'',
-        vuelta:r['vuelta']||'1',
-        estado:r['estado']||'',
-        fecha:r['fecha']||'',
-        hora:r['hora']||'',
-        cancha:r['cancha']||''
+        vuelta:r['vuelta']||'1'
       }))
       .filter(m=>m.local&&m.visita&&m.local!=='10'&&m.visita!=='10');
-    S.matches = S.allMatches.filter(m=>(m.estado||'').toLowerCase()==='pendiente');
     setP(100,'¡Listo!');
     setTimeout(()=>{
       document.getElementById('loading-screen').style.display='none';
@@ -733,11 +661,6 @@ async function enterApp(){
 
   renderPartidos();
   startListeners();
-
-  // Popup automático de partidos pendientes (solo para capitanes)
-  if(!S.isMod){
-    setTimeout(()=>{ showPopupPartidos(); }, 500);
-  }
 };
 
 async function logout(){
@@ -758,7 +681,6 @@ async function logout(){
   document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('login-msg').textContent='';
   document.querySelector('.mod-tab').style.display='none';
-  closePopupPartidos();
 };
 
 // ════════════════════════════════
@@ -927,8 +849,6 @@ function renderMessages(data){
       html+=renderAnuncio(msg);
     }else if(msg.type==='rol'){
       html+=renderRol(msg);
-    }else if(msg.type==='partido_programado'){
-      html+=renderPartidoProgramado(msg);
     }else if(msg.type==='mod_msg'){
       html+=`<div class="bubble sys-bubble">
         <div class="bub-text">🛡️ <strong>Moderador:</strong> ${resaltarMenciones(msg.text)}</div>
@@ -965,7 +885,7 @@ function renderAnuncio(msg){
       </div>
       <div class="anuncio-info">
         <div class="anuncio-teams">${esc(m.local)} vs ${esc(m.visita)}</div>
-        <div class="anuncio-meta">Jornada ${m.jornada||'?'}</div>
+        <div class="anuncio-meta">Jornada ${m.jornada||'?'} · Vuelta ${m.vuelta||1}</div>
       </div>
     </div>`;
   });
@@ -975,26 +895,6 @@ function renderAnuncio(msg){
     </div>
     <div class="anuncio-team">📋 Partidos pendientes: <strong>${esc(msg.teamName||'')}</strong></div>
     <div class="anuncio-matches">${matchesHtml}</div>
-    <div class="anuncio-time">${msg.time||''}</div>
-  </div>`;
-}
-
-function renderPartidoProgramado(msg){
-  return `<div class="anuncio-card" style="border-color:rgba(57,255,20,.4)">
-    <div class="anuncio-header">
-      <span class="anuncio-badge" style="background:var(--neon-dim);color:var(--neon);border-color:rgba(57,255,20,.3)">✅ Partido Programado</span>
-    </div>
-    <div class="anuncio-match">
-      <div class="anuncio-logos">
-        <img src="${msg.ll||''}" width="28" height="28" style="border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
-        <span class="anuncio-vs">vs</span>
-        <img src="${msg.lv||''}" width="28" height="28" style="border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
-      </div>
-      <div class="anuncio-info">
-        <div class="anuncio-teams">${esc(msg.local)} vs ${esc(msg.visita)}</div>
-        <div class="anuncio-meta">📅 ${esc(msg.fecha)} · 🕐 ${esc(msg.hora)} · 📍 ${esc(msg.cancha)} · Jornada ${esc(msg.jornada||'?')}</div>
-      </div>
-    </div>
     <div class="anuncio-time">${msg.time||''}</div>
   </div>`;
 }
@@ -1018,34 +918,27 @@ function renderOnline(data){
 }
 
 // ════════════════════════════════
-//  PARTIDOS (del capitán) — sin separar vueltas
+//  PARTIDOS
 // ════════════════════════════════
-function buildPartidosHTML(){
-  const tid=S.teamId;
-  const mine=S.matches.filter(m=>(m.local===tid||m.visita===tid))
-    .sort((a,b)=>(parseInt(a.jornada,10)||999)-(parseInt(b.jornada,10)||999));
-  if(!mine.length){
-    return '<div class="empty"><div class="empty-icon">🎉</div><div>No tienes partidos pendientes</div></div>';
-  }
-  let html=`<div class="stats-row" style="grid-template-columns:1fr">
-    <div class="stat-card"><div class="stat-num">${mine.length}</div><div class="stat-label">Partidos pendientes</div></div>
-  </div>`;
-  html+='<div class="sec-title">⚽ Partidos que te faltan</div>';
-  mine.forEach(m=>{html+=matchCardHTML(m);});
-  return html;
-}
-
 function renderPartidos(){
-  document.getElementById('tab-partidos-content').innerHTML=buildPartidosHTML();
-}
-
-function showPopupPartidos(){
-  document.getElementById('popup-partidos-content').innerHTML=buildPartidosHTML();
-  document.getElementById('popup-overlay').classList.add('show');
-}
-
-function closePopupPartidos(){
-  document.getElementById('popup-overlay').classList.remove('show');
+  const tid=S.teamId;
+  const mine=S.matches.filter(m=>(m.local===tid||m.visita===tid)&&m.vuelta==='1');
+  const v2=S.matches.filter(m=>(m.local===tid||m.visita===tid)&&m.vuelta==='2');
+  let html=`<div class="stats-row">
+    <div class="stat-card"><div class="stat-num">${mine.length+v2.length}</div><div class="stat-label">Total pendientes</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:#f59e0b">${mine.length}</div><div class="stat-label">Vuelta 1</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--g500)">${v2.length}</div><div class="stat-label">Vuelta 2</div></div>
+  </div>`;
+  if(mine.length){
+    html+='<div class="sec-title">🔜 Vuelta 1 — Pendientes</div>';
+    mine.forEach(m=>{html+=matchCardHTML(m);});
+  }
+  if(v2.length){
+    html+='<div class="sec-title" style="margin-top:16px;color:var(--g500)">🔄 Vuelta 2 — Pendientes</div>';
+    v2.forEach(m=>{html+=matchCardHTML(m);});
+  }
+  if(!mine.length&&!v2.length) html='<div class="empty"><div class="empty-icon">🎉</div><div>No tienes partidos pendientes</div></div>';
+  document.getElementById('tab-partidos-content').innerHTML=html;
 }
 
 function matchCardHTML(m){
@@ -1058,7 +951,7 @@ function matchCardHTML(m){
     </div>
     <div class="match-info">
       <div class="match-teams">${tname(m.local)} vs ${tname(m.visita)}</div>
-      <div class="match-meta">Jornada ${m.jornada||'?'}</div>
+      <div class="match-meta">Jornada ${m.jornada||'?'} · Vuelta ${m.vuelta||1}</div>
     </div>
     <span class="badge bp">Pendiente</span>
   </div>`;
@@ -1087,29 +980,18 @@ function addSlot(hora, matchId){
   const vuelta = String(S.vuelta);
   const pending = S.matches.filter(m => m.vuelta===vuelta);
   const idx = rolSlots.length;
-  const horaDefault = hora || HORARIOS_DEFAULT[idx] || '09:00';
+  const horaDefault = hora || HORARIOS_DEFAULT[Math.min(idx, HORARIOS_DEFAULT.length-1)] || '09:00';
+  const campoDefault = idx%2===0 ? 'Campo 1' : 'Campo 2';
 
-  // Equipos ya usados (los que jugaron ya ese domingo) — permitir hasta 2 veces
-  const usados = {};
-  rolSlots.forEach(s=>{
-    if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
-    if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
-  });
-
-  // Partidos disponibles (ningún equipo más de 2 veces)
-  const disponibles = pending.filter(m=>{
-    const lUsos = usados[m.local]||0;
-    const vUsos = usados[m.visita]||0;
-    return lUsos < 2 && vUsos < 2;
-  });
-
-  const slot = { hora: horaDefault, matchId: matchId || (disponibles[0]?.id||''), localId:'', visitaId:'', campo:'' };
+  // Slot vacío — el moderador elige el partido del dropdown (todos los pendientes disponibles)
+  const slot = { hora: horaDefault, campo: campoDefault, matchId: matchId || '', localId:'', visitaId:'' };
   if(slot.matchId){
     const m = S.matches.find(x=>x.id===slot.matchId);
     if(m){ slot.localId=m.local; slot.visitaId=m.visita; }
   }
   rolSlots.push(slot);
   renderSlots();
+  document.getElementById('rol-preview-wrap').style.display='block';
 }
 
 function removeSlot(idx){
@@ -1123,41 +1005,34 @@ function renderSlots(){
   const container = document.getElementById('rol-slots');
 
   container.innerHTML = rolSlots.map((slot,idx)=>{
-    // Calcular usos excluyendo este slot
-    const usados = {};
-    rolSlots.forEach((s,i)=>{
-      if(i===idx) return;
-      if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
-      if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
-    });
-
-    const disponibles = pending.filter(m=>{
-      const lUsos = usados[m.local]||0;
-      const vUsos = usados[m.visita]||0;
-      return lUsos<2 && vUsos<2;
-    });
-
-    const options = disponibles.map(m=>
+    // Mostrar TODOS los pendientes en el dropdown — el moderador elige libremente
+    // (incluyendo partidos de equipos que ya juegan en otro slot = doble jornada)
+    const options = pending.map(m=>
       `<option value="${m.id}" ${m.id===slot.matchId?'selected':''}>
-        ${tname(m.local)} vs ${tname(m.visita)} (J${m.jornada})
+        ${tname(m.local)} vs ${tname(m.visita)} (J${m.jornada||'?'})
       </option>`
     ).join('');
 
-    const ll = slot.localId ? (S.matches.find(m=>m.id===slot.matchId)?.ll || tlogo(slot.localId)) : '';
-    const lv = slot.visitaId ? (S.matches.find(m=>m.id===slot.matchId)?.lv || tlogo(slot.visitaId)) : '';
+    const m = slot.matchId ? S.matches.find(x=>x.id===slot.matchId) : null;
+    const ll = m ? (m.ll||tlogo(m.local)) : '';
+    const lv = m ? (m.lv||tlogo(m.visita)) : '';
+    const campoVal = slot.campo||'Campo 1';
 
-    return `<div style="display:flex;align-items:center;gap:8px;background:var(--dark2);border:1px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:10px 12px;flex-wrap:wrap;">
-      <input type="time" value="${slot.hora}" onchange="updateSlotHora(${idx},this.value)" style="padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--neon);font-size:13px;font-weight:700;width:90px;flex-shrink:0">
-      ${ll?`<img src="${ll}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
-           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
-      <select onchange="updateSlotMatch(${idx},this.value)" style="flex:1;padding:7px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;min-width:0">
-        <option value="">-- Seleccionar partido --</option>
+    return `<div style="display:flex;align-items:center;gap:6px;background:var(--dark2);border:1px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:8px 10px;flex-wrap:wrap">
+      <input type="time" value="${slot.hora}" onchange="updateSlotHora(${idx},this.value)" style="padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--neon);font-size:13px;font-weight:700;width:88px;flex-shrink:0">
+      <select onchange="updateSlotCampo(${idx},this.value)" style="padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#8fe89a;font-size:12px;font-weight:700;width:95px;flex-shrink:0">
+        <option value="Campo 1" ${campoVal==='Campo 1'?'selected':''}>Campo 1</option>
+        <option value="Campo 2" ${campoVal==='Campo 2'?'selected':''}>Campo 2</option>
+      </select>
+      ${ll?`<img src="${ll}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:26px;height:26px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <select onchange="updateSlotMatch(${idx},this.value)" style="flex:1;padding:7px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;min-width:120px">
+        <option value="">-- Seleccionar --</option>
         ${options}
       </select>
-      ${lv?`<img src="${lv}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
-           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
-      <input type="text" value="${slot.campo||''}" onchange="updateSlotCampo(${idx},this.value)" placeholder="Campo (opcional)" style="width:110px;padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;flex-shrink:0">
-      <button onclick="removeSlot(${idx})" style="background:none;border:none;color:#f87171;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 4px">✕</button>
+      ${lv?`<img src="${lv}" style="width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:26px;height:26px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <button onclick="removeSlot(${idx})" style="background:none;border:none;color:#f87171;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 2px">✕</button>
     </div>`;
   }).join('');
 
@@ -1166,11 +1041,6 @@ function renderSlots(){
 
 function updateSlotHora(idx, hora){
   rolSlots[idx].hora = hora;
-  updateRolPreview();
-}
-
-function updateSlotCampo(idx, campo){
-  rolSlots[idx].campo = campo;
   updateRolPreview();
 }
 
@@ -1186,7 +1056,7 @@ function updateSlotMatch(idx, matchId){
 }
 
 function autoRol(){
-  // Auto-proponer 4 partidos pendientes sin repetir equipo
+  // Auto-proponer partidos pendientes sin repetir equipo (un partido por equipo)
   const vuelta = String(S.vuelta);
   const pending = [...S.matches.filter(m=>m.vuelta===vuelta)];
   rolSlots = [];
@@ -1194,7 +1064,6 @@ function autoRol(){
   const seleccionados = [];
 
   for(let m of pending){
-    if(seleccionados.length>=4) break;
     if(!usados.has(m.local) && !usados.has(m.visita)){
       seleccionados.push(m);
       usados.add(m.local);
@@ -1204,16 +1073,22 @@ function autoRol(){
 
   seleccionados.forEach((m,i)=>{
     rolSlots.push({
-      hora: HORARIOS_DEFAULT[i]||'09:00',
+      hora: HORARIOS_DEFAULT[i] || HORARIOS_DEFAULT[HORARIOS_DEFAULT.length-1] || '09:00',
+      campo: i%2===0 ? 'Campo 1' : 'Campo 2',
       matchId: m.id,
       localId: m.local,
-      visitaId: m.visita,
-      campo: ''
+      visitaId: m.visita
     });
   });
 
   renderSlots();
   document.getElementById('rol-preview-wrap').style.display='block';
+}
+
+function limpiarRol(){
+  rolSlots=[];
+  document.getElementById('rol-slots').innerHTML='';
+  document.getElementById('rol-preview-wrap').style.display='none';
 }
 
 function updateRolPreview(){
@@ -1227,14 +1102,23 @@ function updateRolPreview(){
   }
   document.getElementById('rol-preview-wrap').style.display='block';
 
+  // Ordenar por hora y luego por campo
+  const sorted = [...filled].sort((a,b)=>{
+    if(a.hora!==b.hora) return a.hora.localeCompare(b.hora);
+    return (a.campo||'').localeCompare(b.campo||'');
+  });
+
   let html = `<div style="text-align:center;font-size:13px;font-weight:700;color:var(--neon);margin-bottom:12px;text-transform:capitalize">📅 ${fechaStr}</div>`;
-  filled.forEach(slot=>{
+  sorted.forEach(slot=>{
     const m = S.matches.find(x=>x.id===slot.matchId);
     if(!m) return;
     const ll = m.ll||tlogo(m.local);
     const lv = m.lv||tlogo(m.visita);
     html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
-      <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${slot.hora}</span>
+      <div style="min-width:90px;flex-shrink:0">
+        <div style="font-size:14px;font-weight:800;color:var(--neon)">${slot.hora}</div>
+        ${slot.campo?`<div style="font-size:10px;color:#8fe89a;font-weight:700">${esc(slot.campo)}</div>`:''}
+      </div>
       <img src="${ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
       <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${tname(m.local)}</span>
       <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
@@ -1243,92 +1127,89 @@ function updateRolPreview(){
     </div>`;
   });
   document.getElementById('rol-preview').innerHTML = html;
-  renderCartelPreview(fechaStr, filled);
 }
 
-// ════════════════════════════════
-//  CARTEL DE JORNADA (PNG descargable)
-// ════════════════════════════════
-// Fondo real subido por Gerardo a su repo de GitHub (ya trae el logo, las rayas,
-// la onda dorada/naranja/turquesa y el Instagram integrados en la imagen)
-const FONDO_CARTEL_URL = 'fondonuevo.png';
+async function descargarRolPNG(){
+  const filled = rolSlots.filter(s=>s.matchId);
+  if(!filled.length){ alert('Agrega al menos un partido al rol.'); return; }
 
-function renderCartelPreview(fechaStr, filled){
-  const poster = document.getElementById('cartel-poster');
-  if(!poster) return;
-  if(!filled.length){ poster.innerHTML=''; return; }
+  const fecha = document.getElementById('rol-fecha').value;
+  const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) : 'Domingo';
 
-  // Tamaños dinámicos: entre más partidos, más compacto, para que nunca se corten
-  const n = filled.length;
+  // Ordenar por hora y campo
+  const sorted = [...filled].sort((a,b)=>{
+    if(a.hora!==b.hora) return a.hora.localeCompare(b.hora);
+    return (a.campo||'').localeCompare(b.campo||'');
+  });
+
+  const n = sorted.length;
   let T;
-  if(n<=3)      T={crest:40, name:12, jv:10, fecha:9,  hora:15, campo:10, padY:8, gap:2};
-  else if(n===4)T={crest:32, name:11, jv:9,  fecha:8,  hora:13, campo:9,  padY:5, gap:1};
-  else if(n===5)T={crest:26, name:10, jv:8,  fecha:7,  hora:12, campo:8,  padY:3, gap:1};
-  else          T={crest:22, name:9,  jv:7,  fecha:7,  hora:11, campo:7,  padY:2, gap:1};
+  if(n<=3)       T={crest:42,name:13,hora:16,campo:11,padY:10,gap:3};
+  else if(n===4) T={crest:36,name:12,hora:15,campo:10,padY:7, gap:2};
+  else if(n===5) T={crest:30,name:11,hora:14,campo:9, padY:5, gap:1};
+  else           T={crest:24,name:10,hora:13,campo:8, padY:3, gap:1};
 
-  let filasHtml = '';
-  filled.forEach((slot, i)=>{
-    const m = S.matches.find(x=>x.id===slot.matchId);
+  // Construir contenedor temporal
+  const temp = document.createElement('div');
+  temp.style.cssText='position:fixed;left:-9999px;top:0;width:551px;font-family:Arial,sans-serif;';
+  const inner = document.createElement('div');
+  inner.style.cssText=`
+    position:relative;width:551px;
+    background-image:url('fondonuevo.png');
+    background-size:cover;background-position:center;
+    padding:220px 30px 20px;box-sizing:border-box;
+    border-radius:10px;overflow:hidden;
+  `;
+
+  let filasHtml='';
+  sorted.forEach((slot,i)=>{
+    const m=S.matches.find(x=>x.id===slot.matchId);
     if(!m) return;
-    const ll = m.ll||tlogo(m.local);
-    const lv = m.lv||tlogo(m.visita);
-    const horaFmt = formatHora12(slot.hora);
-    filasHtml += `
-      <div class="cartel-row" style="padding:${T.padY}px 0;">
-        <div class="cartel-team local">
-          <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${ll}" onerror="this.style.opacity='.2'">
-          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.local))}</span>
+    const ll=m.ll||tlogo(m.local);
+    const lv=m.lv||tlogo(m.visita);
+    const horaFmt=formatHora12(slot.hora);
+    filasHtml+=`
+      <div style="display:flex;align-items:center;gap:8px;padding:${T.padY}px 0;">
+        <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+          <img src="${ll}" style="width:${T.crest}px;height:${T.crest}px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='.2'">
+          <span style="font-size:${T.name}px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(tname(m.local))}</span>
         </div>
-        <div class="cartel-center">
-          <span class="cartel-jv" style="font-size:${T.jv}px;">Jornada ${esc(m.jornada||'?')} · Vuelta ${esc(m.vuelta||'1')}</span>
-          <span class="cartel-fecha" style="font-size:${T.fecha}px;">${esc(document.getElementById('rol-fecha').value.split('-').reverse().join('/'))}</span>
-          <div class="cartel-linea" style="margin:${T.gap}px 0;"></div>
-          <span class="cartel-hora" style="font-size:${T.hora}px;">${horaFmt}</span>
-          ${slot.campo?`<span class="cartel-campo" style="font-size:${T.campo}px;">${esc(slot.campo)}</span>`:''}
+        <div style="flex-shrink:0;min-width:100px;text-align:center;">
+          ${slot.campo?`<div style="font-size:${T.campo}px;color:#8fe89a;font-weight:800;letter-spacing:.5px;text-transform:uppercase;">${esc(slot.campo)}</div>`:''}
+          <div style="width:20px;height:3px;background:#39ff14;border-radius:2px;margin:${T.gap}px auto;"></div>
+          <div style="font-size:${T.hora}px;color:#fff;font-weight:900;">${horaFmt}</div>
         </div>
-        <div class="cartel-team visita">
-          <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${lv}" onerror="this.style.opacity='.2'">
-          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.visita))}</span>
+        <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;flex-direction:row-reverse;">
+          <img src="${lv}" style="width:${T.crest}px;height:${T.crest}px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='.2'">
+          <span style="font-size:${T.name}px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">${esc(tname(m.visita))}</span>
         </div>
       </div>
-      ${i < filled.length-1 ? '<hr class="cartel-sep">' : ''}
+      ${i<sorted.length-1?'<div style="border-top:2px dotted rgba(243,201,74,.55);margin:0;"></div>':''}
     `;
   });
 
-  poster.innerHTML = `
-    <div class="cartel-header">
-      <div class="cartel-h1">Torneo Dominical Libre</div>
+  inner.innerHTML=`
+    <div style="text-align:center;margin-bottom:10px;">
+      <div style="font-size:19px;font-weight:900;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 14px rgba(243,201,74,.35);text-transform:uppercase;letter-spacing:.5px;">Torneo Dominical Libre</div>
+      <div style="font-size:12px;color:#8fe89a;font-weight:700;margin-top:4px;text-transform:capitalize;">${esc(fechaStr)}</div>
     </div>
-    <div class="cartel-matches">${filasHtml}</div>
+    ${filasHtml}
   `;
-}
+  temp.appendChild(inner);
+  document.body.appendChild(temp);
 
-function formatHora12(hora24){
-  if(!hora24) return '';
-  const [hStr,mStr] = hora24.split(':');
-  let h = parseInt(hStr,10);
-  const m = mStr || '00';
-  const ampm = h >= 12 ? 'pm' : 'am';
-  h = h % 12; if(h===0) h = 12;
-  return `${h}:${m} ${ampm}`;
-}
+  const imgs=temp.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img=>new Promise(r=>{ if(img.complete)r(); else{img.onload=r;img.onerror=r;} })));
+  await new Promise(r=>setTimeout(r,500));
 
-function descargarCartelPNG(){
-  const poster = document.getElementById('cartel-poster');
-  if(!poster || !poster.innerHTML.trim()){
-    alert('Primero arma el Rol del Domingo (Auto-proponer o agregar horarios) para generar el cartel.');
-    return;
-  }
-  html2canvas(poster, { backgroundColor: null, scale: 2, useCORS: true }).then(canvas=>{
-    const link = document.createElement('a');
-    const fecha = document.getElementById('rol-fecha').value || 'jornada';
-    link.download = 'jornada_' + fecha + '.png';
-    link.href = canvas.toDataURL('image/png');
+  try{
+    const canvas=await html2canvas(inner,{backgroundColor:null,scale:2,useCORS:true,allowTaint:true});
+    const link=document.createElement('a');
+    link.download=`rol_${fecha||'jornada'}.png`;
+    link.href=canvas.toDataURL('image/png');
     link.click();
-  }).catch(err=>{
-    console.error(err);
-    alert('No se pudo generar el PNG. Revisa que las imágenes (escudos y logo) permitan descarga (CORS).');
-  });
+  }catch(e){ alert('Error al generar PNG: '+e.message); }
+  document.body.removeChild(temp);
 }
 
 async function publicarRol(){
@@ -1398,34 +1279,33 @@ function renderModPanel(){
       S.modTeamSelected=t.id;
       document.querySelectorAll('.mod-team-btn').forEach(b=>b.classList.remove('selected'));
       btn.classList.add('selected');
-      cancelarProgramar();
       renderModPreview();
     };
     grid.appendChild(btn);
   });
 }
 
-// Lista de partidos pendientes del equipo elegido — sin separar vueltas.
-// Cada fila es clicable y abre el formulario para registrar fecha/hora/campo.
 function renderModPreview(){
   const id=S.modTeamSelected;
   if(!id){ document.getElementById('mod-preview').innerHTML='<div class="mod-preview-empty">Selecciona un equipo</div>'; return; }
-  const mine=S.matches.filter(m=>(m.local===id||m.visita===id));
+  const vuelta=String(S.vuelta);
+  const mine=S.matches.filter(m=>(m.local===id||m.visita===id)&&m.vuelta===vuelta);
   let html='';
   if(!mine.length){
-    html='<div class="mod-preview-empty">Este equipo no tiene partidos pendientes</div>';
+    html=`<div class="mod-preview-empty">No hay partidos pendientes en Vuelta ${vuelta}</div>`;
+    document.getElementById('btn-anunciar').disabled=true;
   }else{
     mine.forEach(m=>{
-      html+=`<div class="mod-match-row clickable" onclick="seleccionarPartidoAProgramar('${m.id}')">
+      html+=`<div class="mod-match-row">
         <img src="${m.ll||tlogo(m.local)}" onerror="this.style.opacity='.2'">
         <div>
           <div class="mod-match-name">${tname(m.local)} vs ${tname(m.visita)}</div>
-          <div class="mod-match-meta">Jornada actual: ${m.jornada||'?'}</div>
+          <div class="mod-match-meta">Jornada ${m.jornada||'?'} · Vuelta ${vuelta}</div>
         </div>
         <img src="${m.lv||tlogo(m.visita)}" onerror="this.style.opacity='.2'">
-        <span style="font-size:11px;color:var(--neon);font-weight:700;white-space:nowrap">Programar →</span>
       </div>`;
     });
+    document.getElementById('btn-anunciar').disabled=false;
   }
   document.getElementById('mod-preview').innerHTML=html;
 }
@@ -1434,147 +1314,26 @@ function setVuelta(v){
   S.vuelta=v;
   document.getElementById('vbtn1').className='vbtn'+(v===1?' active':'');
   document.getElementById('vbtn2').className='vbtn'+(v===2?' active':'');
+  if(S.modTeamSelected) renderModPreview();
 };
 
-// ════════════════════════════════
-//  REGISTRAR PARTIDO (Fecha, Hora, Campo) + jornada automática
-// ════════════════════════════════
-
-// Calcula, para dos equipos, la jornada más baja que NINGUNO de los dos
-// haya usado todavía en un partido Jugado o Programado. Esto es solo un
-// estimado para mostrar en pantalla — el valor real y definitivo lo calcula
-// el Apps Script al momento de guardar (por si la hoja cambió mientras tanto).
-function estimarJornada(localId, visitaId, idPartidoExcluir){
-  const usadas = {};
-  S.allMatches.forEach(m=>{
-    const est=(m.estado||'').toLowerCase();
-    if((est==='jugado'||est==='programado') && m.id!==idPartidoExcluir){
-      const j=parseInt(m.jornada,10);
-      if(!isNaN(j)){
-        [m.local,m.visita].forEach(tid=>{
-          if(!usadas[tid]) usadas[tid]=new Set();
-          usadas[tid].add(j);
-        });
-      }
-    }
-  });
-  const usL = usadas[localId]||new Set();
-  const usV = usadas[visitaId]||new Set();
-  let n=1;
-  while(usL.has(n)||usV.has(n)) n++;
-  return n;
-}
-
-function pad2(n){ return n<10 ? '0'+n : ''+n; }
-
-// Menús de Hora/Minutos (evita el bug de los inputs nativos type="time"
-// que en algunos navegadores exigen AM/PM y se quedan "vacíos" aunque se vean llenos)
-function buildHoraSelects(defaultH, defaultM){
-  let hOpts=''; for(let h=0;h<24;h++){ hOpts+=`<option value="${pad2(h)}" ${h===defaultH?'selected':''}>${pad2(h)}</option>`; }
-  let mOpts=''; for(let m=0;m<60;m+=5){ mOpts+=`<option value="${pad2(m)}" ${m===defaultM?'selected':''}>${pad2(m)}</option>`; }
-  return {hOpts,mOpts};
-}
-
-function seleccionarPartidoAProgramar(matchId){
-  const m=S.matches.find(x=>x.id===matchId);
-  if(!m) return;
-  S.matchToProgram=m;
-  const jest=estimarJornada(m.local,m.visita,m.id);
-  const {hOpts,mOpts}=buildHoraSelects(9,0);
-
-  // Fecha por defecto: próximo domingo (para que ya no llegue vacía)
-  const hoy=new Date();
-  const dia=hoy.getDay();
-  const diasHastaDom = dia===0 ? 7 : 7-dia;
-  const dom=new Date(hoy);
-  dom.setDate(hoy.getDate()+diasHastaDom);
-  const fechaDefault=dom.toISOString().split('T')[0];
-
-  const form=document.getElementById('programar-form');
-  form.style.display='block';
-  form.innerHTML=`
-    <div style="font-size:14px;font-weight:700;color:var(--w);margin-bottom:10px">${tname(m.local)} vs ${tname(m.visita)}</div>
-    <div class="programar-hint">📅 Se asignará automáticamente la Jornada ${jest} (la primera disponible para ambos equipos)</div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <div>
-        <label>Fecha</label>
-        <input type="date" id="prog-fecha" class="msg-input" style="width:100%" value="${fechaDefault}">
-      </div>
-      <div>
-        <label>Hora</label>
-        <div style="display:flex;align-items:center;gap:8px">
-          <select id="prog-hora-h" class="msg-input" style="flex:1;text-align:center">${hOpts}</select>
-          <span style="color:var(--g400);font-weight:700">:</span>
-          <select id="prog-hora-m" class="msg-input" style="flex:1;text-align:center">${mOpts}</select>
-        </div>
-      </div>
-      <div>
-        <label>Campo / Cancha</label>
-        <input type="text" id="prog-cancha" class="msg-input" placeholder="Ej: Cancha 2" style="width:100%">
-      </div>
-    </div>
-    <button class="btn-anunciar" id="btn-guardar-programar" style="margin-top:14px" onclick="guardarPartidoProgramado()">✅ Guardar y programar partido</button>
-    <button class="programar-cancel" onclick="cancelarProgramar()">Cancelar</button>
-  `;
-  form.scrollIntoView({behavior:'smooth', block:'center'});
-}
-
-function cancelarProgramar(){
-  S.matchToProgram=null;
-  const form=document.getElementById('programar-form');
-  form.style.display='none';
-  form.innerHTML='';
-}
-
-async function guardarPartidoProgramado(){
-  const m=S.matchToProgram;
-  if(!m) return;
-  const fecha=document.getElementById('prog-fecha').value; // formato del input: AAAA-MM-DD
-  const horaH=document.getElementById('prog-hora-h').value;
-  const horaM=document.getElementById('prog-hora-m').value;
-  const hora=(horaH&&horaM)?`${horaH}:${horaM}:00`:'';
-  const cancha=document.getElementById('prog-cancha').value.trim();
-  if(!fecha||!hora||!cancha){
-    alert('Completa fecha, hora y campo antes de guardar.');
-    return;
-  }
-  // Tu hoja usa día/mes/año (ej. 05/07/2026), no año-mes-día como entrega el input
-  const [anioF,mesF,diaF]=fecha.split('-');
-  const fechaSheet=`${diaF}/${mesF}/${anioF}`;
-
-  const jestimada=estimarJornada(m.local,m.visita,m.id);
-  const btn=document.getElementById('btn-guardar-programar');
-  if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
-
-  try{
-    await fetch(SCRIPT_URL,{
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({accion:'programar_partido', idPartido:m.id, fecha:fechaSheet, hora, cancha})
-    });
-  }catch(e){
-    console.error(e);
-  }
-
-  // Actualización local optimista (el Apps Script confirma la jornada real en la hoja)
-  m.estado='programado';
-  m.fecha=fechaSheet; m.hora=hora; m.cancha=cancha; m.jornada=String(jestimada);
-  S.matches = S.allMatches.filter(x=>(x.estado||'').toLowerCase()==='pendiente');
-
-  const fechaFmt = new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+async function publicarAnuncio(){
+  const id=S.modTeamSelected;
+  if(!id) return;
+  const vuelta=String(S.vuelta);
+  const mine=S.matches.filter(m=>(m.local===id||m.visita===id)&&m.vuelta===vuelta)
+    .map(m=>({local:tname(m.local),visita:tname(m.visita),jornada:m.jornada,vuelta:m.vuelta,ll:m.ll||tlogo(m.local),lv:m.lv||tlogo(m.visita)}));
+  if(!mine.length) return;
   await fbPush('chat',{
-    type:'partido_programado',
-    local: tname(m.local), visita: tname(m.visita),
-    ll: m.ll||tlogo(m.local), lv: m.lv||tlogo(m.visita),
-    fecha: fechaFmt, hora, cancha, jornada: jestimada,
-    ts: Date.now(), time: now()
+    type:'anuncio',
+    teamName: tname(id),
+    matches: mine,
+    ts:Date.now(), time:now()
   });
-
-  cancelarProgramar();
-  renderModPreview();
-  alert('✅ Partido programado. Se guardó en la hoja de Partidos (Estado: Programado, Jornada '+jestimada+').');
+  document.getElementById('btn-anunciar').textContent='✅ Publicado';
+  setTimeout(()=>{ document.getElementById('btn-anunciar').innerHTML='📣 Publicar en el chat general'; },2000);
   switchTab('chat');
-}
+};
 
 async function limpiarChat(){
   const confirmar = confirm('¿Seguro que quieres limpiar el chat?\n\nSe borrarán todos los mensajes anteriores y empezará sesión nueva.\n\nEsta acción no se puede deshacer.');
