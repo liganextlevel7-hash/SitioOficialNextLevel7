@@ -125,13 +125,13 @@
     margin-bottom: 10px; font-size: 11px; color: rgba(184,240,48,0.7);
     letter-spacing: 1px; font-weight: 700; text-transform: uppercase;
   }
-  .stack-teams { display: flex; align-items: center; justify-content: center; gap: 14px; }
-  .stack-team { display: flex; align-items: center; gap: 8px; flex:1; min-width:0; }
-  .stack-team.visita { flex-direction: row-reverse; text-align: right; }
-  .stack-team img { width: 34px; height: 34px; object-fit: contain; flex-shrink:0; }
-  .stack-team-name { font-size: 12px; font-weight: 700; color: #fff; text-transform: uppercase; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .stack-score { font-family:'Bebas Neue',sans-serif; font-size: 24px; color: #d4f030; text-shadow: 0 0 10px rgba(120,220,0,0.5); flex-shrink:0; min-width:50px; text-align:center; }
-  .stack-score.programado { font-size: 15px; color: rgba(255,255,255,0.4); }
+  .stack-teams { display: flex; align-items: center; justify-content: center; gap: 18px; }
+  .stack-team { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100px; }
+  .stack-team.visita { flex-direction: column; text-align: center; }
+  .stack-team img { width: 66px; height: 66px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+  .stack-team-name { font-size: 11px; font-weight: 700; color: #fff; text-transform: uppercase; text-align:center; line-height: 1.2; }
+  .stack-score { font-family:'Bebas Neue',sans-serif; font-size: 32px; color: #d4f030; text-shadow: 0 0 10px rgba(120,220,0,0.5); flex-shrink:0; min-width:60px; text-align:center; }
+  .stack-score.programado { font-size: 17px; color: rgba(255,255,255,0.4); }
   .stack-bottom-row {
     display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
     margin-top: 10px; font-size: 10px; color: #ddd;
@@ -140,10 +140,22 @@
     font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px;
     text-transform: uppercase; letter-spacing: .5px;
   }
+  .stack-badge.normal { color: #b8f030; border: 1px solid #b8f030; }
+  .stack-badge.penales { color: #ff4444; border: 1px solid #ff4444; }
+  .stack-badge.default { color: #ffd700; border: 1px solid #ffd700; }
+  .stack-badge.pendiente { color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); }
   .stack-badge.editable { color:#39ff14; border:1px solid #39ff14; background:rgba(57,255,20,.08); }
   .stack-badge.consulta { color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.25); }
+
+  .estado-programado { box-shadow: inset 0 0 50px rgba(41,166,255,0.08), 0 8px 24px rgba(0,0,0,0.6); }
+  .estado-jugado { box-shadow: inset 0 0 50px rgba(255,150,0,0.08), 0 8px 24px rgba(0,0,0,0.6); }
+  .estado-pendiente { box-shadow: inset 0 0 50px rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.6); }
+
+  .borde-normal { border-color: #b8f030 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(184,240,48,0.6), inset 0 0 20px rgba(184,240,48,0.12) !important; }
+  .borde-penales { border-color: #ff4444 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(255,68,68,0.6), inset 0 0 20px rgba(255,68,68,0.12) !important; }
+  .borde-default { border-color: #ffd700 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.6), inset 0 0 20px rgba(255,215,0,0.12) !important; }
   .borde-programado { border-color: #29a6ff !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(41,166,255,0.6), inset 0 0 20px rgba(41,166,255,0.12) !important; }
-  .borde-jugado { border-color: rgba(184,240,48,0.35) !important; }
+
 
   /* ===== CEDULA - jugadores ===== */
   .ced-score-box { text-align:center; flex:0 0 auto; }
@@ -169,9 +181,10 @@
   .empty-msg { text-align: center; color: rgba(255,255,255,0.3); font-size: 14px; padding: 40px; }
 
   @media (max-width: 600px) {
-    .stack-team img { width: 28px; height: 28px; }
+    .stack-team img { width: 52px; height: 52px; }
+    .stack-team { width: 78px; }
     .stack-team-name { font-size: 10px; }
-    .stack-score { font-size: 18px; }
+    .stack-score { font-size: 24px; }
     .stack-card-inner { padding: 14px 12px; }
   }
 </style>
