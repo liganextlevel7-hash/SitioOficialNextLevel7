@@ -41,7 +41,6 @@
       box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
     }
 
-    /* ===== PANEL CONTROLES ===== */
     .editor-panel {
       background: rgba(0,0,0,0.88);
       border: 1px solid #3a6b1a;
@@ -55,15 +54,6 @@
       color: #b8f030; font-size: 16px; letter-spacing: 2px;
       margin: 0 0 12px; text-transform: uppercase; font-family: 'Bebas Neue', sans-serif;
     }
-    .vuelta-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-    .vuelta-tab {
-      flex: 1; text-align: center; padding: 10px; border-radius: 8px;
-      border: 1px solid #3a6b1a; background: rgba(255,255,255,0.05);
-      color: #88aa44; font-weight: 700; font-size: 13px; letter-spacing: 1px;
-      cursor: pointer; transition: .2s; touch-action: manipulation;
-    }
-    .vuelta-tab.activo { background: #39ff14; color: #000; border-color: #39ff14; box-shadow: 0 0 12px rgba(57,255,20,0.5); }
-
     .controls-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .field-group { display: flex; flex-direction: column; gap: 4px; }
     .field-group.full { grid-column: 1 / -1; }
@@ -103,6 +93,9 @@
     }
     .stack-card-inner {
       background: #000;
+      background-image: url('fondotarjetas.png');
+      background-size: cover;
+      background-position: center;
       border: 5px solid rgba(57,255,20,0.5);
       border-radius: 18px;
       padding: 26px 24px;
@@ -111,6 +104,17 @@
       box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(57,255,20,0.1);
       min-height: 150px;
     }
+    /* overlay oscuro para legibilidad */
+    .stack-card-inner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 0;
+      border-radius: 13px;
+    }
+    .stack-card-inner > * { position: relative; z-index: 1; }
+
     .stack-id-bg {
       position: absolute;
       top: -10px; right: 8px;
@@ -121,6 +125,7 @@
       line-height: 1;
       pointer-events: none;
       user-select: none;
+      z-index: 1;
     }
     .stack-top-row {
       display: flex; align-items: center; justify-content: space-between;
@@ -160,12 +165,10 @@
     .stack-jornada-tag { font-size: 15px; color: #ffd700; font-weight: 700; }
     .stack-vuelta-tag { font-size: 13px; color: rgba(184,240,48,0.7); }
 
-    /* Fondo segun Estado - solo un overlay sutil, fondo base sigue negro */
     .estado-programado { box-shadow: inset 0 0 60px rgba(41,166,255,0.08), 0 8px 30px rgba(0,0,0,0.6); }
     .estado-jugado { box-shadow: inset 0 0 60px rgba(255,150,0,0.08), 0 8px 30px rgba(0,0,0,0.6); }
     .estado-pendiente { box-shadow: inset 0 0 60px rgba(255,255,255,0.03), 0 8px 30px rgba(0,0,0,0.6); }
 
-    /* Borde segun Ganado_Por */
     .borde-normal { border-color: #b8f030 !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(184,240,48,0.7), inset 0 0 25px rgba(184,240,48,0.15) !important; }
     .borde-penales { border-color: #ff4444 !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(255,68,68,0.7), inset 0 0 25px rgba(255,68,68,0.15) !important; }
     .borde-default { border-color: #ffd700 !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(255,215,0,0.7), inset 0 0 25px rgba(255,215,0,0.15) !important; }
@@ -223,11 +226,6 @@
     </div>
     <div class="status-msg" id="statusMsg">Selecciona jornada, fecha o equipo y presiona Cargar Datos</div>
     <button class="dl-btn" onclick="downloadPNG()" id="dlBtn">⬇ Descargar Lista como PNG</button>
-
-    <div class="vuelta-tabs" style="margin-top:14px;margin-bottom:0;">
-      <div class="vuelta-tab activo" id="tabVuelta1" onclick="cambiarVuelta(1)">PRIMERA VUELTA</div>
-      <div class="vuelta-tab" id="tabVuelta2" onclick="cambiarVuelta(2)">SEGUNDA VUELTA</div>
-    </div>
   </div>
 
   <div class="stack-container" id="stackContainer">
