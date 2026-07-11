@@ -241,7 +241,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 
 /* ── CARTEL DE JORNADA (poster descargable) ── */
 .cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
-.cartel-poster{position:relative;width:551px;margin:0 auto;border-radius:10px;overflow:hidden;
+.cartel-poster{position:relative;width:551px;height:864px;margin:0 auto;border-radius:10px;overflow:hidden;
   background:linear-gradient(180deg,#0a190f 0%,#050d07 100%);
   font-family:'Arial Black',Arial,sans-serif;
   padding:245px 30px 0;
@@ -265,7 +265,8 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 }
 .cartel-header{position:absolute;top:14px;left:0;right:0;z-index:2;text-align:center}
 .cartel-h1{font-size:19px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 14px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
-.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;margin-top:8px}
+.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;height:384px}
+.cartel-pagina-tag{position:absolute;bottom:8px;right:14px;z-index:2;font-size:10px;color:rgba(255,255,255,.35);font-weight:700}
 .cartel-row{display:flex;align-items:center;gap:8px;padding:10px 0}
 .cartel-sep{border:none;border-top:2px dotted rgba(243,201,74,.55);margin:0}
 .cartel-team{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
@@ -447,6 +448,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
         <div class="cartel-wrap-scroll">
           <div class="cartel-poster" id="cartel-poster"></div>
         </div>
+        <div id="cartel-paginas-aviso" style="font-size:11px;color:var(--neon);margin-top:8px;text-align:center"></div>
 
         <button class="btn-anunciar" onclick="publicarRol()" style="margin-top:10px">
           📣 Publicar Rol en el chat
@@ -1282,19 +1284,17 @@ function updateRolPreview(){
 // la onda dorada/naranja/turquesa y el Instagram integrados en la imagen)
 const FONDO_CARTEL_URL = 'fondonuevo.png';
 
-function renderCartelPreview(fechaStr, filled){
+const CARTEL_POR_PAGINA = 4;
+
+// Pinta UNA página del cartel (hasta 4 partidos) en el elemento #cartel-poster
+function pintarCartelPagina(paginaSlots, numPagina, totalPaginas){
   const poster = document.getElementById('cartel-poster');
   if(!poster) return;
-  if(!filled.length){ poster.innerHTML=''; poster.style.height=''; return; }
 
-  // Tamaño FIJO siempre (no se encoge): el cartel crece hacia abajo según cuántos partidos haya
   const T = {crest:40, name:12, jv:10, fecha:9, hora:15, campo:10, padY:10, gap:2};
-  const ROW_H = 96;   // alto aproximado de cada renglón con este tamaño fijo
-  const TOP_H = 245;  // espacio reservado arriba para el logo (coincide con el padding-top del cartel)
-  const WAVE_H = 235; // espacio reservado abajo para la onda + Instagram
 
   let filasHtml = '';
-  filled.forEach((slot, i)=>{
+  paginaSlots.forEach((slot, i)=>{
     const m = S.matches.find(x=>x.id===slot.matchId);
     if(!m) return;
     const ll = m.ll||tlogo(m.local);
@@ -1318,17 +1318,33 @@ function renderCartelPreview(fechaStr, filled){
           <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.visita))}</span>
         </div>
       </div>
-      ${i < filled.length-1 ? '<hr class="cartel-sep">' : ''}
+      ${i < paginaSlots.length-1 ? '<hr class="cartel-sep">' : ''}
     `;
   });
 
-  poster.style.height = (TOP_H + filled.length*ROW_H + WAVE_H) + 'px';
   poster.innerHTML = `
     <div class="cartel-header">
       <div class="cartel-h1">Torneo Dominical Libre</div>
     </div>
     <div class="cartel-matches">${filasHtml}</div>
+    ${totalPaginas>1?`<div class="cartel-pagina-tag">Página ${numPagina} de ${totalPaginas}</div>`:''}
   `;
+}
+
+function renderCartelPreview(fechaStr, filled){
+  const poster = document.getElementById('cartel-poster');
+  if(!poster) return;
+  if(!filled.length){ poster.innerHTML=''; return; }
+
+  const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
+  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas);
+
+  const aviso = document.getElementById('cartel-paginas-aviso');
+  if(aviso){
+    aviso.textContent = totalPaginas>1
+      ? `📄 Se generarán ${totalPaginas} páginas de PNG al descargar (4 partidos por página). Aquí se muestra la página 1.`
+      : '';
+  }
 }
 
 function formatHora12(hora24){
@@ -1341,22 +1357,47 @@ function formatHora12(hora24){
   return `${h}:${m} ${ampm}`;
 }
 
-function descargarCartelPNG(){
+async function esperarImagenes(el){
+  const imgs = el.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img=> new Promise(resolve=>{
+    if(img.complete) resolve(); else { img.onload=resolve; img.onerror=resolve; }
+  })));
+  await new Promise(r=>setTimeout(r,150));
+}
+
+async function descargarCartelPNG(){
   const poster = document.getElementById('cartel-poster');
-  if(!poster || !poster.innerHTML.trim()){
+  const filled = ordenarPorCampoHora(rolSlots.filter(s=>s.matchId));
+  if(!poster || !filled.length){
     alert('Primero arma el Rol del Domingo (Auto-proponer o agregar horarios) para generar el cartel.');
     return;
   }
-  html2canvas(poster, { backgroundColor: null, scale: 2, useCORS: true }).then(canvas=>{
-    const link = document.createElement('a');
-    const fecha = document.getElementById('rol-fecha').value || 'jornada';
-    link.download = 'jornada_' + fecha + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }).catch(err=>{
+  const btn = document.querySelector('.btn-descargar-cartel');
+  const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
+  const fecha = document.getElementById('rol-fecha').value || 'jornada';
+
+  if(btn){ btn.disabled=true; btn.textContent='Generando...'; }
+
+  try{
+    for(let p=0; p<totalPaginas; p++){
+      const pagina = filled.slice(p*CARTEL_POR_PAGINA, (p+1)*CARTEL_POR_PAGINA);
+      pintarCartelPagina(pagina, p+1, totalPaginas);
+      await esperarImagenes(poster);
+      const canvas = await html2canvas(poster, { backgroundColor: null, scale: 2, useCORS: true });
+      const link = document.createElement('a');
+      link.download = totalPaginas>1 ? `jornada_${fecha}_pagina${p+1}.png` : `jornada_${fecha}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      await new Promise(r=>setTimeout(r,400)); // pequeña pausa entre descargas
+    }
+  }catch(err){
     console.error(err);
     alert('No se pudo generar el PNG. Revisa que las imágenes (escudos y logo) permitan descarga (CORS).');
-  });
+  }
+
+  // Regresa la vista previa a la página 1
+  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas);
+  if(btn){ btn.disabled=false; btn.textContent='📥 Descargar cartel PNG'; }
 }
 
 async function publicarRol(){
