@@ -241,13 +241,27 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 
 /* ── CARTEL DE JORNADA (poster descargable) ── */
 .cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
-.cartel-poster{position:relative;width:551px;height:713px;margin:0 auto;border-radius:10px;overflow:hidden;
-  background-image:url('fondonuevo.png');
-  background-size:cover;
-  background-position:center;
+.cartel-poster{position:relative;width:551px;margin:0 auto;border-radius:10px;overflow:hidden;
+  background:linear-gradient(180deg,#0a190f 0%,#050d07 100%);
   font-family:'Arial Black',Arial,sans-serif;
-  padding:222px 30px 0;
+  padding:245px 30px 0;
   box-sizing:border-box;
+}
+.cartel-poster::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:240px;z-index:1;
+  background-image:url('fondonuevo.png');
+  background-repeat:no-repeat;
+  background-position:top center;
+  background-size:551px 713px;
+}
+.cartel-poster::after{
+  content:'';
+  position:absolute;inset:0;z-index:0;
+  background-image:url('fondonuevo.png');
+  background-repeat:no-repeat;
+  background-position:bottom center;
+  background-size:551px 713px;
 }
 .cartel-header{position:absolute;top:14px;left:0;right:0;z-index:2;text-align:center}
 .cartel-h1{font-size:19px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 14px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
@@ -268,7 +282,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 .btn-descargar-cartel:hover{filter:brightness(1.08)}
 
 @media(max-width:580px){
-  .cartel-poster{width:100%;min-width:340px;height:auto;aspect-ratio:1103/1426}
+  .cartel-poster{min-width:551px}
 
 
   body{padding:0;align-items:flex-start}
@@ -1271,15 +1285,13 @@ const FONDO_CARTEL_URL = 'fondonuevo.png';
 function renderCartelPreview(fechaStr, filled){
   const poster = document.getElementById('cartel-poster');
   if(!poster) return;
-  if(!filled.length){ poster.innerHTML=''; return; }
+  if(!filled.length){ poster.innerHTML=''; poster.style.height=''; return; }
 
-  // Tamaños dinámicos: entre más partidos, más compacto, para que nunca se corten
-  const n = filled.length;
-  let T;
-  if(n<=3)      T={crest:40, name:12, jv:10, fecha:9,  hora:15, campo:10, padY:8, gap:2};
-  else if(n===4)T={crest:32, name:11, jv:9,  fecha:8,  hora:13, campo:9,  padY:5, gap:1};
-  else if(n===5)T={crest:26, name:10, jv:8,  fecha:7,  hora:12, campo:8,  padY:3, gap:1};
-  else          T={crest:22, name:9,  jv:7,  fecha:7,  hora:11, campo:7,  padY:2, gap:1};
+  // Tamaño FIJO siempre (no se encoge): el cartel crece hacia abajo según cuántos partidos haya
+  const T = {crest:40, name:12, jv:10, fecha:9, hora:15, campo:10, padY:10, gap:2};
+  const ROW_H = 96;   // alto aproximado de cada renglón con este tamaño fijo
+  const TOP_H = 245;  // espacio reservado arriba para el logo (coincide con el padding-top del cartel)
+  const WAVE_H = 235; // espacio reservado abajo para la onda + Instagram
 
   let filasHtml = '';
   filled.forEach((slot, i)=>{
@@ -1310,6 +1322,7 @@ function renderCartelPreview(fechaStr, filled){
     `;
   });
 
+  poster.style.height = (TOP_H + filled.length*ROW_H + WAVE_H) + 'px';
   poster.innerHTML = `
     <div class="cartel-header">
       <div class="cartel-h1">Torneo Dominical Libre</div>
