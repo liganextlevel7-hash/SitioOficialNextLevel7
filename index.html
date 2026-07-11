@@ -263,6 +263,12 @@
         </div>
       </div>
       <a href="chat-next-level-7.html" class="car-btn" style="position:absolute;bottom:14px;left:18px;right:18px;width:auto;z-index:5;background:rgba(57,255,20,0.2);color:#39ff14;border:1px solid #39ff14;">ENTRAR AL CHAT</a>
+      <div id="chat-online-bar" style="display:none;position:absolute;top:10px;left:0;right:0;z-index:5;text-align:center;">
+        <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,0,0,0.7);border:1px solid rgba(57,255,20,0.4);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#39ff14;">
+          <span style="width:7px;height:7px;background:#39ff14;border-radius:50%;display:inline-block;animation:blink 1.2s infinite;"></span>
+          <span id="chat-online-count">0</span> en línea
+        </span>
+      </div>
     </div>
   </div>
 
@@ -373,6 +379,12 @@ async function cargarCarrusel() {
     if(programados.length){
       const fp=programados[0].fecha;
       const filasFp = programados.filter(p=>p.fecha===fp).slice(0,4);
+      // Ordenar por hora y luego por cancha (Campo 1 antes que Campo 2)
+      filasFp.sort((a,b)=>{
+        const ha=a.hora||'', hb=b.hora||'';
+        if(ha!==hb) return ha.localeCompare(hb);
+        return (a.cancha||'').localeCompare(b.cancha||'');
+      });
       filasFp.forEach((p,i)=>{
         htmlProx+=`<div class="cartel-row">
           <div class="cartel-team local"><img class="cartel-crest" src="${carLogos[p.local]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.local}</span></div>
@@ -440,8 +452,31 @@ cargarCarrusel();
       else { publico.style.display='none'; offline.style.display='block'; }
     });
   }
+
+  // Verificar usuarios online en el chat
+  function actualizarOnlineChat(){
+    fetch(FIREBASE_URL + '/online.json')
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .catch(function(){ return null; })
+      .then(function(data){
+        var bar = document.getElementById('chat-online-bar');
+        var count = document.getElementById('chat-online-count');
+        if(!data){ bar.style.display='none'; return; }
+        var ahora = Date.now() - 5*60*1000;
+        var activos = Object.values(data).filter(function(u){ return !u.ts || u.ts > ahora; }).length;
+        if(activos > 0){
+          bar.style.display='block';
+          count.textContent = activos;
+        } else {
+          bar.style.display='none';
+        }
+      });
+  }
+
   actualizarBotonEnVivo();
+  actualizarOnlineChat();
   setInterval(actualizarBotonEnVivo, 15000);
+  setInterval(actualizarOnlineChat, 10000);
 })();
 </script>
 </body>
