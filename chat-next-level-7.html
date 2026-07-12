@@ -242,7 +242,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 /* ── CARTEL DE JORNADA (poster descargable) ── */
 .cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
 .cartel-poster{position:relative;width:551px;height:864px;margin:0 auto;border-radius:10px;overflow:hidden;
-  background:linear-gradient(180deg,#0a190f 0%,#050d07 100%);
+  background:#030f05;
   font-family:'Arial Black',Arial,sans-serif;
   padding:245px 30px 0;
   box-sizing:border-box;
@@ -1232,18 +1232,25 @@ function autoRol(){
   document.getElementById('rol-preview-wrap').style.display='block';
 }
 
-// Ordena los partidos del Rol por Campo (Campo 1, Campo 2, ...) y dentro de cada
-// campo por horario. Los que no tienen campo capturado van al final.
+// Ordena los partidos del Rol por Horario primero (comparación numérica real,
+// no de texto) y dentro de la misma hora, por Campo (Campo 1, Campo 2, ...).
+function minutosDeHora(hora){
+  if(!hora) return 99999;
+  const partes = hora.split(':');
+  const h = parseInt(partes[0],10) || 0;
+  const m = parseInt(partes[1],10) || 0;
+  return h*60+m;
+}
 function ordenarPorCampoHora(lista){
   return [...lista].sort((a,b)=>{
+    const ha = minutosDeHora(a.hora);
+    const hb = minutosDeHora(b.hora);
+    if(ha !== hb) return ha - hb;
     const ca = (a.campo||'').trim();
     const cb = (b.campo||'').trim();
-    if(ca !== cb){
-      if(!ca) return 1;
-      if(!cb) return -1;
-      return ca.localeCompare(cb, 'es', {numeric:true, sensitivity:'base'});
-    }
-    return (a.hora||'').localeCompare(b.hora||'');
+    if(!ca) return 1;
+    if(!cb) return -1;
+    return ca.localeCompare(cb, 'es', {numeric:true, sensitivity:'base'});
   });
 }
 
