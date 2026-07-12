@@ -423,18 +423,26 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
   return inner;
 }
 
-// Ordena por Campo (Campo 1, Campo 2, ...) y dentro de cada campo por horario,
-// igual que en el chat. Los partidos sin campo capturado van al final.
+// Ordena por Horario primero (comparación numérica real, ya que la hora en la
+// hoja viene como texto "9:00:00" / "10:00:00" y comparada como texto salía mal)
+// y dentro de la misma hora, por Campo (Campo 1, Campo 2, ...).
+function minutosDeHora(hora) {
+  if (!hora) return 99999;
+  const partes = hora.split(':');
+  const h = parseInt(partes[0],10) || 0;
+  const m = parseInt(partes[1],10) || 0;
+  return h*60+m;
+}
 function ordenarPorCampoHora(lista) {
   return [...lista].sort((a,b) => {
+    const ha = minutosDeHora(a['Hora']);
+    const hb = minutosDeHora(b['Hora']);
+    if (ha !== hb) return ha - hb;
     const ca = (a['Cancha']||'').trim();
     const cb = (b['Cancha']||'').trim();
-    if (ca !== cb) {
-      if (!ca) return 1;
-      if (!cb) return -1;
-      return ca.localeCompare(cb, 'es', {numeric:true, sensitivity:'base'});
-    }
-    return (a['Hora']||'').localeCompare(b['Hora']||'');
+    if (!ca) return 1;
+    if (!cb) return -1;
+    return ca.localeCompare(cb, 'es', {numeric:true, sensitivity:'base'});
   });
 }
 
