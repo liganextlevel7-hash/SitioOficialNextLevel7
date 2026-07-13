@@ -241,49 +241,35 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 
 /* ── CARTEL DE JORNADA (poster descargable) ── */
 .cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
-.cartel-poster{position:relative;width:551px;height:864px;margin:0 auto;border-radius:10px;overflow:hidden;
-  background:#030f05;
+.cartel-poster{position:relative;width:760px;height:983px;margin:0 auto;border-radius:10px;overflow:hidden;
+  background-image:url('fondonuevo.png');
+  background-size:cover;
+  background-position:center;
   font-family:'Arial Black',Arial,sans-serif;
-  padding:245px 30px 0;
+  padding:300px 40px 0;
   box-sizing:border-box;
 }
-.cartel-poster::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:240px;z-index:1;
-  background-image:url('fondonuevo.png');
-  background-repeat:no-repeat;
-  background-position:top center;
-  background-size:551px 713px;
-}
-.cartel-poster::after{
-  content:'';
-  position:absolute;left:0;right:0;bottom:0;height:233px;z-index:0;
-  background-image:url('fondonuevo.png');
-  background-repeat:no-repeat;
-  background-position:bottom center;
-  background-size:551px 713px;
-}
-.cartel-header{position:absolute;top:14px;left:0;right:0;z-index:2;text-align:center}
-.cartel-h1{font-size:19px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 14px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
-.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;height:384px}
-.cartel-pagina-tag{position:absolute;bottom:8px;right:14px;z-index:2;font-size:10px;color:rgba(255,255,255,.35);font-weight:700}
-.cartel-row{display:flex;align-items:center;gap:8px;padding:10px 0}
+.cartel-header{position:absolute;top:16px;left:0;right:0;z-index:2;text-align:center}
+.cartel-h1{font-size:26px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 16px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
+.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;height:310px}
+.cartel-pagina-tag{position:absolute;bottom:10px;right:18px;z-index:2;font-size:12px;color:rgba(255,255,255,.4);font-weight:700}
+.cartel-row{display:flex;align-items:center;gap:10px;padding:11px 0}
 .cartel-sep{border:none;border-top:2px dotted rgba(243,201,74,.55);margin:0}
-.cartel-team{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.cartel-team{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
 .cartel-team.visita{flex-direction:row-reverse;text-align:right}
-.cartel-crest{width:38px;height:38px;object-fit:contain;flex-shrink:0}
-.cartel-name{font-size:14px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
-.cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:104px;text-align:center;gap:2px}
-.cartel-jv{font-size:11px;color:#8fe89a;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
-.cartel-fecha{font-size:10px;color:#d9d9d9;font-weight:700}
-.cartel-hora{font-size:15px;color:#fff;font-weight:900;white-space:nowrap}
-.cartel-campo{font-size:11px;color:#8fe89a;font-weight:700}
+.cartel-crest{width:48px;height:48px;object-fit:contain;flex-shrink:0}
+.cartel-name{font-size:16px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
+.cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px;text-align:center;gap:2px}
+.cartel-jv{font-size:12px;color:#8fe89a;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
+.cartel-fecha{font-size:11px;color:#d9d9d9;font-weight:700}
+.cartel-hora{font-size:18px;color:#fff;font-weight:900;white-space:nowrap}
+.cartel-campo{font-size:12px;color:#8fe89a;font-weight:700}
 .cartel-linea{width:24px;height:3px;background:#39ff14;border-radius:2px;margin:2px 0}
 .btn-descargar-cartel{width:100%;padding:12px;background:#f3c94a;color:#1a1200;border:none;border-radius:var(--r);font-size:14px;font-weight:800;cursor:pointer;margin-top:10px}
 .btn-descargar-cartel:hover{filter:brightness(1.08)}
 
 @media(max-width:580px){
-  .cartel-poster{min-width:551px}
+  .cartel-poster{min-width:760px}
 
 
   body{padding:0;align-items:flex-start}
@@ -1298,7 +1284,7 @@ function pintarCartelPagina(paginaSlots, numPagina, totalPaginas){
   const poster = document.getElementById('cartel-poster');
   if(!poster) return;
 
-  const T = {crest:40, name:12, jv:10, fecha:9, hora:15, campo:10, padY:10, gap:2};
+  const T = {crest:48, name:16, jv:12, fecha:11, hora:18, campo:12, padY:11, gap:3};
 
   let filasHtml = '';
   paginaSlots.forEach((slot, i)=>{
