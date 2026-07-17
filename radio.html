@@ -8,7 +8,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: url('fondoradio.png') center/cover no-repeat fixed;
+    background: radial-gradient(circle at center, #12351a 0%, #0a1a0d 60%, #050805 100%);
     font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     align-items: center;
@@ -36,7 +36,7 @@
   /* ===== BLOQUE ÚNICO: logo + reproductor + badge ===== */
   /* Para agrandar o achicar TODO junto, cambia solo --scale en el div de abajo. */
   .radio-widget {
-    width: 540px;
+    width: 400px;
     max-width: 95vw;
     transform: scale(var(--scale, 1));
     transform-origin: center center;
@@ -143,8 +143,8 @@
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
         frameborder="0"
         scrolling="no"
-        height="300"
-        width="500"
+        height="250"
+        width="300"
         loading="lazy"
         style="border-radius:20px; display:block; max-width:100%;">
       </iframe>
