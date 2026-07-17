@@ -167,9 +167,19 @@
 
     function togglePlay() {
       if (audio.paused) {
-        audio.play().catch(err => console.log('No se pudo reproducir:', err));
+        // Cambio de ícono inmediato (no espera al buffer del stream)
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'block';
+        audio.play().catch(err => {
+          console.error('No se pudo reproducir:', err);
+          playIcon.style.display = 'block';
+          pauseIcon.style.display = 'none';
+          alert('No se pudo reproducir la radio. Revisa la consola (F12) para más detalle: ' + err.message);
+        });
       } else {
         audio.pause();
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
       }
     }
 
@@ -177,14 +187,9 @@
       audio.muted = !audio.muted;
     }
 
-    audio.addEventListener('playing', () => {
-      playIcon.style.display = 'none';
-      pauseIcon.style.display = 'block';
-    });
-
-    audio.addEventListener('pause', () => {
-      playIcon.style.display = 'block';
-      pauseIcon.style.display = 'none';
+    audio.addEventListener('error', () => {
+      console.error('Error de audio:', audio.error);
+      alert('Error cargando el stream de radio (código ' + (audio.error ? audio.error.code : '?') + '). Verifica que el link https://stream.zeno.fm/nayznbjmygytv siga activo.');
     });
 
     audio.addEventListener('timeupdate', () => {
