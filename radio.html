@@ -54,16 +54,14 @@
   .radio-widget .player-card {
     background: rgba(10, 10, 10, 0.92);
     border: 2px solid #b6ff2e;
-    border-radius: 40px;
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    border-radius: 20px;
+    padding: 6px;
     box-shadow: 0 0 20px rgba(126, 211, 33, 0.5);
-    width: 85%;
-    margin-top: -70px;
+    width: 90%;
+    margin-top: -60px;
     position: relative;
     z-index: 1;
+    overflow: hidden;
   }
 
   .play-btn {
@@ -138,60 +136,20 @@
     <img src="radio.png" alt="Next Level 7 Radio" class="logo">
 
     <div class="player-card">
-      <button class="play-btn" id="playBtn" onclick="togglePlay()">
-        <svg id="playIcon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        <svg id="pauseIcon" viewBox="0 0 24 24" style="display:none;"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-      </button>
-      <span class="time" id="timeDisplay">0:00</span>
-      <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
-      <button class="vol-btn" id="volBtn" onclick="toggleMute()">
-        <svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-.94-3.29-2.5-4.03v8.05c1.56-.74 2.5-2.26 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
-      </button>
+      <iframe
+        src="https://listen.zeno.fm/player/next-level-7"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        frameborder="0"
+        scrolling="no"
+        height="150"
+        width="100%"
+        loading="lazy"
+        style="border-radius:20px; display:block;">
+      </iframe>
     </div>
 
     <div class="live-badge">● EN VIVO</div>
   </div>
-
-  <audio id="radioAudio" src="https://stream.zeno.fm/nayznbjmygytv" preload="none"></audio>
-
-  <script>
-    const audio = document.getElementById('radioAudio');
-    const playIcon = document.getElementById('playIcon');
-    const pauseIcon = document.getElementById('pauseIcon');
-    const timeDisplay = document.getElementById('timeDisplay');
-
-    function togglePlay() {
-      if (audio.paused) {
-        playIcon.style.display = 'none';
-        pauseIcon.style.display = 'block';
-        audio.load();
-        audio.play().catch(err => {
-          console.error('No se pudo reproducir:', err);
-          playIcon.style.display = 'block';
-          pauseIcon.style.display = 'none';
-          alert('No se pudo reproducir la radio: ' + err.message);
-        });
-      } else {
-        audio.pause();
-        playIcon.style.display = 'block';
-        pauseIcon.style.display = 'none';
-      }
-    }
-
-    function toggleMute() {
-      audio.muted = !audio.muted;
-    }
-
-    audio.addEventListener('error', () => {
-      console.error('Error de audio:', audio.error);
-    });
-
-    audio.addEventListener('timeupdate', () => {
-      const mins = Math.floor(audio.currentTime / 60);
-      const secs = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
-      timeDisplay.textContent = `${mins}:${secs}`;
-    });
-  </script>
 
 </body>
 </html>
