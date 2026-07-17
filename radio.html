@@ -152,9 +152,7 @@
     <div class="live-badge">● EN VIVO</div>
   </div>
 
-  <audio id="radioAudio" preload="none">
-    <source src="https://stream.zeno.fm/nayznbjmygytv" type="audio/mpeg">
-  </audio>
+  <audio id="radioAudio" src="https://stream.zeno.fm/nayznbjmygytv" preload="none"></audio>
 
   <script>
     const audio = document.getElementById('radioAudio');
@@ -166,6 +164,7 @@
       if (audio.paused) {
         playIcon.style.display = 'none';
         pauseIcon.style.display = 'block';
+        audio.load();
         audio.play().catch(err => {
           console.error('No se pudo reproducir:', err);
           playIcon.style.display = 'block';
