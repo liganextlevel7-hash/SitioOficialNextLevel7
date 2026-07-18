@@ -73,6 +73,44 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 .cap-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;display:inline-block;margin-top:4px}
 .cap-badge.eq{background:var(--neon-dim);color:var(--neon)}
 .cap-badge.mod{background:var(--mod-dim);color:var(--mod-border)}
+.cap-badge.guest{background:rgba(56,189,248,.15);color:#38bdf8}
+
+/* invitado / aficionado (sin equipo) */
+.guest-option{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1.5px solid var(--dark3);border-radius:var(--r);background:var(--dark2);cursor:pointer;margin-bottom:20px;transition:all .15s}
+.guest-option:hover,.guest-option.selected{border-color:#38bdf8;background:rgba(56,189,248,.1)}
+.guest-option.selected .mod-info-name{color:#38bdf8}
+#guest-section{display:none}
+.avatar-grid{display:flex;gap:10px;margin-bottom:20px}
+.avatar-btn{width:52px;height:52px;border-radius:50%;border:1.5px solid var(--dark3);background:var(--dark2);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;padding:0}
+.avatar-btn:hover{border-color:var(--neon)}
+.avatar-btn.selected{border-color:var(--neon);background:var(--neon-dim)}
+
+/* avatares con emoji (en vez de foto) para invitados y moderador */
+.emoji-av{display:flex;align-items:center;justify-content:center;color:#fff}
+.cap-avatar.emoji-av{font-size:22px}
+.hdr-logo.emoji-av{font-size:20px}
+.bub-av.emoji-av{font-size:13px}
+.online-emoji{font-size:13px;width:20px;text-align:center;flex-shrink:0}
+.hdr-dot.guest-dot{background:#38bdf8}
+
+/* botones de moderación (borrar / banear) en Chat General */
+.msg-tool-btn{background:none;border:none;color:var(--g500);font-size:12px;cursor:pointer;padding:2px 5px;margin-left:2px;border-radius:5px;line-height:1}
+.msg-tool-btn:hover{color:#f87171;background:rgba(248,113,113,.15)}
+
+/* ── RADIO MINI (flotante, siempre visible) ── */
+.radio-widget-mini{position:fixed;bottom:14px;right:14px;z-index:4000;width:150px;background:var(--dark);border:1px solid #ffd166;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.radio-mini-header{display:flex;align-items:center;gap:6px;padding:8px 10px;cursor:pointer;background:linear-gradient(135deg,#064e26,#0a1628);font-size:11px;font-weight:700;color:#ffd166;user-select:none}
+.radio-live-dot{color:#ff4d4d;animation:radiopulse 1.4s infinite;font-size:9px}
+@keyframes radiopulse{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+.radio-toggle-arrow{margin-left:auto;font-size:10px}
+.radio-mini-body{overflow:hidden;transition:max-height .25s ease;max-height:132px}
+.radio-mini-body.collapsed{max-height:0}
+.radio-iframe-wrap{width:300px;height:250px;transform:scale(.5);transform-origin:top left}
+@media(max-width:580px){
+  .radio-widget-mini{bottom:auto;top:56px;right:8px;width:120px}
+  .radio-mini-body{max-height:106px}
+  .radio-iframe-wrap{transform:scale(.4)}
+}
 
 .btn-enter{width:100%;padding:14px;background:var(--verde);color:white;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;transition:background .15s}
 .btn-enter:hover{background:var(--vm)}
@@ -119,7 +157,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 .tab-content.active{display:flex;flex-direction:column}
 
 /* ── CHAT PRINCIPAL ── */
-#chat-main{flex-direction:column;height:580px}
+#chat-main,#chat-main-general{flex-direction:column;height:580px}
 .chat-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:8px;background:var(--dark)}
 .chat-messages::-webkit-scrollbar{width:4px}
 .chat-messages::-webkit-scrollbar-track{background:transparent}
@@ -287,6 +325,28 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 <body>
 <a href="index.html" class="inicio-btn">← Inicio</a>
 
+<!-- RADIO EN VIVO (mini, flotante, siempre suena aunque cambies de pestaña) -->
+<div class="radio-widget-mini" id="radio-widget">
+  <div class="radio-mini-header" onclick="toggleRadioWidget()">
+    <span>📻 Radio NL7</span>
+    <span class="radio-live-dot">●</span>
+    <span class="radio-toggle-arrow" id="radio-arrow">▾</span>
+  </div>
+  <div class="radio-mini-body" id="radio-mini-body">
+    <div class="radio-iframe-wrap">
+      <iframe
+        src="https://listen.zeno.fm/player/next-level-7"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        frameborder="0"
+        scrolling="no"
+        width="300"
+        height="250"
+        loading="lazy">
+      </iframe>
+    </div>
+  </div>
+</div>
+
 <!-- CARGA -->
 <div id="loading-screen">
   <div class="load-ball">⚽</div>
@@ -322,6 +382,28 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
       </div>
     </div>
 
+    <!-- Invitado / Aficionado (sin equipo) -->
+    <div class="guest-option" id="guest-option" onclick="toggleGuest()">
+      <div class="mod-icon">🙋</div>
+      <div>
+        <div class="mod-info-name">Entrar sin equipo</div>
+        <div class="mod-info-sub">Aficionado o invitado · Solo Chat General</div>
+      </div>
+    </div>
+
+    <div id="guest-section">
+      <div class="field">
+        <label>Tu nombre o apodo</label>
+        <input type="text" id="guest-name" placeholder="Ej: Pao, El Tanque..." oninput="updatePreview()" maxlength="30">
+      </div>
+      <div class="select-label">Elige tu avatar</div>
+      <div class="avatar-grid" id="avatar-grid">
+        <button type="button" class="avatar-btn" data-emoji="👨" onclick="selectAvatar('👨')">👨</button>
+        <button type="button" class="avatar-btn" data-emoji="👩" onclick="selectAvatar('👩')">👩</button>
+        <button type="button" class="avatar-btn" data-emoji="🧑" onclick="selectAvatar('🧑')">🧑</button>
+      </div>
+    </div>
+
     <!-- Capitán -->
     <div id="captain-section">
       <div class="field">
@@ -334,6 +416,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 
     <div class="cap-preview" id="cap-preview">
       <img class="cap-avatar" id="cap-avatar-img" src="" alt="">
+      <div class="cap-avatar emoji-av" id="cap-avatar-emoji" style="display:none"></div>
       <div>
         <div class="cap-name-txt" id="cap-preview-name"></div>
         <div class="cap-team-txt" id="cap-preview-team"></div>
@@ -352,6 +435,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
     <div class="app-header-left">
       <div class="hdr-avatar-wrap">
         <img class="hdr-logo" id="hdr-logo" src="" alt="">
+        <div class="hdr-logo emoji-av" id="hdr-logo-emoji" style="display:none"></div>
         <div class="hdr-dot" id="hdr-dot">C</div>
       </div>
       <div>
@@ -369,19 +453,33 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
   </div>
 
   <div class="tabs" id="tabs-bar">
-    <div class="tab active" data-tab="chat" onclick="switchTab('chat')">💬 Chat General</div>
-    <div class="tab" data-tab="partidos" onclick="switchTab('partidos')">⚽ Mis partidos</div>
+    <div class="tab" data-tab="chat" onclick="switchTab('chat')">⚽ Chat Equipos</div>
+    <div class="tab" data-tab="general" onclick="switchTab('general')">💬 Chat General</div>
+    <div class="tab" data-tab="partidos" onclick="switchTab('partidos')">📋 Mis partidos</div>
     <div class="tab mod-tab" data-tab="modpanel" onclick="switchTab('modpanel')" style="display:none">🛡️ Panel Mod</div>
   </div>
 
-  <!-- TAB CHAT -->
-  <div id="tab-chat" class="tab-content active" style="display:flex">
+  <!-- TAB CHAT EQUIPOS -->
+  <div id="tab-chat" class="tab-content">
     <div id="chat-main" style="display:flex;flex-direction:column;flex:1;position:relative">
       <div class="chat-messages" id="chat-messages"></div>
       <div class="chat-footer"><div id="mention-list" style="display:none;position:absolute;bottom:70px;left:14px;right:14px;background:#1a1a1a;border:1px solid rgba(57,255,20,0.4);border-radius:10px;overflow:hidden;z-index:20;box-shadow:0 -4px 20px rgba(0,0,0,0.5);"></div>
         <div class="msg-row">
           <input type="text" class="msg-input" id="msg-input" placeholder="Escribe @ para mencionar un equipo..." onkeydown="if(event.key==='Enter')sendMsg()" oninput="onMsgInput(this)">
           <button class="btn-send" onclick="sendMsg()">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB CHAT GENERAL (todos: capitanes, mod y aficionados/invitados) -->
+  <div id="tab-general" class="tab-content">
+    <div id="chat-main-general" style="display:flex;flex-direction:column;flex:1;position:relative">
+      <div class="chat-messages" id="chat-messages-general"></div>
+      <div class="chat-footer">
+        <div class="msg-row">
+          <input type="text" class="msg-input" id="msg-input-general" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendGeneralMsg()">
+          <button class="btn-send" onclick="sendGeneralMsg()">Enviar</button>
         </div>
       </div>
     </div>
@@ -509,6 +607,9 @@ S = {
   capName: '',
   teamId: null,
   isMod: false,
+  userType: 'captain', // 'captain' | 'mod' | 'guest'
+  avatarEmoji: '',
+  generalSenderId: null,
   vuelta: 1,
   modTeamSelected: null,
   matchToProgram: null,
@@ -621,19 +722,36 @@ function setP(pct,msg){
 // ════════════════════════════════
 let selectedTeamId=null;
 let isMod=false;
+let loginMode='captain'; // 'captain' | 'mod' | 'guest'
+let selectedAvatarEmoji=null;
 
-function toggleMod(){
-  isMod=!isMod;
-  const opt=document.getElementById('mod-option');
-  const cap=document.getElementById('captain-section');
-  const pass=document.getElementById('mod-pass');
-  opt.classList.toggle('selected',isMod);
-  cap.style.display=isMod?'none':'block';
-  pass.classList.toggle('show',isMod);
+function emojiBg(e){
+  if(e==='👩') return 'linear-gradient(135deg,#f472b6,#db2777)';
+  if(e==='🛡️') return 'linear-gradient(135deg,#a78bfa,#7c3aed)';
+  return 'linear-gradient(135deg,#38bdf8,#0284c7)';
+}
+
+function setLoginMode(mode){
+  loginMode=mode;
+  isMod=(mode==='mod');
+  document.getElementById('mod-option').classList.toggle('selected',mode==='mod');
+  document.getElementById('guest-option').classList.toggle('selected',mode==='guest');
+  document.getElementById('mod-pass').classList.toggle('show',mode==='mod');
+  document.getElementById('captain-section').style.display=(mode==='captain')?'block':'none';
+  document.getElementById('guest-section').style.display=(mode==='guest')?'block':'none';
   selectedTeamId=null;
   document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));
   updatePreview();
-};
+}
+
+function toggleMod(){ setLoginMode(loginMode==='mod' ? 'captain' : 'mod'); }
+function toggleGuest(){ setLoginMode(loginMode==='guest' ? 'captain' : 'guest'); }
+
+function selectAvatar(emoji){
+  selectedAvatarEmoji=emoji;
+  document.querySelectorAll('.avatar-btn').forEach(b=>b.classList.toggle('selected', b.dataset.emoji===emoji));
+  updatePreview();
+}
 
 function renderTeamGrid(){
   const used=new Set();
@@ -651,15 +769,20 @@ function renderTeamGrid(){
 }
 
 function updatePreview(){
-  const name=document.getElementById('cap-name').value.trim();
   const preview=document.getElementById('cap-preview');
   const btn=document.getElementById('btn-enter');
   const badge=document.getElementById('cap-preview-badge');
-  if(isMod){
+  const imgEl=document.getElementById('cap-avatar-img');
+  const emojiEl=document.getElementById('cap-avatar-emoji');
+
+  if(loginMode==='mod'){
     const pass=document.getElementById('mod-password').value;
     if(pass===MOD_PASS){
-      document.getElementById('cap-avatar-img').src='https://i.imgur.com/placeholder.png';
-      document.getElementById('cap-avatar-img').style.border='2px solid #a78bfa';
+      imgEl.style.display='none';
+      emojiEl.style.display='flex';
+      emojiEl.textContent='🛡️';
+      emojiEl.style.background=emojiBg('🛡️');
+      emojiEl.style.borderColor='#a78bfa';
       document.getElementById('cap-preview-name').textContent='Moderador';
       document.getElementById('cap-preview-team').textContent='Liga Next Level 7 · Panel Admin';
       badge.textContent='Moderador'; badge.className='cap-badge mod';
@@ -677,11 +800,37 @@ function updatePreview(){
     }
     return;
   }
+
+  if(loginMode==='guest'){
+    document.getElementById('login-msg').textContent='';
+    const name=document.getElementById('guest-name').value.trim();
+    if(name && selectedAvatarEmoji){
+      imgEl.style.display='none';
+      emojiEl.style.display='flex';
+      emojiEl.textContent=selectedAvatarEmoji;
+      emojiEl.style.background=emojiBg(selectedAvatarEmoji);
+      emojiEl.style.borderColor='#39ff14';
+      document.getElementById('cap-preview-name').textContent=name;
+      document.getElementById('cap-preview-team').textContent='Aficionado · Chat General';
+      badge.textContent='Aficionado'; badge.className='cap-badge guest';
+      preview.classList.add('show');
+      btn.disabled=false;
+    }else{
+      preview.classList.remove('show');
+      btn.disabled=true;
+    }
+    return;
+  }
+
+  // Capitán (modo por defecto)
   document.getElementById('login-msg').textContent='';
+  const name=document.getElementById('cap-name').value.trim();
   if(name&&selectedTeamId){
     const t=S.teams[selectedTeamId];
-    document.getElementById('cap-avatar-img').src=t.logo;
-    document.getElementById('cap-avatar-img').style.border='2px solid #39ff14';
+    emojiEl.style.display='none';
+    imgEl.style.display='block';
+    imgEl.src=t.logo;
+    imgEl.style.border='2px solid #39ff14';
     document.getElementById('cap-preview-name').textContent=name;
     document.getElementById('cap-preview-team').textContent=t.nombre+' · '+t.ciudad;
     badge.textContent='Capitán'; badge.className='cap-badge eq';
@@ -698,19 +847,31 @@ async function enterApp(){
   btn.disabled=true;
   btn.innerHTML='<span class="spinner"></span> Entrando...';
   S.isMod=isMod;
-  if(isMod){
-    S.capName='Moderador'; S.teamId='mod';
+  S.userType=loginMode;
+  S.generalSenderId='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+
+  if(S.userType==='mod'){
+    S.capName='Moderador'; S.teamId='mod'; S.avatarEmoji='🛡️';
+  }else if(S.userType==='guest'){
+    S.capName=document.getElementById('guest-name').value.trim();
+    S.teamId=null;
+    S.avatarEmoji=selectedAvatarEmoji||'🙂';
   }else{
     S.capName=document.getElementById('cap-name').value.trim();
     S.teamId=selectedTeamId;
+    S.avatarEmoji='';
   }
+
   // Registrar online
   const onlineData={
     name: S.isMod?'Moderador':S.capName,
-    team: S.isMod?'mod':S.teamId,
-    teamName: S.isMod?'Moderador':tname(S.teamId),
-    logo: S.isMod?'':tlogo(S.teamId),
+    team: S.isMod?'mod':(S.teamId||'general'),
+    teamName: S.isMod?'Moderador':(S.userType==='guest'?'Aficionado':tname(S.teamId)),
+    logo: S.userType==='captain'?tlogo(S.teamId):'',
+    avatarEmoji: S.userType==='guest'?S.avatarEmoji:(S.isMod?'🛡️':''),
     isMod: S.isMod,
+    userType: S.userType,
+    generalSenderId: S.generalSenderId,
     ts: Date.now()
   };
   const res=await fbPush('online',onlineData);
@@ -720,12 +881,29 @@ async function enterApp(){
   document.getElementById('app-screen').style.display='block';
 
   // Header
-  document.getElementById('hdr-logo').src=S.isMod?'':tlogo(S.teamId);
-  document.getElementById('hdr-logo').className='hdr-logo'+(S.isMod?' mod-hdr':'');
-  document.getElementById('hdr-dot').className='hdr-dot'+(S.isMod?' mod-dot':'');
-  document.getElementById('hdr-dot').textContent=S.isMod?'🛡':'C';
+  const hdrLogo=document.getElementById('hdr-logo');
+  const hdrLogoEmoji=document.getElementById('hdr-logo-emoji');
+  if(S.userType==='guest'){
+    hdrLogo.style.display='none';
+    hdrLogoEmoji.style.display='flex';
+    hdrLogoEmoji.textContent=S.avatarEmoji;
+    hdrLogoEmoji.style.background=emojiBg(S.avatarEmoji);
+    document.getElementById('hdr-dot').className='hdr-dot guest-dot';
+    document.getElementById('hdr-dot').textContent='🙋';
+  }else{
+    hdrLogoEmoji.style.display='none';
+    hdrLogo.style.display='block';
+    hdrLogo.src=S.isMod?'':tlogo(S.teamId);
+    hdrLogo.className='hdr-logo'+(S.isMod?' mod-hdr':'');
+    document.getElementById('hdr-dot').className='hdr-dot'+(S.isMod?' mod-dot':'');
+    document.getElementById('hdr-dot').textContent=S.isMod?'🛡':'C';
+  }
   document.getElementById('hdr-capname').textContent=S.isMod?'Moderador':S.capName;
-  document.getElementById('hdr-teamname').textContent=S.isMod?'Panel de administración':'Capitán · '+tname(S.teamId);
+  document.getElementById('hdr-teamname').textContent=S.isMod?'Panel de administración':(S.userType==='guest'?'Aficionado · Chat General':'Capitán · '+tname(S.teamId));
+
+  // Pestañas visibles según tipo de usuario
+  document.querySelector('[data-tab="chat"]').style.display=(S.userType==='guest')?'none':'';
+  document.querySelector('[data-tab="partidos"]').style.display=(S.userType==='guest')?'none':'';
 
   if(S.isMod){
     document.querySelector('.mod-tab').style.display='block';
@@ -735,31 +913,43 @@ async function enterApp(){
 
   renderPartidos();
   startListeners();
+  switchTab(S.userType==='guest' ? 'general' : 'chat');
 
   // Popup automático de partidos pendientes (solo para capitanes)
-  if(!S.isMod){
+  if(S.userType==='captain'){
     setTimeout(()=>{ showPopupPartidos(); }, 500);
   }
 };
 
 async function logout(){
-  if(pollInterval){ clearInterval(pollInterval); pollInterval=null; lastMsgCount=0; }
+  if(pollInterval){ clearInterval(pollInterval); pollInterval=null; lastMsgCount=0; lastGeneralCount=0; }
   if(S.onlineKey) await fbDelete('online/'+S.onlineKey);
-  S.capName=''; S.teamId=null; S.isMod=false; S.onlineKey=null;
-  isMod=false; selectedTeamId=null;
+  S.capName=''; S.teamId=null; S.isMod=false; S.onlineKey=null; S.userType='captain'; S.avatarEmoji=''; S.generalSenderId=null;
+  isMod=false; selectedTeamId=null; loginMode='captain'; selectedAvatarEmoji=null;
   document.getElementById('app-screen').style.display='none';
   document.getElementById('login-screen').style.display='block';
   document.getElementById('cap-name').value='';
   document.getElementById('mod-password').value='';
+  document.getElementById('guest-name').value='';
   document.getElementById('cap-preview').classList.remove('show');
   document.getElementById('btn-enter').disabled=true;
   document.getElementById('btn-enter').textContent='Entrar →';
   document.getElementById('mod-option').classList.remove('selected');
+  document.getElementById('guest-option').classList.remove('selected');
   document.getElementById('captain-section').style.display='block';
+  document.getElementById('guest-section').style.display='none';
   document.getElementById('mod-pass').classList.remove('show');
   document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.avatar-btn').forEach(b=>b.classList.remove('selected'));
   document.getElementById('login-msg').textContent='';
   document.querySelector('.mod-tab').style.display='none';
+  document.querySelector('[data-tab="chat"]').style.display='';
+  document.querySelector('[data-tab="partidos"]').style.display='';
+  const footerGen=document.querySelector('#tab-general .chat-footer');
+  if(footerGen){
+    footerGen.dataset.banned='';
+    footerGen.innerHTML='<div class="msg-row"><input type="text" class="msg-input" id="msg-input-general" placeholder="Escribe un mensaje..." onkeydown="if(event.key===\'Enter\')sendGeneralMsg()"><button class="btn-send" onclick="sendGeneralMsg()">Enviar</button></div>';
+  }
   closePopupPartidos();
 };
 
@@ -768,15 +958,20 @@ async function logout(){
 // ════════════════════════════════
 let pollInterval=null;
 let lastMsgCount=0;
+let lastGeneralCount=0;
 
 function startListeners(){
   // Carga inicial
-  pollChat();
+  if(S.userType!=='guest') pollChat();
+  pollGeneral();
   pollOnline();
+  pollBanned();
   // Polling cada 2 segundos
   pollInterval=setInterval(()=>{
-    pollChat();
+    if(S.userType!=='guest') pollChat();
+    pollGeneral();
     pollOnline();
+    pollBanned();
   },2000);
 }
 
@@ -790,9 +985,61 @@ async function pollChat(){
   }
 }
 
+async function pollGeneral(){
+  const data=await fbGet('chat_general');
+  const count=data?Object.keys(data).length:0;
+  if(count!==lastGeneralCount){
+    lastGeneralCount=count;
+    renderGeneralMessages(data);
+  }
+}
+
 async function pollOnline(){
   const data=await fbGet('online');
   renderOnline(data);
+  updateTeamChatVisibility(data);
+}
+
+// ════════════════════════════════
+//  CHAT EQUIPOS: solo visible mientras el moderador está conectado
+// ════════════════════════════════
+function updateTeamChatVisibility(onlineData){
+  if(!S.userType) return;
+  const tab=document.querySelector('[data-tab="chat"]');
+  if(!tab) return;
+  if(S.userType==='guest'){ tab.style.display='none'; return; }
+  if(S.isMod){ tab.style.display=''; return; }
+  const now5=Date.now()-5*60*1000;
+  const modOnline = onlineData ? Object.values(onlineData).some(u=>u.isMod && (!u.ts||u.ts>now5)) : false;
+  tab.style.display = modOnline ? '' : 'none';
+  if(!modOnline){
+    const activeTab=document.querySelector('.tab.active');
+    if(activeTab && activeTab.dataset.tab==='chat'){ switchTab('general'); }
+  }
+}
+
+// ════════════════════════════════
+//  BANEOS EN CHAT GENERAL
+// ════════════════════════════════
+let bannedGeneralSet={ids:new Set(), names:new Set()};
+async function pollBanned(){
+  const data=await fbGet('banned_general');
+  const ids=new Set(); const names=new Set();
+  if(data){ Object.values(data).forEach(b=>{ if(b.senderId) ids.add(b.senderId); if(b.name) names.add(b.name); }); }
+  bannedGeneralSet={ids,names};
+  applyGeneralBanState();
+}
+
+function applyGeneralBanState(){
+  if(S.isMod) return; // el moderador nunca queda bloqueado
+  const myName=(S.capName||'').toLowerCase().trim();
+  const banned = bannedGeneralSet.ids.has(S.generalSenderId) || (myName && bannedGeneralSet.names.has(myName));
+  if(!banned) return;
+  const footer=document.querySelector('#tab-general .chat-footer');
+  if(footer && !footer.dataset.banned){
+    footer.dataset.banned='1';
+    footer.innerHTML='<div style="text-align:center;color:#f87171;font-size:12px;padding:6px 0">🚫 Has sido bloqueado por el moderador en este chat.</div>';
+  }
 }
 
 // ════════════════════════════════
@@ -899,6 +1146,125 @@ async function sendModMsg(){
     text, ts:Date.now(), time:now()
   });
 };
+
+// ════════════════════════════════
+//  CHAT GENERAL (capitanes + mod + aficionados/invitados)
+// ════════════════════════════════
+async function sendGeneralMsg(){
+  if(!S.isMod){
+    const myName=(S.capName||'').toLowerCase().trim();
+    if(bannedGeneralSet.ids.has(S.generalSenderId) || (myName && bannedGeneralSet.names.has(myName))){
+      applyGeneralBanState();
+      return;
+    }
+  }
+  const inp=document.getElementById('msg-input-general');
+  if(!inp) return;
+  const text=inp.value.trim();
+  if(!text) return;
+  inp.value='';
+  await fbPush('chat_general',{
+    type:'msg',
+    sender: S.generalSenderId,
+    senderName: S.isMod?'Moderador':(S.userType==='guest'?S.capName:(S.capName+' ('+tname(S.teamId)+')')),
+    senderLogo: S.userType==='captain'?tlogo(S.teamId):'',
+    senderEmoji: S.userType==='guest'?S.avatarEmoji:(S.isMod?'🛡️':''),
+    userType: S.userType,
+    text, ts:Date.now(),
+    time: now()
+  });
+};
+
+function renderGeneralMessages(data){
+  const container=document.getElementById('chat-messages-general');
+  if(!data){ container.innerHTML='<div class="empty"><div class="empty-icon">💬</div><div>Sé el primero en escribir en el Chat General</div></div>'; return; }
+  const msgs=Object.entries(data)
+    .map(([key,val])=>({...val,_key:key}))
+    .sort((a,b)=>(a.ts||0)-(b.ts||0));
+
+  let html='';
+  let lastDate='';
+  msgs.forEach(msg=>{
+    const d=msg.ts?new Date(msg.ts).toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'}):'';
+    if(d&&d!==lastDate){ html+=`<div class="date-sep">${d}</div>`; lastDate=d; }
+
+    if(msg.type==='mod_msg'){
+      html+=`<div class="bubble sys-bubble">
+        <div class="bub-text">🛡️ <strong>Moderador:</strong> ${esc(msg.text)}</div>
+        <div class="bub-time">${msg.time||''}</div>
+      </div>`;
+      return;
+    }
+
+    const mine=msg.sender===S.generalSenderId;
+    const avatar=msg.senderLogo
+      ? `<img class="bub-av" src="${msg.senderLogo}" onerror="this.style.opacity='.2'">`
+      : `<div class="bub-av emoji-av" style="background:${emojiBg(msg.senderEmoji)}">${msg.senderEmoji||'🙂'}</div>`;
+    const canModerate = S.isMod && !mine;
+    const tools = canModerate ? `
+        <button class="msg-tool-btn btn-del-msg" data-key="${escAttr(msg._key)}" title="Borrar mensaje">🗑️</button>
+        <button class="msg-tool-btn btn-ban" data-sender="${escAttr(msg.sender)}" data-name="${escAttr(msg.senderName)}" title="Banear usuario">🚫</button>` : '';
+    html+=`<div class="bubble ${mine?'mine':'theirs'}">
+      <div class="bub-meta">
+        ${avatar}
+        <span class="bub-name${msg.userType==='mod'?' mod-name':''}">${esc(msg.senderName||'')}</span>
+        ${tools}
+      </div>
+      <div class="bub-text">${esc(msg.text)}</div>
+      <div class="bub-time">${msg.time||''}</div>
+    </div>`;
+  });
+  container.innerHTML=html||'<div class="empty"><div class="empty-icon">💬</div><div>Sé el primero en escribir en el Chat General</div></div>';
+  container.scrollTop=container.scrollHeight;
+}
+
+// Delegación de clicks para las herramientas de moderación del Chat General
+document.getElementById('chat-messages-general').addEventListener('click', async (e)=>{
+  const delBtn=e.target.closest('.btn-del-msg');
+  const banBtn=e.target.closest('.btn-ban');
+  if(delBtn){
+    if(!confirm('¿Borrar este mensaje del Chat General?')) return;
+    await fbDelete('chat_general/'+delBtn.dataset.key);
+    lastGeneralCount=-1;
+    pollGeneral();
+  }else if(banBtn){
+    const sender=banBtn.dataset.sender;
+    const name=banBtn.dataset.name||'Este usuario';
+    if(!confirm('¿Banear a '+name+'? Ya no podrá escribir en el Chat General y se le sacará de la lista de en línea.')) return;
+    await banGeneralUser(sender,name);
+  }
+});
+
+async function banGeneralUser(senderId, name){
+  const nameKey=(name||'').toLowerCase().trim();
+  const banId='ban_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  await fbSet('banned_general/'+banId, { senderId, name: nameKey, ts: Date.now() });
+
+  // Sacarlo de la lista de en línea de inmediato
+  const online=await fbGet('online');
+  if(online){
+    for(const [key,u] of Object.entries(online)){
+      if(u.generalSenderId===senderId || (u.name && u.name.toLowerCase().trim()===nameKey && !u.isMod)){
+        await fbDelete('online/'+key);
+      }
+    }
+  }
+
+  await fbPush('chat_general',{
+    type:'mod_msg',
+    senderName:'Moderador',
+    text:'🚫 '+name+' fue expulsado(a) del Chat General por el moderador.',
+    ts:Date.now(), time:now()
+  });
+
+  lastGeneralCount=-1;
+  pollGeneral();
+  pollOnline();
+}
+
+async function deleteGeneralMsg(key){
+  await fbDelete('chat_general/'+key);
+}
 
 function renderMessages(data){
   const container=document.getElementById('chat-messages');
@@ -1011,12 +1377,16 @@ function renderOnline(data){
   const now5=Date.now()-5*60*1000;
   const users=Object.values(data).filter(u=>!u.ts||u.ts>now5);
   if(!users.length){ container.innerHTML='<span style="font-size:12px;color:var(--g500)">Nadie conectado aún</span>'; return; }
-  container.innerHTML=users.map(u=>`
-    <div class="online-chip ${u.isMod?'mod-chip':''}">
-      <img src="${u.logo||''}" onerror="this.style.display='none'">
+  container.innerHTML=users.map(u=>{
+    const avatar=u.logo
+      ? `<img src="${u.logo}" onerror="this.style.display='none'">`
+      : `<span class="online-emoji">${u.avatarEmoji||(u.isMod?'🛡️':'🙋')}</span>`;
+    return `<div class="online-chip ${u.isMod?'mod-chip':''}">
+      ${avatar}
       <span>${esc(u.isMod?'🛡️ Mod':u.name)}</span>
       <div class="online-dot"></div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ════════════════════════════════
@@ -1672,6 +2042,17 @@ function tname(id){ return (S.teams[id]||{}).nombre||'Equipo '+id; }
 function tlogo(id){ return (S.teams[id]||{}).logo||''; }
 function now(){ return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+
+// ════════════════════════════════
+//  RADIO MINI (widget flotante, nunca se detiene aunque se minimice)
+// ════════════════════════════════
+let radioCollapsed=false;
+function toggleRadioWidget(){
+  radioCollapsed=!radioCollapsed;
+  document.getElementById('radio-mini-body').classList.toggle('collapsed',radioCollapsed);
+  document.getElementById('radio-arrow').textContent=radioCollapsed?'▸':'▾';
+}
 
 // Limpiar online al cerrar
 window.addEventListener('beforeunload',()=>{ if(S.onlineKey) fbDelete('online/'+S.onlineKey); });
