@@ -97,6 +97,20 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
 .msg-tool-btn{background:none;border:none;color:var(--g500);font-size:12px;cursor:pointer;padding:2px 5px;margin-left:2px;border-radius:5px;line-height:1}
 .msg-tool-btn:hover{color:#f87171;background:rgba(248,113,113,.15)}
 
+/* ⚙️ cambiar usuario/contraseña del equipo */
+.btn-settings{background:var(--dark2);border:1px solid var(--dark3);color:var(--w);width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.btn-settings:hover{border-color:var(--neon)}
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:5000;display:flex;align-items:center;justify-content:center;padding:16px}
+.settings-panel{background:var(--dark);border:1px solid var(--dark3);border-radius:var(--r);padding:22px;width:100%;max-width:360px}
+.settings-title{font-size:16px;font-weight:800;color:var(--neon);margin-bottom:4px}
+.settings-sub{font-size:12px;color:var(--g500);margin-bottom:16px}
+.settings-msg{font-size:12px;min-height:16px;margin-bottom:8px}
+.settings-msg.err{color:#f87171}
+.settings-msg.ok{color:var(--neon)}
+.settings-actions{display:flex;gap:10px;margin-top:6px}
+.btn-settings-cancel{flex:1;padding:10px;border-radius:var(--rs);border:1px solid var(--dark3);background:var(--dark2);color:var(--w);cursor:pointer;font-weight:600}
+.btn-settings-save{flex:1;padding:10px;border-radius:var(--rs);border:none;background:linear-gradient(135deg,var(--neon),#22c55e);color:#03170a;cursor:pointer;font-weight:800}
+
 /* ── RADIO MINI (flotante, siempre visible) ── */
 .radio-widget-mini{position:fixed;bottom:14px;right:14px;z-index:4000;width:150px;background:var(--dark);border:1px solid #ffd166;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.5)}
 .radio-mini-header{display:flex;align-items:center;gap:6px;padding:8px 10px;cursor:pointer;background:linear-gradient(135deg,#064e26,#0a1628);font-size:11px;font-weight:700;color:#ffd166;user-select:none}
@@ -412,6 +426,10 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
       </div>
       <div class="select-label">Selecciona tu equipo</div>
       <div class="team-grid" id="team-grid"></div>
+      <div class="field" id="team-pass-field">
+        <label>Contraseña de tu equipo</label>
+        <input type="password" id="team-password" placeholder="Contraseña de tu equipo..." oninput="updatePreview()">
+      </div>
     </div>
 
     <div class="cap-preview" id="cap-preview">
@@ -443,7 +461,35 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
         <div class="hdr-teamname" id="hdr-teamname"></div>
       </div>
     </div>
-    <button class="btn-logout" onclick="logout()">← Salir</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button class="btn-settings" id="btn-settings" onclick="openTeamSettings()" style="display:none" title="Cambiar usuario y contraseña de mi equipo">⚙️</button>
+      <button class="btn-logout" onclick="logout()">← Salir</button>
+    </div>
+  </div>
+
+  <!-- Panel: cambiar usuario/contraseña del equipo -->
+  <div class="settings-overlay" id="settings-overlay" style="display:none">
+    <div class="settings-panel">
+      <div class="settings-title">⚙️ Usuario y contraseña de tu equipo</div>
+      <div class="settings-sub">Esto no cambia tu equipo, solo cómo entran la próxima vez.</div>
+      <div class="field">
+        <label>Nuevo usuario / apodo (opcional)</label>
+        <input type="text" id="settings-usuario" placeholder="Ej: Charly Cap." maxlength="30">
+      </div>
+      <div class="field">
+        <label>Nueva contraseña</label>
+        <input type="password" id="settings-pass1" placeholder="Nueva contraseña...">
+      </div>
+      <div class="field">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="settings-pass2" placeholder="Repite la contraseña...">
+      </div>
+      <div class="settings-msg" id="settings-msg"></div>
+      <div class="settings-actions">
+        <button class="btn-settings-cancel" onclick="closeTeamSettings()">Cancelar</button>
+        <button class="btn-settings-save" onclick="saveTeamSettings()">Guardar</button>
+      </div>
+    </div>
   </div>
 
   <!-- Usuarios online -->
@@ -594,6 +640,7 @@ const FIREBASE_URL = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
 const SHEET_ID     = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
 const GID_EQUIPOS  = '1894947293';
 const GID_PARTIDOS = '1362473459';
+const GID_LOGIN     = '1768443342'; // pestaña "Equipos Login" (id, equipo, usuario, contraseña, estatus)
 const MOD_PASS     = 'nl7admin'; // ← puedes cambiar esta contraseña
 const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd1NDZg1IY2_y_VGc5xX7b_pmV85PE69c_10Aw58vG8mFPO79K2/exec'; // mismo Apps Script de nextlevelenvivo.html
 
@@ -602,6 +649,8 @@ const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd
 // ════════════════════════════════
 S = {
   teams: {},
+  teamLogins: {},         // desde el Sheet: {id: {contrasena, estatus, usuarioSheet}}
+  teamLoginOverrides: {}, // desde Firebase: {id: {usuario, contrasena, updatedAt}} (lo que el propio equipo cambió)
   allMatches: [],   // TODOS los partidos (pendiente/programado/jugado)
   matches: [],      // solo los pendientes (para armar el chat/popup)
   capName: '',
@@ -700,6 +749,21 @@ async function init(){
       }))
       .filter(m=>m.local&&m.visita&&m.local!=='10'&&m.visita!=='10');
     S.matches = S.allMatches.filter(m=>(m.estado||'').toLowerCase()==='pendiente');
+
+    setP(85,'Cargando accesos de equipos...');
+    const lg = await fetchCSV(GID_LOGIN);
+    lg.forEach(r=>{
+      const id=r['id_equipo']||r['id'];
+      if(!id) return;
+      const estatusRaw=(r['estatus']||'').trim().toLowerCase();
+      S.teamLogins[id]={
+        contrasena: r['contraseña']||r['contrasena']||'',
+        estatus: ['true','1','si','sí','activo','activa'].includes(estatusRaw),
+        usuarioSheet: r['usuario']||''
+      };
+    });
+    S.teamLoginOverrides = (await fbGet('team_logins')) || {};
+
     setP(100,'¡Listo!');
     setTimeout(()=>{
       document.getElementById('loading-screen').style.display='none';
@@ -715,6 +779,26 @@ async function init(){
 function setP(pct,msg){
   document.getElementById('progress').style.width=pct+'%';
   if(msg) document.getElementById('load-msg').textContent=msg;
+}
+
+// ════════════════════════════════
+//  ACCESO POR EQUIPO (Sheet + cambios propios en Firebase)
+// ════════════════════════════════
+function teamActivo(teamId){
+  const login=S.teamLogins[teamId];
+  return login ? login.estatus : false;
+}
+function teamPasswordActual(teamId){
+  const override=S.teamLoginOverrides[teamId];
+  if(override && override.contrasena) return override.contrasena;
+  const login=S.teamLogins[teamId];
+  return login ? login.contrasena : '';
+}
+function teamUsuarioActual(teamId){
+  const override=S.teamLoginOverrides[teamId];
+  if(override && override.usuario) return override.usuario;
+  const login=S.teamLogins[teamId];
+  return login ? login.usuarioSheet : '';
 }
 
 // ════════════════════════════════
@@ -741,6 +825,7 @@ function setLoginMode(mode){
   document.getElementById('guest-section').style.display=(mode==='guest')?'block':'none';
   selectedTeamId=null;
   document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('team-password').value='';
   updatePreview();
 }
 
@@ -763,7 +848,16 @@ function renderTeamGrid(){
     const btn=document.createElement('button');
     btn.className='team-btn';
     btn.innerHTML=`<img src="${t.logo}" onerror="this.style.opacity='.3'"><div><div class="team-btn-name">${t.nombre}</div><div class="team-btn-city">${t.ciudad}</div></div>`;
-    btn.onclick=()=>{selectedTeamId=t.id;document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');updatePreview();};
+    btn.onclick=()=>{
+      selectedTeamId=t.id;
+      document.querySelectorAll('.team-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const savedUser=teamUsuarioActual(t.id);
+      const nameInput=document.getElementById('cap-name');
+      if(savedUser && !nameInput.value.trim()) nameInput.value=savedUser;
+      document.getElementById('team-password').value='';
+      updatePreview();
+    };
     grid.appendChild(btn);
   });
 }
@@ -825,7 +919,22 @@ function updatePreview(){
   // Capitán (modo por defecto)
   document.getElementById('login-msg').textContent='';
   const name=document.getElementById('cap-name').value.trim();
-  if(name&&selectedTeamId){
+  const teamPass=document.getElementById('team-password').value;
+  if(name&&selectedTeamId&&teamPass){
+    if(!teamActivo(selectedTeamId)){
+      document.getElementById('login-msg').className='login-msg err';
+      document.getElementById('login-msg').textContent='Tu equipo no tiene acceso habilitado. Contacta al moderador.';
+      preview.classList.remove('show');
+      btn.disabled=true;
+      return;
+    }
+    if(teamPass!==teamPasswordActual(selectedTeamId)){
+      document.getElementById('login-msg').className='login-msg err';
+      document.getElementById('login-msg').textContent='Contraseña de equipo incorrecta';
+      preview.classList.remove('show');
+      btn.disabled=true;
+      return;
+    }
     const t=S.teams[selectedTeamId];
     emojiEl.style.display='none';
     imgEl.style.display='block';
@@ -900,6 +1009,7 @@ async function enterApp(){
   }
   document.getElementById('hdr-capname').textContent=S.isMod?'Moderador':S.capName;
   document.getElementById('hdr-teamname').textContent=S.isMod?'Panel de administración':(S.userType==='guest'?'Aficionado · Chat General':'Capitán · '+tname(S.teamId));
+  document.getElementById('btn-settings').style.display=(S.userType==='captain')?'flex':'none';
 
   // Pestañas visibles según tipo de usuario
   // Chat Equipos arranca oculto (a menos que yo sea el mod); el primer pollOnline() lo muestra
@@ -933,6 +1043,9 @@ async function logout(){
   document.getElementById('cap-name').value='';
   document.getElementById('mod-password').value='';
   document.getElementById('guest-name').value='';
+  document.getElementById('team-password').value='';
+  document.getElementById('btn-settings').style.display='none';
+  document.getElementById('settings-overlay').style.display='none';
   document.getElementById('cap-preview').classList.remove('show');
   document.getElementById('btn-enter').disabled=true;
   document.getElementById('btn-enter').textContent='Entrar →';
@@ -2045,6 +2158,56 @@ function tlogo(id){ return (S.teams[id]||{}).logo||''; }
 function now(){ return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
+
+// ════════════════════════════════
+//  ⚙️ CAMBIAR USUARIO/CONTRASEÑA DEL EQUIPO (el equipo no cambia, solo su acceso)
+// ════════════════════════════════
+function openTeamSettings(){
+  if(S.userType!=='captain') return;
+  document.getElementById('settings-usuario').value = teamUsuarioActual(S.teamId)||'';
+  document.getElementById('settings-pass1').value='';
+  document.getElementById('settings-pass2').value='';
+  document.getElementById('settings-msg').textContent='';
+  document.getElementById('settings-overlay').style.display='flex';
+}
+function closeTeamSettings(){
+  document.getElementById('settings-overlay').style.display='none';
+}
+async function saveTeamSettings(){
+  const usuario=document.getElementById('settings-usuario').value.trim();
+  const pass1=document.getElementById('settings-pass1').value;
+  const pass2=document.getElementById('settings-pass2').value;
+  const msg=document.getElementById('settings-msg');
+
+  if(!pass1 && !usuario){
+    msg.className='settings-msg err';
+    msg.textContent='Escribe al menos un nuevo usuario o una nueva contraseña.';
+    return;
+  }
+  if(pass1 && pass1.length<4){
+    msg.className='settings-msg err';
+    msg.textContent='La contraseña debe tener al menos 4 caracteres.';
+    return;
+  }
+  if(pass1 && pass1!==pass2){
+    msg.className='settings-msg err';
+    msg.textContent='Las contraseñas no coinciden.';
+    return;
+  }
+
+  const current=S.teamLoginOverrides[S.teamId]||{};
+  const updated={
+    usuario: usuario||current.usuario||'',
+    contrasena: pass1||current.contrasena||teamPasswordActual(S.teamId),
+    updatedAt: Date.now()
+  };
+  await fbSet('team_logins/'+S.teamId, updated);
+  S.teamLoginOverrides[S.teamId]=updated;
+
+  msg.className='settings-msg ok';
+  msg.textContent='✅ Guardado. La próxima vez entra con estos datos.';
+  setTimeout(closeTeamSettings, 1200);
+}
 
 // ════════════════════════════════
 //  RADIO MINI (widget flotante, nunca se detiene aunque se minimice)
