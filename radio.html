@@ -56,60 +56,65 @@
     background: rgba(10, 10, 10, 0.92);
     border: 2px solid #b6ff2e;
     border-radius: 24px;
-    padding: 6px;
+    padding: 18px 20px;
     box-shadow: 0 0 20px rgba(126, 211, 33, 0.5);
     margin-top: -60px;
     position: relative;
     z-index: 1;
-    overflow: hidden;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
   }
 
   .play-btn {
     background: linear-gradient(145deg, #b6ff2e, #f2c200);
     border: none;
-    width: 30px;
-    height: 30px;
-    min-width: 30px;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 0 8px rgba(126, 211, 33, 0.7);
+    box-shadow: 0 0 10px rgba(126, 211, 33, 0.7);
   }
-  .play-btn svg { width: 13px; height: 13px; fill: #111; }
+  .play-btn svg { width: 18px; height: 18px; fill: #111; }
 
-  .time {
-    color: #f2c200;
-    font-size: 0.8rem;
-    font-weight: bold;
-    min-width: 30px;
-    text-align: left;
-  }
-
-  .progress-wrap {
+  .status-text {
     flex: 1;
-    height: 6px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 10px;
-    overflow: hidden;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f2c200;
   }
-  .progress-bar {
-    height: 100%;
-    width: 30%;
-    background: linear-gradient(90deg, #7ed321, #f2c200, #ff8c00);
-    border-radius: 10px;
-    animation: flow 2.5s linear infinite;
-    background-size: 200% 100%;
-  }
-  @keyframes flow {
-    0% { background-position: 0% 0; }
-    100% { background-position: 200% 0; }
+  .status-text small {
+    display: block;
+    font-weight: 400;
+    color: rgba(255,255,255,0.55);
+    font-size: 0.7rem;
+    margin-top: 2px;
   }
 
-  .vol-btn svg { width: 16px; height: 16px; fill: #f2c200; }
+  .vol-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .vol-row svg { width: 16px; height: 16px; fill: #f2c200; flex-shrink: 0; }
+  .vol-row input[type="range"] {
+    flex: 1;
+    accent-color: #b6ff2e;
+  }
 
   .live-badge {
     background: #b00020;
@@ -128,6 +133,12 @@
     70% { box-shadow: 0 0 0 12px rgba(176,0,32,0); }
     100% { box-shadow: 0 0 0 0 rgba(176,0,32,0); }
   }
+
+  .tap-hint {
+    margin-top: 10px;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.45);
+  }
 </style>
 </head>
 <body>
@@ -138,44 +149,85 @@
     <img src="radio.png" alt="Next Level 7 Radio" class="logo">
 
     <div class="player-card">
-      <iframe
-        src="https://listen.zeno.fm/player/next-level-7"
-        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-        frameborder="0"
-        scrolling="no"
-        height="250"
-        width="300"
-        loading="lazy"
-        style="border-radius:20px; display:block; max-width:100%;">
-      </iframe>
+      <div class="player-controls">
+        <button class="play-btn" id="play-btn" onclick="togglePlay()">
+          <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="status-text">
+          <span id="status-label">Toca para escuchar</span>
+          <small>Next Level 7 Radio · En vivo</small>
+        </div>
+      </div>
+      <div class="vol-row">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+        <input type="range" id="vol-slider" min="0" max="100" value="80" oninput="setVolume(this.value)">
+      </div>
     </div>
 
     <div class="live-badge">● EN VIVO</div>
+    <div class="tap-hint">Si no se escucha, toca el botón de play ▶</div>
   </div>
 
-  <!-- Cortina/jingle "Next Level 7 Radio": suena encima de la radio cada 10 min, solo en esta página -->
+  <!-- Stream directo de la radio (sin iframe de Zeno, así todo el audio vive en esta misma página) -->
+  <audio id="radio-stream" src="https://stream.zeno.fm/nayznbjmygytv" preload="none"></audio>
+
+  <!-- Cortina/jingle "Next Level 7 Radio": pausa la radio, suena, y la radio se reanuda sola -->
   <audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
 
   <script>
-    const JINGLE_CADA_MS = 10 * 60 * 1000; // cada 10 minutos — cambia el 10 si algún día quieres otro intervalo
-    const jingleAudio = document.getElementById('jingle-nl7');
-    let jingleDesbloqueado = false;
+    const radioStream = document.getElementById('radio-stream');
+    const jingleAudio  = document.getElementById('jingle-nl7');
+    const playBtn      = document.getElementById('play-btn');
+    const playIcon     = document.getElementById('play-icon');
+    const statusLabel  = document.getElementById('status-label');
+    const volSlider     = document.getElementById('vol-slider');
 
-    function desbloquearJingle(){
-      if(jingleDesbloqueado) return;
-      jingleDesbloqueado = true;
-      // Truco estándar: reproducir y pausar de inmediato tras el primer clic,
-      // para que el navegador permita reproducir audio automático más adelante.
-      jingleAudio.play().then(()=>{ jingleAudio.pause(); jingleAudio.currentTime = 0; }).catch(()=>{});
+    const ICON_PLAY  = '<path d="M8 5v14l11-7z"/>';
+    const ICON_PAUSE = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+
+    let isPlaying = false;
+    radioStream.volume = volSlider.value / 100;
+    jingleAudio.volume = 1;
+
+    function togglePlay(){
+      if(isPlaying){
+        radioStream.pause();
+        isPlaying = false;
+        playIcon.innerHTML = ICON_PLAY;
+        statusLabel.textContent = 'Pausado';
+      }else{
+        radioStream.play().then(()=>{
+          isPlaying = true;
+          playIcon.innerHTML = ICON_PAUSE;
+          statusLabel.textContent = 'Reproduciendo';
+        }).catch(()=>{
+          statusLabel.textContent = 'No se pudo reproducir, intenta de nuevo';
+        });
+      }
     }
-    document.addEventListener('click', desbloquearJingle, {once:true});
-    document.addEventListener('touchstart', desbloquearJingle, {once:true});
 
-    setInterval(()=>{
-      if(!jingleDesbloqueado) return;
+    function setVolume(val){
+      radioStream.volume = val / 100;
+    }
+
+    // ════════════════════════════════
+    //  🎙️ CORTINA / JINGLE — cada 10 min: pausa la radio, suena el jingle, y la radio se reanuda sola
+    // ════════════════════════════════
+    const JINGLE_CADA_MS = 1 * 60 * 1000; // 👉 EN PRUEBA: cada 1 minuto. Cuando ya funcione bien, cambia el 1 por un 10.
+
+    function reproducirJingle(){
+      if(!isPlaying) return; // si la radio está pausada, no interrumpimos con el jingle
+      const estabaSonando = true;
+      radioStream.pause();
       jingleAudio.currentTime = 0;
-      jingleAudio.play().catch(e=>console.log('El jingle no pudo sonar automáticamente:', e));
-    }, JINGLE_CADA_MS);
+      jingleAudio.play().catch(()=>{});
+      jingleAudio.onended = ()=>{
+        if(estabaSonando){
+          radioStream.play().catch(()=>{});
+        }
+      };
+    }
+    setInterval(reproducirJingle, JINGLE_CADA_MS);
   </script>
 
 </body>
