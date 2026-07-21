@@ -138,9 +138,15 @@
     // fuera de nuestro control) — así que subimos el jingle para que sí se note.
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const jingleSource = audioCtx.createMediaElementSource(jingleAudio);
+    const jingleCompressor = audioCtx.createDynamicsCompressor(); // evita que suene distorsionado al subir el volumen
+    jingleCompressor.threshold.value = -24;
+    jingleCompressor.knee.value = 30;
+    jingleCompressor.ratio.value = 12;
+    jingleCompressor.attack.value = 0.003;
+    jingleCompressor.release.value = 0.25;
     const jingleGain = audioCtx.createGain();
-    jingleGain.gain.value = 2.5; // 👉 sube este número (ej. 3, 4) si aún se escucha bajito; bájalo si suena distorsionado
-    jingleSource.connect(jingleGain).connect(audioCtx.destination);
+    jingleGain.gain.value = 5; // 👉 sube este número (ej. 6, 7) si aún se escucha bajito; bájalo si suena distorsionado
+    jingleSource.connect(jingleCompressor).connect(jingleGain).connect(audioCtx.destination);
 
     function desbloquearJingle(){
       if(jingleDesbloqueado) return;
