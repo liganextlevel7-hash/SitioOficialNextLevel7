@@ -56,18 +56,13 @@
     background: rgba(10, 10, 10, 0.92);
     border: 2px solid #b6ff2e;
     border-radius: 24px;
-    padding: 10px 16px;
+    padding: 6px;
     box-shadow: 0 0 20px rgba(126, 211, 33, 0.5);
     margin-top: -60px;
     position: relative;
     z-index: 1;
     overflow: hidden;
-    width: 300px;
-    max-width: 100%;
-    box-sizing: border-box;
     display: flex;
-    align-items: center;
-    gap: 10px;
     justify-content: center;
   }
 
@@ -114,14 +109,6 @@
     100% { background-position: 200% 0; }
   }
 
-  .vol-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-  }
   .vol-btn svg { width: 16px; height: 16px; fill: #f2c200; }
 
   .live-badge {
@@ -151,19 +138,17 @@
     <img src="radio.png" alt="Next Level 7 Radio" class="logo">
 
     <div class="player-card">
-      <button class="play-btn" id="radioPlayBtn" aria-label="Reproducir radio">
-        <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        <svg id="iconPause" viewBox="0 0 24 24" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-      </button>
-      <span class="time" id="radioEstado">EN VIVO</span>
-      <div class="progress-wrap"><div class="progress-bar" id="radioBarra" style="animation-play-state:paused;"></div></div>
-      <button class="vol-btn" id="radioVolBtn" aria-label="Silenciar radio">
-        <svg id="iconVolOn" viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>
-        <svg id="iconVolOff" viewBox="0 0 24 24" style="display:none"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2L19 9.5 17.94 8.44 15.44 10.94 12.94 8.44 11.88 9.5 14.38 12l-2.5 2.5 1.06 1.06 2.5-2.5 2.5 2.5L19 14.5z"/></svg>
-      </button>
+      <iframe
+        src="https://listen.zeno.fm/player/next-level-7"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        frameborder="0"
+        scrolling="no"
+        height="250"
+        width="300"
+        loading="lazy"
+        style="border-radius:20px; display:block; max-width:100%;">
+      </iframe>
     </div>
-
-    <audio id="radioStream" src="https://stream.zeno.fm/nayznbjmygytv" preload="none"></audio>
 
     <div class="live-badge">● EN VIVO</div>
   </div>
@@ -172,68 +157,8 @@
   <audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
 
   <script>
-    // ===== Reproductor propio de la radio (stream directo) =====
-    const radioAudio = document.getElementById('radioStream');
-    const playBtn = document.getElementById('radioPlayBtn');
-    const iconPlay = document.getElementById('iconPlay');
-    const iconPause = document.getElementById('iconPause');
-    const volBtn = document.getElementById('radioVolBtn');
-    const iconVolOn = document.getElementById('iconVolOn');
-    const iconVolOff = document.getElementById('iconVolOff');
-    const barra = document.getElementById('radioBarra');
-    const estado = document.getElementById('radioEstado');
-
-    let radioSonando = false;
-    const VOLUMEN_NORMAL = 1;
-    radioAudio.volume = VOLUMEN_NORMAL;
-
-    playBtn.addEventListener('click', ()=>{
-      if(radioAudio.paused){
-        radioAudio.play().then(()=>{
-          radioSonando = true;
-          iconPlay.style.display = 'none';
-          iconPause.style.display = '';
-          barra.style.animationPlayState = 'running';
-          estado.textContent = 'EN VIVO';
-        }).catch(e=>console.log('No se pudo reproducir la radio:', e));
-      } else {
-        radioAudio.pause();
-        radioSonando = false;
-        iconPlay.style.display = '';
-        iconPause.style.display = 'none';
-        barra.style.animationPlayState = 'paused';
-        estado.textContent = 'PAUSA';
-      }
-    });
-
-    volBtn.addEventListener('click', ()=>{
-      radioAudio.muted = !radioAudio.muted;
-      iconVolOn.style.display = radioAudio.muted ? 'none' : '';
-      iconVolOff.style.display = radioAudio.muted ? '' : 'none';
-    });
-
-    // Baja/sube el volumen de la radio suavemente (para el duck del jingle)
-    function fundirVolumen(destino, duracionMs){
-      const pasos = 12;
-      const inicio = radioAudio.volume;
-      const delta = (destino - inicio) / pasos;
-      let paso = 0;
-      const intervalo = setInterval(()=>{
-        paso++;
-        radioAudio.volume = Math.min(1, Math.max(0, inicio + delta * paso));
-        if(paso >= pasos){
-          radioAudio.volume = destino;
-          clearInterval(intervalo);
-        }
-      }, duracionMs / pasos);
-    }
-
-    // ===== Cortina/jingle "Next Level 7 Radio" =====
-    const JINGLE_CADA_MS = 1 * 60 * 1000; // PRUEBA: cada 1 minuto — regresar a 10 * 60 * 1000 cuando termines de probar
-    const JINGLE_VOLUMEN = 1;
-    const RADIO_VOLUMEN_BAJO = 0.15; // a qué nivel baja la radio mientras suena el jingle
+    const JINGLE_CADA_MS = 10 * 60 * 1000; // cada 10 minutos — cambia el 10 si algún día quieres otro intervalo
     const jingleAudio = document.getElementById('jingle-nl7');
-    jingleAudio.volume = JINGLE_VOLUMEN;
     let jingleDesbloqueado = false;
 
     function desbloquearJingle(){
@@ -246,28 +171,8 @@
     document.addEventListener('click', desbloquearJingle, {once:true});
     document.addEventListener('touchstart', desbloquearJingle, {once:true});
 
-    // Intento de autoplay al cargar la página, sin esperar clic.
-    // Los navegadores pueden bloquear esto si el usuario no ha interactuado antes con el sitio;
-    // si falla, el jingle seguirá funcionando en cuanto la persona haga clic o toque la pantalla.
-    window.addEventListener('load', ()=>{
-      jingleAudio.play().then(()=>{
-        jingleDesbloqueado = true;
-      }).catch(e=>console.log('Autoplay bloqueado por el navegador, se activará con el primer clic:', e));
-    });
-
-    // Al terminar el jingle, regresa la radio a su volumen normal
-    jingleAudio.addEventListener('ended', ()=>{
-      if(radioSonando){
-        fundirVolumen(VOLUMEN_NORMAL, 800);
-      }
-    });
-
     setInterval(()=>{
       if(!jingleDesbloqueado) return;
-      // Si la radio está sonando, primero le bajamos el volumen (duck) antes de meter el jingle
-      if(radioSonando){
-        fundirVolumen(RADIO_VOLUMEN_BAJO, 600);
-      }
       jingleAudio.currentTime = 0;
       jingleAudio.play().catch(e=>console.log('El jingle no pudo sonar automáticamente:', e));
     }, JINGLE_CADA_MS);
