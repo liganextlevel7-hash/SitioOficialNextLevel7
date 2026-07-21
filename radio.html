@@ -157,7 +157,7 @@
   <audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
 
   <script>
-    const JINGLE_CADA_MS = 10 * 60 * 1000; // cada 10 minutos — cambia el 10 si algún día quieres otro intervalo
+    const JINGLE_CADA_MS = 1 * 60 * 1000; // PRUEBA: cada 1 minuto — regresar a 10 * 60 * 1000 cuando termines de probar
     const jingleAudio = document.getElementById('jingle-nl7');
     let jingleDesbloqueado = false;
 
@@ -170,6 +170,15 @@
     }
     document.addEventListener('click', desbloquearJingle, {once:true});
     document.addEventListener('touchstart', desbloquearJingle, {once:true});
+
+    // Intento de autoplay al cargar la página, sin esperar clic.
+    // Los navegadores pueden bloquear esto si el usuario no ha interactuado antes con el sitio;
+    // si falla, el jingle seguirá funcionando en cuanto la persona haga clic o toque la pantalla.
+    window.addEventListener('load', ()=>{
+      jingleAudio.play().then(()=>{
+        jingleDesbloqueado = true;
+      }).catch(e=>console.log('Autoplay bloqueado por el navegador, se activará con el primer clic:', e));
+    });
 
     setInterval(()=>{
       if(!jingleDesbloqueado) return;
