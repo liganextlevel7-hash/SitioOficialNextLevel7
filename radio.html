@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <title>Next Level 7 - Radio en Vivo</title>
 <style>
   body {
@@ -200,11 +201,16 @@
           isPlaying = true;
           playIcon.innerHTML = ICON_PAUSE;
           statusLabel.textContent = 'Reproduciendo';
-        }).catch(()=>{
-          statusLabel.textContent = 'No se pudo reproducir, intenta de nuevo';
+        }).catch(e=>{
+          statusLabel.textContent = 'Error: ' + e.name + ' — ' + e.message;
         });
       }
     }
+
+    // Si el archivo/stream de plano no carga (bloqueado, URL mala, etc.), lo decimos en pantalla.
+    radioStream.addEventListener('error', ()=>{
+      statusLabel.textContent = 'El stream no cargó (código: ' + (radioStream.error?radioStream.error.code:'?') + ')';
+    });
 
     function setVolume(val){
       radioStream.volume = val / 100;
