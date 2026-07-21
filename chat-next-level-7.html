@@ -380,7 +380,9 @@ body{font-family:var(--font);background:linear-gradient(135deg,#064e26 0%,#0a162
   </div>
 </div>
 
-<!-- Cortina/jingle "Next Level 7 Radio": suena encima de la radio cada 10 min, solo en esta página -->
+<!-- Cortina/jingle "Next Level 7 Radio": suena junto con la radio cada 10 min.
+     Se activa con CUALQUIER clic dentro de la app (login, pestañas, enviar mensaje, etc.)
+     — nunca con clics dentro del reproductor de Zeno, porque ese es de otro sitio. -->
 <audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
 
 <!-- CARGA -->
@@ -2353,24 +2355,46 @@ function toggleRadioWidget(){
 }
 
 // ════════════════════════════════
-//  🎙️ CORTINA / JINGLE "Next Level 7 Radio" — suena encima de la radio cada 10 min
+//  🎙️ CORTINA / JINGLE "Next Level 7 Radio" — suena junto con la radio cada 10 min.
+//  Se activa con CUALQUIER clic dentro de nuestra app (elegir equipo, pestañas, enviar
+//  mensaje, etc.) — nunca con clics DENTRO del reproductor de Zeno, porque ese vive en
+//  un iframe de otro sitio y esos clics no le llegan a nuestra página.
 // ════════════════════════════════
-const JINGLE_CADA_MS = 10 * 60 * 1000; // cada 10 minutos — cambia el 10 si algún día quieres otro intervalo
-const jingleAudio = document.getElementById('jingle-nl7');
-let jingleDesbloqueado = false;
+const JINGLE_CADA_MS=10*60*1000; // cada 10 minutos
+const jingleAudio=document.getElementById('jingle-nl7');
+let jingleDesbloqueado=false;
+
+// Amplificamos el volumen del jingle más allá del 100% normal (Web Audio API),
+// porque no podemos bajarle el volumen a la radio de Zeno (vive en otro sitio,
+// fuera de nuestro control) — así que subimos el jingle para que sí se note.
+const jingleAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+const jingleSource = jingleAudioCtx.createMediaElementSource(jingleAudio);
+const jingleCompressor = jingleAudioCtx.createDynamicsCompressor(); // evita que suene distorsionado al subir el volumen
+jingleCompressor.threshold.value = -24;
+jingleCompressor.knee.value = 30;
+jingleCompressor.ratio.value = 12;
+jingleCompressor.attack.value = 0.003;
+jingleCompressor.release.value = 0.25;
+const jingleGain = jingleAudioCtx.createGain();
+jingleGain.gain.value = 5; // 👉 sube este número (ej. 6, 7) si aún se escucha bajito; bájalo si suena distorsionado
+jingleSource.connect(jingleCompressor).connect(jingleGain).connect(jingleAudioCtx.destination);
 
 function desbloquearJingle(){
   if(jingleDesbloqueado || !jingleAudio) return;
-  jingleDesbloqueado = true;
-  jingleAudio.play().then(()=>{ jingleAudio.pause(); jingleAudio.currentTime = 0; }).catch(()=>{});
+  if(jingleAudioCtx.state === 'suspended') jingleAudioCtx.resume();
+  jingleAudio.play().then(()=>{
+    jingleDesbloqueado=true;
+    jingleAudio.pause();
+    jingleAudio.currentTime=0;
+  }).catch(()=>{});
 }
-document.addEventListener('click', desbloquearJingle, {once:true});
-document.addEventListener('touchstart', desbloquearJingle, {once:true});
+document.addEventListener('click', desbloquearJingle);
+document.addEventListener('touchstart', desbloquearJingle);
 
 setInterval(()=>{
   if(!jingleDesbloqueado || !jingleAudio) return;
-  jingleAudio.currentTime = 0;
-  jingleAudio.play().catch(e=>console.log('El jingle no pudo sonar automáticamente:', e));
+  jingleAudio.currentTime=0;
+  jingleAudio.play().catch(e=>console.error('El jingle no pudo sonar automáticamente:', e));
 }, JINGLE_CADA_MS);
 
 // Limpiar online al cerrar
