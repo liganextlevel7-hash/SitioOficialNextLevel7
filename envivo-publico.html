@@ -89,6 +89,10 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 </head>
 <body>
 <a href="index.html" class="inicio-btn">← Inicio</a>
+
+<!-- Cortina/jingle "Next Level 7 Radio": suena cada 10 min mientras alguien esté viendo esta página -->
+<audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
+
 <div id="animacion-gol">
   <div id="gol-contenido">
     <span id="gol-balon">⚽</span>
@@ -231,6 +235,34 @@ function tono(freq, inicio, dur, tipo, vol){
 function sonidoGol(){ tono(523,0,.16,'triangle',.22); tono(659,.13,.16,'triangle',.22); tono(784,.26,.28,'triangle',.25); }
 function sonidoAmarilla(){ tono(600,0,.22,'square',.15); }
 function sonidoRoja(){ tono(220,0,.3,'sawtooth',.18); tono(160,.22,.4,'sawtooth',.2); }
+
+// ===== JINGLE "Next Level 7 Radio": suena cada 10 min, amplificado para que se note =====
+var JINGLE_CADA_MS = 10 * 60 * 1000; // cada 10 minutos — cambia el 10 si algún día quieres otro intervalo
+var jingleAudio = document.getElementById('jingle-nl7');
+var jingleListo = false;
+function prepararJingle(){
+  if(jingleListo || !audioCtx) return;
+  try{
+    var jingleSource = audioCtx.createMediaElementSource(jingleAudio);
+    var jingleCompressor = audioCtx.createDynamicsCompressor();
+    jingleCompressor.threshold.value = -24;
+    jingleCompressor.knee.value = 30;
+    jingleCompressor.ratio.value = 12;
+    jingleCompressor.attack.value = 0.003;
+    jingleCompressor.release.value = 0.25;
+    var jingleGain = audioCtx.createGain();
+    jingleGain.gain.value = 5; // 👉 sube este número (ej. 6, 7) si se escucha bajito
+    jingleSource.connect(jingleCompressor).connect(jingleGain).connect(audioCtx.destination);
+    jingleListo = true;
+  }catch(e){ /* si ya estaba conectado antes, no pasa nada */ }
+}
+document.addEventListener('click', prepararJingle);
+document.addEventListener('touchstart', prepararJingle);
+setInterval(function(){
+  if(!jingleListo) return;
+  jingleAudio.currentTime = 0;
+  jingleAudio.play().catch(function(){});
+}, JINGLE_CADA_MS);
 
 // ===== VOZ (anuncia el evento en español usando la voz integrada del navegador) =====
 var vocesDisponibles = [];
