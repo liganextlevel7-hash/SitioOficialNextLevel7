@@ -85,6 +85,21 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 .offline{text-align:center;padding:60px 20px;}
 .offline h2{font-size:20px;color:#8aab91;margin-bottom:10px;}
 .offline p{font-size:13px;color:#8aab91;line-height:1.8;}
+
+/* ── RADIO MINI (flotante, siempre visible) ── */
+.radio-widget-mini{position:fixed;bottom:14px;right:14px;z-index:4000;width:150px;background:#0f1a13;border:1px solid #ffd166;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.radio-mini-header{display:flex;align-items:center;gap:6px;padding:8px 10px;cursor:pointer;background:linear-gradient(135deg,#064e26,#0a1628);font-size:11px;font-weight:700;color:#ffd166;user-select:none}
+.radio-live-dot{color:#ff4d4d;animation:radiopulse 1.4s infinite;font-size:9px}
+@keyframes radiopulse{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
+.radio-toggle-arrow{margin-left:auto;font-size:10px}
+.radio-mini-body{overflow:hidden;transition:max-height .25s ease;max-height:132px}
+.radio-mini-body.collapsed{max-height:0}
+.radio-iframe-wrap{width:300px;height:250px;transform:scale(.5);transform-origin:top left}
+@media(max-width:580px){
+  .radio-widget-mini{bottom:auto;top:56px;right:8px;width:120px}
+  .radio-mini-body{max-height:106px}
+  .radio-iframe-wrap{transform:scale(.4)}
+}
 </style>
 </head>
 <body>
@@ -92,6 +107,28 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 
 <!-- Cortina/jingle "Next Level 7 Radio": suena cada 10 min mientras alguien esté viendo esta página -->
 <audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
+
+<!-- RADIO EN VIVO (mini, flotante) -->
+<div class="radio-widget-mini" id="radio-widget">
+  <div class="radio-mini-header" onclick="toggleRadioWidget()">
+    <span>📻 Radio NL7</span>
+    <span class="radio-live-dot">●</span>
+    <span class="radio-toggle-arrow" id="radio-arrow">▸</span>
+  </div>
+  <div class="radio-mini-body collapsed" id="radio-mini-body">
+    <div class="radio-iframe-wrap">
+      <iframe
+        src="https://listen.zeno.fm/player/next-level-7"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        frameborder="0"
+        scrolling="no"
+        width="300"
+        height="250"
+        loading="lazy">
+      </iframe>
+    </div>
+  </div>
+</div>
 
 <div id="animacion-gol">
   <div id="gol-contenido">
@@ -235,6 +272,14 @@ function tono(freq, inicio, dur, tipo, vol){
 function sonidoGol(){ tono(523,0,.16,'triangle',.22); tono(659,.13,.16,'triangle',.22); tono(784,.26,.28,'triangle',.25); }
 function sonidoAmarilla(){ tono(600,0,.22,'square',.15); }
 function sonidoRoja(){ tono(220,0,.3,'sawtooth',.18); tono(160,.22,.4,'sawtooth',.2); }
+
+// ===== RADIO MINI (widget flotante) =====
+var radioCollapsed = true;
+function toggleRadioWidget(){
+  radioCollapsed = !radioCollapsed;
+  document.getElementById('radio-mini-body').classList.toggle('collapsed', radioCollapsed);
+  document.getElementById('radio-arrow').textContent = radioCollapsed ? '▸' : '▾';
+}
 
 // ===== JINGLE "Next Level 7 Radio": suena cada 10 min, amplificado para que se note =====
 var JINGLE_CADA_MS = 10 * 60 * 1000; // cada 10 minutos — cambia el 10 si algún día quieres otro intervalo
