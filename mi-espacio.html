@@ -255,9 +255,6 @@
       <div class="seccion-titulo">Tu cola (<span id="cola-count">0</span>)</div>
       <div class="cola-lista" id="cola-lista"></div>
 
-      <div class="seccion-titulo">Playlist de respaldo (elige cuáles quieres que suenen)</div>
-      <div class="cola-lista" id="respaldo-lista" style="max-height:180px;"></div>
-
     </div>
   </div>
 
@@ -298,17 +295,6 @@
     let cola = [];              // canciones que TÚ agregaste, en orden
     let sonando = null;         // {videoId, title, thumbnail, esRespaldo}
     let ultimosRespaldo = [];   // evita repetir la misma canción de respaldo dos veces seguidas
-
-    // Canciones de la playlist de respaldo que TÚ desactivaste (no sonarán).
-    // Se guarda en tu navegador, no afecta a nadie más.
-    function getRespaldoDesactivadas() {
-      try { return new Set(JSON.parse(localStorage.getItem('nl7_respaldo_off') || '[]')); }
-      catch (e) { return new Set(); }
-    }
-    function setRespaldoDesactivadas(set) {
-      localStorage.setItem('nl7_respaldo_off', JSON.stringify([...set]));
-    }
-    let respaldoDesactivadas = getRespaldoDesactivadas();
 
     // ===================== REPRODUCTOR DE YOUTUBE =====================
     let ytPlayer = null;
@@ -377,38 +363,14 @@
 
     // ===================== AVANZAR (elige lo que sigue) =====================
     function siguienteRespaldo() {
-      const activas = PLAYLIST_RESPALDO.filter(s => !respaldoDesactivadas.has(s.videoId));
-      const lista = activas.length > 0 ? activas : PLAYLIST_RESPALDO;
-      if (ultimosRespaldo.length >= lista.length) ultimosRespaldo = [];
+      if (ultimosRespaldo.length >= PLAYLIST_RESPALDO.length) ultimosRespaldo = [];
       let candidato;
       do {
-        candidato = lista[Math.floor(Math.random() * lista.length)];
-      } while (ultimosRespaldo.includes(candidato.videoId) && lista.length > 1);
+        candidato = PLAYLIST_RESPALDO[Math.floor(Math.random() * PLAYLIST_RESPALDO.length)];
+      } while (ultimosRespaldo.includes(candidato.videoId) && PLAYLIST_RESPALDO.length > 1);
       ultimosRespaldo.push(candidato.videoId);
       return candidato;
     }
-
-    function pintarRespaldoLista() {
-      const cont = document.getElementById('respaldo-lista');
-      cont.innerHTML = '';
-      PLAYLIST_RESPALDO.forEach(song => {
-        const fila = document.createElement('label');
-        fila.className = 'item-fila';
-        fila.style.cursor = 'pointer';
-        const activo = !respaldoDesactivadas.has(song.videoId);
-        fila.innerHTML = `
-          <input type="checkbox" ${activo ? 'checked' : ''} style="width:16px; height:16px; flex-shrink:0; accent-color:#ff6b1a;">
-          <div class="info"><div class="titulo">${escapeHtml(song.title)}</div></div>
-        `;
-        fila.querySelector('input').addEventListener('change', (e) => {
-          if (e.target.checked) respaldoDesactivadas.delete(song.videoId);
-          else respaldoDesactivadas.add(song.videoId);
-          setRespaldoDesactivadas(respaldoDesactivadas);
-        });
-        cont.appendChild(fila);
-      });
-    }
-    pintarRespaldoLista();
 
     function avanzar() {
       if (cola.length > 0) {
