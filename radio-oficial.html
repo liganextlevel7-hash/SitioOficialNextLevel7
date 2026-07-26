@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next Level 7 - Radio en Vivo</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at center, #0a2233 0%, #050f17 60%, #030608 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    padding: 30px 12px;
+    box-sizing: border-box;
+  }
+
+  a.volver {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    color: #111;
+    background: linear-gradient(145deg, #00b4ff, #ff6b1a);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+    z-index: 10;
+  }
+  a.volver:hover { transform: scale(1.05); }
+
+  /* ===== BLOQUE ÚNICO: logo + reproductor + badge ===== */
+  .radio-widget {
+    width: 420px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .radio-widget .logo {
+    width: 100%;
+    max-width: 400px;
+    filter: drop-shadow(0 0 15px rgba(0,0,0,0.7));
+    position: relative;
+    z-index: 2;
+  }
+
+  .player-card {
+    background: rgba(10, 10, 10, 0.92);
+    border: 2px solid #00b4ff;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+    margin-top: -60px;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+  }
+
+  .live-badge {
+    background: #b00020;
+    color: #fff;
+    font-weight: bold;
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-top: 14px;
+    letter-spacing: 1px;
+    box-shadow: 0 0 12px rgba(176,0,32,0.6);
+    animation: pulse 1.5s infinite;
+    display: inline-block;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(176,0,32,0.6); }
+    70% { box-shadow: 0 0 0 12px rgba(176,0,32,0); }
+    100% { box-shadow: 0 0 0 0 rgba(176,0,32,0); }
+  }
+
+  /* Reproductor de YouTube oculto: solo se usa el audio */
+  #yt-player-container {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ===== Ahora suena ===== */
+  .now-playing {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    margin-bottom: 16px;
+  }
+  .now-playing img {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #111;
+  }
+  .now-playing .info { min-width: 0; }
+  .now-playing .titulo {
+    font-size: 0.9rem;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .now-playing .agregado-por {
+    font-size: 0.72rem;
+    color: #9fd8ff;
+    margin-top: 2px;
+  }
+
+  /* ===== Buscador ===== */
+  .buscador {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .buscador input {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: 1px solid #245;
+    background: #071019;
+    color: #fff;
+    font-size: 0.85rem;
+    outline: none;
+    min-width: 0;
+  }
+  .buscador input:focus { border-color: #00b4ff; }
+  .buscador button {
+    background: linear-gradient(145deg, #00b4ff, #0080c0);
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 0 14px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .buscador button:disabled { opacity: 0.5; cursor: default; }
+
+  .resultados, .cola-lista {
+    text-align: left;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-bottom: 4px;
+  }
+
+  .item-fila {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .item-fila img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #111;
+  }
+  .item-fila .info { flex: 1; min-width: 0; }
+  .item-fila .titulo {
+    font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item-fila .sub {
+    font-size: 0.68rem;
+    color: #8aa;
+  }
+  .item-fila button {
+    background: #00b4ff;
+    border: none;
+    color: #111;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .item-fila button:disabled {
+    background: #444;
+    color: #999;
+    cursor: default;
+  }
+
+  .seccion-titulo {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6cf;
+    margin: 14px 0 6px;
+    text-align: left;
+  }
+
+  .estado-msg {
+    font-size: 0.72rem;
+    color: #ff8a65;
+    text-align: left;
+    margin-top: 6px;
+    min-height: 14px;
+  }
+
+  .cupo-msg {
+    font-size: 0.68rem;
+    color: #8aa;
+    text-align: left;
+    margin-top: 8px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #245; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+  <a href="index.html" class="volver">← Volver al inicio</a>
+  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#9fd8ff; background:rgba(0,180,255,0.12); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; border:1px solid #00b4ff; z-index:10;">🔀 Otras opciones</a>
+
+  <div class="radio-widget">
+    <img src="radio.png" alt="Next Level 7 Radio" class="logo">
+
+    <div class="player-card">
+
+      <div id="yt-player-container"><div id="yt-player"></div></div>
+
+      <div class="now-playing" id="now-playing">
+        <img id="np-thumb" src="" alt="">
+        <div class="info">
+          <div class="titulo" id="np-titulo">Cargando...</div>
+          <div class="agregado-por" id="np-agregado">—</div>
+        </div>
+        <button id="btn-saltar" title="Saltar canción" style="background:#222; border:1px solid #00b4ff; color:#00b4ff; border-radius:10px; padding:6px 10px; font-size:0.75rem; cursor:pointer; flex-shrink:0; display:none;">⏭</button>
+      </div>
+
+      <!-- ===== ADMIN: solo este aparato reproduce el audio real ===== -->
+      <div id="admin-box" style="text-align:left; margin-bottom:14px;">
+        <div id="admin-guest-view">
+          <div style="font-size:0.68rem; color:#8aa; margin-bottom:6px;">🔇 Modo invitado: puedes agregar canciones, pero el audio solo suena en el aparato del administrador.</div>
+          <div id="admin-quien-conectado" style="display:none; font-size:0.7rem; color:#ffb366; background:rgba(255,179,102,0.08); border:1px solid rgba(255,179,102,0.35); border-radius:10px; padding:8px 10px; margin-bottom:8px;">
+            <div id="admin-quien-conectado-texto"></div>
+            <button id="btn-liberar-sesion" style="margin-top:6px; background:none; border:1px solid #ffb366; color:#ffb366; border-radius:8px; padding:5px 10px; font-size:0.68rem; cursor:pointer;">🆘 Liberar sesión atorada</button>
+          </div>
+          <button id="btn-abrir-login-admin" style="background:none; border:1px solid #333; color:#8aa; border-radius:10px; padding:6px 12px; font-size:0.7rem; cursor:pointer;">🔐 Entrar como administrador</button>
+          <div id="admin-login-form" style="display:none; margin-top:8px; gap:6px; flex-direction:column;">
+            <input type="password" id="admin-pass-input" placeholder="Contraseña de administrador" style="padding:8px 10px; border-radius:10px; border:1px solid #245; background:#071019; color:#fff; font-size:0.8rem; outline:none;">
+            <button id="btn-confirmar-admin" style="background:linear-gradient(145deg,#00b4ff,#ff6b1a); border:none; color:#111; font-weight:bold; border-radius:10px; padding:8px; font-size:0.8rem; cursor:pointer;">Entrar</button>
+            <div id="admin-login-error" style="font-size:0.7rem; color:#ff6b6b; min-height:14px;"></div>
+          </div>
+        </div>
+        <div id="admin-active-view" style="display:none; background:rgba(0,180,255,0.1); border:1px solid #00b4ff; border-radius:10px; padding:8px 10px;">
+          <div style="font-size:0.75rem; font-weight:bold; color:#00b4ff;">🎙️ Modo Admin activo — <span id="admin-mi-nombre"></span></div>
+          <div style="font-size:0.68rem; color:#9fd8ff; margin:2px 0 6px;">El audio suena en este aparato. Conéctalo a las bocinas. Cuando termines, cierra tu sesión para que otro pueda entrar.</div>
+          <button id="btn-cerrar-admin" style="background:none; border:1px solid #00b4ff; color:#00b4ff; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer;">Cerrar sesión de admin</button>
+          <button id="btn-toggle-respaldo" style="background:none; border:1px solid #00b4ff; color:#00b4ff; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer; margin-left:6px;">🎵 Playlist de respaldo</button>
+          <div id="respaldo-admin-wrap" style="display:none; margin-top:10px;">
+            <div style="font-size:0.68rem; color:#9fd8ff; margin-bottom:6px;">Desmarca las que NO quieres que suenen cuando la cola de la gente esté vacía (aplica para todos):</div>
+            <div class="cola-lista" id="respaldo-lista" style="max-height:180px;"></div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="live-badge">● EN VIVO</div>
+
+      <button id="btn-escuchar" style="display:none; margin-top:14px; background:linear-gradient(145deg,#00b4ff,#0080c0); border:none; color:#fff; font-weight:bold; border-radius:14px; padding:10px 22px; font-size:0.9rem; cursor:pointer; width:100%;">▶ Escuchar</button>
+
+      <div class="seccion-titulo">Buscar música (se integra a la Radio Oficial, para todos)</div>
+      <div class="buscador">
+        <input type="text" id="input-buscar" placeholder="Nombre de la canción o artista..." maxlength="80">
+        <button id="btn-buscar">Buscar</button>
+      </div>
+      <div class="resultados" id="resultados"></div>
+      <div class="estado-msg" id="estado-msg"></div>
+
+      <div class="seccion-titulo">Cola (<span id="cola-count">0</span>)</div>
+      <div class="cola-lista" id="cola-lista"></div>
+      <div class="cupo-msg" id="cupo-msg"></div>
+
+    </div>
+  </div>
+
+  <!-- Jingle "Next Level 7 Radio": intacto, igual que antes -->
+  <audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
+
+  <!-- ===================== FIREBASE ===================== -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAQqwu1QmrWJQev5lPxKw0nC8Q5gaJDKcE",
+      authDomain: "torneomixtojueves.firebaseapp.com",
+      databaseURL: "https://torneomixtojueves-default-rtdb.firebaseio.com",
+      projectId: "torneomixtojueves",
+      storageBucket: "torneomixtojueves.firebasestorage.app",
+      messagingSenderId: "1043570234430",
+      appId: "1:1043570234430:web:f18b44045feeda7eb7ed6f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const jukeboxRef = db.ref('jukebox');
+    const nowPlayingRef = db.ref('jukebox/nowPlaying');
+    const queueRef = db.ref('jukebox/queue');
+
+    // ===================== CONFIG =====================
+    // 👉 PEGA AQUÍ TU API KEY DE YOUTUBE DATA API v3
+    const YOUTUBE_API_KEY = "AIzaSyAQqwu1QmrWJQev5lPxKw0nC8Q5gaJDKcE";
+    const MAX_CANCIONES_POR_USUARIO = 3;
+    const COOLDOWN_MS = 15 * 60 * 1000; // 15 minutos
+
+    // ===================== PLAYLIST DE RESPALDO =====================
+    // Suena en bucle SOLO en la Radio Oficial cuando la cola de la gente está
+    // vacía. En cuanto alguien agrega una canción, esa se antepone; al
+    // terminarse lo que la gente agregó, se regresa sola aquí.
+    const PLAYLIST_RESPALDO = [
+      { videoId: 'SlgtjRq5AXs', title: 'Los Ángeles Azules, Belinda, Lalo Ebratt - Amor a Primera Vista' },
+      { videoId: 'KCN568dL3K0', title: 'Éxito de los 90' },
+      { videoId: 'OFDazPw8CWM', title: 'Timbiriche - Tú y Yo Somos Uno Mismo' },
+      { videoId: 'vmBHE3NXclA', title: 'Hombres G - Devuélveme a mi Chica' },
+      { videoId: 'OwGG5fX7bxY', title: 'Mecano - Hijo de la Luna' },
+      { videoId: 'smfo5w7sKMY', title: 'Miguel Bosé - Amante Bandido' },
+      { videoId: '2poXmu9nQ70', title: 'Alaska y Dinarama - A Quién le Importa' },
+      { videoId: 'yiB8rLs6vHk', title: 'Ana Belén - Qué Será' },
+      { videoId: 'p9n7erXdRCs', title: 'Flans - No Controles' },
+      { videoId: 'EoPJdXAzDs8', title: 'Luis Miguel - Culpable o No' },
+      { videoId: 'EU3LuPOYFu4', title: 'Franco de Vita - Te Amo' },
+      { videoId: '2ZACWIPuTDE', title: 'Roberto Carlos - Amigo' },
+      { videoId: 'mFc6VAVMgKo', title: 'Maná - Rayando el Sol' },
+      { videoId: 'SEOsusFXyuM', title: 'Duncan Dhu - En Algún Lugar' },
+      { videoId: '3DV57Y4tEAM', title: 'Enrique Iglesias - Experiencia Religiosa' },
+      { videoId: 'ZMUqIoDtSwc', title: 'Alejandro Sanz - Corazón Partío' },
+      { videoId: 'nwjWU35BkBM', title: 'Los Secretos - Sobre un Vidrio Mojado' },
+      { videoId: '5O4lse0dWPU', title: 'Mocedades - Amor de Hombre' },
+      { videoId: 'pjPA7CXutDw', title: 'Los Fabulosos Cadillacs - Matador' },
+      { videoId: 'kIr8hsVTCzg', title: 'Café Tacvba - La Ingrata' },
+      { videoId: 'MBe_iDSD1q8', title: 'Ricky Martin - María' },
+      { videoId: '4MULjbUhIz4', title: 'La Mosca - Para No Verte Más' },
+      { videoId: 'P8CoNgTfgqo', title: 'Molotov - Gimme tha Power' },
+      { videoId: 'oTdK6zG0M3U', title: 'Jaguares - Detrás de los Cerros' }
+    ];
+
+    // ===================== ADMIN: solo un aparato reproduce el audio real =====================
+    const ADMIN_PASSWORD = 'nl7admin';
+    const adminSessionRef = db.ref('jukebox/activeAdminSession');
+    const misSessionId = 'admin_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    let esAdminActivo = false;
+
+    // Evita que el celular del admin se bloquee solo a media transmisión.
+    // No funciona en el 100% de los navegadores, pero cubre la gran mayoría.
+    let wakeLock = null;
+    async function pedirWakeLock() {
+      try {
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          wakeLock.addEventListener('release', () => { wakeLock = null; });
+        }
+      } catch (e) { /* si el navegador no lo soporta o lo rechaza, seguimos sin esto */ }
+    }
+    function soltarWakeLock() {
+      if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+    }
+    // Si la pantalla sí llegó a apagarse (navegadores que no soportan Wake Lock,
+    // o el usuario apagó la pantalla manualmente), lo volvemos a pedir en cuanto
+    // regrese a la pestaña — para no quedarnos sin él el resto de la transmisión.
+    document.addEventListener('visibilitychange', () => {
+      if (esAdminActivo && document.visibilityState === 'visible' && !wakeLock) {
+        pedirWakeLock();
+      }
+    });
+
+    // ===================== IDENTIDAD DEL USUARIO (local, sin login) =====================
+    function getOrCreateUserId() {
+      let id = localStorage.getItem('nl7_user_id');
+      if (!id) {
+        id = 'u_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem('nl7_user_id', id);
+      }
+      return id;
+    }
+    function getOrAskNickname() {
+      let nombre = localStorage.getItem('nl7_nickname');
+      if (!nombre) {
+        nombre = prompt('¿Cómo te llamas? (se muestra junto a tus canciones)', '') || 'Anónimo';
+        nombre = nombre.trim().slice(0, 24) || 'Anónimo';
+        localStorage.setItem('nl7_nickname', nombre);
+      }
+      return nombre;
+    }
+    const userId = getOrCreateUserId();
+    let nickname = null; // se pide al primer intento de agregar canción, no al cargar la página
+
+    // ===================== BÚSQUEDA EN YOUTUBE =====================
+    const inputBuscar = document.getElementById('input-buscar');
+    const btnBuscar = document.getElementById('btn-buscar');
+    const resultadosDiv = document.getElementById('resultados');
+    const estadoMsg = document.getElementById('estado-msg');
+
+    async function buscarCanciones() {
+      const q = inputBuscar.value.trim();
+      if (!q) return;
+      if (YOUTUBE_API_KEY.startsWith('PEGA_AQUI')) {
+        estadoMsg.textContent = 'Falta configurar la API Key de YouTube (ver instrucciones).';
+        return;
+      }
+      btnBuscar.disabled = true;
+      estadoMsg.textContent = 'Buscando...';
+      resultadosDiv.innerHTML = '';
+      try {
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=8&q=${encodeURIComponent(q)}&key=${YOUTUBE_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!res.ok) {
+          estadoMsg.textContent = 'Error al buscar: ' + (data.error?.message || res.status);
+          btnBuscar.disabled = false;
+          return;
+        }
+        estadoMsg.textContent = '';
+        (data.items || []).forEach(item => {
+          const fila = document.createElement('div');
+          fila.className = 'item-fila';
+          fila.innerHTML = `
+            <img src="${item.snippet.thumbnails.default.url}">
+            <div class="info">
+              <div class="titulo">${escapeHtml(item.snippet.title)}</div>
+              <div class="sub">${escapeHtml(item.snippet.channelTitle)}</div>
+            </div>
+            <button>Agregar</button>
+          `;
+          fila.querySelector('button').addEventListener('click', (e) => {
+            agregarACola({
+              videoId: item.id.videoId,
+              title: item.snippet.title,
+              thumbnail: item.snippet.thumbnails.default.url
+            }, e.target);
+          });
+          resultadosDiv.appendChild(fila);
+        });
+      } catch (err) {
+        estadoMsg.textContent = 'Error de conexión al buscar.';
+      }
+      btnBuscar.disabled = false;
+    }
+    btnBuscar.addEventListener('click', buscarCanciones);
+    inputBuscar.addEventListener('keydown', (e) => { if (e.key === 'Enter') buscarCanciones(); });
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    // ===================== LÍMITE / COOLDOWN POR USUARIO =====================
+    async function puedeAgregarCancion() {
+      const snap = await db.ref('jukebox/userAdds/' + userId).once('value');
+      const registros = snap.val() || {};
+      const ahora = Date.now();
+      const recientes = Object.values(registros).filter(ts => (ahora - ts) < COOLDOWN_MS);
+      return { permitido: recientes.length < MAX_CANCIONES_POR_USUARIO, usados: recientes.length };
+    }
+
+    async function registrarUso() {
+      await db.ref('jukebox/userAdds/' + userId).push(Date.now());
+    }
+
+    // ===================== AGREGAR A LA COLA =====================
+    async function agregarACola(song, boton) {
+      if (!esAdminActivo) {
+        const check = await puedeAgregarCancion();
+        if (!check.permitido) {
+          estadoMsg.textContent = `Ya agregaste ${MAX_CANCIONES_POR_USUARIO} canciones. Espera unos minutos para volver a agregar.`;
+          return;
+        }
+      }
+      if (!nickname) nickname = esAdminActivo ? (getOrAskAdminNombre() + ' (Admin)') : getOrAskNickname();
+
+      if (boton) boton.disabled = true;
+      await queueRef.push({
+        videoId: song.videoId,
+        title: song.title,
+        thumbnail: song.thumbnail,
+        addedBy: nickname,
+        userId: userId,
+        addedAt: Date.now()
+      });
+      if (!esAdminActivo) await registrarUso();
+
+      // si no hay nada sonando, arrancar de inmediato (avanzarCola ya protege contra doble arranque)
+      nowPlayingRef.once('value', snap => {
+        if (!snap.val()) avanzarCola(null);
+      });
+
+      estadoMsg.textContent = '¡Canción agregada a la cola!';
+      setTimeout(() => { estadoMsg.textContent = ''; }, 2500);
+    }
+
+    // ===================== AVANZAR LA COLA (atómico) =====================
+    function avanzarCola(videoIdQueTermino) {
+      jukeboxRef.transaction(current => {
+        if (!current) current = {};
+        if (videoIdQueTermino) {
+          // Se terminó una canción: solo avanzar si esa sigue siendo la que está marcada como sonando.
+          if (!current.nowPlaying || current.nowPlaying.videoId !== videoIdQueTermino) {
+            return current;
+          }
+        } else {
+          // Arranque automático (cola estaba vacía): solo si de verdad no hay nada sonando ahora.
+          if (current.nowPlaying) {
+            return current;
+          }
+        }
+        const queue = current.queue || {};
+        const entradas = Object.entries(queue).sort((a, b) => (a[1].addedAt || 0) - (b[1].addedAt || 0));
+        if (entradas.length === 0) {
+          // Cola de la gente vacía: seguimos con la playlist de respaldo, en bucle.
+          // Solo entre las canciones que el admin dejó activas (si desactivó todas, usamos la lista completa).
+          const desactivadas = current.respaldoDesactivadas || {};
+          const activas = PLAYLIST_RESPALDO.filter(s => !desactivadas[s.videoId]);
+          const lista = activas.length > 0 ? activas : PLAYLIST_RESPALDO;
+          const idxAnterior = typeof current.respaldoIndex === 'number' ? current.respaldoIndex : -1;
+          const idx = (idxAnterior + 1) % lista.length;
+          const song = lista[idx];
+          current.respaldoIndex = idx;
+          current.nowPlaying = {
+            videoId: song.videoId,
+            title: song.title,
+            thumbnail: 'https://i.ytimg.com/vi/' + song.videoId + '/hqdefault.jpg',
+            addedBy: '📻 Radio Next Level 7',
+            startedAt: Date.now(),
+            esRespaldo: true
+          };
+          return current;
+        }
+        const [key, song] = entradas[0];
+        current.nowPlaying = {
+          videoId: song.videoId,
+          title: song.title,
+          thumbnail: song.thumbnail,
+          addedBy: song.addedBy,
+          startedAt: Date.now()
+        };
+        delete current.queue[key];
+        return current;
+      });
+    }
+
+    // ===================== RENDER: cola visible =====================
+    const colaListaDiv = document.getElementById('cola-lista');
+    const colaCountSpan = document.getElementById('cola-count');
+    queueRef.on('value', snap => {
+      const queue = snap.val() || {};
+      const entradas = Object.entries(queue).sort((a, b) => (a[1].addedAt || 0) - (b[1].addedAt || 0));
+      colaCountSpan.textContent = entradas.length;
+      colaListaDiv.innerHTML = '';
+      entradas.forEach(([key, song]) => {
+        const fila = document.createElement('div');
+        fila.className = 'item-fila';
+        fila.innerHTML = `
+          <img src="${song.thumbnail}">
+          <div class="info">
+            <div class="titulo">${escapeHtml(song.title)}</div>
+            <div class="sub">Agregó: ${escapeHtml(song.addedBy || 'Anónimo')}</div>
+          </div>
+        `;
+        colaListaDiv.appendChild(fila);
+      });
+    });
+
+    // ===================== RENDER: ahora suena =====================
+    const npThumb = document.getElementById('np-thumb');
+    const npTitulo = document.getElementById('np-titulo');
+    const npAgregado = document.getElementById('np-agregado');
+
+    // ===================== REPRODUCTOR DE YOUTUBE =====================
+    let ytPlayer = null;
+    let ytListo = false;
+    let ultimoVideoIdCargado = null;
+
+    const tagScript = document.createElement('script');
+    tagScript.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tagScript);
+
+    window.onYouTubeIframeAPIReady = function () {
+      ytPlayer = new YT.Player('yt-player', {
+        height: '1',
+        width: '1',
+        playerVars: { autoplay: 1, controls: 0, disablekb: 1, playsinline: 1 },
+        events: {
+          onReady: () => { ytListo = true; sincronizarConEstadoActual(); },
+          onStateChange: onPlayerStateChange,
+          onError: onPlayerError
+        }
+      });
+    };
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.ENDED && ultimoVideoIdCargado) {
+        avanzarCola(ultimoVideoIdCargado);
+      }
+    }
+
+    // Si un video no se puede reproducir (privado, borrado, con restricción de
+    // edad, o el dueño desactivó "insertar en otros sitios"), lo tratamos igual
+    // que si hubiera terminado, para que la cola/playlist de respaldo no se
+    // quede pegada ahí en silencio para siempre.
+    function onPlayerError(event) {
+      if (ultimoVideoIdCargado) {
+        avanzarCola(ultimoVideoIdCargado);
+      }
+    }
+
+    const btnSaltar = document.getElementById('btn-saltar');
+    btnSaltar.addEventListener('click', () => {
+      if (!esAdminActivo) return;
+      if (estadoActualCache && estadoActualCache.videoId) {
+        avanzarCola(estadoActualCache.videoId);
+      }
+    });
+
+    let estadoActualCache = null;
+    nowPlayingRef.on('value', snap => {
+      estadoActualCache = snap.val();
+      pintarNowPlaying(estadoActualCache);
+      sincronizarConEstadoActual();
+    });
+
+    function pintarNowPlaying(np) {
+      if (!np) {
+        npTitulo.textContent = 'Nada en cola todavía — ¡agrega la primera canción!';
+        npAgregado.textContent = '';
+        npThumb.src = '';
+        return;
+      }
+      npTitulo.textContent = np.title;
+      npAgregado.textContent = 'Agregó: ' + (np.addedBy || 'Anónimo');
+      npThumb.src = np.thumbnail || '';
+    }
+
+    function sincronizarConEstadoActual() {
+      if (!esAdminActivo) return; // los invitados no reproducen nada en su aparato
+      if (!ytListo || !estadoActualCache) return;
+      const np = estadoActualCache;
+      if (ultimoVideoIdCargado !== np.videoId) {
+        ultimoVideoIdCargado = np.videoId;
+        // Como ahora solo este aparato reproduce audio real, cada canción arranca
+        // siempre del segundo 0 — ya no hay que "alcanzar" a nadie más. Antes, si
+        // YouTube metía un anuncio antes del video, el reloj seguía corriendo y la
+        // canción terminaba saltándose los primeros segundos al terminar el anuncio.
+        ytPlayer.loadVideoById({ videoId: np.videoId, startSeconds: 0 });
+      }
+    }
+
+    // Ya no hace falta resincronizar periódicamente: solo el aparato del admin
+    // reproduce audio real, y ese ya se actualiza directo cuando cambia la canción
+    // (ver nowPlayingRef.on('value', ...) más arriba).
+
+    // ===================== DESBLOQUEO DE AUDIO (jingle + YouTube) — SOLO ADMIN =====================
+    // Los invitados nunca reproducen nada en su aparato, así que no necesitan desbloquear audio.
+    const jingleAudio = document.getElementById('jingle-nl7');
+    let jingleDesbloqueado = false;
+    let audioCtx = null, jingleGain = null;
+    let jingleIntervalId = null;
+
+    function prepararAudioAdmin() {
+      if (audioCtx) return; // ya está listo
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const jingleSource = audioCtx.createMediaElementSource(jingleAudio);
+      const jingleCompressor = audioCtx.createDynamicsCompressor();
+      jingleCompressor.threshold.value = -24;
+      jingleCompressor.knee.value = 30;
+      jingleCompressor.ratio.value = 12;
+      jingleCompressor.attack.value = 0.003;
+      jingleCompressor.release.value = 0.25;
+      jingleGain = audioCtx.createGain();
+      jingleGain.gain.value = 5;
+      jingleSource.connect(jingleCompressor).connect(jingleGain).connect(audioCtx.destination);
+    }
+
+    function desbloquearAudio() {
+      if (!esAdminActivo) return;
+      prepararAudioAdmin();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!jingleDesbloqueado) {
+        jingleAudio.play().then(() => {
+          jingleDesbloqueado = true;
+          jingleAudio.pause();
+          jingleAudio.currentTime = 0;
+        }).catch(() => {});
+      }
+      if (ytPlayer && ytPlayer.playVideo) {
+        try { ytPlayer.playVideo(); } catch (e) {}
+      }
+    }
+    // Escuchamos el primer toque en CUALQUIER parte de la página (sin bloquear
+    // nada encima) — así los botones reales (como "Mi Espacio") siempre reciben
+    // el toque directo, sin depender de ningún truco para "reenviarlo".
+    document.addEventListener('click', desbloquearAudio);
+    document.addEventListener('touchstart', desbloquearAudio);
+
+    const btnEscuchar = document.getElementById('btn-escuchar');
+    btnEscuchar.addEventListener('click', () => {
+      desbloquearAudio();
+      btnEscuchar.textContent = '🔊 Reproduciendo';
+      btnEscuchar.disabled = true;
+      btnEscuchar.style.opacity = '0.6';
+    });
+
+    const JINGLE_CADA_MS = 10 * 60 * 1000;
+    function iniciarJingleAdmin() {
+      if (jingleIntervalId) return;
+      jingleIntervalId = setInterval(() => {
+        if (!esAdminActivo || !jingleDesbloqueado) return;
+        jingleAudio.currentTime = 0;
+        jingleAudio.play().catch(() => {});
+      }, JINGLE_CADA_MS);
+    }
+    function detenerJingleAdmin() {
+      if (jingleIntervalId) { clearInterval(jingleIntervalId); jingleIntervalId = null; }
+    }
+
+    // ===================== LOGIN / LOGOUT DE ADMIN =====================
+    const adminGuestView = document.getElementById('admin-guest-view');
+    const adminActiveView = document.getElementById('admin-active-view');
+    const adminQuienConectado = document.getElementById('admin-quien-conectado');
+    const adminMiNombre = document.getElementById('admin-mi-nombre');
+    const btnAbrirLoginAdmin = document.getElementById('btn-abrir-login-admin');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const adminPassInput = document.getElementById('admin-pass-input');
+    const btnConfirmarAdmin = document.getElementById('btn-confirmar-admin');
+    const adminLoginError = document.getElementById('admin-login-error');
+    const btnCerrarAdmin = document.getElementById('btn-cerrar-admin');
+
+    function getOrAskAdminNombre() {
+      let nombre = localStorage.getItem('nl7_admin_nombre');
+      if (!nombre) {
+        nombre = prompt('¿Cómo te llamas? (para que los demás sepan quién está conectado como admin)', '') || 'Admin';
+        nombre = nombre.trim().slice(0, 24) || 'Admin';
+        localStorage.setItem('nl7_admin_nombre', nombre);
+      }
+      return nombre;
+    }
+
+    btnAbrirLoginAdmin.addEventListener('click', () => {
+      adminLoginForm.style.display = adminLoginForm.style.display === 'none' ? 'flex' : 'none';
+      adminPassInput.focus();
+    });
+
+    async function intentarLoginAdmin() {
+      const pass = adminPassInput.value;
+      if (pass !== ADMIN_PASSWORD) {
+        adminLoginError.textContent = 'Contraseña incorrecta.';
+        return;
+      }
+
+      // Revisamos si ya hay alguien conectado como admin antes de dejarte entrar.
+      const snap = await adminSessionRef.once('value');
+      const actual = snap.val();
+      if (actual && actual.sessionId !== misSessionId) {
+        adminLoginError.textContent = `Ya está conectado como admin: ${actual.nombre || 'alguien más'}. Pídele que cierre su sesión primero.`;
+        return;
+      }
+
+      adminLoginError.textContent = '';
+      adminPassInput.value = '';
+
+      const miNombre = getOrAskAdminNombre();
+      await adminSessionRef.set({ sessionId: misSessionId, loggedInAt: Date.now(), nombre: miNombre });
+
+      activarModoAdminLocal(miNombre);
+    }
+    btnConfirmarAdmin.addEventListener('click', intentarLoginAdmin);
+    adminPassInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') intentarLoginAdmin(); });
+
+    const btnLiberarSesion = document.getElementById('btn-liberar-sesion');
+    btnLiberarSesion.addEventListener('click', async () => {
+      if (!confirm('¿Seguro? Solo hazlo si de verdad nadie está transmitiendo ahorita y la sesión se quedó atorada por error.')) return;
+      await adminSessionRef.remove();
+    });
+
+    // ===================== PLAYLIST DE RESPALDO: control del admin (compartido, aplica para todos) =====================
+    const respaldoDesactivadasRef = db.ref('jukebox/respaldoDesactivadas');
+    const btnToggleRespaldo = document.getElementById('btn-toggle-respaldo');
+    const respaldoAdminWrap = document.getElementById('respaldo-admin-wrap');
+    let respaldoDesactivadasCache = {};
+
+    function pintarRespaldoAdminLista() {
+      const cont = document.getElementById('respaldo-lista');
+      cont.innerHTML = '';
+      PLAYLIST_RESPALDO.forEach(song => {
+        const fila = document.createElement('label');
+        fila.className = 'item-fila';
+        fila.style.cursor = 'pointer';
+        const activo = !respaldoDesactivadasCache[song.videoId];
+        fila.innerHTML = `
+          <input type="checkbox" ${activo ? 'checked' : ''} style="width:16px; height:16px; flex-shrink:0; accent-color:#00b4ff;">
+          <div class="info"><div class="titulo">${escapeHtml(song.title)}</div></div>
+        `;
+        fila.querySelector('input').addEventListener('change', (e) => {
+          respaldoDesactivadasRef.child(song.videoId).set(e.target.checked ? null : true);
+        });
+        cont.appendChild(fila);
+      });
+    }
+    respaldoDesactivadasRef.on('value', snap => {
+      respaldoDesactivadasCache = snap.val() || {};
+      if (esAdminActivo) pintarRespaldoAdminLista();
+    });
+    btnToggleRespaldo.addEventListener('click', () => {
+      const visible = respaldoAdminWrap.style.display === 'block';
+      respaldoAdminWrap.style.display = visible ? 'none' : 'block';
+      if (!visible) pintarRespaldoAdminLista();
+    });
+
+    function activarModoAdminLocal(nombre) {
+      esAdminActivo = true;
+      adminGuestView.style.display = 'none';
+      adminActiveView.style.display = 'block';
+      adminMiNombre.textContent = nombre || getOrAskAdminNombre();
+      document.getElementById('btn-escuchar').style.display = 'block';
+      document.getElementById('btn-escuchar').textContent = '▶ Escuchar';
+      document.getElementById('btn-escuchar').disabled = false;
+      document.getElementById('btn-escuchar').style.opacity = '1';
+      btnSaltar.style.display = 'inline-block';
+      prepararAudioAdmin();
+      iniciarJingleAdmin();
+      pedirWakeLock();
+      // Si no hay nada sonando todavía (ni cola de la gente ni respaldo activo), arrancamos.
+      nowPlayingRef.once('value', snap => {
+        if (!snap.val()) avanzarCola(null);
+        else if (ytListo) sincronizarConEstadoActual();
+      });
+
+      // Si este aparato pierde la conexión de verdad (se cierra, se apaga,
+      // se va el internet y no vuelve), Firebase libera la sesión solo —
+      // así ya no se queda "atorada" por olvido.
+      adminSessionRef.onDisconnect().remove();
+    }
+
+    function desactivarModoAdminLocal() {
+      esAdminActivo = false;
+      adminActiveView.style.display = 'none';
+      adminGuestView.style.display = 'block';
+      document.getElementById('btn-escuchar').style.display = 'none';
+      btnSaltar.style.display = 'none';
+      detenerJingleAdmin();
+      soltarWakeLock();
+      if (ytPlayer && ytPlayer.pauseVideo) { try { ytPlayer.pauseVideo(); } catch (e) {} }
+    }
+
+    btnCerrarAdmin.addEventListener('click', async () => {
+      // Cancelamos la limpieza automática de desconexión, ya la estamos haciendo a mano.
+      adminSessionRef.onDisconnect().cancel();
+      // Solo limpiamos la sesión compartida si sigue siendo la nuestra.
+      const snap = await adminSessionRef.once('value');
+      const actual = snap.val();
+      if (actual && actual.sessionId === misSessionId) {
+        await adminSessionRef.remove();
+      }
+      desactivarModoAdminLocal();
+    });
+
+    // Ya NO expulsamos a nadie automáticamente (para evitar falsas alarmas por
+    // cortes de conexión). Solo mostramos, a los invitados, quién está
+    // conectado ahora mismo como admin — para que se coordinen entre ustedes.
+    const adminQuienConectadoTexto = document.getElementById('admin-quien-conectado-texto');
+    adminSessionRef.on('value', snap => {
+      const actual = snap.val();
+      if (!esAdminActivo) {
+        if (actual) {
+          adminQuienConectado.style.display = 'block';
+          adminQuienConectadoTexto.textContent = `🔴 ${actual.nombre || 'Alguien'} está conectado como admin ahora mismo. Pídele que cierre su sesión para poder entrar tú.`;
+        } else {
+          adminQuienConectado.style.display = 'none';
+        }
+      }
+    });
+
+  </script>
+
+</body>
+</html>
