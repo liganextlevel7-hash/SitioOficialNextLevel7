@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next Level 7 - Radio en Vivo</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at center, #0a2233 0%, #050f17 60%, #030608 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+  }
+
+  a.volver {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    color: #111;
+    background: linear-gradient(145deg, #00b4ff, #ff6b1a);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+    z-index: 10;
+  }
+  a.volver:hover { transform: scale(1.05); }
+
+  .radio-widget {
+    width: 400px;
+    max-width: 95vw;
+    transform: scale(var(--scale, 1));
+    transform-origin: center center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .radio-widget .logo {
+    width: 100%;
+    filter: drop-shadow(0 0 15px rgba(0,0,0,0.7));
+    position: relative;
+    z-index: 2;
+  }
+
+  .radio-widget .player-card {
+    background: rgba(10, 10, 10, 0.92);
+    border: 2px solid #00b4ff;
+    border-radius: 24px;
+    padding: 6px;
+    box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+    margin-top: -60px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+  }
+
+  .live-badge {
+    background: #b00020;
+    color: #fff;
+    font-weight: bold;
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-top: 14px;
+    letter-spacing: 1px;
+    box-shadow: 0 0 12px rgba(176,0,32,0.6);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(176,0,32,0.6); }
+    70% { box-shadow: 0 0 0 12px rgba(176,0,32,0); }
+    100% { box-shadow: 0 0 0 0 rgba(176,0,32,0); }
+  }
+
+  #unlock-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: transparent;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+  <div id="unlock-overlay"></div>
+
+  <a href="index.html" class="volver">← Volver al inicio</a>
+  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#111; background:linear-gradient(145deg,#00b4ff,#ff6b1a); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; box-shadow:0 0 10px rgba(0,180,255,0.5); z-index:10;">🔀 Otras opciones</a>
+
+  <div class="radio-widget" style="--scale:1;">
+    <img src="radio.png" alt="Next Level 7 Radio" class="logo">
+
+    <div class="player-card">
+      <iframe
+        src="https://listen.zeno.fm/player/next-level-7"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        frameborder="0"
+        scrolling="no"
+        height="250"
+        width="300"
+        loading="lazy"
+        style="border-radius:20px; display:block; max-width:100%;">
+      </iframe>
+    </div>
+
+    <div class="live-badge">● EN VIVO</div>
+  </div>
+
+  <audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
+
+  <script>
+    const JINGLE_CADA_MS = 10 * 60 * 1000;
+    const jingleAudio = document.getElementById('jingle-nl7');
+    const unlockOverlay = document.getElementById('unlock-overlay');
+    let jingleDesbloqueado = false;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const jingleSource = audioCtx.createMediaElementSource(jingleAudio);
+    const jingleCompressor = audioCtx.createDynamicsCompressor();
+    jingleCompressor.threshold.value = -24;
+    jingleCompressor.knee.value = 30;
+    jingleCompressor.ratio.value = 12;
+    jingleCompressor.attack.value = 0.003;
+    jingleCompressor.release.value = 0.25;
+    const jingleGain = audioCtx.createGain();
+    jingleGain.gain.value = 5;
+    jingleSource.connect(jingleCompressor).connect(jingleGain).connect(audioCtx.destination);
+
+    function desbloquearJingle(){
+      if(jingleDesbloqueado) return;
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      jingleAudio.play().then(()=>{
+        jingleDesbloqueado = true;
+        jingleAudio.pause();
+        jingleAudio.currentTime = 0;
+      }).catch(()=>{});
+      unlockOverlay.style.display = 'none';
+    }
+    unlockOverlay.addEventListener('click', desbloquearJingle);
+    unlockOverlay.addEventListener('touchstart', desbloquearJingle);
+
+    setInterval(()=>{
+      if(!jingleDesbloqueado) return;
+      jingleAudio.currentTime = 0;
+      jingleAudio.play().catch(()=>{});
+    }, JINGLE_CADA_MS);
+  </script>
+
+</body>
+</html>
