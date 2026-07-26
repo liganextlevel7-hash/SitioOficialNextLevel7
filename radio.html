@@ -3,18 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Next Level 7 - Radio en Vivo</title>
+<title>Next Level 7 - Radio</title>
 <style>
   body {
     margin: 0;
     min-height: 100vh;
-    background: radial-gradient(circle at center, #12351a 0%, #0a1a0d 60%, #050805 100%);
+    background: radial-gradient(circle at center, #0a2233 0%, #050f17 60%, #030608 100%);
     font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
     text-align: center;
+    padding: 30px 12px;
+    box-sizing: border-box;
   }
 
   a.volver {
@@ -22,24 +24,20 @@
     top: 18px;
     left: 18px;
     color: #111;
-    background: linear-gradient(145deg, #b6ff2e, #f2c200);
+    background: linear-gradient(145deg, #00b4ff, #ff6b1a);
     text-decoration: none;
     font-weight: bold;
     font-size: 0.75rem;
     padding: 6px 14px;
     border-radius: 20px;
-    box-shadow: 0 0 10px rgba(126, 211, 33, 0.5);
+    box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
     z-index: 10;
   }
   a.volver:hover { transform: scale(1.05); }
 
-  /* ===== BLOQUE ÚNICO: logo + reproductor + badge ===== */
-  /* Para agrandar o achicar TODO junto, cambia solo --scale en el div de abajo. */
   .radio-widget {
-    width: 400px;
+    width: 420px;
     max-width: 95vw;
-    transform: scale(var(--scale, 1));
-    transform-origin: center center;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -47,128 +45,97 @@
 
   .radio-widget .logo {
     width: 100%;
+    max-width: 400px;
     filter: drop-shadow(0 0 15px rgba(0,0,0,0.7));
     position: relative;
     z-index: 2;
   }
 
-  .radio-widget .player-card {
+  .menu-card {
     background: rgba(10, 10, 10, 0.92);
-    border: 2px solid #b6ff2e;
+    border: 2px solid #00b4ff;
     border-radius: 24px;
-    padding: 6px;
-    box-shadow: 0 0 20px rgba(126, 211, 33, 0.5);
+    padding: 24px 20px;
+    box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
     margin-top: -60px;
     position: relative;
     z-index: 1;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
   }
 
-  .live-badge {
-    background: #b00020;
+  .menu-titulo {
+    font-size: 0.85rem;
+    color: #9fd8ff;
+    margin-bottom: 18px;
+  }
+
+  .opcion {
+    display: block;
+    text-decoration: none;
+    background: #071019;
+    border: 1px solid #245;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 14px;
+    text-align: left;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .opcion:hover, .opcion:active {
+    border-color: #00b4ff;
+    transform: scale(1.02);
+  }
+  .opcion .emoji {
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .opcion .titulo {
     color: #fff;
     font-weight: bold;
-    font-size: 0.7rem;
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-top: 14px;
-    letter-spacing: 1px;
-    box-shadow: 0 0 12px rgba(176,0,32,0.6);
-    animation: pulse 1.5s infinite;
+    font-size: 1rem;
+    margin-bottom: 4px;
   }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(176,0,32,0.6); }
-    70% { box-shadow: 0 0 0 12px rgba(176,0,32,0); }
-    100% { box-shadow: 0 0 0 0 rgba(176,0,32,0); }
+  .opcion .desc {
+    color: #8aa;
+    font-size: 0.75rem;
+    line-height: 1.4;
   }
-
-  /* Capa invisible: el PRIMER toque en cualquier parte de la pantalla (incluso
-     encima del reproductor de Zeno) activa el jingle, y luego desaparece sola
-     para dejar usar el reproductor con normalidad. */
-  #unlock-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 999;
-    background: transparent;
-    cursor: pointer;
-  }
+  .opcion.participar { border-color: rgba(0,180,255,0.35); }
+  .opcion.espacio { border-color: rgba(255,107,26,0.35); }
+  .opcion.zeno { border-color: rgba(176,0,32,0.35); }
 </style>
 </head>
 <body>
 
-  <!-- Capa invisible que captura el primer toque en cualquier parte (ver script abajo) -->
-  <div id="unlock-overlay"></div>
-
   <a href="index.html" class="volver">← Volver al inicio</a>
 
-  <div class="radio-widget" style="--scale:1;">
+  <div class="radio-widget">
     <img src="radio.png" alt="Next Level 7 Radio" class="logo">
 
-    <div class="player-card">
-      <iframe
-        src="https://listen.zeno.fm/player/next-level-7"
-        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-        frameborder="0"
-        scrolling="no"
-        height="250"
-        width="300"
-        loading="lazy"
-        style="border-radius:20px; display:block; max-width:100%;">
-      </iframe>
+    <div class="menu-card">
+      <div class="menu-titulo">¿Cómo quieres escuchar?</div>
+
+      <a href="radio-oficial.html" class="opcion participar">
+        <span class="emoji">🎶</span>
+        <div class="titulo">Radio en la Cancha (Colaborativa)</div>
+        <div class="desc">Agrega canciones a la cola de todos. Lo que se escucha en la radio oficial lo elige la gente.</div>
+      </a>
+
+      <a href="mi-espacio.html" class="opcion espacio">
+        <span class="emoji">🎧</span>
+        <div class="titulo">Mi Espacio</div>
+        <div class="desc">Solo para ti: busca y escucha lo que tú quieras, en tu propio aparato, sin mezclarse con nadie más.</div>
+      </a>
+
+      <a href="radio-zeno.html" class="opcion zeno">
+        <span class="emoji">📻</span>
+        <div class="titulo">En Vivo 24/7</div>
+        <div class="desc">Playlist de Next Level 7 y eventos especiales (transmisión por radio de algunos partidos y eventos).</div>
+      </a>
     </div>
-
-    <div class="live-badge">● EN VIVO</div>
   </div>
-
-  <!-- Cortina/jingle "Next Level 7 Radio": suena junto con la radio cada 10 min.
-       Se activa solo, sin que tengas que tocar nada especial: en cuanto des cualquier
-       clic normal en esta página (por ejemplo, dentro del reproductor de arriba), queda listo. -->
-  <audio id="jingle-nl7" src="jingle-nl7.mp3" preload="auto"></audio>
-
-  <script>
-    const JINGLE_CADA_MS = 10 * 60 * 1000; // cada 10 minutos
-    const jingleAudio = document.getElementById('jingle-nl7');
-    const unlockOverlay = document.getElementById('unlock-overlay');
-    let jingleDesbloqueado = false;
-
-    // Amplificamos el volumen del jingle más allá del 100% normal (Web Audio API),
-    // porque no podemos bajarle el volumen a la radio de Zeno (vive en otro sitio,
-    // fuera de nuestro control) — así que subimos el jingle para que sí se note.
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const jingleSource = audioCtx.createMediaElementSource(jingleAudio);
-    const jingleCompressor = audioCtx.createDynamicsCompressor(); // evita que suene distorsionado al subir el volumen
-    jingleCompressor.threshold.value = -24;
-    jingleCompressor.knee.value = 30;
-    jingleCompressor.ratio.value = 12;
-    jingleCompressor.attack.value = 0.003;
-    jingleCompressor.release.value = 0.25;
-    const jingleGain = audioCtx.createGain();
-    jingleGain.gain.value = 5; // 👉 sube este número (ej. 6, 7) si aún se escucha bajito; bájalo si suena distorsionado
-    jingleSource.connect(jingleCompressor).connect(jingleGain).connect(audioCtx.destination);
-
-    function desbloquearJingle(){
-      if(jingleDesbloqueado) return;
-      if(audioCtx.state === 'suspended') audioCtx.resume();
-      jingleAudio.play().then(()=>{
-        jingleDesbloqueado = true;
-        jingleAudio.pause();
-        jingleAudio.currentTime = 0;
-      }).catch(()=>{});
-      // Quitamos la capa para que el mismo toque (o el siguiente) ya le llegue
-      // normal al reproductor de Zeno que está debajo.
-      unlockOverlay.style.display = 'none';
-    }
-    unlockOverlay.addEventListener('click', desbloquearJingle);
-    unlockOverlay.addEventListener('touchstart', desbloquearJingle);
-
-    setInterval(()=>{
-      if(!jingleDesbloqueado) return;
-      jingleAudio.currentTime = 0;
-      jingleAudio.play().catch(()=>{});
-    }, JINGLE_CADA_MS);
-  </script>
 
 </body>
 </html>
