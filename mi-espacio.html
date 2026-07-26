@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next Level 7 - Mi Espacio</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at center, #0a2233 0%, #050f17 60%, #030608 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    padding: 30px 12px;
+    box-sizing: border-box;
+  }
+
+  a.volver {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    color: #111;
+    background: linear-gradient(145deg, #ff6b1a, #00b4ff);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(255, 107, 26, 0.5);
+    z-index: 10;
+  }
+  a.volver:hover { transform: scale(1.05); }
+
+  .radio-widget {
+    width: 420px;
+    max-width: 95vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .radio-widget .logo {
+    width: 100%;
+    max-width: 400px;
+    filter: drop-shadow(0 0 15px rgba(0,0,0,0.7));
+    position: relative;
+    z-index: 2;
+  }
+
+  .player-card {
+    background: rgba(10, 10, 10, 0.92);
+    border: 2px solid #ff6b1a;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 0 20px rgba(255, 107, 26, 0.4);
+    margin-top: -60px;
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+  }
+
+  .badge-personal {
+    background: #ff6b1a;
+    color: #111;
+    font-weight: bold;
+    font-size: 0.7rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    letter-spacing: 1px;
+    display: inline-block;
+  }
+
+  .nota {
+    font-size: 0.7rem;
+    color: #8aa;
+    text-align: left;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+
+  #yt-player-container {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .now-playing {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    margin-bottom: 14px;
+  }
+  .now-playing img {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #111;
+  }
+  .now-playing .info { min-width: 0; flex: 1; }
+  .now-playing .titulo {
+    font-size: 0.9rem;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .now-playing .sub {
+    font-size: 0.7rem;
+    color: #ffb366;
+    margin-top: 2px;
+  }
+
+  .buscador {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .buscador input {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 12px;
+    border: 1px solid #245;
+    background: #071019;
+    color: #fff;
+    font-size: 0.85rem;
+    outline: none;
+    min-width: 0;
+  }
+  .buscador input:focus { border-color: #ff6b1a; }
+  .buscador button {
+    background: linear-gradient(145deg, #ff6b1a, #cc5200);
+    border: none;
+    color: #fff;
+    font-weight: bold;
+    border-radius: 12px;
+    padding: 0 14px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .buscador button:disabled { opacity: 0.5; cursor: default; }
+
+  .resultados, .cola-lista {
+    text-align: left;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-bottom: 4px;
+  }
+
+  .item-fila {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .item-fila img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #111;
+  }
+  .item-fila .info { flex: 1; min-width: 0; }
+  .item-fila .titulo {
+    font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .item-fila .sub {
+    font-size: 0.68rem;
+    color: #8aa;
+  }
+  .item-fila button {
+    background: #ff6b1a;
+    border: none;
+    color: #111;
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .seccion-titulo {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ffb366;
+    margin: 14px 0 6px;
+    text-align: left;
+  }
+
+  .estado-msg {
+    font-size: 0.72rem;
+    color: #ff8a65;
+    text-align: left;
+    margin-top: 6px;
+    min-height: 14px;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #543; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+  <a href="index.html" class="volver">← Volver al inicio</a>
+  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#111; background:linear-gradient(145deg,#ff6b1a,#00b4ff); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; box-shadow:0 0 10px rgba(255,107,26,0.5); z-index:10;">🔀 Otras opciones</a>
+
+  <div class="radio-widget">
+    <img src="radio.png" alt="Next Level 7 Radio" class="logo">
+
+    <div class="player-card">
+
+      <div id="yt-player-container"><div id="yt-player"></div></div>
+
+      <div class="badge-personal">🎧 MI ESPACIO</div>
+      <p class="nota">Aquí escuchas tú solo/a. No se mezcla con la Radio Oficial y nadie más lo escucha.</p>
+
+      <div class="now-playing" id="now-playing">
+        <img id="np-thumb" src="" alt="">
+        <div class="info">
+          <div class="titulo" id="np-titulo">Dale "Escuchar" para empezar</div>
+          <div class="sub" id="np-sub"></div>
+        </div>
+        <button id="btn-saltar" title="Saltar canción" style="background:#222; border:1px solid #ff6b1a; color:#ff6b1a; border-radius:10px; padding:6px 10px; font-size:0.75rem; cursor:pointer; flex-shrink:0;">⏭</button>
+      </div>
+
+      <button id="btn-escuchar" style="margin-bottom:14px; background:linear-gradient(145deg,#ff6b1a,#cc5200); border:none; color:#fff; font-weight:bold; border-radius:14px; padding:10px 22px; font-size:0.9rem; cursor:pointer; width:100%;">▶ Escuchar</button>
+
+      <div class="seccion-titulo">Buscar música (solo para ti)</div>
+      <div class="buscador">
+        <input type="text" id="input-buscar" placeholder="Nombre de la canción o artista..." maxlength="80">
+        <button id="btn-buscar">Buscar</button>
+      </div>
+      <div class="resultados" id="resultados"></div>
+      <div class="estado-msg" id="estado-msg"></div>
+
+      <div class="seccion-titulo">Tu cola (<span id="cola-count">0</span>)</div>
+      <div class="cola-lista" id="cola-lista"></div>
+
+      <div class="seccion-titulo">Playlist de respaldo (elige cuáles quieres que suenen)</div>
+      <div class="cola-lista" id="respaldo-lista" style="max-height:180px;"></div>
+
+    </div>
+  </div>
+
+  <script>
+    // ===================== CONFIG =====================
+    const YOUTUBE_API_KEY = "AIzaSyAQqwu1QmrWJQev5lPxKw0nC8Q5gaJDKcE";
+
+    // ===================== PLAYLIST DE RESPALDO =====================
+    // Suena en bucle, en orden aleatorio, cuando tu cola personal está vacía.
+    const PLAYLIST_RESPALDO = [
+      { videoId: 'SlgtjRq5AXs', title: 'Los Ángeles Azules, Belinda, Lalo Ebratt - Amor a Primera Vista' },
+      { videoId: 'KCN568dL3K0', title: 'Éxito de los 90' },
+      { videoId: 'OFDazPw8CWM', title: 'Timbiriche - Tú y Yo Somos Uno Mismo' },
+      { videoId: 'vmBHE3NXclA', title: 'Hombres G - Devuélveme a mi Chica' },
+      { videoId: 'OwGG5fX7bxY', title: 'Mecano - Hijo de la Luna' },
+      { videoId: 'smfo5w7sKMY', title: 'Miguel Bosé - Amante Bandido' },
+      { videoId: '2poXmu9nQ70', title: 'Alaska y Dinarama - A Quién le Importa' },
+      { videoId: 'yiB8rLs6vHk', title: 'Ana Belén - Qué Será' },
+      { videoId: 'p9n7erXdRCs', title: 'Flans - No Controles' },
+      { videoId: 'EoPJdXAzDs8', title: 'Luis Miguel - Culpable o No' },
+      { videoId: 'EU3LuPOYFu4', title: 'Franco de Vita - Te Amo' },
+      { videoId: '2ZACWIPuTDE', title: 'Roberto Carlos - Amigo' },
+      { videoId: 'mFc6VAVMgKo', title: 'Maná - Rayando el Sol' },
+      { videoId: 'SEOsusFXyuM', title: 'Duncan Dhu - En Algún Lugar' },
+      { videoId: '3DV57Y4tEAM', title: 'Enrique Iglesias - Experiencia Religiosa' },
+      { videoId: 'ZMUqIoDtSwc', title: 'Alejandro Sanz - Corazón Partío' },
+      { videoId: 'nwjWU35BkBM', title: 'Los Secretos - Sobre un Vidrio Mojado' },
+      { videoId: '5O4lse0dWPU', title: 'Mocedades - Amor de Hombre' },
+      { videoId: 'pjPA7CXutDw', title: 'Los Fabulosos Cadillacs - Matador' },
+      { videoId: 'kIr8hsVTCzg', title: 'Café Tacvba - La Ingrata' },
+      { videoId: 'MBe_iDSD1q8', title: 'Ricky Martin - María' },
+      { videoId: '4MULjbUhIz4', title: 'La Mosca - Para No Verte Más' },
+      { videoId: 'P8CoNgTfgqo', title: 'Molotov - Gimme tha Power' },
+      { videoId: 'oTdK6zG0M3U', title: 'Jaguares - Detrás de los Cerros' }
+    ];
+
+    // ===================== ESTADO LOCAL (nada de esto se comparte con nadie) =====================
+    let cola = [];              // canciones que TÚ agregaste, en orden
+    let sonando = null;         // {videoId, title, thumbnail, esRespaldo}
+    let ultimosRespaldo = [];   // evita repetir la misma canción de respaldo dos veces seguidas
+
+    // Canciones de la playlist de respaldo que TÚ desactivaste (no sonarán).
+    // Se guarda en tu navegador, no afecta a nadie más.
+    function getRespaldoDesactivadas() {
+      try { return new Set(JSON.parse(localStorage.getItem('nl7_respaldo_off') || '[]')); }
+      catch (e) { return new Set(); }
+    }
+    function setRespaldoDesactivadas(set) {
+      localStorage.setItem('nl7_respaldo_off', JSON.stringify([...set]));
+    }
+    let respaldoDesactivadas = getRespaldoDesactivadas();
+
+    // ===================== REPRODUCTOR DE YOUTUBE =====================
+    let ytPlayer = null;
+    let ytListo = false;
+    let audioDesbloqueado = false;
+
+    const tagScript = document.createElement('script');
+    tagScript.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tagScript);
+
+    window.onYouTubeIframeAPIReady = function () {
+      ytPlayer = new YT.Player('yt-player', {
+        height: '1',
+        width: '1',
+        playerVars: { autoplay: 0, controls: 0, disablekb: 1, playsinline: 1 },
+        events: {
+          onReady: () => { ytListo = true; },
+          onStateChange: onPlayerStateChange,
+          onError: () => avanzar()
+        }
+      });
+    };
+
+    function onPlayerStateChange(event) {
+      if (event.data === YT.PlayerState.ENDED) avanzar();
+    }
+
+    // ===================== RENDER =====================
+    const npTitulo = document.getElementById('np-titulo');
+    const npSub = document.getElementById('np-sub');
+    const npThumb = document.getElementById('np-thumb');
+    const colaListaDiv = document.getElementById('cola-lista');
+    const colaCountSpan = document.getElementById('cola-count');
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function pintarNowPlaying() {
+      if (!sonando) {
+        npTitulo.textContent = 'Dale "Escuchar" para empezar';
+        npSub.textContent = '';
+        npThumb.src = '';
+        return;
+      }
+      npTitulo.textContent = sonando.title;
+      npSub.textContent = sonando.esRespaldo ? '📻 Playlist de Next Level 7' : '🎧 Elegiste tú';
+      npThumb.src = sonando.thumbnail || ('https://i.ytimg.com/vi/' + sonando.videoId + '/hqdefault.jpg');
+    }
+
+    function pintarCola() {
+      colaCountSpan.textContent = cola.length;
+      colaListaDiv.innerHTML = '';
+      cola.forEach(song => {
+        const fila = document.createElement('div');
+        fila.className = 'item-fila';
+        fila.innerHTML = `
+          <img src="${song.thumbnail}">
+          <div class="info"><div class="titulo">${escapeHtml(song.title)}</div></div>
+        `;
+        colaListaDiv.appendChild(fila);
+      });
+    }
+
+    // ===================== AVANZAR (elige lo que sigue) =====================
+    function siguienteRespaldo() {
+      const activas = PLAYLIST_RESPALDO.filter(s => !respaldoDesactivadas.has(s.videoId));
+      const lista = activas.length > 0 ? activas : PLAYLIST_RESPALDO;
+      if (ultimosRespaldo.length >= lista.length) ultimosRespaldo = [];
+      let candidato;
+      do {
+        candidato = lista[Math.floor(Math.random() * lista.length)];
+      } while (ultimosRespaldo.includes(candidato.videoId) && lista.length > 1);
+      ultimosRespaldo.push(candidato.videoId);
+      return candidato;
+    }
+
+    function pintarRespaldoLista() {
+      const cont = document.getElementById('respaldo-lista');
+      cont.innerHTML = '';
+      PLAYLIST_RESPALDO.forEach(song => {
+        const fila = document.createElement('label');
+        fila.className = 'item-fila';
+        fila.style.cursor = 'pointer';
+        const activo = !respaldoDesactivadas.has(song.videoId);
+        fila.innerHTML = `
+          <input type="checkbox" ${activo ? 'checked' : ''} style="width:16px; height:16px; flex-shrink:0; accent-color:#ff6b1a;">
+          <div class="info"><div class="titulo">${escapeHtml(song.title)}</div></div>
+        `;
+        fila.querySelector('input').addEventListener('change', (e) => {
+          if (e.target.checked) respaldoDesactivadas.delete(song.videoId);
+          else respaldoDesactivadas.add(song.videoId);
+          setRespaldoDesactivadas(respaldoDesactivadas);
+        });
+        cont.appendChild(fila);
+      });
+    }
+    pintarRespaldoLista();
+
+    function avanzar() {
+      if (cola.length > 0) {
+        sonando = cola.shift();
+        sonando.esRespaldo = false;
+      } else {
+        const song = siguienteRespaldo();
+        sonando = {
+          videoId: song.videoId,
+          title: song.title,
+          thumbnail: 'https://i.ytimg.com/vi/' + song.videoId + '/hqdefault.jpg',
+          esRespaldo: true
+        };
+      }
+      pintarNowPlaying();
+      pintarCola();
+      if (ytListo) {
+        ytPlayer.loadVideoById({ videoId: sonando.videoId, startSeconds: 0 });
+        if (audioDesbloqueado) setTimeout(() => { try { ytPlayer.playVideo(); } catch (e) {} }, 300);
+      }
+    }
+
+    // ===================== BÚSQUEDA =====================
+    const inputBuscar = document.getElementById('input-buscar');
+    const btnBuscar = document.getElementById('btn-buscar');
+    const resultadosDiv = document.getElementById('resultados');
+    const estadoMsg = document.getElementById('estado-msg');
+
+    async function buscarCanciones() {
+      const q = inputBuscar.value.trim();
+      if (!q) return;
+      btnBuscar.disabled = true;
+      estadoMsg.textContent = 'Buscando...';
+      resultadosDiv.innerHTML = '';
+      try {
+        const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoCategoryId=10&maxResults=8&q=${encodeURIComponent(q)}&key=${YOUTUBE_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!res.ok) {
+          estadoMsg.textContent = 'Error al buscar: ' + (data.error?.message || res.status);
+          btnBuscar.disabled = false;
+          return;
+        }
+        estadoMsg.textContent = '';
+        (data.items || []).forEach(item => {
+          const fila = document.createElement('div');
+          fila.className = 'item-fila';
+          fila.innerHTML = `
+            <img src="${item.snippet.thumbnails.default.url}">
+            <div class="info">
+              <div class="titulo">${escapeHtml(item.snippet.title)}</div>
+              <div class="sub">${escapeHtml(item.snippet.channelTitle)}</div>
+            </div>
+            <button>Agregar</button>
+          `;
+          fila.querySelector('button').addEventListener('click', () => {
+            const song = {
+              videoId: item.id.videoId,
+              title: item.snippet.title,
+              thumbnail: item.snippet.thumbnails.default.url
+            };
+            cola.push(song);
+            pintarCola();
+            if (!sonando || sonando.esRespaldo) {
+              // Si solo estaba sonando algo de la playlist de respaldo, tu elección se antepone ya.
+              if (sonando && sonando.esRespaldo) avanzar();
+              else if (!sonando) avanzar();
+            }
+          });
+          resultadosDiv.appendChild(fila);
+        });
+      } catch (err) {
+        estadoMsg.textContent = 'Error de conexión al buscar.';
+      }
+      btnBuscar.disabled = false;
+    }
+    btnBuscar.addEventListener('click', buscarCanciones);
+    inputBuscar.addEventListener('keydown', (e) => { if (e.key === 'Enter') buscarCanciones(); });
+
+    // ===================== SALTAR =====================
+    document.getElementById('btn-saltar').addEventListener('click', () => {
+      avanzar();
+    });
+
+    // ===================== DESBLOQUEO DE AUDIO (autoplay del navegador) =====================
+    const btnEscuchar = document.getElementById('btn-escuchar');
+    btnEscuchar.addEventListener('click', () => {
+      audioDesbloqueado = true;
+      btnEscuchar.textContent = '🔊 Reproduciendo';
+      btnEscuchar.disabled = true;
+      btnEscuchar.style.opacity = '0.6';
+      if (!sonando) avanzar();
+      else if (ytListo) { try { ytPlayer.playVideo(); } catch (e) {} }
+    });
+  </script>
+
+</body>
+</html>
