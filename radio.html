@@ -8,7 +8,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: radial-gradient(circle at center, #0a2233 0%, #050f17 60%, #030608 100%);
+    background: radial-gradient(circle at center, #0a2810 0%, #05170a 60%, #030803 100%);
     font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     align-items: center;
@@ -24,13 +24,13 @@
     top: 18px;
     left: 18px;
     color: #111;
-    background: linear-gradient(145deg, #00b4ff, #ff6b1a);
+    background: linear-gradient(145deg, #39ff14, #ffd700);
     text-decoration: none;
     font-weight: bold;
     font-size: 0.75rem;
     padding: 6px 14px;
     border-radius: 20px;
-    box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
     z-index: 10;
   }
   a.volver:hover { transform: scale(1.05); }
@@ -53,10 +53,10 @@
 
   .menu-card {
     background: rgba(10, 10, 10, 0.92);
-    border: 2px solid #00b4ff;
+    border: 2px solid #39ff14;
     border-radius: 24px;
     padding: 24px 20px;
-    box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
     margin-top: -60px;
     position: relative;
     z-index: 1;
@@ -83,7 +83,7 @@
     transition: transform 0.15s, border-color 0.15s;
   }
   .opcion:hover, .opcion:active {
-    border-color: #00b4ff;
+    border-color: #39ff14;
     transform: scale(1.02);
   }
   .opcion .emoji {
@@ -102,8 +102,8 @@
     font-size: 0.75rem;
     line-height: 1.4;
   }
-  .opcion.participar { border-color: rgba(0,180,255,0.35); }
-  .opcion.espacio { border-color: rgba(255,107,26,0.35); }
+  .opcion.participar { border-color: rgba(57,255,20,0.35); }
+  .opcion.espacio { border-color: rgba(255,215,0,0.35); }
   .opcion.zeno { border-color: rgba(176,0,32,0.35); }
 </style>
 </head>
@@ -121,6 +121,12 @@
         <span class="emoji">🎶</span>
         <div class="titulo">Radio en la Cancha (Colaborativa)</div>
         <div class="desc">Agrega canciones a la cola de todos. Lo que se escucha en la radio oficial lo elige la gente.</div>
+        <div id="switch-transmision" style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+          <div id="transmision-switch" style="width:40px; height:22px; border-radius:20px; background:#7a3d1e; position:relative; transition:background 0.25s; flex-shrink:0;">
+            <div id="transmision-switch-knob" style="width:18px; height:18px; border-radius:50%; background:#1a1a1a; position:absolute; top:2px; left:2px; transition:left 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.5);"></div>
+          </div>
+          <span id="transmision-switch-label" style="font-size:0.7rem; color:#ff9d5c; font-weight:bold;">Sin transmisión ahora</span>
+        </div>
       </a>
 
       <a href="mi-espacio.html" class="opcion espacio">
@@ -136,6 +142,41 @@
       </a>
     </div>
   </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCDStSLESm2UbqcIRpqrnHGfTsZJUtCVwc",
+      authDomain: "liga-next-level-7.firebaseapp.com",
+      databaseURL: "https://liga-next-level-7-default-rtdb.firebaseio.com",
+      projectId: "liga-next-level-7",
+      storageBucket: "liga-next-level-7.firebasestorage.app",
+      messagingSenderId: "463941548215",
+      appId: "1:463941548215:web:0d9eb7e517cbc33352b532"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const transmisionSwitch = document.getElementById('transmision-switch');
+    const transmisionSwitchKnob = document.getElementById('transmision-switch-knob');
+    const transmisionSwitchLabel = document.getElementById('transmision-switch-label');
+
+    db.ref('jukebox/activeAdminSession').on('value', snap => {
+      const actual = snap.val();
+      if (actual) {
+        transmisionSwitch.style.background = '#39ff14';
+        transmisionSwitchKnob.style.left = '20px';
+        transmisionSwitchLabel.style.color = '#39ff14';
+        transmisionSwitchLabel.textContent = 'Transmitiendo ahora';
+      } else {
+        transmisionSwitch.style.background = '#7a3d1e';
+        transmisionSwitchKnob.style.left = '2px';
+        transmisionSwitchLabel.style.color = '#ff9d5c';
+        transmisionSwitchLabel.textContent = 'Sin transmisión ahora';
+      }
+    });
+  </script>
 
 </body>
 </html>
