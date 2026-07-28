@@ -8,7 +8,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: radial-gradient(circle at center, #0a2233 0%, #050f17 60%, #030608 100%);
+    background: radial-gradient(circle at center, #0a2810 0%, #05170a 60%, #030803 100%);
     font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     align-items: center;
@@ -24,13 +24,13 @@
     top: 18px;
     left: 18px;
     color: #111;
-    background: linear-gradient(145deg, #00b4ff, #ff6b1a);
+    background: linear-gradient(145deg, #39ff14, #ffd700);
     text-decoration: none;
     font-weight: bold;
     font-size: 0.75rem;
     padding: 6px 14px;
     border-radius: 20px;
-    box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
     z-index: 10;
   }
   a.volver:hover { transform: scale(1.05); }
@@ -54,10 +54,10 @@
 
   .player-card {
     background: rgba(10, 10, 10, 0.92);
-    border: 2px solid #00b4ff;
+    border: 2px solid #39ff14;
     border-radius: 24px;
     padding: 20px;
-    box-shadow: 0 0 20px rgba(0, 180, 255, 0.5);
+    box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
     margin-top: -60px;
     position: relative;
     z-index: 1;
@@ -142,9 +142,9 @@
     outline: none;
     min-width: 0;
   }
-  .buscador input:focus { border-color: #00b4ff; }
+  .buscador input:focus { border-color: #39ff14; }
   .buscador button {
-    background: linear-gradient(145deg, #00b4ff, #0080c0);
+    background: linear-gradient(145deg, #39ff14, #0080c0);
     border: none;
     color: #fff;
     font-weight: bold;
@@ -189,7 +189,7 @@
     color: #8aa;
   }
   .item-fila button {
-    background: #00b4ff;
+    background: #39ff14;
     border: none;
     color: #111;
     font-weight: bold;
@@ -236,7 +236,7 @@
 <body>
 
   <a href="index.html" class="volver">← Volver al inicio</a>
-  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#9fd8ff; background:rgba(0,180,255,0.12); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; border:1px solid #00b4ff; z-index:10;">🔀 Otras opciones</a>
+  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#9fd8ff; background:rgba(57,255,20,0.12); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; border:1px solid #39ff14; z-index:10;">🔀 Otras opciones</a>
 
   <div class="radio-widget">
     <img src="radio.png" alt="Next Level 7 Radio" class="logo">
@@ -251,11 +251,17 @@
           <div class="titulo" id="np-titulo">Cargando...</div>
           <div class="agregado-por" id="np-agregado">—</div>
         </div>
-        <button id="btn-saltar" title="Saltar canción" style="background:#222; border:1px solid #00b4ff; color:#00b4ff; border-radius:10px; padding:6px 10px; font-size:0.75rem; cursor:pointer; flex-shrink:0; display:none;">⏭</button>
+        <button id="btn-saltar" title="Saltar canción" style="background:#222; border:1px solid #39ff14; color:#39ff14; border-radius:10px; padding:6px 10px; font-size:0.75rem; cursor:pointer; flex-shrink:0; display:none;">⏭</button>
       </div>
 
       <!-- ===== ADMIN: solo este aparato reproduce el audio real ===== -->
       <div id="admin-box" style="text-align:left; margin-bottom:14px;">
+        <div id="admin-switch-wrap" style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <div id="admin-switch" style="width:46px; height:24px; border-radius:20px; background:#7a1e1e; position:relative; transition:background 0.25s; flex-shrink:0;">
+            <div id="admin-switch-knob" style="width:20px; height:20px; border-radius:50%; background:#1a1a1a; position:absolute; top:2px; left:2px; transition:left 0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.5);"></div>
+          </div>
+          <span id="admin-switch-label" style="font-size:0.7rem; color:#ff6b6b; font-weight:bold;">Sin admin conectado</span>
+        </div>
         <div id="admin-guest-view">
           <div style="font-size:0.68rem; color:#8aa; margin-bottom:6px;">🔇 Modo invitado: puedes agregar canciones, pero el audio solo suena en el aparato del administrador.</div>
           <div id="admin-quien-conectado" style="display:none; font-size:0.7rem; color:#ffb366; background:rgba(255,179,102,0.08); border:1px solid rgba(255,179,102,0.35); border-radius:10px; padding:8px 10px; margin-bottom:8px;">
@@ -265,21 +271,22 @@
           <button id="btn-abrir-login-admin" style="background:none; border:1px solid #333; color:#8aa; border-radius:10px; padding:6px 12px; font-size:0.7rem; cursor:pointer;">🔐 Entrar como administrador</button>
           <div id="admin-login-form" style="display:none; margin-top:8px; gap:6px; flex-direction:column;">
             <input type="password" id="admin-pass-input" placeholder="Contraseña de administrador" style="padding:8px 10px; border-radius:10px; border:1px solid #245; background:#071019; color:#fff; font-size:0.8rem; outline:none;">
-            <button id="btn-confirmar-admin" style="background:linear-gradient(145deg,#00b4ff,#ff6b1a); border:none; color:#111; font-weight:bold; border-radius:10px; padding:8px; font-size:0.8rem; cursor:pointer;">Entrar</button>
+            <button id="btn-confirmar-admin" style="background:linear-gradient(145deg,#39ff14,#ffd700); border:none; color:#111; font-weight:bold; border-radius:10px; padding:8px; font-size:0.8rem; cursor:pointer;">Entrar</button>
             <div id="admin-login-error" style="font-size:0.7rem; color:#ff6b6b; min-height:14px;"></div>
           </div>
         </div>
-        <div id="admin-active-view" style="display:none; background:rgba(0,180,255,0.1); border:1px solid #00b4ff; border-radius:10px; padding:8px 10px;">
-          <div style="font-size:0.75rem; font-weight:bold; color:#00b4ff;">🎙️ Modo Admin activo — <span id="admin-mi-nombre"></span></div>
+        <div id="admin-active-view" style="display:none; background:rgba(57,255,20,0.1); border:1px solid #39ff14; border-radius:10px; padding:8px 10px;">
+          <div style="font-size:0.75rem; font-weight:bold; color:#39ff14;">🎙️ Modo Admin activo — <span id="admin-mi-nombre"></span></div>
           <div style="font-size:0.68rem; color:#9fd8ff; margin:2px 0 6px;">El audio suena en este aparato. Conéctalo a las bocinas. Cuando termines, cierra tu sesión para que otro pueda entrar.</div>
-          <button id="btn-cerrar-admin" style="background:none; border:1px solid #00b4ff; color:#00b4ff; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer;">Cerrar sesión de admin</button>
+          <button id="btn-vivo-youtube" style="background:none; border:1px solid #ffd700; color:#ffd700; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer; margin-right:6px;">📡 Agregar transmisión en vivo</button>
+          <button id="btn-cerrar-admin" style="background:none; border:1px solid #39ff14; color:#39ff14; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer;">Cerrar sesión de admin</button>
         </div>
       </div>
 
 
       <div class="live-badge">● EN VIVO</div>
 
-      <button id="btn-escuchar" style="display:none; margin-top:14px; background:linear-gradient(145deg,#00b4ff,#0080c0); border:none; color:#fff; font-weight:bold; border-radius:14px; padding:10px 22px; font-size:0.9rem; cursor:pointer; width:100%;">▶ Escuchar</button>
+      <button id="btn-escuchar" style="display:none; margin-top:14px; background:linear-gradient(145deg,#39ff14,#0080c0); border:none; color:#fff; font-weight:bold; border-radius:14px; padding:10px 22px; font-size:0.9rem; cursor:pointer; width:100%;">▶ Escuchar</button>
 
       <div class="seccion-titulo">Buscar música (se integra a la Radio Oficial, para todos)</div>
       <div class="buscador">
@@ -304,13 +311,13 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyAQqwu1QmrWJQev5lPxKw0nC8Q5gaJDKcE",
-      authDomain: "torneomixtojueves.firebaseapp.com",
-      databaseURL: "https://torneomixtojueves-default-rtdb.firebaseio.com",
-      projectId: "torneomixtojueves",
-      storageBucket: "torneomixtojueves.firebasestorage.app",
-      messagingSenderId: "1043570234430",
-      appId: "1:1043570234430:web:f18b44045feeda7eb7ed6f"
+      apiKey: "AIzaSyCDStSLESm2UbqcIRpqrnHGfTsZJUtCVwc",
+      authDomain: "liga-next-level-7.firebaseapp.com",
+      databaseURL: "https://liga-next-level-7-default-rtdb.firebaseio.com",
+      projectId: "liga-next-level-7",
+      storageBucket: "liga-next-level-7.firebasestorage.app",
+      messagingSenderId: "463941548215",
+      appId: "1:463941548215:web:0d9eb7e517cbc33352b532"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
@@ -320,7 +327,7 @@
 
     // ===================== CONFIG =====================
     // 👉 PEGA AQUÍ TU API KEY DE YOUTUBE DATA API v3
-    const YOUTUBE_API_KEY = "AIzaSyAQqwu1QmrWJQev5lPxKw0nC8Q5gaJDKcE";
+    const YOUTUBE_API_KEY = "AIzaSyCDStSLESm2UbqcIRpqrnHGfTsZJUtCVwc";
     const MAX_CANCIONES_POR_USUARIO = 3;
     const COOLDOWN_MS = 15 * 60 * 1000; // 15 minutos
 
@@ -470,6 +477,29 @@
     }
     const userId = getOrCreateUserId();
     let nickname = null; // se pide al primer intento de agregar canción, no al cargar la página
+
+    // ===================== TRANSMISIÓN EN VIVO (solo admin) =====================
+    // A diferencia de una canción normal, un video EN VIVO no dispara "ENDED" —
+    // se queda sonando hasta que el admin le dé manualmente a "Saltar" (⏭).
+    function extraerVideoIdDeUrl(url) {
+      const m = url.match(/(?:youtube\.com\/watch\?v=|youtube\.com\/live\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      return m ? m[1] : null;
+    }
+
+    document.getElementById('btn-vivo-youtube').addEventListener('click', () => {
+      const url = prompt('Pega el link de la transmisión en vivo de YouTube:');
+      if (!url) return;
+      const videoId = extraerVideoIdDeUrl(url.trim());
+      if (!videoId) {
+        alert('No reconocí ese link. Debe ser algo como https://www.youtube.com/watch?v=XXXXXXXXXXX o https://youtu.be/XXXXXXXXXXX');
+        return;
+      }
+      agregarACola({
+        videoId: videoId,
+        title: '🔴 Transmisión en vivo',
+        thumbnail: 'https://i.ytimg.com/vi/' + videoId + '/hqdefault.jpg'
+      }, null);
+    });
 
     // ===================== BÚSQUEDA EN YOUTUBE =====================
     const inputBuscar = document.getElementById('input-buscar');
@@ -906,8 +936,24 @@
     // cortes de conexión). Solo mostramos, a los invitados, quién está
     // conectado ahora mismo como admin — para que se coordinen entre ustedes.
     const adminQuienConectadoTexto = document.getElementById('admin-quien-conectado-texto');
+    const adminSwitch = document.getElementById('admin-switch');
+    const adminSwitchKnob = document.getElementById('admin-switch-knob');
+    const adminSwitchLabel = document.getElementById('admin-switch-label');
     adminSessionRef.on('value', snap => {
       const actual = snap.val();
+
+      if (actual) {
+        adminSwitch.style.background = '#39ff14';
+        adminSwitchKnob.style.left = '24px';
+        adminSwitchLabel.style.color = '#39ff14';
+        adminSwitchLabel.textContent = `Admin conectado: ${actual.nombre || 'alguien'}`;
+      } else {
+        adminSwitch.style.background = '#7a1e1e';
+        adminSwitchKnob.style.left = '2px';
+        adminSwitchLabel.style.color = '#ff6b6b';
+        adminSwitchLabel.textContent = 'Sin admin conectado';
+      }
+
       if (!esAdminActivo) {
         if (actual) {
           adminQuienConectado.style.display = 'block';
