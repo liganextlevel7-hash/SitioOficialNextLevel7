@@ -8,7 +8,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: radial-gradient(circle at center, #0a2233 0%, #050f17 60%, #030608 100%);
+    background: radial-gradient(circle at center, #0a2810 0%, #05170a 60%, #030803 100%);
     font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     align-items: center;
@@ -24,13 +24,13 @@
     top: 18px;
     left: 18px;
     color: #111;
-    background: linear-gradient(145deg, #ff6b1a, #00b4ff);
+    background: linear-gradient(145deg, #ffd700, #39ff14);
     text-decoration: none;
     font-weight: bold;
     font-size: 0.75rem;
     padding: 6px 14px;
     border-radius: 20px;
-    box-shadow: 0 0 10px rgba(255, 107, 26, 0.5);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     z-index: 10;
   }
   a.volver:hover { transform: scale(1.05); }
@@ -53,10 +53,10 @@
 
   .player-card {
     background: rgba(10, 10, 10, 0.92);
-    border: 2px solid #ff6b1a;
+    border: 2px solid #ffd700;
     border-radius: 24px;
     padding: 20px;
-    box-shadow: 0 0 20px rgba(255, 107, 26, 0.4);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
     margin-top: -60px;
     position: relative;
     z-index: 1;
@@ -66,7 +66,7 @@
   }
 
   .badge-personal {
-    background: #ff6b1a;
+    background: #ffd700;
     color: #111;
     font-weight: bold;
     font-size: 0.7rem;
@@ -139,9 +139,9 @@
     outline: none;
     min-width: 0;
   }
-  .buscador input:focus { border-color: #ff6b1a; }
+  .buscador input:focus { border-color: #ffd700; }
   .buscador button {
-    background: linear-gradient(145deg, #ff6b1a, #cc5200);
+    background: linear-gradient(145deg, #ffd700, #b8960a);
     border: none;
     color: #fff;
     font-weight: bold;
@@ -186,7 +186,7 @@
     color: #8aa;
   }
   .item-fila button {
-    background: #ff6b1a;
+    background: #ffd700;
     border: none;
     color: #111;
     font-weight: bold;
@@ -221,7 +221,7 @@
 <body>
 
   <a href="index.html" class="volver">← Volver al inicio</a>
-  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#111; background:linear-gradient(145deg,#ff6b1a,#00b4ff); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; box-shadow:0 0 10px rgba(255,107,26,0.5); z-index:10;">🔀 Otras opciones</a>
+  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#111; background:linear-gradient(145deg,#ffd700,#39ff14); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; box-shadow:0 0 10px rgba(255,215,0,0.5); z-index:10;">🔀 Otras opciones</a>
 
   <div class="radio-widget">
     <img src="radio.png" alt="Next Level 7 Radio" class="logo">
@@ -239,10 +239,17 @@
           <div class="titulo" id="np-titulo">Dale "Escuchar" para empezar</div>
           <div class="sub" id="np-sub"></div>
         </div>
-        <button id="btn-saltar" title="Saltar canción" style="background:#222; border:1px solid #ff6b1a; color:#ff6b1a; border-radius:10px; padding:6px 10px; font-size:0.75rem; cursor:pointer; flex-shrink:0;">⏭</button>
+        <button id="btn-saltar" title="Saltar canción" style="background:#222; border:1px solid #ffd700; color:#ffd700; border-radius:10px; padding:6px 10px; font-size:0.75rem; cursor:pointer; flex-shrink:0;">⏭</button>
       </div>
 
-      <button id="btn-escuchar" style="margin-bottom:14px; background:linear-gradient(145deg,#ff6b1a,#cc5200); border:none; color:#fff; font-weight:bold; border-radius:14px; padding:10px 22px; font-size:0.9rem; cursor:pointer; width:100%;">▶ Escuchar</button>
+      <div id="controles-orange" style="display:flex; gap:8px; margin-bottom:14px; justify-content:center;">
+        <button id="btn-playpause" title="Reproducir/Pausar" style="width:38px; height:38px; border-radius:50%; border:1px solid #ffe066; background:radial-gradient(circle at 35% 30%, #ffe066, #ffd700); color:#fff; font-size:1rem; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.4);">⏸</button>
+        <button id="btn-stop" title="Detener" style="width:38px; height:38px; border-radius:50%; border:1px solid #ffe066; background:radial-gradient(circle at 35% 30%, #ffe066, #ffd700); color:#fff; font-size:1rem; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.4);">⏹</button>
+        <button id="btn-saltar-orange" title="Saltar canción" style="width:38px; height:38px; border-radius:50%; border:1px solid #ffe066; background:radial-gradient(circle at 35% 30%, #ffe066, #ffd700); color:#fff; font-size:1rem; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.4);">⏭</button>
+        <button id="btn-mute" title="Silenciar/Activar sonido" style="width:38px; height:38px; border-radius:50%; border:1px solid #ffe066; background:radial-gradient(circle at 35% 30%, #ffe066, #ffd700); color:#fff; font-size:1rem; cursor:pointer; box-shadow:0 2px 6px rgba(0,0,0,0.4);">🔊</button>
+      </div>
+
+      <button id="btn-escuchar" style="margin-bottom:14px; background:linear-gradient(145deg,#ffd700,#b8960a); border:none; color:#fff; font-weight:bold; border-radius:14px; padding:10px 22px; font-size:0.9rem; cursor:pointer; width:100%;">▶ Escuchar</button>
 
       <div class="seccion-titulo">Buscar música (solo para ti)</div>
       <div class="buscador">
@@ -260,7 +267,7 @@
 
   <script>
     // ===================== CONFIG =====================
-    const YOUTUBE_API_KEY = "AIzaSyAQqwu1QmrWJQev5lPxKw0nC8Q5gaJDKcE";
+    const YOUTUBE_API_KEY = "AIzaSyCDStSLESm2UbqcIRpqrnHGfTsZJUtCVwc";
 
     // ===================== PLAYLIST DE RESPALDO =====================
     // Suena en bucle, en orden aleatorio, cuando tu cola personal está vacía.
@@ -519,6 +526,49 @@
     // ===================== SALTAR =====================
     document.getElementById('btn-saltar').addEventListener('click', () => {
       avanzar();
+    });
+    document.getElementById('btn-saltar-orange').addEventListener('click', () => {
+      avanzar();
+    });
+
+    // ===================== PLAY/PAUSA, DETENER, SILENCIAR =====================
+    const btnPlayPause = document.getElementById('btn-playpause');
+    const btnStop = document.getElementById('btn-stop');
+    const btnMute = document.getElementById('btn-mute');
+    let pausadoManualmente = false;
+    let silenciado = false;
+
+    btnPlayPause.addEventListener('click', () => {
+      if (!ytPlayer) return;
+      if (pausadoManualmente) {
+        ytPlayer.playVideo();
+        pausadoManualmente = false;
+        btnPlayPause.textContent = '⏸';
+      } else {
+        ytPlayer.pauseVideo();
+        pausadoManualmente = true;
+        btnPlayPause.textContent = '▶';
+      }
+    });
+
+    btnStop.addEventListener('click', () => {
+      if (!ytPlayer) return;
+      ytPlayer.pauseVideo();
+      pausadoManualmente = true;
+      btnPlayPause.textContent = '▶';
+    });
+
+    btnMute.addEventListener('click', () => {
+      if (!ytPlayer) return;
+      if (silenciado) {
+        ytPlayer.unMute();
+        silenciado = false;
+        btnMute.textContent = '🔊';
+      } else {
+        ytPlayer.mute();
+        silenciado = true;
+        btnMute.textContent = '🔇';
+      }
     });
 
     // ===================== DESBLOQUEO DE AUDIO (autoplay del navegador) =====================
