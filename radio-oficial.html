@@ -278,6 +278,15 @@
         <div id="admin-active-view" style="display:none; background:rgba(57,255,20,0.1); border:1px solid #39ff14; border-radius:10px; padding:8px 10px;">
           <div style="font-size:0.75rem; font-weight:bold; color:#39ff14;">🎙️ Modo Admin activo — <span id="admin-mi-nombre"></span></div>
           <div style="font-size:0.68rem; color:#9fd8ff; margin:2px 0 6px;">El audio suena en este aparato. Conéctalo a las bocinas. Cuando termines, cierra tu sesión para que otro pueda entrar.</div>
+          <div style="margin:8px 0;">
+            <label for="sel-playlist-modo" style="font-size:0.7rem; color:#a8e896; display:block; margin-bottom:4px;">🎵 Playlist de fondo (cuando la cola está vacía)</label>
+            <select id="sel-playlist-modo" style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid #39ff14; background:#071a07; color:#fff; font-size:0.8rem; outline:none;">
+              <option value="dia">☀️ Día</option>
+              <option value="noche">🌙 Noche</option>
+              <option value="fiesta">🎉 Fiesta</option>
+              <option value="general">🔀 General (aleatorio)</option>
+            </select>
+          </div>
           <button id="btn-vivo-youtube" style="background:none; border:1px solid #ffd700; color:#ffd700; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer; margin-right:6px;">📡 Agregar transmisión en vivo</button>
           <button id="btn-cerrar-admin" style="background:none; border:1px solid #39ff14; color:#39ff14; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer;">Cerrar sesión de admin</button>
         </div>
@@ -324,6 +333,7 @@
     const jukeboxRef = db.ref('jukebox');
     const nowPlayingRef = db.ref('jukebox/nowPlaying');
     const queueRef = db.ref('jukebox/queue');
+    const playlistModeRef = db.ref('jukebox/playlistMode');
 
     // ===================== CONFIG =====================
     // 👉 PEGA AQUÍ TU API KEY DE YOUTUBE DATA API v3
@@ -331,102 +341,68 @@
     const MAX_CANCIONES_POR_USUARIO = 3;
     const COOLDOWN_MS = 15 * 60 * 1000; // 15 minutos
 
-    // ===================== PLAYLIST DE RESPALDO =====================
+    // ===================== PLAYLIST DE RESPALDO (desde Google Sheets) =====================
     // Suena en bucle SOLO en la Radio Oficial cuando la cola de la gente está
     // vacía. En cuanto alguien agrega una canción, esa se antepone; al
     // terminarse lo que la gente agregó, se regresa sola aquí.
-    const PLAYLIST_RESPALDO = [
-      { videoId: 'Zi_XLOBDo_Y', title: 'Michael Jackson - Billie Jean' },
-      { videoId: '2poXmu9nQ70', title: 'Alaska y Dinarama - A Quien le Importa' },
-      { videoId: 'x4oN50uhSII', title: 'Celia Cruz - La Vida Es un Carnaval' },
-      { videoId: '_t92v6vW9Ng', title: 'Grupo Firme - Ya Superame' },
-      { videoId: 'OFDazPw8CWM', title: 'Timbiriche - Tu y Yo Somos Uno Mismo' },
-      { videoId: 'HgzGwKwLmgM', title: 'Queen - Dont Stop Me Now' },
-      { videoId: 'xAApdw_SNu0', title: 'Juan Gabriel - Querida' },
-      { videoId: 'tGbRZ73NvlY', title: 'Buena Vista Social Club - Chan Chan' },
-      { videoId: 'b0AjMyJS5jk', title: 'El Mimoso - En Esta Vida No Se Pudo' },
-      { videoId: 'smfo5w7sKMY', title: 'Miguel Bose - Amante Bandido' },
-      { videoId: 'YXnjy5YlDwk', title: 'Marc Anthony - Vivir Mi Vida' },
-      { videoId: '9z5PU9H-b28', title: 'Jose Jose - El Triste' },
-      { videoId: 'ie-jNqM3J4A', title: 'Soda Stereo - De Musica Ligera' },
-      { videoId: 'SlgtjRq5AXs', title: 'Los Angeles Azules, Belinda, Lalo Ebratt - Amor a Primera Vista' },
-      { videoId: 'UHYQlYCGemI', title: 'Daddy Yankee - Gasolina' },
-      { videoId: 'OwGG5fX7bxY', title: 'Mecano - Hijo de la Luna' },
-      { videoId: 'CYxv6N_gUhE', title: 'Buena Vista Social Club - El Cuarto de Tula' },
-      { videoId: '79fzeNUqQbQ', title: 'Madonna - Like a Prayer' },
-      { videoId: '_70egXGihMA', title: 'Banda El Recodo - Costumbres' },
-      { videoId: 'EU3LuPOYFu4', title: 'Franco de Vita - Te Amo' },
-      { videoId: 'lMGaiSqOp58', title: 'Bon Jovi - Livin On a Prayer' },
-      { videoId: 'TLQ7M-t6HJw', title: 'Thalia - Amor a la Mexicana' },
-      { videoId: 'mFc6VAVMgKo', title: 'Mana - Rayando el Sol' },
-      { videoId: '7KxkMLAZlzw', title: 'Grupo Niche - Cali Pachanguero' },
-      { videoId: '2ZACWIPuTDE', title: 'Roberto Carlos - Amigo' },
-      { videoId: 'p7bfOZek9t4', title: 'Rosalia - Con Altura' },
-      { videoId: 'SEOsusFXyuM', title: 'Duncan Dhu - En Algun Lugar' },
-      { videoId: 'fugRvM6s5fc', title: 'Buena Vista Social Club - Dos Gardenias' },
-      { videoId: 'FoAgHJgXGSM', title: 'Enrique Bunbury - Lady Blue' },
-      { videoId: '3DV57Y4tEAM', title: 'Enrique Iglesias - Experiencia Religiosa' },
-      { videoId: 'FWffvczGrhs', title: 'Enanitos Verdes - Lamento Boliviano' },
-      { videoId: 'ZMUqIoDtSwc', title: 'Alejandro Sanz - Corazon Partio' },
-      { videoId: 'QFs3PIZb3js', title: 'Romeo Santos - Propuesta Indecente' },
-      { videoId: 'nwjWU35BkBM', title: 'Los Secretos - Sobre un Vidrio Mojado' },
-      { videoId: 'Y3ywicffOj4', title: 'Fleetwood Mac - Dreams' },
-      { videoId: 'mWauuXEpEbs', title: 'Ruben Blades - Pedro Navaja' },
-      { videoId: '5O4lse0dWPU', title: 'Mocedades - Amor de Hombre' },
-      { videoId: 'd2vBh6_h7WE', title: 'Buena Vista Social Club - Veinte Anos' },
-      { videoId: 'pjPA7CXutDw', title: 'Los Fabulosos Cadillacs - Matador' },
-      { videoId: 'RgKqxLAhRKE', title: 'Juan Gabriel - Amor Eterno' },
-      { videoId: 'kIr8hsVTCzg', title: 'Cafe Tacvba - La Ingrata' },
-      { videoId: 'eH3giaIzONA', title: 'Whitney Houston - I Wanna Dance With Somebody' },
-      { videoId: 'MBe_iDSD1q8', title: 'Ricky Martin - Maria' },
-      { videoId: '3dQG32_OMg0', title: 'RBD - Salvame' },
-      { videoId: '4MULjbUhIz4', title: 'La Mosca - Para No Verte Mas' },
-      { videoId: 'gGdGFtwCNBE', title: 'The Killers - Mr. Brightside' },
-      { videoId: 'P8CoNgTfgqo', title: 'Molotov - Gimme tha Power' },
-      { videoId: 'j5OfYI8OBhA', title: 'Banda El Recodo - El Sauce y La Palma' },
-      { videoId: 'oTdK6zG0M3U', title: 'Jaguares - Detras de los Cerros' },
-      { videoId: 'yC9u00F-NF0', title: 'Aventura - Obsesion' },
-      { videoId: 'KCN568dL3K0', title: 'Exito de los 90' },
-      { videoId: '1k8craCGpgs', title: 'Journey - Dont Stop Believin' },
-      { videoId: 'vmBHE3NXclA', title: 'Hombres G - Devuelveme a mi Chica' },
-      { videoId: 'r5eJcPW-d5Y', title: 'Timbiriche - Muriendo Lento' },
-      { videoId: 'E6COiEmuhWU', title: 'Buena Vista Social Club - Candela' },
-      { videoId: '4WJf9VRS3sM', title: 'Grupo Firme - En Tu Perra Vida' },
-      { videoId: 'EoPJdXAzDs8', title: 'Luis Miguel - Culpable o No' },
-      { videoId: 'OPf0YbXqDm0', title: 'Bruno Mars - Uptown Funk' },
-      { videoId: 'dGXbQjKLtrc', title: 'Banda El Recodo - Que Bonito' },
-      { videoId: 'Cr8K88UcO0s', title: 'Bad Bunny - Titi Me Pregunto' },
-      { videoId: 'xFrGuyw1V8s', title: 'ABBA - Dancing Queen' },
-      { videoId: '1w7OgIMMRc4', title: 'Guns N Roses - Sweet Child O Mine' },
-      { videoId: 'OagCWe_oer8', title: 'Buena Vista Social Club - Pueblo Nuevo' },
-      { videoId: 'RKGbjJarMeA', title: 'Selena - Bidi Bidi Bom Bom' },
-      { videoId: 'S-zVkT2yJx0', title: 'Timbiriche - Somos Amigos' },
-      { videoId: 'giMhlfc6pzw', title: 'Wisin y Yandel - Rakata' },
-      { videoId: 'WPiEbYSF9kE', title: 'Elvis Crespo - Suavemente' },
-      { videoId: 'SzimletXB7M', title: 'Heroes del Silencio - Entre Dos Tierras' },
-      { videoId: 'bL7yibHRrFc', title: 'Grupo Bryndis - Mi Verdadero Amor' },
-      { videoId: 'TUVcZfQe-Kw', title: 'Dua Lipa - Levitating' },
-      { videoId: 'bn_p95HbHoQ', title: 'Kali Uchis - Telepatia' },
-      { videoId: 'd1dcXgGQT2M', title: 'La Ley - Mentira' },
-      { videoId: 'O07zoqmdmrk', title: 'Carlos Vives ft. Shakira - La Bicicleta' },
-      { videoId: 'uLIs0j2WnlM', title: 'Gustavo Cerati - Crimen' },
-      { videoId: 'ZThOVeoaBN8', title: 'Hector Lavoe - Periodico de Ayer' },
-      { videoId: 'GhIs2AyODMA', title: 'Raphael - Mi Gran Noche' },
-      { videoId: '8z1joLLT0uk', title: 'Mijares - Bano de Mujeres' },
-      { videoId: '58R_K4xWZ-s', title: 'Emmanuel - La Chica de Humo' },
-      { videoId: 'UaIwhd8beos', title: 'Caifanes - Antes de Que Nos Olviden' },
-      { videoId: 'Mfrj-HIdYVg', title: 'Buena Vista Social Club - La Bayamesa' },
-      { videoId: '-FoGSw3M5po', title: 'Caifanes - Viento' },
-      { videoId: 'bC1Ucg_9yg4', title: 'Caifanes - La Negra Tomasa' },
-      { videoId: 'raW309TfeQ8', title: 'La Sonora Dinamita - Pollera Colora' },
-      { videoId: '_yYxeGYmnY4', title: 'Tito Nieves - Fabricando Fantasias' },
-      { videoId: 'SXJkhaBi3xI', title: 'Calibre 50 - Si Te Pudiera Mentir' },
-      { videoId: 'AztgSqsBx_A', title: 'Fruko y Sus Tesos - Cachondea' },
-      { videoId: 'hmj6rdRbQpA', title: 'BOUQUER - Solo Hay un Ganador (Salsa)' },
-      { videoId: 'qTS0fXOp9cI', title: 'Kany Garcia, Carin Leon - Te Lo Agradezco' },
-      { videoId: 'CIcDWHxR-ao', title: 'Willie Colon - Idilio' },
-      { videoId: 'oKOtzIo-uYw', title: 'Fugees - Killing Me Softly' }
-    ];
+    // Las canciones ya NO están escritas a mano: se jalan de tu Sheet "Mis
+    // Playlist" según la playlist que el admin elija (Día/Noche/Fiesta/General).
+    const PUB_HASH_PLAYLIST = "2PACX-1vRocpJhWDteg7BklI14YUOiN9ts96IGWrXJLE-0_BvB11x5uPyiPoVLqI4vGfY7O8t2gMhFFXra1vue";
+    const PLAYLIST_SHEETS = {
+      dia:     `https://docs.google.com/spreadsheets/d/e/${PUB_HASH_PLAYLIST}/pub?gid=0&single=true&output=csv`,
+      noche:   `https://docs.google.com/spreadsheets/d/e/${PUB_HASH_PLAYLIST}/pub?gid=1845988604&single=true&output=csv`,
+      fiesta:  `https://docs.google.com/spreadsheets/d/e/${PUB_HASH_PLAYLIST}/pub?gid=273702186&single=true&output=csv`,
+      general: `https://docs.google.com/spreadsheets/d/e/${PUB_HASH_PLAYLIST}/pub?gid=144814946&single=true&output=csv`
+    };
+
+    let PLAYLIST_RESPALDO = []; // se llena sola al cargar la playlist elegida
+    let PLAYLIST_MODO_ACTUAL = 'dia';
+
+    // Separa una línea de CSV respetando comas dentro de comillas (ej. si un
+    // título de canción trae una coma), a diferencia de un simple split(",").
+    function parsearLineaCSV(linea) {
+      const resultado = [];
+      let actual = '';
+      let dentroComillas = false;
+      for (let i = 0; i < linea.length; i++) {
+        const ch = linea[i];
+        if (ch === '"') {
+          if (dentroComillas && linea[i + 1] === '"') { actual += '"'; i++; }
+          else dentroComillas = !dentroComillas;
+        } else if (ch === ',' && !dentroComillas) {
+          resultado.push(actual); actual = '';
+        } else {
+          actual += ch;
+        }
+      }
+      resultado.push(actual);
+      return resultado.map(s => s.trim());
+    }
+
+    async function cargarPlaylistDesdeSheet(modo) {
+      const url = PLAYLIST_SHEETS[modo] || PLAYLIST_SHEETS.dia;
+      try {
+        const resp = await fetch(url);
+        const texto = await resp.text();
+        const filas = texto.trim().split("\n");
+        const lista = [];
+        for (let i = 1; i < filas.length; i++) {
+          const c = parsearLineaCSV(filas[i]);
+          const artista = (c[0] || '').trim();
+          const cancion = (c[1] || '').trim();
+          const videoId = (c[2] || '').trim();
+          if (!videoId) continue;
+          const titulo = artista && cancion ? `${artista} - ${cancion}` : (cancion || artista || videoId);
+          lista.push({ videoId, title: titulo });
+        }
+        if (lista.length) {
+          PLAYLIST_RESPALDO = lista;
+          PLAYLIST_MODO_ACTUAL = modo;
+        }
+      } catch (e) {
+        console.error('No se pudo cargar la playlist de', modo, e);
+      }
+    }
 
     // ===================== ADMIN: solo un aparato reproduce el audio real =====================
     const ADMIN_PASSWORD = 'nl7admin';
@@ -623,9 +599,21 @@
         const queue = current.queue || {};
         const entradas = Object.entries(queue).sort((a, b) => (a[1].addedAt || 0) - (b[1].addedAt || 0));
         if (entradas.length === 0) {
-          // Cola de la gente vacía: seguimos con la playlist de respaldo, en bucle.
+          // Cola de la gente vacía: seguimos con la playlist de respaldo.
+          if (!PLAYLIST_RESPALDO.length) {
+            // La playlist todavía no ha terminado de cargar desde el Sheet; no avanzamos aún.
+            return current;
+          }
           const idxAnterior = typeof current.respaldoIndex === 'number' ? current.respaldoIndex : -1;
-          const idx = (idxAnterior + 1) % PLAYLIST_RESPALDO.length;
+          let idx;
+          if (PLAYLIST_MODO_ACTUAL === 'general') {
+            // Modo General: orden aleatorio, evitando repetir la misma dos veces seguidas.
+            do {
+              idx = Math.floor(Math.random() * PLAYLIST_RESPALDO.length);
+            } while (PLAYLIST_RESPALDO.length > 1 && idx === idxAnterior);
+          } else {
+            idx = (idxAnterior + 1) % PLAYLIST_RESPALDO.length;
+          }
           const song = PLAYLIST_RESPALDO[idx];
           current.respaldoIndex = idx;
           current.nowPlaying = {
@@ -963,6 +951,24 @@
         }
       }
     });
+
+    // ===================== PLAYLIST DE FONDO: solo el admin la cambia, todos la reciben =====================
+    const selPlaylistModo = document.getElementById('sel-playlist-modo');
+    playlistModeRef.on('value', async snap => {
+      const modo = snap.val() || 'dia';
+      if (selPlaylistModo) selPlaylistModo.value = modo;
+      await cargarPlaylistDesdeSheet(modo);
+      // Si el admin está activo y no hay nada sonando (justo se acaba de cargar la playlist), arrancamos.
+      if (esAdminActivo) {
+        nowPlayingRef.once('value', s => { if (!s.val()) avanzarCola(null); });
+      }
+    });
+    if (selPlaylistModo) {
+      selPlaylistModo.addEventListener('change', () => {
+        if (!esAdminActivo) return; // por si acaso; el select solo es visible siendo admin
+        playlistModeRef.set(selPlaylistModo.value);
+      });
+    }
 
   </script>
 
