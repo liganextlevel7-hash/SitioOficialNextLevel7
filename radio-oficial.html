@@ -908,15 +908,6 @@
     adminSessionRef.on('value', snap => {
       const actual = snap.val();
 
-      // Si este aparato creía ser el admin activo pero la sesión ya no es la
-      // suya (alguien usó "Liberar sesión atorada", o se conectó otro admin),
-      // dejamos de transmitir aquí también — para que no se quede sonando
-      // "fantasma" mientras todos los demás ven "Sin admin conectado".
-      if (esAdminActivo && (!actual || actual.sessionId !== misSessionId)) {
-        desactivarModoAdminLocal();
-        alert('Tu sesión de administrador se cerró (probablemente alguien usó "Liberar sesión atorada"). Si tú sigues transmitiendo de verdad, vuelve a entrar como admin.');
-      }
-
       if (actual) {
         adminSwitch.style.background = '#39ff14';
         adminSwitchKnob.style.left = '24px';
