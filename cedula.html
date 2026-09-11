@@ -10,7 +10,7 @@
 <style>
   * { box-sizing: border-box; }
   body {
-    background: #0a0a0a;
+    background: #0a1830;
     font-family: 'Roboto', Arial, sans-serif;
     margin: 0;
     padding: 16px;
@@ -27,7 +27,7 @@
     display: inline-block;
     padding: 8px 22px;
     background: rgba(0,0,0,.75);
-    border: 1px solid #39ff14;
+    border: 1px solid #ffd700;
     border-radius: 12px;
     color: white;
     text-decoration: none;
@@ -36,14 +36,14 @@
     transition: .3s;
   }
   .nav-top a:hover {
-    background: #39ff14;
+    background: #ffd700;
     color: black;
-    box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+    box-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
   }
 
   .editor-panel {
-    background: rgba(0,0,0,0.88);
-    border: 1px solid #3a6b1a;
+    background: rgba(13,27,48,0.88);
+    border: 1px solid #7a6210;
     border-radius: 14px;
     padding: 18px;
     margin-bottom: 18px;
@@ -51,24 +51,24 @@
     max-width: 700px;
   }
   .editor-panel h3 {
-    color: #b8f030; font-size: 16px; letter-spacing: 2px;
+    color: #ffd700; font-size: 16px; letter-spacing: 2px;
     margin: 0 0 12px; text-transform: uppercase; font-family: 'Bebas Neue', sans-serif;
   }
   .field-label {
-    color: #88aa44; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; display:block; margin-bottom:6px;
+    color: #c9a84a; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; display:block; margin-bottom:6px;
   }
   .field-input {
-    width:100%; padding:10px; background:rgba(255,255,255,0.07); border:1px solid #3a6b1a;
+    width:100%; padding:10px; background:rgba(255,255,255,0.07); border:1px solid #7a6210;
     border-radius:8px; color:#fff; font-size:14px; box-sizing:border-box; outline:none;
   }
-  .field-input:focus { border-color:#b8f030; }
+  .field-input:focus { border-color:#ffd700; }
   .field-select {
-    background: rgba(255,255,255,0.07); border: 1px solid #3a6b1a; border-radius: 6px;
+    background: rgba(255,255,255,0.07); border: 1px solid #7a6210; border-radius: 6px;
     color: #fff; font-size: 14px; padding: 8px 10px; outline: none; width:100%;
   }
-  .field-select option { background: #111; color: #fff; }
+  .field-select option { background: #0d1b30; color: #fff; }
   .load-btn {
-    background: linear-gradient(135deg, #3a6b1a, #7ddf00); border: none; border-radius: 8px;
+    background: linear-gradient(135deg, #7a6210, #ffe566); border: none; border-radius: 8px;
     color: #fff; cursor: pointer; font-size: 14px; font-weight: 700;
     letter-spacing: 2px; padding: 10px 16px; text-transform: uppercase; width: 100%;
     touch-action: manipulation;
@@ -79,7 +79,7 @@
     letter-spacing: 2px; padding: 12px 18px; text-transform: uppercase; width: 100%;
     touch-action: manipulation;
   }
-  .status-msg { color: #88cc22; font-size: 12px; margin-top: 8px; min-height: 18px; text-align: center; }
+  .status-msg { color: #ffdd66; font-size: 12px; margin-top: 8px; min-height: 18px; text-align: center; }
 
   /* ===== STACKING CARDS (lista de partidos, igual que partidos.html) ===== */
   .stack-container {
@@ -91,7 +91,7 @@
   .stack-section-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 15px; letter-spacing: 3px; text-transform: uppercase;
-    color: #39ff14; margin: 18px 0 10px; text-align:left;
+    color: #ffd700; margin: 18px 0 10px; text-align:left;
   }
   .stack-card {
     position: sticky;
@@ -104,12 +104,12 @@
     background-image: url('fondotarjetas.png');
     background-size: cover;
     background-position: center;
-    border: 4px solid rgba(57,255,20,0.4);
+    border: 4px solid rgba(255,215,0,0.4);
     border-radius: 16px;
     padding: 16px 18px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(57,255,20,0.1);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,215,0,0.1);
   }
   .stack-card-inner::before {
     content: '';
@@ -122,7 +122,7 @@
   .stack-card-inner > * { position: relative; z-index: 1; }
   .stack-top-row {
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px; font-size: 11px; color: rgba(184,240,48,0.7);
+    margin-bottom: 10px; font-size: 11px; color: rgba(255,215,0,0.7);
     letter-spacing: 1px; font-weight: 700; text-transform: uppercase;
   }
   .stack-teams { display: flex; align-items: center; justify-content: center; gap: 18px; }
@@ -130,7 +130,7 @@
   .stack-team.visita { flex-direction: column; text-align: center; }
   .stack-team img { width: 66px; height: 66px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
   .stack-team-name { font-size: 11px; font-weight: 700; color: #fff; text-transform: uppercase; text-align:center; line-height: 1.2; }
-  .stack-score { font-family:'Bebas Neue',sans-serif; font-size: 32px; color: #d4f030; text-shadow: 0 0 10px rgba(120,220,0,0.5); flex-shrink:0; min-width:60px; text-align:center; }
+  .stack-score { font-family:'Bebas Neue',sans-serif; font-size: 32px; color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5); flex-shrink:0; min-width:60px; text-align:center; }
   .stack-score.programado { font-size: 17px; color: rgba(255,255,255,0.4); }
   .stack-bottom-row {
     display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap;
@@ -140,18 +140,18 @@
     font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 12px;
     text-transform: uppercase; letter-spacing: .5px;
   }
-  .stack-badge.normal { color: #b8f030; border: 1px solid #b8f030; }
+  .stack-badge.normal { color: #ffd700; border: 1px solid #ffd700; }
   .stack-badge.penales { color: #ff4444; border: 1px solid #ff4444; }
   .stack-badge.default { color: #ffd700; border: 1px solid #ffd700; }
   .stack-badge.pendiente { color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); }
-  .stack-badge.editable { color:#39ff14; border:1px solid #39ff14; background:rgba(57,255,20,.08); }
+  .stack-badge.editable { color:#ffd700; border:1px solid #ffd700; background:rgba(255,215,0,.08); }
   .stack-badge.consulta { color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.25); }
 
   .estado-programado { box-shadow: inset 0 0 50px rgba(41,166,255,0.08), 0 8px 24px rgba(0,0,0,0.6); }
   .estado-jugado { box-shadow: inset 0 0 50px rgba(255,150,0,0.08), 0 8px 24px rgba(0,0,0,0.6); }
   .estado-pendiente { box-shadow: inset 0 0 50px rgba(255,255,255,0.03), 0 8px 24px rgba(0,0,0,0.6); }
 
-  .borde-normal { border-color: #b8f030 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(184,240,48,0.6), inset 0 0 20px rgba(184,240,48,0.12) !important; }
+  .borde-normal { border-color: #ffd700 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.6), inset 0 0 20px rgba(255,215,0,0.12) !important; }
   .borde-penales { border-color: #ff4444 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(255,68,68,0.6), inset 0 0 20px rgba(255,68,68,0.12) !important; }
   .borde-default { border-color: #ffd700 !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.6), inset 0 0 20px rgba(255,215,0,0.12) !important; }
   .borde-programado { border-color: #29a6ff !important; box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 30px rgba(41,166,255,0.6), inset 0 0 20px rgba(41,166,255,0.12) !important; }
@@ -159,23 +159,23 @@
 
   /* ===== CEDULA - jugadores ===== */
   .ced-score-box { text-align:center; flex:0 0 auto; }
-  .ced-score-num { font-family:'Bebas Neue',sans-serif; font-size:32px; font-weight:900; color:#d4f030; line-height:1.1; }
-  .ced-jornada-tag { font-size:10px; color:rgba(57,255,20,0.6); letter-spacing:1px; font-family:'Bebas Neue',sans-serif; }
+  .ced-score-num { font-family:'Bebas Neue',sans-serif; font-size:32px; font-weight:900; color:#ffd700; line-height:1.1; }
+  .ced-jornada-tag { font-size:10px; color:rgba(255,215,0,0.6); letter-spacing:1px; font-family:'Bebas Neue',sans-serif; }
   .ced-team-col { display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; }
   .ced-team-col img { width:50px; height:50px; object-fit:contain; }
   .ced-team-col span { font-size:11px; font-weight:700; color:#fff; text-transform:uppercase; text-align:center; font-family:'Roboto',Arial,sans-serif; }
-  .ced-col-title { font-family:'Bebas Neue',sans-serif; font-size:13px; font-weight:700; color:rgba(57,255,20,0.7); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; text-align:center; }
+  .ced-col-title { font-family:'Bebas Neue',sans-serif; font-size:13px; font-weight:700; color:rgba(255,215,0,0.7); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; text-align:center; }
   .ced-jug-row { display:flex; align-items:center; gap:4px; padding:7px 2px; border-bottom:0.5px solid rgba(255,255,255,0.06); }
-  .ced-jug-num { font-size:11px; font-weight:700; color:rgba(57,255,20,0.7); min-width:20px; }
+  .ced-jug-num { font-size:11px; font-weight:700; color:rgba(255,215,0,0.7); min-width:20px; }
   .ced-jug-name { font-size:11px; color:#fff; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .ced-jug-result { font-size:11px; color:#d4f030; font-weight:700; }
+  .ced-jug-result { font-size:11px; color:#ffd700; font-weight:700; }
   .ced-btn { border-radius:4px; border:2px solid #444; background:#111; color:#666; font-size:11px; font-weight:700; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
 
-  .cron-bar { display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.4); border-radius:10px; border:1px solid rgba(57,255,20,0.2); }
-  .cron-display { font-family:'Bebas Neue',sans-serif; font-size:28px; font-weight:900; color:#39ff14; min-width:65px; text-align:center; }
+  .cron-bar { display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:12px; padding:10px; background:rgba(0,0,0,0.4); border-radius:10px; border:1px solid rgba(255,215,0,0.2); }
+  .cron-display { font-family:'Bebas Neue',sans-serif; font-size:28px; font-weight:900; color:#ffd700; min-width:65px; text-align:center; }
   .cron-btn { padding:7px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; touch-action:manipulation; border:1px solid; }
 
-  .firma-canvas { background:rgba(255,255,255,0.05); border:1px solid #39ff14; border-radius:8px; cursor:crosshair; touch-action:none; width:100%; display:block; margin-top:6px; }
+  .firma-canvas { background:rgba(255,255,255,0.05); border:1px solid #ffd700; border-radius:8px; cursor:crosshair; touch-action:none; width:100%; display:block; margin-top:6px; }
   .firma-clear-btn { margin-top:6px; padding:6px 14px; background:rgba(255,68,68,0.15); border:1px solid #ff4444; border-radius:8px; color:#ff4444; cursor:pointer; font-size:12px; touch-action:manipulation; }
 
   .empty-msg { text-align: center; color: rgba(255,255,255,0.3); font-size: 14px; padding: 40px; }
