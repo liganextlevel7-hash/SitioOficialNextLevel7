@@ -8,7 +8,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background: radial-gradient(circle at center, #0a2810 0%, #05170a 60%, #030803 100%);
+    background: radial-gradient(circle at center, #16294a 0%, #0d1b30 60%, #0a1830 100%);
     font-family: 'Segoe UI', Arial, sans-serif;
     display: flex;
     align-items: center;
@@ -24,13 +24,13 @@
     top: 18px;
     left: 18px;
     color: #111;
-    background: linear-gradient(145deg, #39ff14, #ffd700);
+    background: linear-gradient(145deg, #ffd700, #f5c518);
     text-decoration: none;
     font-weight: bold;
     font-size: 0.75rem;
     padding: 6px 14px;
     border-radius: 20px;
-    box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     z-index: 10;
   }
   a.volver:hover { transform: scale(1.05); }
@@ -54,10 +54,10 @@
 
   .player-card {
     background: rgba(10, 10, 10, 0.92);
-    border: 2px solid #39ff14;
+    border: 2px solid #ffd700;
     border-radius: 24px;
     padding: 20px;
-    box-shadow: 0 0 20px rgba(57, 255, 20, 0.5);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
     margin-top: -60px;
     position: relative;
     z-index: 1;
@@ -149,9 +149,9 @@
     outline: none;
     min-width: 0;
   }
-  .buscador input:focus { border-color: #39ff14; }
+  .buscador input:focus { border-color: #ffd700; }
   .buscador button {
-    background: linear-gradient(145deg, #39ff14, #0080c0);
+    background: linear-gradient(145deg, #ffd700, #0080c0);
     border: none;
     color: #fff;
     font-weight: bold;
@@ -196,7 +196,7 @@
     color: #8aa;
   }
   .item-fila button {
-    background: #39ff14;
+    background: #ffd700;
     border: none;
     color: #111;
     font-weight: bold;
@@ -243,7 +243,7 @@
 <body>
 
   <a href="index.html" class="volver">← Volver al inicio</a>
-  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#9fd8ff; background:rgba(57,255,20,0.12); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; border:1px solid #39ff14; z-index:10;">🔀 Otras opciones</a>
+  <a href="radio.html" style="position:fixed; top:18px; right:18px; color:#9fd8ff; background:rgba(255,215,0,0.12); text-decoration:none; font-weight:bold; font-size:0.75rem; padding:6px 14px; border-radius:20px; border:1px solid #ffd700; z-index:10;">🔀 Otras opciones</a>
 
   <div class="radio-widget">
     <img src="radio.png" alt="Next Level 7 Radio" class="logo">
@@ -260,7 +260,7 @@
             <div class="agregado-por" id="np-agregado">—</div>
           </div>
         </div>
-        <button id="btn-saltar" title="Saltar canción" style="background:#222; border:1px solid #39ff14; color:#39ff14; border-radius:10px; padding:6px 14px; font-size:0.75rem; cursor:pointer; flex-shrink:0; display:none;">⏭ Saltar</button>
+        <button id="btn-saltar" title="Saltar canción" style="background:#222; border:1px solid #ffd700; color:#ffd700; border-radius:10px; padding:6px 14px; font-size:0.75rem; cursor:pointer; flex-shrink:0; display:none;">⏭ Saltar</button>
       </div>
 
       <!-- ===== ADMIN: solo este aparato reproduce el audio real ===== -->
@@ -279,30 +279,30 @@
           <button id="btn-abrir-login-admin" style="background:none; border:1px solid #333; color:#8aa; border-radius:10px; padding:6px 12px; font-size:0.7rem; cursor:pointer;">🔐 Entrar como administrador</button>
           <div id="admin-login-form" style="display:none; margin-top:8px; gap:6px; flex-direction:column;">
             <input type="password" id="admin-pass-input" placeholder="Contraseña de administrador" style="padding:8px 10px; border-radius:10px; border:1px solid #245; background:#071019; color:#fff; font-size:0.8rem; outline:none;">
-            <button id="btn-confirmar-admin" style="background:linear-gradient(145deg,#39ff14,#ffd700); border:none; color:#111; font-weight:bold; border-radius:10px; padding:8px; font-size:0.8rem; cursor:pointer;">Entrar</button>
+            <button id="btn-confirmar-admin" style="background:linear-gradient(145deg,#ffd700,#f5c518); border:none; color:#111; font-weight:bold; border-radius:10px; padding:8px; font-size:0.8rem; cursor:pointer;">Entrar</button>
             <div id="admin-login-error" style="font-size:0.7rem; color:#ff6b6b; min-height:14px;"></div>
           </div>
         </div>
-        <div id="admin-active-view" style="display:none; background:rgba(57,255,20,0.1); border:1px solid #39ff14; border-radius:10px; padding:8px 10px;">
-          <div style="font-size:0.75rem; font-weight:bold; color:#39ff14;">🎙️ Modo Admin activo — <span id="admin-mi-nombre"></span></div>
+        <div id="admin-active-view" style="display:none; background:rgba(255,215,0,0.1); border:1px solid #ffd700; border-radius:10px; padding:8px 10px;">
+          <div style="font-size:0.75rem; font-weight:bold; color:#ffd700;">🎙️ Modo Admin activo — <span id="admin-mi-nombre"></span></div>
           <div style="font-size:0.68rem; color:#9fd8ff; margin:2px 0 6px;">El audio suena en este aparato. Conéctalo a las bocinas. Cuando termines, cierra tu sesión para que otro pueda entrar.</div>
           <div style="margin:8px 0;">
-            <label for="sel-playlist-modo" style="font-size:0.7rem; color:#a8e896; display:block; margin-bottom:4px;">🎵 Playlist de fondo (cuando la cola está vacía)</label>
-            <select id="sel-playlist-modo" style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid #39ff14; background:#071a07; color:#fff; font-size:0.8rem; outline:none;">
+            <label for="sel-playlist-modo" style="font-size:0.7rem; color:#ffe066; display:block; margin-bottom:4px;">🎵 Playlist de fondo (cuando la cola está vacía)</label>
+            <select id="sel-playlist-modo" style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid #ffd700; background:#1a1400; color:#fff; font-size:0.8rem; outline:none;">
               <option value="dia">☀️ Día</option>
               <option value="noche">🌙 Noche</option>
               <option value="fiesta">🎉 Fiesta</option>
               <option value="general">🔀 General (aleatorio)</option>
             </select>
           </div>
-          <button id="btn-cerrar-admin" style="background:none; border:1px solid #39ff14; color:#39ff14; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer;">Cerrar sesión de admin</button>
+          <button id="btn-cerrar-admin" style="background:none; border:1px solid #ffd700; color:#ffd700; border-radius:8px; padding:5px 10px; font-size:0.7rem; cursor:pointer;">Cerrar sesión de admin</button>
         </div>
       </div>
 
 
       <div class="live-badge">● EN VIVO</div>
 
-      <button id="btn-escuchar" style="display:none; margin-top:14px; background:linear-gradient(145deg,#39ff14,#0080c0); border:none; color:#fff; font-weight:bold; border-radius:14px; padding:10px 22px; font-size:0.9rem; cursor:pointer; width:100%;">▶ Escuchar</button>
+      <button id="btn-escuchar" style="display:none; margin-top:14px; background:linear-gradient(145deg,#ffd700,#0080c0); border:none; color:#fff; font-weight:bold; border-radius:14px; padding:10px 22px; font-size:0.9rem; cursor:pointer; width:100%;">▶ Escuchar</button>
 
       <div class="seccion-titulo">Buscar música (se integra a la Radio Oficial, para todos)</div>
       <div class="buscador">
@@ -909,9 +909,9 @@
       const actual = snap.val();
 
       if (actual) {
-        adminSwitch.style.background = '#39ff14';
+        adminSwitch.style.background = '#ffd700';
         adminSwitchKnob.style.left = '24px';
-        adminSwitchLabel.style.color = '#39ff14';
+        adminSwitchLabel.style.color = '#ffd700';
         adminSwitchLabel.textContent = `Admin conectado: ${actual.nombre || 'alguien'}`;
       } else {
         adminSwitch.style.background = '#7a1e1e';
