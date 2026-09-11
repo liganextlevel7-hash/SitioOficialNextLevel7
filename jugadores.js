@@ -4,16 +4,20 @@ const URL_PARTICIPACIONES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs
 const URL_PARTIDOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv";
 
 const equiposID = {
-  1:"Soldados Del Amor", 2:"Cuervos F.C", 3:"Unión 8", 4:"La Garra",
-  5:"Pumas KAP", 6:"Los Chipotles", 7:"Deportivo CT", 8:"Gusanitos", 9:"Bacachitos"
+  1:"Unión 8", 2:"Cuervos F.C", 3:"Pumas KAP", 4:"Soldados Del Amor",
+  5:"Los Chipotles", 6:"La Garra", 7:"Gusanitos", 8:"Rivera F.C.",
+  9:"Real Alcoholicos", 10:"Gambeta F.C.", 11:"USG Warriors",
+  12:"Real Mala Copa", 13:"Puebla 450"
 };
 
 const logosEquipos = {
-  1:"https://i.imgur.com/gBvmM4v.png", 2:"https://i.imgur.com/fGQAhE5.png",
-  3:"https://i.imgur.com/Qrx4JSj.png", 4:"https://i.imgur.com/8BWFWBW.png",
-  5:"https://i.imgur.com/5TAVBS7.png", 6:"https://i.imgur.com/KTMLCv9.png",
-  7:"https://i.imgur.com/hqOAa7J.png", 8:"https://i.imgur.com/5TARJkD.png",
-  9:"https://i.imgur.com/ddKmNL6.png"
+  1:"https://i.imgur.com/Qrx4JSj.png", 2:"https://i.imgur.com/fGQAhE5.png",
+  3:"https://i.imgur.com/5TAVBS7.png", 4:"https://i.imgur.com/gBvmM4v.png",
+  5:"https://i.imgur.com/KTMLCv9.png", 6:"https://i.imgur.com/8BWFWBW.png",
+  7:"https://i.imgur.com/5TARJkD.png", 8:"https://i.imgur.com/5OdgpY3.png",
+  9:"https://i.imgur.com/TUYE08R.png", 10:"https://i.imgur.com/V9MmhZh.png",
+  11:"https://i.imgur.com/m3BIxVG.png", 12:"https://i.imgur.com/gBZxWD0.png",
+  13:"https://i.imgur.com/YsJU3aK.png"
 };
 
 function jerseySVG(numero) {
@@ -25,7 +29,7 @@ function jerseySVG(numero) {
         <stop offset="100%" style="stop-color:#0d0d1a;stop-opacity:1" />
       </linearGradient>
     </defs>
-    <path fill="url(#jerseyGrad2)" stroke="#39ff14" stroke-width="6" d="M369.656,476.269h-227.31c-27.913,0-50.622-22.708-50.622-50.622V223.836
+    <path fill="url(#jerseyGrad2)" stroke="#ffd700" stroke-width="6" d="M369.656,476.269h-227.31c-27.913,0-50.622-22.708-50.622-50.622V223.836
       c-5.662,3.533-12.161,5.594-19.048,5.959c-11.077,0.585-21.6-3.281-29.655-10.895l-30.459-28.789
       c-14.842-14.026-16.774-36.908-4.498-53.226L71.68,52.326c7.236-9.617,21.224-16.597,33.258-16.597h51.088
       c9.351,0,17.572,5.032,22.557,13.806c8.006,14.096,37.169,28.365,77.416,28.365c11.392,0,22.428-1.163,32.797-3.458
@@ -36,14 +40,14 @@ function jerseySVG(numero) {
       c-0.038,1.465-0.077,2.858-0.077,4.053v214.744c0,12.841,10.448,23.289,23.289,23.289h227.311
       c12.841,0,23.289-10.448,23.289-23.289c0-7.548,6.118-13.667,13.667-13.667s13.667,6.118,13.667,13.667
       C420.278,453.561,397.569,476.269,369.656,476.269z"/>
-    <path fill="url(#jerseyGrad2)" stroke="#39ff14" stroke-width="6" d="M406.612,350.299c-7.548,0-13.667-6.119-13.667-13.667v-125.73c0-1.196-0.038-2.59-0.078-4.053
+    <path fill="url(#jerseyGrad2)" stroke="#ffd700" stroke-width="6" d="M406.612,350.299c-7.548,0-13.667-6.119-13.667-13.667v-125.73c0-1.196-0.038-2.59-0.078-4.053
       c-0.294-11.209-0.599-22.8,10.243-26.967c4.77-1.831,11.868-1.45,17.486,5.122l11.166,13.052c2.292,2.679,5.491,4.257,9.012,4.443
       c3.522,0.198,6.87-1.043,9.431-3.464l30.459-28.789c4.72-4.461,5.335-11.738,1.431-16.927L418.477,68.76
       c-2.043-2.716-8.018-5.698-11.417-5.698h-51.377c-7.548,0-13.667-6.119-13.667-13.667s6.119-13.667,13.667-13.667h51.377
       c12.035,0,26.023,6.98,33.258,16.598l63.618,84.559c12.277,16.317,10.343,39.2-4.498,53.226l-30.46,28.789
       c-8.056,7.614-18.581,11.474-29.655,10.895c-6.888-0.366-13.385-2.424-19.048-5.959v112.797
       C420.278,344.181,414.16,350.299,406.612,350.299z"/>
-    <text x="256" y="370" text-anchor="middle" font-family="Arial" font-weight="900" font-size="160" fill="#39ff14" opacity="0.9">${numero}</text>
+    <text x="256" y="370" text-anchor="middle" font-family="Arial" font-weight="900" font-size="160" fill="#ffd700" opacity="0.9">${numero}</text>
   </svg>`;
 }
 
@@ -104,26 +108,26 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     /* ===== PLAYER CARD (base, sin cambios) ===== */
     .pcards-section { margin-bottom: 24px; }
     .pcards-title {
-      font-size: 18px; font-weight: 900; color: #39ff14;
+      font-size: 18px; font-weight: 900; color: #ffd700;
       letter-spacing: 3px; text-transform: uppercase;
       margin-bottom: 16px; text-align: center;
-      text-shadow: 0 0 10px #39ff14;
+      text-shadow: 0 0 10px #ffd700;
     }
     .pcard {
       background: linear-gradient(160deg, #0a0f1e 0%, #050810 100%);
-      border: 1px solid rgba(57,255,20,0.35);
+      border: 1px solid rgba(255,215,0,0.35);
       border-radius: 18px;
       overflow: hidden;
-      box-shadow: 0 0 15px rgba(57,255,20,0.15);
+      box-shadow: 0 0 15px rgba(255,215,0,0.15);
       width: 100%; height: 100%;
     }
     .pcard-header {
       display: flex; justify-content: space-between; align-items: center;
       padding: 10px 14px 6px;
-      border-bottom: 1px solid rgba(57,255,20,0.1);
+      border-bottom: 1px solid rgba(255,215,0,0.1);
     }
     .pcard-equipo-nombre {
-      font-size: 10px; font-weight: 700; color: rgba(57,255,20,0.7);
+      font-size: 10px; font-weight: 700; color: rgba(255,215,0,0.7);
       text-transform: uppercase; letter-spacing: 1px;
     }
     .pcard-logo-equipo { width: 36px; height: 36px; object-fit: contain; }
@@ -148,12 +152,12 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     .pcard-foto-circle {
       position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
       width: 62px; height: 62px; border-radius: 50%; object-fit: cover;
-      border: 3px solid #39ff14; box-shadow: 0 0 12px rgba(57,255,20,0.6);
+      border: 3px solid #ffd700; box-shadow: 0 0 12px rgba(255,215,0,0.6);
       background: #111;
     }
     .pcard-footer {
       background: rgba(0,0,0,0.5);
-      border-top: 1px solid rgba(57,255,20,0.15);
+      border-top: 1px solid rgba(255,215,0,0.15);
       padding: 10px 14px; text-align: center;
     }
     .pcard-nombre {
@@ -161,16 +165,16 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
       text-transform: uppercase; letter-spacing: 1px;
     }
     .pcard-posicion {
-      display: inline-block; background: #39ff14; color: black;
+      display: inline-block; background: #ffd700; color: black;
       padding: 2px 10px; border-radius: 10px;
       font-size: 10px; font-weight: 700; margin-top: 5px;
     }
 
     /* ===== JUGADOR CARD (por equipo, base sin cambios) ===== */
     .jugador-card {
-      background: rgba(0,0,0,0.75); border: 2px solid #39ff14;
+      background: rgba(0,0,0,0.75); border: 2px solid #ffd700;
       border-radius: 18px; padding: 12px; text-align: center;
-      color: white; box-shadow: 0 0 12px #39ff14;
+      color: white; box-shadow: 0 0 12px #ffd700;
       display: flex; flex-direction: column;
       align-items: center; gap: 8px;
       width: 100%; height: 100%; box-sizing: border-box;
@@ -180,11 +184,11 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     .jugador-foto-circle {
       position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
       width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
-      border: 3px solid #39ff14; box-shadow: 0 0 10px #39ff14; background: #111;
+      border: 3px solid #ffd700; box-shadow: 0 0 10px #ffd700; background: #111;
     }
     .jugador-info h3 { margin: 4px 0 0 0; font-size: 13px; color: #fff; font-weight: bold; }
     .jugador-posicion {
-      display: inline-block; background: #39ff14; color: black;
+      display: inline-block; background: #ffd700; color: black;
       padding: 2px 10px; border-radius: 12px; font-size: 11px;
       font-weight: bold; margin-top: 4px;
     }
@@ -194,7 +198,7 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     }
     .jugador-stats .stat { background: rgba(255,255,255,0.07); border-radius: 8px; padding: 5px 3px; text-align: center; }
     .jugador-stats .stat span { display: block; font-size: 14px; }
-    .jugador-stats .stat strong { display: block; font-size: 13px; color: #39ff14; font-weight: 900; }
+    .jugador-stats .stat strong { display: block; font-size: 13px; color: #ffd700; font-weight: 900; }
     .jugador-stats .stat small { display: block; font-size: 9px; color: #aaa; }
 
     /* ===== CARRUSEL 3D ===== */
@@ -239,13 +243,13 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     }
     .pj-flecha {
       position: absolute; top: 50%; transform: translateY(-50%);
-      background: rgba(0,0,0,0.5); border: 1px solid rgba(57,255,20,0.4);
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,215,0,0.4);
       border-radius: 50%; width: 38px; height: 38px;
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 17px; color: #39ff14; z-index: 10;
+      cursor: pointer; font-size: 17px; color: #ffd700; z-index: 10;
       transition: all 0.3s; touch-action: manipulation; user-select: none;
     }
-    .pj-flecha:hover { background: rgba(57,255,20,0.2); }
+    .pj-flecha:hover { background: rgba(255,215,0,0.2); }
     .pj-fl { left: 0; } .pj-fr { right: 0; }
     .pj-dots {
       display: flex; justify-content: center; gap: 7px; margin-top: 6px;
@@ -254,7 +258,7 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
       width: 7px; height: 7px; border-radius: 50%;
       background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s;
     }
-    .pj-dot.pj-on { background: #39ff14; transform: scale(1.3); }
+    .pj-dot.pj-on { background: #ffd700; transform: scale(1.3); }
 
     /* ===== MÓVIL: proporciones recalculadas para que el jersey ya no se recorte =====
        Antes el jersey-wrap tenía un ancho fijo mayor que el espacio real disponible
