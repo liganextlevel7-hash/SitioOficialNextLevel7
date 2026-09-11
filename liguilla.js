@@ -32,7 +32,7 @@ const CQ = [
     {border:"#ffd700",glow:"rgba(255,215,0,0.7)"},
     {border:"#c0c0c0",glow:"rgba(192,192,192,0.7)"},
     {border:"#b87333",glow:"rgba(184,115,51,0.7)"},
-    {border:"#39ff14",glow:"rgba(57,255,20,0.7)"},
+    {border:"#29b6f6",glow:"rgba(41,182,246,0.7)"},
 ];
 const CS = {border:"rgba(255,255,255,0.5)",glow:"rgba(255,255,255,0.2)"};
 const CF = {border:"#ff9800",glow:"rgba(255,152,0,0.6)"};
