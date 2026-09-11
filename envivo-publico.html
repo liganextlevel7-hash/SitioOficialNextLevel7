@@ -6,10 +6,10 @@
 <title>Next Level 7 — EN VIVO</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:100vh;}
+body{background:#0a1830;color:#e8f0ea;font-family:Arial,sans-serif;min-height:100vh;}
 /* ANIMACIÓN GOL */
-#animacion-gol{display:none;position:fixed;inset:0;z-index:9999;background:#0a0f0a;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;animation:bgIn .25s ease-out;}
-@keyframes bgIn{0%{background:rgba(10,15,10,0);}100%{background:#0a0f0a;}}
+#animacion-gol{display:none;position:fixed;inset:0;z-index:9999;background:#0a1830;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;animation:bgIn .25s ease-out;}
+@keyframes bgIn{0%{background:rgba(10,15,10,0);}100%{background:#0a1830;}}
 .gol-destello{position:absolute;width:120vmax;height:120vmax;border-radius:50%;background:radial-gradient(circle,var(--c1,rgba(255,209,102,.35)) 0%,var(--c2,rgba(76,175,80,.18)) 35%,rgba(10,15,10,0) 68%);animation:destello 1.8s ease-out forwards;}
 @keyframes destello{0%{transform:scale(0);opacity:0;}30%{opacity:1;}100%{transform:scale(1);opacity:0;}}
 .gol-anillo{position:absolute;width:60px;height:60px;border-radius:50%;border:3px solid var(--ring1,#ffd166);opacity:0;animation:anillo 1.4s ease-out forwards;}
@@ -28,24 +28,24 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 #gol-detalle{margin-top:10px;opacity:0;animation:detalleIn .5s ease-out .35s forwards;}
 #gol-jugador{font-size:17px;font-weight:800;color:#fff;letter-spacing:.5px;}
 #gol-equipo{font-size:12px;font-weight:700;color:var(--accent,#ffd166);text-transform:uppercase;letter-spacing:2px;margin-top:3px;}
-#gol-marcador{margin-top:16px;display:inline-flex;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,209,102,.3);border-radius:12px;padding:8px 18px;opacity:0;animation:detalleIn .5s ease-out .5s forwards;font-size:13px;font-weight:700;color:#8aab91;letter-spacing:.3px;}
+#gol-marcador{margin-top:16px;display:inline-flex;align-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,209,102,.3);border-radius:12px;padding:8px 18px;opacity:0;animation:detalleIn .5s ease-out .5s forwards;font-size:13px;font-weight:700;color:#94a3b8;letter-spacing:.3px;}
 #gol-marcador .gol-num{font-size:22px;font-weight:900;color:#ffd166;padding:0 8px;}
 @keyframes detalleIn{0%{opacity:0;transform:translateY(8px);}100%{opacity:1;transform:translateY(0);}}
 .inicio-btn{position:fixed;top:12px;left:12px;z-index:500;display:inline-flex;align-items:center;gap:5px;background:#000;color:#ffd166;border:1px solid #ffd166;border-radius:20px;padding:6px 13px;font-size:11px;font-weight:700;text-decoration:none;}
 .wrap{max-width:440px;margin:0 auto;padding:14px;}
-.header{background:linear-gradient(135deg,#1a5c2a,#2d8a45);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;}
+.header{background:linear-gradient(135deg,#0a1830,#16294a);border-radius:14px;padding:16px;text-align:center;margin-bottom:14px;}
 .header h1{font-size:22px;font-weight:900;letter-spacing:2px;color:#fff;}
 .header p{font-size:11px;opacity:.8;color:#fff;margin-top:3px;}
 .live-badge{display:inline-flex;align-items:center;gap:6px;background:#e03030;color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:20px;margin-bottom:8px;}
 .live-dot{width:7px;height:7px;background:white;border-radius:50%;animation:blink 1.2s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
-.encuentro-card{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:14px;margin-bottom:10px;transition:all .2s;}
+.encuentro-card{background:#0d1b30;border:1px solid #223a55;border-radius:12px;padding:14px;margin-bottom:10px;transition:all .2s;}
 .encuentro-card.transmitiendo{border-color:#e03030;cursor:pointer;}
 .encuentro-card.finalizado-card{border-color:#1a5c2a;cursor:pointer;}
 .encuentro-logos{display:flex;align-items:center;gap:10px;flex:1;justify-content:center;}
-.encuentro-logos img{width:38px;height:38px;object-fit:contain;background:#0f1a13;border-radius:6px;padding:2px;}
+.encuentro-logos img{width:38px;height:38px;object-fit:contain;background:#0a1830;border-radius:6px;padding:2px;}
 .encuentro-score{font-size:20px;font-weight:900;color:#fff;padding:0 8px;}
-.encuentro-names{display:flex;justify-content:space-between;font-size:11px;color:#8aab91;margin-bottom:8px;}
+.encuentro-names{display:flex;justify-content:space-between;font-size:11px;color:#94a3b8;margin-bottom:8px;}
 .estado-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;}
 .estado-live{background:rgba(224,48,48,0.2);color:#ff6060;border:1px solid #e03030;}
 .estado-fin{background:rgba(26,92,42,0.2);color:#5dba6a;border:1px solid #1a5c2a;}
@@ -53,42 +53,42 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
 .ver-btn{display:block;width:100%;text-align:center;background:rgba(224,48,48,0.15);color:#ff6060;border:1px solid #e03030;border-radius:8px;padding:8px;font-size:12px;font-weight:700;margin-top:10px;cursor:pointer;}
 .ver-btn.fin-btn{background:rgba(26,92,42,0.15);color:#5dba6a;border-color:#1a5c2a;}
 .scoreboard{display:grid;grid-template-columns:1fr 100px 1fr;gap:10px;align-items:center;margin-bottom:12px;}
-.team-card{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:12px 8px;text-align:center;}
-.tlogo-box{width:56px;height:56px;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:#0f1a13;border-radius:8px;padding:4px;}
+.team-card{background:#0d1b30;border:1px solid #223a55;border-radius:12px;padding:12px 8px;text-align:center;}
+.tlogo-box{width:56px;height:56px;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:#0a1830;border-radius:8px;padding:4px;}
 .tlogo-box img{width:100%;height:100%;object-fit:contain;}
 .tname{font-size:13px;font-weight:700;color:#e8f0ea;}
-.score-box{background:linear-gradient(180deg,#1a5c2a,#0f3018);border-radius:14px;padding:12px 6px;text-align:center;border:1px solid #1a5c2a;}
+.score-box{background:linear-gradient(180deg,#16294a,#0a1830);border-radius:14px;padding:12px 6px;text-align:center;border:1px solid #ffd700;}
 .score-nums{display:flex;align-items:center;justify-content:center;gap:5px;}
 .snum{font-size:44px;font-weight:900;color:#fff;line-height:1;}
 .ssep{font-size:22px;color:rgba(255,255,255,.4);}
 .stime{font-size:24px;color:#fff;margin-top:6px;font-weight:900;letter-spacing:2px;}
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px;}
-.stat-mini{background:#1a2a1e;border:1px solid #2d4035;border-radius:10px;padding:10px;text-align:center;}
+.stat-mini{background:#0d1b30;border:1px solid #223a55;border-radius:10px;padding:10px;text-align:center;}
 .stat-num{font-size:20px;font-weight:900;color:#e8f0ea;}
-.stat-lbl{font-size:10px;color:#8aab91;margin-top:2px;}
+.stat-lbl{font-size:10px;color:#94a3b8;margin-top:2px;}
 .yb{display:inline-block;width:11px;height:15px;background:#f9a825;border-radius:2px;vertical-align:middle;margin-right:3px;}
 .rb{display:inline-block;width:11px;height:15px;background:#ef5350;border-radius:2px;vertical-align:middle;margin-right:3px;}
-.section{background:#1a2a1e;border:1px solid #2d4035;border-radius:12px;padding:14px;margin-bottom:12px;}
-.section h3{font-size:11px;color:#8aab91;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.section{background:#0d1b30;border:1px solid #223a55;border-radius:12px;padding:14px;margin-bottom:12px;}
+.section h3{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
 .events-list{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;}
-.ev{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#243028;border-radius:8px;font-size:12px;border-left:3px solid #2d4035;}
+.ev{display:flex;align-items:center;gap:8px;padding:8px 11px;background:#16294a;border-radius:8px;font-size:12px;border-left:3px solid #223a55;}
 .ev.goal{border-left-color:#4caf50;}
 .ev.yellow{border-left-color:#f9a825;}
 .ev.red{border-left-color:#ef5350;}
-.ev-min{font-size:11px;color:#8aab91;min-width:32px;font-weight:700;}
+.ev-min{font-size:11px;color:#94a3b8;min-width:32px;font-weight:700;}
 .ev-txt{color:#e8f0ea;flex:1;}
-.ev-team{font-size:11px;color:#8aab91;}
-.no-ev{text-align:center;color:#8aab91;font-size:13px;padding:22px;}
-.spill{display:inline-block;font-size:11px;padding:4px 12px;border-radius:20px;background:#243028;color:#8aab91;border:1px solid #2d4035;margin-bottom:10px;}
-.cancha-label{display:block;font-size:11px;color:#8aab91;margin-top:4px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
-.back-btn{border:1px solid #2d4035;background:#1a2a1e;color:#8aab91;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;margin-bottom:12px;display:block;}
+.ev-team{font-size:11px;color:#94a3b8;}
+.no-ev{text-align:center;color:#94a3b8;font-size:13px;padding:22px;}
+.spill{display:inline-block;font-size:11px;padding:4px 12px;border-radius:20px;background:#16294a;color:#94a3b8;border:1px solid #223a55;margin-bottom:10px;}
+.cancha-label{display:block;font-size:11px;color:#94a3b8;margin-top:4px;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+.back-btn{border:1px solid #223a55;background:#0d1b30;color:#94a3b8;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;margin-bottom:12px;display:block;}
 .offline{text-align:center;padding:60px 20px;}
-.offline h2{font-size:20px;color:#8aab91;margin-bottom:10px;}
-.offline p{font-size:13px;color:#8aab91;line-height:1.8;}
+.offline h2{font-size:20px;color:#94a3b8;margin-bottom:10px;}
+.offline p{font-size:13px;color:#94a3b8;line-height:1.8;}
 
 /* ── RADIO MINI (flotante, siempre visible) ── */
-.radio-widget-mini{position:fixed;bottom:14px;right:14px;z-index:4000;width:150px;background:#0f1a13;border:1px solid #ffd166;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.5)}
-.radio-mini-header{display:flex;align-items:center;gap:6px;padding:8px 10px;cursor:pointer;background:linear-gradient(135deg,#064e26,#0a1628);font-size:11px;font-weight:700;color:#ffd166;user-select:none}
+.radio-widget-mini{position:fixed;bottom:14px;right:14px;z-index:4000;width:150px;background:#0a1830;border:1px solid #ffd166;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.radio-mini-header{display:flex;align-items:center;gap:6px;padding:8px 10px;cursor:pointer;background:linear-gradient(135deg,#0a1830,#0d1b30);font-size:11px;font-weight:700;color:#ffd166;user-select:none}
 .radio-live-dot{color:#ff4d4d;animation:radiopulse 1.4s infinite;font-size:9px}
 @keyframes radiopulse{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
 .radio-toggle-arrow{margin-left:auto;font-size:10px}
@@ -154,7 +154,7 @@ body{background:#0f1a13;color:#e8f0ea;font-family:Arial,sans-serif;min-height:10
     <p>Cuando comience el partido<br>podrás seguirlo aquí<br>en tiempo real.</p>
   </div>
   <div id="vista-seleccion" style="display:none;">
-    <p style="font-size:12px;color:#8aab91;margin-bottom:10px;text-align:center;">Encuentros Programados de la Fecha</p>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;text-align:center;">Encuentros Programados de la Fecha</p>
     <div id="lista-encuentros"></div>
   </div>
   <div id="vista-live" style="display:none;">
@@ -432,11 +432,11 @@ function renderSeleccion(){
     var idL = p.Equipo_Local || p.equipo_local, idV = p.Equipo_Visita || p.equipo_visita;
     var eL = equipos[idL]||{nombre:idL,logo:''}, eV = equipos[idV]||{nombre:idV,logo:''};
     html += '<div class="encuentro-card"><div style="text-align:center;margin-bottom:8px;"><span class="estado-badge estado-espera">⏳ Programado</span></div>'
-      + '<div class="encuentro-logos"><img src="'+eL.logo+'" onerror="this.style.opacity=0"><span class="encuentro-score" style="color:#8aab91;">VS</span><img src="'+eV.logo+'" onerror="this.style.opacity=0"></div>'
+      + '<div class="encuentro-logos"><img src="'+eL.logo+'" onerror="this.style.opacity=0"><span class="encuentro-score" style="color:#94a3b8;">VS</span><img src="'+eV.logo+'" onerror="this.style.opacity=0"></div>'
       + '<div class="encuentro-names"><span>'+eL.nombre+'</span><span>'+eV.nombre+'</span></div></div>';
   });
 
-  if(!html) html='<div style="text-align:center;color:#8aab91;padding:20px;font-size:13px;">No hay partidos programados libres para hoy</div>';
+  if(!html) html='<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">No hay partidos programados libres para hoy</div>';
   document.getElementById('lista-encuentros').innerHTML=html;
 }
 
