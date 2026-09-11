@@ -2,15 +2,19 @@ const URL_ESTADISTICAS =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=979195152&single=true&output=csv";
 
 const logos = {
-"Soldados Del Amor":"https://i.imgur.com/gBvmM4v.png",
-"Cuervos F.C":"https://i.imgur.com/fGQAhE5.png",
-"Unión 8":"https://i.imgur.com/Qrx4JSj.png",
-"La Garra":"https://i.imgur.com/8BWFWBW.png",
-"Pumas KAP":"https://i.imgur.com/5TAVBS7.png",
-"Los Chipotles":"https://i.imgur.com/KTMLCv9.png",
-"Deportivo CT":"https://i.imgur.com/hqOAa7J.png",
-"Gusanitos":"https://i.imgur.com/5TARJkD.png",
-"Bacachitos":"https://i.imgur.com/ddKmNL6.png"
+ "Unión 8":"https://i.imgur.com/Qrx4JSj.png",
+  "Cuervos F.C":"https://i.imgur.com/fGQAhE5.png",
+  "Pumas KAP":"https://i.imgur.com/5TAVBS7.png",
+  "Soldados Del Amor":"https://i.imgur.com/gBvmM4v.png",
+  "Los Chipotles":"https://i.imgur.com/KTMLCv9.png",
+  "La Garra":"https://i.imgur.com/8BWFWBW.png",
+  "Gusanitos":"https://i.imgur.com/5TARJkD.png",
+  "Rivera F.C.":"https://i.imgur.com/5OdgpY3.png",
+  "Real Alcoholicos":"https://i.imgur.com/TUYE08R.png",
+  "Gambeta F.C.":"https://i.imgur.com/V9MmhZh.png",
+  "USG Warriors":"https://i.imgur.com/m3BIxVG.png",
+  "Real Mala Copa":"https://i.imgur.com/gBZxWD0.png",
+  "Puebla 450":"https://i.imgur.com/YsJU3aK.png""
 };
 
 async function cargarEquipos(){
