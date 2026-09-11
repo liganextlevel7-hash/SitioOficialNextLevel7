@@ -10,15 +10,19 @@ const URL_PARTICIPACIONES =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv";
 
 const logosEquipos = {
-  1: "https://i.imgur.com/gBvmM4v.png",
+  1: "https://i.imgur.com/Qrx4JSj.png",
   2: "https://i.imgur.com/fGQAhE5.png",
-  3: "https://i.imgur.com/Qrx4JSj.png",
-  4: "https://i.imgur.com/8BWFWBW.png",
-  5: "https://i.imgur.com/5TAVBS7.png",
-  6: "https://i.imgur.com/KTMLCv9.png",
-  7: "https://i.imgur.com/hqOAa7J.png",
-  8: "https://i.imgur.com/5TARJkD.png",
-  9: "https://i.imgur.com/ddKmNL6.png"
+  3: "https://i.imgur.com/5TAVBS7.png",
+  4: "https://i.imgur.com/gBvmM4v.png",
+  5: "https://i.imgur.com/KTMLCv9.png",
+  6: "https://i.imgur.com/8BWFWBW.png",
+  7: "https://i.imgur.com/5TARJkD.png",
+  8: "https://i.imgur.com/5OdgpY3.png",
+  9: "https://i.imgur.com/TUYE08R.png",
+  10: "https://i.imgur.com/V9MmhZh.png",
+  11: "https://i.imgur.com/m3BIxVG.png",
+  12: "https://i.imgur.com/gBZxWD0.png",
+  13: "https://i.imgur.com/YsJU3aK.png"
 };
 
 function parseCSV(texto) {
@@ -104,13 +108,13 @@ function siluetaSVG(tipo, pos, numero, logoUrl) {
       background: rgba(0,0,0,0.75);
       border-radius: 20px;
       padding: 14px;
-      box-shadow: 0 0 10px #39ff14, 0 0 20px rgba(57,255,20,0.4);
-      border: 1px solid #39ff14;
+      box-shadow: 0 0 10px #ffd700, 0 0 20px rgba(255,215,0,0.4);
+      border: 1px solid #ffd700;
       transition: 0.3s;
     }
     .gol-outer:hover {
       transform: translateY(-6px);
-      box-shadow: 0 0 18px #39ff14, 0 0 35px rgba(57,255,20,0.6);
+      box-shadow: 0 0 18px #ffd700, 0 0 35px rgba(255,215,0,0.6);
     }
     .fifa-carta {
       width: 120px;
@@ -269,7 +273,7 @@ function crearCarta(jugador, tipo) {
 async function cargarTopGoleadores() {
   const contenedor = document.getElementById("top-goleadores");
   if (!contenedor) return;
-  contenedor.innerHTML = `<div style="text-align:center;color:#39ff14;padding:20px;">Cargando goleadores...</div>`;
+  contenedor.innerHTML = `<div style="text-align:center;color:#ffd700;padding:20px;">Cargando goleadores...</div>`;
 
   try {
     const [resJ, resE, resP] = await Promise.all([
