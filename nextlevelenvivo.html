@@ -6,7 +6,7 @@
 <title>Next Level 7 — Admin</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--verde:#1a5c2a;--verde2:#2d8a45;--rojo:#e03030;--bg:#0f1a13;--bg2:#1a2a1e;--bg3:#243028;--border:#2d4035;--text:#e8f0ea;--text2:#8aab91;--yellow:#f9a825;--red:#ef5350;}
+:root{--verde:#8a6d00;--verde2:#f5c518;--rojo:#e03030;--bg:#0a1830;--bg2:#0d1b30;--bg3:#16294a;--border:#223a55;--text:#e8f0ea;--text2:#94a3b8;--yellow:#f9a825;--red:#ef5350;}
 body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-height:100vh;}
 .app{max-width:700px;margin:0 auto;padding:14px;}
 .inicio-btn{position:fixed;top:12px;left:12px;z-index:10000;display:inline-flex;align-items:center;gap:5px;background:#000;color:#ffd166;border:1px solid #ffd166;border-radius:20px;padding:6px 13px;font-size:11px;font-weight:700;text-decoration:none;}
@@ -26,14 +26,14 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 .section h3{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;}
 .partido-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;margin-bottom:7px;}
 .partido-item:hover{border-color:var(--verde2);}
-.plogo{width:32px;height:32px;object-fit:contain;background:#1a2a1e;border-radius:4px;padding:2px;}
+.plogo{width:32px;height:32px;object-fit:contain;background:#0d1b30;border-radius:4px;padding:2px;}
 .pinfo{flex:1;}
 .pinfo strong{font-size:13px;color:var(--text);display:block;}
 .pinfo small{font-size:11px;color:var(--text2);}
 .pbadge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:#1e3a20;color:#5dba6a;white-space:nowrap;}
 .scoreboard{display:grid;grid-template-columns:1fr 100px 1fr;gap:10px;align-items:center;margin-bottom:12px;}
 .team-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;}
-.tlogo-box{width:56px;height:56px;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:#1a2a1e;border-radius:8px;padding:4px;}
+.tlogo-box{width:56px;height:56px;margin:0 auto 7px;display:flex;align-items:center;justify-content:center;background:#0d1b30;border-radius:8px;padding:4px;}
 .tlogo-box img{width:100%;height:100%;object-fit:contain;}
 .tname{font-size:13px;font-weight:700;color:var(--text);}
 .score-box{background:linear-gradient(180deg,var(--verde),#0f3018);border-radius:14px;padding:12px 6px;text-align:center;border:1px solid var(--verde);}
@@ -48,7 +48,7 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 .actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .act-col{display:flex;flex-direction:column;gap:8px;}
 .act-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--text);padding-bottom:6px;border-bottom:1px solid var(--border);}
-.act-logo{width:26px;height:26px;object-fit:contain;background:#1a2a1e;border-radius:4px;padding:2px;}
+.act-logo{width:26px;height:26px;object-fit:contain;background:#0d1b30;border-radius:4px;padding:2px;}
 .act-row{display:flex;align-items:center;justify-content:space-between;gap:6px;}
 .act-row span{font-size:12px;color:var(--text2);}
 .bpair{display:flex;gap:4px;}
@@ -116,16 +116,16 @@ var db = firebase.database();
 </head>
 <body>
 
-<div id="login-screen" style="position:fixed;inset:0;background:#0f1a13;display:flex;align-items:center;justify-content:center;z-index:9999;">
-  <div style="background:#1a2a1e;border:1px solid #2d4035;border-radius:16px;padding:32px 28px;text-align:center;max-width:320px;width:90%;">
+<div id="login-screen" style="position:fixed;inset:0;background:#0a1830;display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="background:#0d1b30;border:1px solid #223a55;border-radius:16px;padding:32px 28px;text-align:center;max-width:320px;width:90%;">
     <div style="font-size:40px;margin-bottom:12px;">⚽</div>
     <h2 style="color:#e8f0ea;font-size:20px;font-weight:900;letter-spacing:1px;margin-bottom:4px;">NEXT LEVEL 7</h2>
-    <p style="color:#8aab91;font-size:12px;margin-bottom:24px;">Panel de Transmisión — Admin</p>
+    <p style="color:#94a3b8;font-size:12px;margin-bottom:24px;">Panel de Transmisión — Admin</p>
     <input type="password" id="pwd-input" value="" placeholder="Contraseña" autocomplete="off"
-      style="width:100%;background:#0f1a13;border:1px solid #2d4035;color:#e8f0ea;border-radius:8px;padding:10px 14px;font-size:14px;margin-bottom:10px;text-align:center;letter-spacing:3px;"
+      style="width:100%;background:#0a1830;border:1px solid #223a55;color:#e8f0ea;border-radius:8px;padding:10px 14px;font-size:14px;margin-bottom:10px;text-align:center;letter-spacing:3px;"
       onkeydown="if(event.key==='Enter')checkPwd()">
     <button onclick="checkPwd()" 
-      style="width:100%;background:#1a5c2a;border:1px solid #2d8a45;color:#fff;border-radius:8px;padding:10px;font-size:14px;font-weight:700;cursor:pointer;">
+      style="width:100%;background:#8a6d00;border:1px solid #f5c518;color:#fff;border-radius:8px;padding:10px;font-size:14px;font-weight:700;cursor:pointer;">
       Entrar
     </button>
     <div id="pwd-error" style="color:#ef5350;font-size:12px;margin-top:10px;display:none;">❌ Contraseña incorrecta</div>
