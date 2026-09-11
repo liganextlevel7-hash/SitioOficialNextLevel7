@@ -64,10 +64,10 @@ function renderModoArbitroRow() {
   const el = document.getElementById('modo-arbitro-row');
   el.innerHTML = modoArbitro
     ? `<div style="display:flex;align-items:center;gap:10px;">
-         <span style="font-size:12px;color:#39ff14;">Árbitro: <b>${usuarioActual?.Nombre||'Árbitro'}</b></span>
+         <span style="font-size:12px;color:#ffd700;">Árbitro: <b>${usuarioActual?.Nombre||'Árbitro'}</b></span>
          <button onclick="cerrarSesion()" style="padding:6px 12px;background:rgba(255,68,68,0.2);border:1px solid #ff4444;border-radius:8px;color:#ff4444;cursor:pointer;font-size:12px;touch-action:manipulation;">Salir</button>
        </div>`
-    : `<button onclick="mostrarLogin()" style="padding:8px 16px;background:rgba(57,255,20,0.1);border:1px solid #39ff14;border-radius:8px;color:#39ff14;cursor:pointer;font-size:13px;font-weight:bold;touch-action:manipulation;">Modo Árbitro</button>`;
+    : `<button onclick="mostrarLogin()" style="padding:8px 16px;background:rgba(255,215,0,0.1);border:1px solid #ffd700;border-radius:8px;color:#ffd700;cursor:pointer;font-size:13px;font-weight:bold;touch-action:manipulation;">Modo Árbitro</button>`;
 }
 
 // ===== LISTA (tarjetas apiladas, igual estilo que partidos.html) =====
@@ -209,7 +209,7 @@ function abrirCedula(idPartido) {
     ${esEditable ? `
     <div class="cron-bar">
       <span id="cron-display" class="cron-display">00:00</span>
-      <button id="btn-cron" onclick="toggleCron()" class="cron-btn" style="background:rgba(57,255,20,0.1);border-color:#39ff14;color:#39ff14;">INICIAR</button>
+      <button id="btn-cron" onclick="toggleCron()" class="cron-btn" style="background:rgba(255,215,0,0.1);border-color:#ffd700;color:#ffd700;">INICIAR</button>
       <button onclick="resetCron()" class="cron-btn" style="background:rgba(255,68,68,0.1);border-color:#ff4444;color:#ff4444;">RESET</button>
     </div>` : ''}
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;">
@@ -221,7 +221,7 @@ function abrirCedula(idPartido) {
         <div class="ced-jornada-tag">${partidoActual.Jornada?'JORNADA '+partidoActual.Jornada:''}</div>
         <div id="marcador-live" class="ced-score-num">${gL} - ${gV}</div>
         <div style="font-size:10px;color:rgba(255,255,255,0.4);">${partidoActual.Fecha||''}</div>
-        <div style="font-size:10px;color:${esEditable?'#39ff14':'rgba(255,255,255,0.3)'};">${esEditable?'MODO EDICIÓN':'SOLO CONSULTA'}</div>
+        <div style="font-size:10px;color:${esEditable?'#ffd700':'rgba(255,255,255,0.3)'};">${esEditable?'MODO EDICIÓN':'SOLO CONSULTA'}</div>
       </div>
       <div class="ced-team-col">
         <img src="${eqV.URL||''}">
@@ -255,8 +255,8 @@ function abrirCedula(idPartido) {
         <span class="ced-jug-name">${jug.Nombre||'#'+id}</span>
         <button id="btn-v-${id}" onclick="tgV('${id}')" class="ced-btn" style="width:32px;height:28px;">V</button>
         <button onclick="gMenos('${id}')" class="ced-btn" style="width:28px;height:28px;color:#fff;font-size:15px;line-height:1;">-</button>
-        <span id="g-${id}" style="font-size:14px;font-weight:900;color:#d4f030;min-width:18px;text-align:center;">0</span>
-        <button onclick="gMas('${id}')" class="ced-btn" style="width:28px;height:28px;border-color:#39ff14;background:#1a3a1a;color:#39ff14;font-size:15px;line-height:1;">+</button>
+        <span id="g-${id}" style="font-size:14px;font-weight:900;color:#ffd700;min-width:18px;text-align:center;">0</span>
+        <button onclick="gMas('${id}')" class="ced-btn" style="width:28px;height:28px;border-color:#ffd700;background:#3a2f05;color:#ffd700;font-size:15px;line-height:1;">+</button>
         <button id="btn-am-${id}" onclick="tgAm('${id}')" class="ced-btn" style="width:32px;height:28px;font-size:10px;">AM</button>
         <button id="btn-rj-${id}" onclick="tgRj('${id}')" class="ced-btn" style="width:32px;height:28px;font-size:10px;">RJ</button>
       </div>`;
@@ -290,9 +290,9 @@ function abrirCedula(idPartido) {
         <div><div class="ced-col-title">${eqV.Nombre||'Visita'}</div>${htmlV}</div>
       </div>
       <div class="col-mob" style="display:none;">
-        <div class="ced-col-title" style="border-bottom:1px solid rgba(57,255,20,0.3);padding-bottom:6px;">${eqL.Nombre||'Local'}</div>
+        <div class="ced-col-title" style="border-bottom:1px solid rgba(255,215,0,0.3);padding-bottom:6px;">${eqL.Nombre||'Local'}</div>
         ${htmlL}
-        <div class="ced-col-title" style="margin-top:14px;border-bottom:1px solid rgba(57,255,20,0.3);padding-bottom:6px;">${eqV.Nombre||'Visita'}</div>
+        <div class="ced-col-title" style="margin-top:14px;border-bottom:1px solid rgba(255,215,0,0.3);padding-bottom:6px;">${eqV.Nombre||'Visita'}</div>
         ${htmlV}
       </div>`;
   } else {
@@ -340,9 +340,9 @@ function resetCron() {
 function tgV(id) {
   eventosRegistrados[id].asistencia = !eventosRegistrados[id].asistencia;
   const btn = document.getElementById('btn-v-'+id);
-  btn.style.background = eventosRegistrados[id].asistencia ? '#1a3a1a' : '#111';
-  btn.style.color      = eventosRegistrados[id].asistencia ? '#39ff14' : '#666';
-  btn.style.borderColor= eventosRegistrados[id].asistencia ? '#39ff14' : '#444';
+  btn.style.background = eventosRegistrados[id].asistencia ? '#3a2f05' : '#111';
+  btn.style.color      = eventosRegistrados[id].asistencia ? '#ffd700' : '#666';
+  btn.style.borderColor= eventosRegistrados[id].asistencia ? '#ffd700' : '#444';
 }
 function tgAm(id) {
   eventosRegistrados[id].amarilla = !eventosRegistrados[id].amarilla;
@@ -392,7 +392,7 @@ function iniciarFirma() {
     canvas._init = false;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.strokeStyle='#39ff14'; ctx.lineWidth=2; ctx.lineCap='round';
+    ctx.strokeStyle='#ffd700'; ctx.lineWidth=2; ctx.lineCap='round';
     let drawing=false;
     function pos(e) {
       const r=canvas.getBoundingClientRect(), sx=canvas.width/r.width, sy=canvas.height/r.height;
@@ -438,9 +438,9 @@ function guardarCedula() {
   const data   = rows.map(r=>r.join('\t')).join('\n');
   const wrap   = document.getElementById('cedula-data-wrap');
   wrap.innerHTML = `
-    <pre style="background:rgba(0,0,0,0.5);border:1px solid #39ff14;border-radius:8px;padding:12px;color:#b8f030;font-size:11px;overflow-x:auto;white-space:pre-wrap;">${header}\n${data}</pre>
+    <pre style="background:rgba(0,0,0,0.5);border:1px solid #ffd700;border-radius:8px;padding:12px;color:#ffd700;font-size:11px;overflow-x:auto;white-space:pre-wrap;">${header}\n${data}</pre>
     <button onclick="navigator.clipboard.writeText(this.previousElementSibling.textContent).then(()=>this.textContent='Copiado!')"
-      style="margin-top:8px;padding:8px 14px;background:rgba(57,255,20,0.2);border:1px solid #39ff14;border-radius:8px;color:#39ff14;cursor:pointer;font-size:12px;touch-action:manipulation;">
+      style="margin-top:8px;padding:8px 14px;background:rgba(255,215,0,0.2);border:1px solid #ffd700;border-radius:8px;color:#ffd700;cursor:pointer;font-size:12px;touch-action:manipulation;">
       Copiar para pegar en Sheets
     </button>`;
   statusEl.textContent = rows.length+' evento(s) listos para copiar';
@@ -472,18 +472,18 @@ async function descargarPDF() {
     }
 
     doc.setFillColor(8,12,20); doc.rect(0,0,210,297,'F');
-    doc.setFillColor(15,30,10); doc.rect(0,0,210,32,'F');
-    doc.setTextColor(184,240,48); doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.setFillColor(10,24,48); doc.rect(0,0,210,32,'F');
+    doc.setTextColor(255,215,0); doc.setFontSize(18); doc.setFont('helvetica','bold');
     doc.text('CEDULA ARBITRAL',105,13,{align:'center'});
-    doc.setFontSize(10); doc.setTextColor(150,200,80);
+    doc.setFontSize(10); doc.setTextColor(230,190,80);
     doc.text('LIGA NEXT LEVEL 7',105,21,{align:'center'});
-    doc.setFontSize(8); doc.setTextColor(100,150,60);
+    doc.setFontSize(8); doc.setTextColor(170,140,40);
     doc.text('Partido #'+partidoActual.ID_Partido+' | '+(partidoActual.Jornada?'Jornada '+partidoActual.Jornada:'')+' | '+(partidoActual.Fecha||'')+' | '+(partidoActual.Cancha||''),105,28,{align:'center'});
 
-    doc.setFillColor(12,25,8); doc.rect(0,34,210,20,'F');
+    doc.setFillColor(13,27,48); doc.rect(0,34,210,20,'F');
     doc.setTextColor(255,255,255); doc.setFontSize(12); doc.setFont('helvetica','bold');
     doc.text((eqL.Nombre||'Local').toUpperCase(),52,46,{align:'center'});
-    doc.setTextColor(212,240,48); doc.setFontSize(18);
+    doc.setTextColor(255,215,0); doc.setFontSize(18);
     doc.text(gL+'  -  '+gV,105,47,{align:'center'});
     doc.setTextColor(255,255,255); doc.setFontSize(12);
     doc.text((eqV.Nombre||'Visita').toUpperCase(),158,46,{align:'center'});
@@ -494,15 +494,15 @@ async function descargarPDF() {
     const pV  = todasParticipaciones.filter(p=>String(p.Partido).trim()===idP&&String(p.Equipo).trim()===String(partidoActual.Equipo_Visita).trim());
 
     let y=62;
-    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(100,200,60);
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(210,175,60);
     doc.text('A  NUM  JUGADOR',13,y); doc.text('EVENTOS',75,y);
     doc.text('A  NUM  JUGADOR',113,y); doc.text('EVENTOS',175,y);
-    y+=3; doc.setDrawColor(57,255,20); doc.line(10,y,200,y); y+=4;
+    y+=3; doc.setDrawColor(255,215,0); doc.line(10,y,200,y); y+=4;
 
     const maxR=Math.max(pL.length,pV.length);
     for(let i=0;i<maxR;i++){
       if(y>255){doc.addPage();doc.setFillColor(8,12,20);doc.rect(0,0,210,297,'F');y=15;}
-      if(i%2===0){doc.setFillColor(14,22,8);doc.rect(10,y-3,88,7,'F');doc.rect(110,y-3,88,7,'F');}
+      if(i%2===0){doc.setFillColor(16,30,55);doc.rect(10,y-3,88,7,'F');doc.rect(110,y-3,88,7,'F');}
 
       function rj(part,x){
         if(!part)return;
@@ -510,28 +510,28 @@ async function descargarPDF() {
         const id=String(part.Jugador).trim();
         const ev=eventosRegistrados[id]||{goles:0,amarilla:false,roja:false,asistencia:false};
         doc.setFontSize(7); doc.setFont('helvetica','bold');
-        if(ev.asistencia){doc.setTextColor(57,255,20);doc.text('V',x,y);}
+        if(ev.asistencia){doc.setTextColor(255,215,0);doc.text('V',x,y);}
         else{doc.setTextColor(60,60,60);doc.text('-',x,y);}
-        doc.setTextColor(184,240,48); doc.text(String(jug.Numero||'-'),x+5,y);
+        doc.setTextColor(255,215,0); doc.text(String(jug.Numero||'-'),x+5,y);
         doc.setFont('helvetica','normal'); doc.setTextColor(210,210,210);
         doc.text((jug.Nombre||'').substring(0,20),x+12,y);
         const evStr=(ev.goles>0?ev.goles+'GOL ':'')+(ev.amarilla?'AM ':'')+(ev.roja?'RJ':'');
-        if(evStr.trim()){doc.setFont('helvetica','bold');doc.setTextColor(212,240,48);doc.text(evStr.trim(),x+62,y);}
+        if(evStr.trim()){doc.setFont('helvetica','bold');doc.setTextColor(255,215,0);doc.text(evStr.trim(),x+62,y);}
       }
       rj(pL[i],13); rj(pV[i],113); y+=7;
     }
 
     y+=8;
     if(y>230){doc.addPage();doc.setFillColor(8,12,20);doc.rect(0,0,210,297,'F');y=15;}
-    doc.setDrawColor(57,255,20); doc.line(10,y,200,y); y+=6;
-    doc.setTextColor(184,240,48); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.setDrawColor(255,215,0); doc.line(10,y,200,y); y+=6;
+    doc.setTextColor(255,215,0); doc.setFontSize(9); doc.setFont('helvetica','bold');
     doc.text('FIRMAS',105,y,{align:'center'}); y+=8;
 
     const cArb=document.getElementById('firma-arbitro');
     doc.addImage(cArb.toDataURL('image/png'),'PNG',75,y,60,20); y+=22;
     doc.setTextColor(200,200,200); doc.setFontSize(8); doc.setFont('helvetica','normal');
     doc.text(arbitro,105,y,{align:'center'});
-    doc.setTextColor(100,150,60); doc.setFontSize(7); doc.text('ARBITRO',105,y+4,{align:'center'}); y+=12;
+    doc.setTextColor(170,140,40); doc.setFontSize(7); doc.text('ARBITRO',105,y+4,{align:'center'}); y+=12;
 
     const cCL=document.getElementById('firma-capitan-local');
     const cCV=document.getElementById('firma-capitan-visita');
@@ -539,10 +539,10 @@ async function descargarPDF() {
     doc.addImage(cCV.toDataURL('image/png'),'PNG',135,y,60,20); y+=22;
     doc.setTextColor(200,200,200); doc.setFontSize(8); doc.setFont('helvetica','normal');
     doc.text(capLocal,45,y,{align:'center'}); doc.text(capVisita,165,y,{align:'center'});
-    doc.setTextColor(100,150,60); doc.setFontSize(7);
+    doc.setTextColor(170,140,40); doc.setFontSize(7);
     doc.text('CAPITAN - '+(eqL.Nombre||'').toUpperCase(),45,y+4,{align:'center'});
     doc.text('CAPITAN - '+(eqV.Nombre||'').toUpperCase(),165,y+4,{align:'center'});
-    y+=10; doc.setTextColor(80,120,50); doc.setFontSize(7);
+    y+=10; doc.setTextColor(150,120,40); doc.setFontSize(7);
     doc.text(new Date().toLocaleString('es-MX'),105,y,{align:'center'});
 
     doc.save('cedula_partido_'+partidoActual.ID_Partido+'.pdf');
