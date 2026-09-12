@@ -331,7 +331,7 @@ function renderStack(filtrados) {
 }
 
 // ===== DESCARGAR PNG (paginado: 4 partidos por página) =====
-const REPORTE_POR_PAGINA = 4;
+const REPORTE_POR_PAGINA = 7;
 
 async function esperarImagenesReporte(el) {
   const imgs = el.querySelectorAll('img');
