@@ -312,7 +312,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#0a1830 0%,#0d1b3
 
 /* ── CARTEL DE JORNADA (poster descargable) ── */
 .cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
-.cartel-poster{position:relative;width:760px;height:983px;margin:0 auto;border-radius:10px;overflow:hidden;
+.cartel-poster{position:relative;width:760px;min-height:983px;margin:0 auto;border-radius:10px;overflow:hidden;
   background-image:url('fondonuevo.png');
   background-size:cover;
   background-position:center;
@@ -322,13 +322,13 @@ body{font-family:var(--font);background:linear-gradient(135deg,#0a1830 0%,#0d1b3
 }
 .cartel-header{position:absolute;top:16px;left:0;right:0;z-index:2;text-align:center}
 .cartel-h1{font-size:26px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 16px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
-.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;height:310px}
+.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;}
 .cartel-pagina-tag{position:absolute;bottom:10px;right:18px;z-index:2;font-size:12px;color:rgba(255,255,255,.4);font-weight:700}
 .cartel-row{display:flex;align-items:center;gap:10px;padding:11px 0}
 .cartel-sep{border:none;border-top:2px dotted rgba(243,201,74,.55);margin:0}
 .cartel-team{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
 .cartel-team.visita{flex-direction:row-reverse;text-align:right}
-.cartel-crest{width:48px;height:48px;object-fit:contain;flex-shrink:0}
+.cartel-crest{width:76px;height:76px;object-fit:contain;flex-shrink:0}
 .cartel-name{font-size:16px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
 .cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px;text-align:center;gap:2px}
 .cartel-jv{font-size:12px;color:#ffd700;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
@@ -1825,14 +1825,14 @@ function updateRolPreview(){
 // la onda dorada/naranja/turquesa y el Instagram integrados en la imagen)
 const FONDO_CARTEL_URL = 'fondonuevo.png';
 
-const CARTEL_POR_PAGINA = 4;
+const CARTEL_POR_PAGINA = 7;
 
 // Pinta UNA página del cartel (hasta 4 partidos) en el elemento #cartel-poster
 function pintarCartelPagina(paginaSlots, numPagina, totalPaginas){
   const poster = document.getElementById('cartel-poster');
   if(!poster) return;
 
-  const T = {crest:48, name:16, jv:12, fecha:11, hora:18, campo:12, padY:11, gap:3};
+  const T = {crest:76, name:16, jv:12, fecha:11, hora:18, campo:12, padY:11, gap:3};
 
   let filasHtml = '';
   paginaSlots.forEach((slot, i)=>{
