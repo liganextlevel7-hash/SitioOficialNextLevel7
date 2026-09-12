@@ -474,7 +474,7 @@ async function downloadPNG() {
       await esperarImagenesReporte(temp);
 
       const canvas = await html2canvas(temp, {
-        useCORS: true, allowTaint: true, scale: 2,
+        useCORS: true, allowTaint: true, scale: 4,
         backgroundColor: '#0a1830', imageTimeout: 20000, logging: false
       });
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
