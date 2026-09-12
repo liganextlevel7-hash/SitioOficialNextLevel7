@@ -366,11 +366,11 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
 
   const paginaTxt = totalPaginas > 1 ? ` · Página ${numPagina}/${totalPaginas}` : '';
   content.innerHTML = `
-    <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
-    <div style="text-align:center;margin-top:20px;">
+    <div style="text-align:center;margin-top:170px;margin-bottom:20px;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,0.4);">⚽ NEXT LEVEL 7</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:#ffd700;margin-top:4px;">${jornadaTitulo} · ${vueltaTitulo}${paginaTxt}</div>
     </div>
+    <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
   `;
 
   const filasWrap = content.querySelector('#reporte-filas');
@@ -398,20 +398,20 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
 
     const fila = document.createElement('div');
     fila.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;padding:16px 6px;">
-        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:1;min-width:0;">
-          <img src="${urlL}" style="width:92px;height:92px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
-          <div style="font-size:16px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nomL}</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:16px 4px;">
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:1;min-width:0;">
+          <div style="width:173px;flex-shrink:0;font-size:15px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">${nomL}</div>
+          <img src="${urlL}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
         </div>
-        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:100px;text-align:center;gap:3px;">
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:3px;">
           ${fecha ? `<div style="font-size:9px;color:#d9d9d9;font-weight:700;">${fecha}</div>` : ''}
           <div style="width:18px;height:2px;background:#ffd700;border-radius:2px;margin:2px auto;"></div>
           ${centerHTML}
           ${hora ? `<div style="font-size:10px;color:#ffe066;font-weight:700;">${hora}${cancha?' · '+cancha:''}</div>` : ''}
         </div>
-        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:1;min-width:0;flex-direction:row-reverse;">
-          <img src="${urlV}" style="width:92px;height:92px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
-          <div style="font-size:16px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">${nomV}</div>
+        <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;flex:1;min-width:0;">
+          <img src="${urlV}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
+          <div style="width:173px;flex-shrink:0;font-size:15px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;">${nomV}</div>
         </div>
       </div>
       ${sep}
