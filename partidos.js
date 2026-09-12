@@ -97,42 +97,42 @@ function crearPopupStyles() {
     }
     .partido-popup-overlay.active { display: flex; }
     .partido-popup {
-      background: #080c14; border: 2px solid rgba(184,240,48,0.4);
+      background: #0d1b30; border: 2px solid rgba(255,215,0,0.4);
       border-radius: 18px; width: 100%; max-width: 560px;
       max-height: 90vh; overflow-y: auto;
-      box-shadow: 0 0 30px rgba(184,240,48,0.2);
+      box-shadow: 0 0 30px rgba(255,215,0,0.2);
     }
     .pp-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 16px 10px;
-      border-bottom: 1px solid rgba(184,240,48,0.2);
-      position: sticky; top:0; background: #080c14; z-index: 1;
+      border-bottom: 1px solid rgba(255,215,0,0.2);
+      position: sticky; top:0; background: #0d1b30; z-index: 1;
     }
     .pp-encuentro {
-      font-size: 11px; font-weight: 700; color: rgba(184,240,48,0.6);
+      font-size: 11px; font-weight: 700; color: rgba(255,215,0,0.6);
       letter-spacing: 2px; text-transform: uppercase; text-align: center; flex:1;
     }
     .pp-close {
       background: none; border: none; color: rgba(255,255,255,0.4);
       font-size: 22px; cursor: pointer; line-height:1; padding: 0 4px;
     }
-    .pp-close:hover { color: #b8f030; }
+    .pp-close:hover { color: #ffd700; }
     .pp-teams {
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 16px; gap: 8px;
-      border-bottom: 1px solid rgba(184,240,48,0.15);
+      border-bottom: 1px solid rgba(255,215,0,0.15);
     }
     .pp-team { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
     .pp-team-logo { width: 52px; height: 52px; object-fit: contain; }
     .pp-team-name { font-size: 11px; font-weight: 700; color: #fff; text-transform: uppercase; text-align: center; letter-spacing: 0.5px; }
-    .pp-score { font-size: 38px; font-weight: 900; color: #d4f030; text-shadow: 0 0 12px rgba(120,220,0,0.5); letter-spacing: 2px; text-align: center; min-width: 90px; }
+    .pp-score { font-size: 38px; font-weight: 900; color: #ffe566; text-shadow: 0 0 12px rgba(255,215,0,0.5); letter-spacing: 2px; text-align: center; min-width: 90px; }
     .pp-score.programado { font-size: 20px; color: rgba(255,255,255,0.3); }
     .pp-players { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 0; }
     .pp-col { padding: 12px 10px; }
-    .pp-col:first-child { border-right: 1px solid rgba(184,240,48,0.15); }
-    .pp-col-title { font-size: 9px; font-weight: 700; color: rgba(184,240,48,0.5); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; text-align: center; }
+    .pp-col:first-child { border-right: 1px solid rgba(255,215,0,0.15); }
+    .pp-col-title { font-size: 9px; font-weight: 700; color: rgba(255,215,0,0.5); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; text-align: center; }
     .pp-player { display: flex; align-items: center; gap: 6px; padding: 5px 4px; border-radius: 6px; border-bottom: 0.5px solid rgba(255,255,255,0.04); }
-    .pp-player-num { font-size: 11px; font-weight: 700; color: rgba(184,240,48,0.6); min-width: 20px; text-align: right; }
+    .pp-player-num { font-size: 11px; font-weight: 700; color: rgba(255,215,0,0.6); min-width: 20px; text-align: right; }
     .pp-player-name { font-size: 11px; color: rgba(255,255,255,0.85); flex:1; }
     .pp-player-icons { display: flex; gap: 2px; flex-wrap: wrap; }
     .pp-icon { font-size: 11px; }
@@ -366,11 +366,11 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
 
   const paginaTxt = totalPaginas > 1 ? ` · Página ${numPagina}/${totalPaginas}` : '';
   content.innerHTML = `
-    <div style="text-align:center;margin-bottom:20px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:#b8f030;text-shadow:0 0 15px rgba(184,240,48,0.4);">⚽ NEXT LEVEL 7</div>
+    <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
+    <div style="text-align:center;margin-top:20px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:#ffd700;text-shadow:0 0 15px rgba(255,215,0,0.4);">⚽ NEXT LEVEL 7</div>
       <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:#ffd700;margin-top:4px;">${jornadaTitulo} · ${vueltaTitulo}${paginaTxt}</div>
     </div>
-    <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
   `;
 
   const filasWrap = content.querySelector('#reporte-filas');
@@ -389,7 +389,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
     const cancha = p['Cancha'] || '';
     const jugado = estado === 'Jugado' && gL !== null && gV !== null;
     const centerHTML = jugado
-      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#d4f030;text-shadow:0 0 10px rgba(120,220,0,0.5);letter-spacing:2px;line-height:1;">${gL} - ${gV}</div>`
+      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#ffe566;text-shadow:0 0 10px rgba(255,215,0,0.5);letter-spacing:2px;line-height:1;">${gL} - ${gV}</div>`
       : `<div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:rgba(255,255,255,0.5);letter-spacing:2px;">VS</div>`;
 
     const sep = i < paginaPartidos.length - 1
@@ -399,19 +399,19 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
     const fila = document.createElement('div');
     fila.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px;padding:16px 6px;">
-        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
-          <img src="${urlL}" style="width:60px;height:60px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
-          <div style="font-size:13px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nomL}</div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:1;min-width:0;">
+          <img src="${urlL}" style="width:92px;height:92px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
+          <div style="font-size:16px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nomL}</div>
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:100px;text-align:center;gap:3px;">
           ${fecha ? `<div style="font-size:9px;color:#d9d9d9;font-weight:700;">${fecha}</div>` : ''}
-          <div style="width:18px;height:2px;background:#39ff14;border-radius:2px;margin:2px auto;"></div>
+          <div style="width:18px;height:2px;background:#ffd700;border-radius:2px;margin:2px auto;"></div>
           ${centerHTML}
-          ${hora ? `<div style="font-size:10px;color:#8fe89a;font-weight:700;">${hora}${cancha?' · '+cancha:''}</div>` : ''}
+          ${hora ? `<div style="font-size:10px;color:#ffe066;font-weight:700;">${hora}${cancha?' · '+cancha:''}</div>` : ''}
         </div>
-        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;flex-direction:row-reverse;">
-          <img src="${urlV}" style="width:60px;height:60px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
-          <div style="font-size:13px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">${nomV}</div>
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:1;min-width:0;flex-direction:row-reverse;">
+          <img src="${urlV}" style="width:92px;height:92px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
+          <div style="font-size:16px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">${nomV}</div>
         </div>
       </div>
       ${sep}
@@ -475,7 +475,7 @@ async function downloadPNG() {
 
       const canvas = await html2canvas(temp, {
         useCORS: true, allowTaint: true, scale: 2,
-        backgroundColor: '#0a0a0a', imageTimeout: 20000, logging: false
+        backgroundColor: '#0a1830', imageTimeout: 20000, logging: false
       });
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
       const url = URL.createObjectURL(blob);
