@@ -324,13 +324,13 @@ body{font-family:var(--font);background:linear-gradient(135deg,#0a1830 0%,#0d1b3
 .cartel-h1{font-size:26px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 16px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
 .cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;}
 .cartel-pagina-tag{position:absolute;bottom:10px;right:18px;z-index:2;font-size:12px;color:rgba(255,255,255,.4);font-weight:700}
-.cartel-row{display:flex;align-items:center;gap:10px;padding:11px 0}
+.cartel-row{display:flex;align-items:center;gap:6px;padding:11px 0}
 .cartel-sep{border:none;border-top:2px dotted rgba(243,201,74,.55);margin:0}
 .cartel-team{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
 .cartel-team.visita{flex-direction:row-reverse;text-align:right}
-.cartel-crest{width:76px;height:76px;object-fit:contain;flex-shrink:0}
-.cartel-name{font-size:16px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
-.cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px;text-align:center;gap:2px}
+.cartel-crest{width:88px;height:88px;object-fit:contain;flex-shrink:0}
+.cartel-name{font-size:18px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
+.cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:2px}
 .cartel-jv{font-size:12px;color:#ffd700;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
 .cartel-fecha{font-size:11px;color:#d9d9d9;font-weight:700}
 .cartel-hora{font-size:18px;color:#fff;font-weight:900;white-space:nowrap}
@@ -1832,7 +1832,7 @@ function pintarCartelPagina(paginaSlots, numPagina, totalPaginas){
   const poster = document.getElementById('cartel-poster');
   if(!poster) return;
 
-  const T = {crest:76, name:16, jv:12, fecha:11, hora:18, campo:12, padY:11, gap:3};
+  const T = {crest:88, name:18, jv:12, fecha:11, hora:18, campo:12, padY:11, gap:3};
 
   let filasHtml = '';
   paginaSlots.forEach((slot, i)=>{
@@ -1924,7 +1924,7 @@ async function descargarCartelPNG(){
       const pagina = filled.slice(p*CARTEL_POR_PAGINA, (p+1)*CARTEL_POR_PAGINA);
       pintarCartelPagina(pagina, p+1, totalPaginas);
       await esperarImagenes(poster);
-      const canvas = await html2canvas(poster, { backgroundColor: null, scale: 2, useCORS: true });
+      const canvas = await html2canvas(poster, { backgroundColor: null, scale: 4, useCORS: true });
       const link = document.createElement('a');
       link.download = totalPaginas>1 ? `jornada_${fecha}_pagina${p+1}.png` : `jornada_${fecha}.png`;
       link.href = canvas.toDataURL('image/png');
