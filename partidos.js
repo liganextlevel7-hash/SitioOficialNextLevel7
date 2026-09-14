@@ -385,6 +385,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
     const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
     const estado = (p['Estado'] || '').trim();
     const fecha = p['Fecha'] || '';
+    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}` : '';
     const hora = p['Hora'] ? formatHora(p['Hora']) : '';
     const cancha = p['Cancha'] || '';
     const jugado = estado === 'Jugado' && gL !== null && gV !== null;
@@ -404,6 +405,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
           <img src="${urlL}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:3px;">
+          ${jornadaFila ? `<div style="font-size:8px;color:rgba(255,255,255,0.45);font-weight:700;letter-spacing:0.5px;">${jornadaFila}</div>` : ''}
           ${fecha ? `<div style="font-size:9px;color:#d9d9d9;font-weight:700;">${fecha}</div>` : ''}
           <div style="width:18px;height:2px;background:#5eb50d;border-radius:2px;margin:2px auto;"></div>
           ${centerHTML}
@@ -454,7 +456,16 @@ async function downloadPNG() {
 
   const partidosOrdenados = ordenarPorCampoHora(ultimosFiltrados);
   const firstP = partidosOrdenados[0];
-  const jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+  const tipoFiltro = document.getElementById('filterTipo').value;
+  let jornadaTitulo;
+  if (tipoFiltro === 'equipo') {
+    const equipoNombre = document.getElementById('filterEquipo').value.trim();
+    jornadaTitulo = equipoNombre ? equipoNombre.toUpperCase() : 'Calendario del Equipo';
+  } else if (tipoFiltro === 'fecha') {
+    jornadaTitulo = firstP?.Fecha || 'Partidos';
+  } else {
+    jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+  }
   const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
 
   const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
