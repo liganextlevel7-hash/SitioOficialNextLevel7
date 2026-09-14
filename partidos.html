@@ -10,7 +10,7 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      background: #0a1830;
+      background: #142702;
       font-family: 'Roboto', Arial, sans-serif;
       margin: 0;
       padding: 16px;
@@ -27,7 +27,7 @@
       display: inline-block;
       padding: 8px 22px;
       background: rgba(0,0,0,.75);
-      border: 1px solid #ffd700;
+      border: 1px solid #5eb50d;
       border-radius: 12px;
       color: white;
       text-decoration: none;
@@ -36,14 +36,14 @@
       transition: .3s;
     }
     .nav-top a:hover {
-      background: #ffd700;
+      background: #5eb50d;
       color: black;
-      box-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
+      box-shadow: 0 0 10px #5eb50d, 0 0 20px #5eb50d;
     }
 
     .editor-panel {
       background: rgba(0,0,0,0.88);
-      border: 1px solid #b8860b;
+      border: 1px solid #7f5f0d;
       border-radius: 14px;
       padding: 18px;
       margin-bottom: 18px;
@@ -51,27 +51,27 @@
       max-width: 700px;
     }
     .editor-panel h3 {
-      color: #ffd700; font-size: 16px; letter-spacing: 2px;
+      color: #5eb50d; font-size: 16px; letter-spacing: 2px;
       margin: 0 0 12px; text-transform: uppercase; font-family: 'Bebas Neue', sans-serif;
     }
     .controls-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .field-group { display: flex; flex-direction: column; gap: 4px; }
     .field-group.full { grid-column: 1 / -1; }
-    .field-group label { color: #b8961a; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+    .field-group label { color: #d5a610; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
     .field-group select {
-      background: rgba(255,255,255,0.07); border: 1px solid #b8860b; border-radius: 6px;
+      background: rgba(255,255,255,0.07); border: 1px solid #7f5f0d; border-radius: 6px;
       color: #fff; font-size: 14px; padding: 8px 10px; outline: none;
     }
     .field-group select option { background: #111; color: #fff; }
     .load-btn {
-      background: linear-gradient(135deg, #b8860b, #f5c518); border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #7f5f0d, #d5a610); border: none; border-radius: 8px;
       color: #fff; cursor: pointer; font-size: 14px; font-weight: 700;
       letter-spacing: 2px; padding: 10px 16px; text-transform: uppercase; width: 100%;
       touch-action: manipulation;
     }
-    .status-msg { color: #ffd700; font-size: 12px; margin-top: 8px; min-height: 18px; text-align: center; }
+    .status-msg { color: #5eb50d; font-size: 12px; margin-top: 8px; min-height: 18px; text-align: center; }
     .dl-btn {
-      background: linear-gradient(135deg, #f5c518, #ffe566); border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #d5a610, #ddc530); border: none; border-radius: 8px;
       color: #000; cursor: pointer; font-size: 14px; font-weight: 700;
       letter-spacing: 2px; padding: 12px 18px; text-transform: uppercase; width: 100%; margin-top: 10px;
       touch-action: manipulation;
@@ -96,12 +96,12 @@
       background-image: url('fondotarjetas.png');
       background-size: cover;
       background-position: center;
-      border: 5px solid rgba(255,215,0,0.5);
+      border: 5px solid rgba(94,181,13,0.5);
       border-radius: 18px;
       padding: 26px 24px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,215,0,0.1);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(94,181,13,0.1);
       min-height: 150px;
     }
     /* overlay oscuro para legibilidad */
@@ -130,7 +130,7 @@
     .stack-top-row {
       display: flex; align-items: center; justify-content: space-between;
       position: relative; z-index: 2; margin-bottom: 18px;
-      font-size: 13px; color: rgba(255,215,0,0.7); letter-spacing: 1px; font-weight: 700;
+      font-size: 13px; color: rgba(94,181,13,0.7); letter-spacing: 1px; font-weight: 700;
       text-transform: uppercase;
     }
     .stack-id-tag {
@@ -145,8 +145,8 @@
     .stack-team img { width: 90px; height: 90px; object-fit: contain; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
     .stack-team-name { font-size: 13px; font-weight: 700; color: #fff; text-align: center; text-transform: uppercase; line-height: 1.2; }
     .stack-score {
-      font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: #ffe566;
-      text-shadow: 0 0 12px rgba(255,215,0,0.5); min-width: 70px; text-align: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: #ddc530;
+      text-shadow: 0 0 12px rgba(94,181,13,0.5); min-width: 70px; text-align: center;
     }
     .stack-score.programado { font-size: 20px; color: rgba(255,255,255,0.4); }
     .stack-bottom-row {
@@ -158,20 +158,20 @@
       font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 14px;
       text-transform: uppercase; letter-spacing: 1px;
     }
-    .stack-badge.normal { color: #ffd700; border: 1px solid #ffd700; }
+    .stack-badge.normal { color: #5eb50d; border: 1px solid #5eb50d; }
     .stack-badge.penales { color: #ff4444; border: 1px solid #ff4444; }
-    .stack-badge.default { color: #ffd700; border: 1px solid #ffd700; }
+    .stack-badge.default { color: #5eb50d; border: 1px solid #5eb50d; }
     .stack-badge.pendiente { color: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); }
-    .stack-jornada-tag { font-size: 15px; color: #ffd700; font-weight: 700; }
-    .stack-vuelta-tag { font-size: 13px; color: rgba(255,215,0,0.7); }
+    .stack-jornada-tag { font-size: 15px; color: #5eb50d; font-weight: 700; }
+    .stack-vuelta-tag { font-size: 13px; color: rgba(94,181,13,0.7); }
 
     .estado-programado { box-shadow: inset 0 0 60px rgba(41,166,255,0.08), 0 8px 30px rgba(0,0,0,0.6); }
     .estado-jugado { box-shadow: inset 0 0 60px rgba(255,150,0,0.08), 0 8px 30px rgba(0,0,0,0.6); }
     .estado-pendiente { box-shadow: inset 0 0 60px rgba(255,255,255,0.03), 0 8px 30px rgba(0,0,0,0.6); }
 
-    .borde-normal { border-color: #ffd700 !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(255,215,0,0.7), inset 0 0 25px rgba(255,215,0,0.15) !important; }
+    .borde-normal { border-color: #5eb50d !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(94,181,13,0.7), inset 0 0 25px rgba(94,181,13,0.15) !important; }
     .borde-penales { border-color: #ff4444 !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(255,68,68,0.7), inset 0 0 25px rgba(255,68,68,0.15) !important; }
-    .borde-default { border-color: #ffd700 !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(255,215,0,0.7), inset 0 0 25px rgba(255,215,0,0.15) !important; }
+    .borde-default { border-color: #5eb50d !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(94,181,13,0.7), inset 0 0 25px rgba(94,181,13,0.15) !important; }
     .borde-programado { border-color: #29a6ff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 35px rgba(41,166,255,0.7), inset 0 0 25px rgba(41,166,255,0.15) !important; }
 
     .empty-msg { text-align: center; color: rgba(255,255,255,0.3); font-size: 14px; padding: 40px; }
