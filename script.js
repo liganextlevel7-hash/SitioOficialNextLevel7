@@ -1,1095 +1,270 @@
-body{
-background:
-linear-gradient(rgba(10,24,48,.78),rgba(10,24,48,.92)),
-url("fondodominical.png");
+const URL_ESTADISTICAS =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=979195152&single=true&output=csv";
 
-background-size:cover;
-background-position:center;
-background-attachment:fixed;
-background-repeat:no-repeat;
+const URL_PARTIDOS =
+"https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv";
 
-color:white;
-font-family:Arial,sans-serif;
-margin:0;
-min-height:100vh;
-}
+// ==================== EQUIPOS (dinámico desde el Sheet) ====================
+const GID_EQUIPOS = '1894947293';
+function csvUrl(gid){ return 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid='+gid+'&single=true&output=csv'; }
 
-header{
-text-align:center;
-padding:30px 20px;
-}
-
-.logo-liga{
-width:250px;
-max-width:80%;
-filter:drop-shadow(0 0 20px #5eb50d);
-}
-
-h1{
-font-size:55px;
-margin:10px 0;
-color:#d5a610;
-text-shadow:
-0 0 10px #d5a610,
-0 0 20px #d5a610,
-0 0 30px #d5a610,
-0 0 40px #d5a610;
-}
-
-.subtitulo{
-font-size:22px;
-color:#5eb50d;
-font-weight:bold;
-margin-bottom:20px;
-}
-
-nav{
-margin-top:20px;
-}
-
-nav a{
-display:inline-block;
-margin:6px;
-padding:12px 22px;
-background:rgba(10,24,48,.78);
-border:1px solid #5eb50d;
-border-radius:12px;
-color:white;
-text-decoration:none;
-font-weight:bold;
-transition:.3s;
-}
-
-nav a:hover{
-transform:translateY(-3px);
-background:#5eb50d;
-color:black;
-box-shadow:
-0 0 10px #5eb50d,
-0 0 20px #5eb50d;
-}
-
-.contenedor{
-max-width:1400px;
-margin:auto;
-padding:20px;
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
-gap:20px;
-}
-
-.card{
-background:rgba(10,24,48,.78);
-border:1px solid #5eb50d;
-border-radius:18px;
-padding:20px;
-backdrop-filter:blur(5px);
-
-box-shadow:
-0 0 10px #5eb50d,
-0 0 20px rgba(94,181,13,.4);
-
-transition:.3s;
-}
-
-.card:hover{
-transform:translateY(-4px);
-box-shadow:
-0 0 15px #5eb50d,
-0 0 30px rgba(94,181,13,.6);
-}
-
-.card h2{
-text-align:center;
-color:#5eb50d;
-font-size:20px;
-margin-bottom:20px;
-}
-
-.fecha-bloque{
-text-align:center;
-font-size:18px;
-font-weight:bold;
-color:#5eb50d;
-margin-bottom:15px;
-}
-
-.partido{
-background:rgba(255,255,255,.05);
-border:1px solid rgba(255,255,255,.12);
-border-radius:15px;
-padding:15px;
-margin-bottom:15px;
-}
-
-.partido-top{
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.equipo{
-width:35%;
-text-align:center;
-}
-
-.equipo img{
-width:80px;
-height:80px;
-object-fit:contain;
-filter:drop-shadow(0 0 8px rgba(255,255,255,.4));
-}
-
-.nombre{
-margin-top:8px;
-font-size:16px;
-font-weight:bold;
-line-height:1.2;
-}
-
-.centro{
-width:30%;
-text-align:center;
-font-size:20px;
-font-weight:bold;
-color:#5eb50d;
-}
-
-.campo{
-text-align:center;
-margin-top:10px;
-font-size:15px;
-color:#ddd;
-}
-
-.tabla{
-width:100%;
-border-collapse:collapse;
-margin-top:10px;
-}
-
-.tabla th{
-background:#5eb50d;
-color:black;
-padding:12px;
-font-size:15px;
-}
-
-.tabla td{
-padding:12px 8px;
-border-bottom:1px solid rgba(255,255,255,.15);
-text-align:center;
-}
-
-.tabla tr:hover{
-background:rgba(255,255,255,.05);
-}
-
-.tabla img{
-width:24px;
-height:24px;
-vertical-align:middle;
-margin-right:8px;
-}
-
-@media(max-width:768px){
-
-h1{
-font-size:36px;
-}
-
-.logo-liga{
-width:180px;
-}
-
-.equipo img{
-width:65px;
-height:65px;
-}
-
-.nombre{
-font-size:13px;
-}
-
-.centro{
-font-size:18px;
-}
-
-  #lista-equipos{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-gap:15px;
-}
-
-.equipo-card{
-text-align:center;
-background:rgba(255,255,255,.05);
-border-radius:12px;
-padding:10px;
-transition:.3s;
-}
-
-.equipo-card:hover{
-transform:scale(1.05);
-background:rgba(255,255,255,.1);
-}
-
-.equipo-logo{
-width:70px;
-height:70px;
-object-fit:contain;
-}
-
-.equipo-nombre{
-margin-top:8px;
-font-size:14px;
-font-weight:bold;
-}
-
-}
-
-#lista-equipos{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:20px;
-}
-
-.equipo-card{
-text-align:center;
-background:rgba(255,255,255,.05);
-border-radius:15px;
-padding:15px;
-cursor:pointer;
-transition:.3s;
-}
-
-.equipo-card:hover{
-transform:scale(1.05);
-background:rgba(255,255,255,.1);
-box-shadow:0 0 15px #5eb50d;
-}
-
-.equipo-logo{
-width:120px;
-height:120px;
-object-fit:contain;
-}
-
-.equipo-nombre{
-margin-top:10px;
-font-size:16px;
-font-weight:bold;
-color:white;
-}
-.popup{
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(10,24,48,.85);
-justify-content:center;
-align-items:center;
-z-index:9999;
-}
-
-.popup-contenido{
-background:#1c3204;
-border:2px solid #5eb50d;
-border-radius:20px;
-padding:30px;
-width:90%;
-max-width:450px;
-text-align:center;
-box-shadow:0 0 25px #5eb50d;
-position:relative;
-}
-
-#cerrar-popup{
-position:absolute;
-right:15px;
-top:10px;
-font-size:30px;
-cursor:pointer;
-color:white;
-}
-
-#cerrar-popup:hover{
-color:#5eb50d;
-}
-
-#info-equipo h2{
-color:#5eb50d;
-margin-bottom:15px;
-}
-
-#info-equipo p{
-margin:8px 0;
-font-size:16px;
-}
-@media(max-width:768px){
-
-.tabla th:nth-child(5),
-.tabla td:nth-child(5),
-.tabla th:nth-child(7),
-.tabla td:nth-child(7),
-.tabla th:nth-child(8),
-.tabla td:nth-child(8){
-display:none;
-}
-
-}
-@media(max-width:768px){
-    .tabla{
-        font-size:10px !important;
+function parseCSV(text){
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').replace(/\r/g,''));
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = []; let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++){
+      const ch = line[i];
+      if (ch === '"') inQ = !inQ;
+      else if (ch === ',' && !inQ){ vals.push(cur.trim()); cur=''; }
+      else cur += ch;
     }
-
-    .tabla th{
-        padding:10px 6px !important;
-        font-size:10px !important;
-    }
-
-    .tabla td{
-        padding:10px 6px !important;
-        font-size:10px !important;
-    }
-
-    .tabla img{
-        width:30px !important;
-        height:30px !important;
-        margin-right:6px !important;
-    }
-}
-
-}
-.contenedor-jugadores{
-max-width:1400px;
-margin:auto;
-padding:20px;
-}
-
-#selector-equipo-jugador{
-width:100%;
-padding:15px;
-border-radius:12px;
-border:1px solid #5eb50d;
-background:#1c3204;
-color:white;
-font-size:16px;
-}
-
-.jugadores-grid{
-display:grid;
-grid-template-columns:
-repeat(3,1fr);
-gap:20px;
-margin-top:20px;
-}
-
-.jugador-card{
-background:rgba(10,24,48,.78);
-border:1px solid #5eb50d;
-border-radius:20px;
-padding:20px;
-text-align:center;
-box-shadow:
-0 0 10px #5eb50d;
-}
-
-.jugador-foto{
-width:140px;
-height:140px;
-border-radius:50%;
-object-fit:cover;
-margin-bottom:15px;
-border:3px solid #5eb50d;
-}
-
-.jugador-card h3{
-margin-bottom:15px;
-color:#5eb50d;
-}
-
-.jugador-card p{
-margin:8px 0;
-}
-
-@media(max-width:768px){
-
-.jugadores-grid{
-grid-template-columns:1fr;
-}
-
-}
-.lider{
-background:rgba(94,181,13,.15);
-border-left:5px solid gold;
-font-weight:bold;
-}
-
-.clasificado{
-background:rgba(94,181,13,.10);
-border-left:5px solid #5eb50d;
-}
-
-.tabla{
-overflow:hidden;
-border-radius:15px;
-}
-
-.tabla th{
-background:linear-gradient(
-90deg,
-#5eb50d,
-#d5a610
-);
-color:black;
-font-weight:bold;
-}
-
-.tabla tr:hover{
-background:rgba(255,255,255,.08);
-}
-
-.tabla td:first-child{
-font-weight:bold;
-color:#5eb50d;
-}
-/* JUGADORES */
-
-#selector-equipo-jugador{
-width:100%;
-max-width:500px;
-margin:auto;
-display:block;
-padding:15px;
-border-radius:15px;
-border:2px solid #5eb50d;
-background:#1c3204;
-color:white;
-font-size:18px;
-font-weight:bold;
-text-align:center;
-}
-
-.jugadores-grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-gap:20px;
-margin-top:20px;
-}
-
-.jugador-card{
-background:rgba(10,24,48,.78);
-border:2px solid #5eb50d;
-border-radius:20px;
-padding:15px;
-text-align:center;
-}
-
-.jugador-foto{
-width:180px;
-height:180px;
-object-fit:cover;
-border-radius:15px;
-border:3px solid #5eb50d;
-}
-
-.jugador-card h3{
-margin-top:10px;
-font-size:18px;
-color:white;
-}
-
-@media(max-width:768px){
-
-.jugadores-grid{
-grid-template-columns:repeat(2,1fr);
-gap:15px;
-}
-
-.jugador-foto{
-width:120px;
-height:120px;
-}
-
-.jugador-card h3{
-font-size:14px;
-}
-
-}
-.jugador-card-pro{
-background:#081422;
-border:2px solid #5eb50d;
-border-radius:22px;
-padding:20px;
-margin-bottom:20px;
-box-shadow:0 0 20px rgba(94,181,13,.35);
-transition:.3s;
-}
-
-.jugador-card-pro:hover{
-transform:translateY(-4px);
-box-shadow:0 0 30px rgba(94,181,13,.6);
-}
-
-.jugador-header{
-display:flex;
-align-items:center;
-gap:18px;
-margin-bottom:18px;
-}
-
-.jugador-foto-pro{
-width:90px;
-height:90px;
-border-radius:50%;
-object-fit:cover;
-border:3px solid #5eb50d;
-}
-
-.jugador-info h3{
-margin:0;
-font-size:22px;
-color:white;
-}
-
-.jugador-posicion{
-display:inline-block;
-margin-top:5px;
-padding:4px 10px;
-background:#5eb50d;
-color:black;
-border-radius:20px;
-font-size:12px;
-font-weight:bold;
-}
-
-.jugador-stats{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:12px;
-}
-
-.stat{
-background:#1c3204;
-border-radius:15px;
-padding:12px;
-text-align:center;
-}
-
-.stat span{
-display:block;
-font-size:22px;
-margin-bottom:5px;
-}
-
-.stat strong{
-display:block;
-font-size:22px;
-color:#5eb50d;
-}
-
-.stat small{
-color:#ccc;
-font-size:11px;
-}
-
-@media(max-width:768px){
-
-.jugador-header{
-flex-direction:column;
-text-align:center;
-}
-
-.jugador-stats{
-grid-template-columns:repeat(2,1fr);
-}
-
-}
-.jugadores-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-}
-
-.jugador-card {
-  background: #1c3204;
-  border: 2px solid #5eb50d;
-  border-radius: 15px;
-  padding: 15px;
-  text-align: center;
-  color: white;
-  box-shadow: 0 0 15px #5eb50d;
-}
-
-.jugador-foto {
-  width: 100%;
-  max-height: 180px;
-  object-fit: contain;
-  margin-bottom: 10px;
-}
-
-.jugador-info h3 {
-  margin: 5px 0;
-  color: #5eb50d;
-}
-
-.jugador-posicion {
-  display: inline-block;
-  background: #5eb50d;
-  color: black;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  margin-bottom: 10px;
-}
-
-.jugador-stats {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-
-.stat {
-  background: #16304f;
-  padding: 5px 8px;
-  border-radius: 8px;
-  font-size: 12px;
-  text-align: center;
-  flex: 1;
-  margin: 0 2px;
-}
-
-.stat span {
-  display: block;
-  font-size: 16px;
-  margin-bottom: 2px;
-}
-
-.stat small {
-  display: block;
-  color: #ccc;
-  font-size: 10px;
-}
-/* =========================
-   PARTIDOS NUEVO DISEÑO
-========================= */
-
-.filtros-partidos{
-display:flex;
-gap:15px;
-flex-wrap:wrap;
-justify-content:center;
-margin-top:15px;
-}
-
-.filtros-partidos select{
-background:#1c3204;
-color:white;
-border:2px solid #5eb50d;
-border-radius:15px;
-padding:12px 18px;
-font-size:15px;
-font-weight:bold;
-cursor:pointer;
-min-width:220px;
-box-shadow:0 0 10px rgba(94,181,13,.35);
-transition:.3s;
-}
-
-.filtros-partidos select:hover{
-box-shadow:0 0 15px #5eb50d;
-}
-
-.filtros-partidos select:focus{
-outline:none;
-box-shadow:
-0 0 10px #5eb50d,
-0 0 20px #5eb50d;
-}
-
-/* =========================
-   TARJETA PARTIDO
-========================= */
-
-.partido-tarjeta{
-background:rgba(10,24,48,.78);
-border:1px solid #5eb50d;
-border-radius:20px;
-padding:20px;
-margin-bottom:20px;
-
-box-shadow:
-0 0 10px rgba(94,181,13,.35);
-
-transition:.3s;
-}
-
-.partido-tarjeta:hover{
-box-shadow:
-0 0 15px #5eb50d,
-0 0 25px rgba(94,181,13,.35);
-}
-
-.partido-info{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:20px;
-}
-
-.partido-equipo{
-display:flex;
-flex-direction:column;
-align-items:center;
-width:35%;
-}
-
-.escudo-partido{
-width:90px;
-height:90px;
-object-fit:contain;
-}
-
-.nombre-equipo{
-margin-top:8px;
-font-size:14px;
-font-weight:bold;
-text-align:center;
-}
-
-.partido-marcador{
-width:30%;
-text-align:center;
-}
-
-.marcador-texto{
-font-size:28px;
-font-weight:bold;
-color:#5eb50d;
-}
-
-.partido-detalles{
-margin-top:15px;
-padding-top:15px;
-border-top:1px solid rgba(94,181,13,.25);
-
-display:flex;
-justify-content:center;
-gap:25px;
-flex-wrap:wrap;
-}
-
-.detalle{
-font-size:14px;
-font-weight:bold;
-color:#ddd;
-}
-
-.partido-estatus{
-margin-top:15px;
-display:flex;
-justify-content:center;
-gap:20px;
-flex-wrap:wrap;
-}
-
-.tipo-encuentro{
-background:#5eb50d;
-color:black;
-padding:8px 15px;
-border-radius:30px;
-font-weight:bold;
-font-size:13px;
-}
-
-.estado-partido{
-background:#5eb50d;
-color:black;
-padding:8px 15px;
-border-radius:30px;
-font-weight:bold;
-font-size:13px;
-}
-
-/* =========================
-   MOVIL
-========================= */
-
-@media(max-width:768px){
-
-.partido-info{
-flex-direction:row;
-gap:10px;
-}
-
-.escudo-partido{
-width:65px;
-height:65px;
-}
-
-.nombre-equipo{
-font-size:11px;
-}
-
-.marcador-texto{
-font-size:22px;
-}
-
-.partido-detalles{
-gap:10px;
-font-size:12px;
-}
-
-.detalle{
-font-size:12px;
-}
-
-.tipo-encuentro,
-.estado-partido{
-font-size:11px;
-padding:6px 12px;
-}
-
-.filtros-partidos select{
-width:100%;
-min-width:100%;
-}
-
-}
-/* ==================== Partidos - Tabla tipo liga ==================== */
-.contenedor-partidos {
-  max-width: 1400px;
-  margin: auto;
-  padding: 20px;
-}
-
-.filtros-card {
-  margin-bottom: 20px;
-  padding: 20px;
-  border-radius: 15px;
-  background: rgba(0, 0, 0, 0.75);
-  border: 1px solid #5eb50d;
-  box-shadow: 0 0 10px #5eb50d;
-}
-
-.filtros-partidos select {
-  margin: 5px;
-  padding: 10px 15px;
-  border-radius: 8px;
-  border: 1px solid #5eb50d;
-  background: #1c3204;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.filtros-partidos select:hover {
-  background: #5eb50d;
-  color: black;
-  border-color: #d5a610;
-}
-
-.tabla-partidos {
-  width: 100%;
-  border-collapse: collapse;
-  border-radius: 12px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.75);
-  box-shadow: 0 0 15px #5eb50d;
-}
-
-.tabla-partidos th, .tabla-partidos td {
-  padding: 12px 8px;
-  text-align: center;
-  font-size: 14px;
-  color: white;
-}
-
-.tabla-partidos th {
-  background: linear-gradient(90deg, #5eb50d, #d5a610);
-  color: black;
-  font-weight: bold;
-}
-
-.tabla-partidos tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.tabla-partidos tr:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.tabla-partidos .escudo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  vertical-align: middle;
-  margin: 0 5px;
-}
-
-.tabla-partidos .tipo-encuentro {
-  font-weight: bold;
-  color: #5eb50d;
-  margin-top: 4px;
-  display: block;
-}
-
-.tabla-partidos .estado-partido {
-  font-size: 12px;
-  color: #5eb50d;
-  display: block;
-  margin-top: 2px;
-}
-
-@media(max-width:768px){
-  .tabla-partidos th, .tabla-partidos td {
-    font-size: 12px;
-    padding: 6px 4px;
-  }
-  .escudo {
-    width: 30px;
-    height: 30px;
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h,i) => { obj[h] = (vals[i]||'').replace(/^"|"$/g,'').replace(/\r/g,'').trim(); });
+    return obj;
+  });
+}
+
+let logos = {};
+let equiposID = {};
+
+async function cargarEquiposDesdeSheet(){
+  try{
+    const texto = await (await fetch(csvUrl(GID_EQUIPOS))).text();
+    parseCSV(texto).forEach(e => {
+      const id = e.ID_Equipo || e.id_equipo || e.ID || e.id;
+      const nombre = e.Nombre || e.nombre;
+      const url = e.URL || e.url || e.Logo || e.logo;
+      if (nombre) logos[nombre] = url;
+      if (id) equiposID[id] = nombre;
+    });
+  }catch(err){
+    console.error("Error cargando equipos:", err);
   }
 }
-/* ===================================
-   LIGUILLA
-=================================== */
 
-.card-liguilla{
-    text-align:center;
-    margin-bottom:25px;
+// ==================== TABLA GENERAL ====================
+async function cargarTablaGeneral(){
+  try{
+    const respuesta = await fetch(URL_ESTADISTICAS);
+    const texto = await respuesta.text();
+    const filas = texto.trim().split("\n");
+    const equipos = [];
+
+    for(let i=1;i<filas.length;i++){
+      const c = filas[i].split(",");
+      const nombre = c[1];
+      if(nombre === "Descansa") continue;
+      equipos.push({
+        ranking: Number(c[10]) || 999,
+        equipo: nombre,
+        pts: Number(c[9]) || 0,
+        dg: Number(c[8]) || 0
+      });
+    }
+
+  equipos.sort((a,b)=>a.ranking-b.ranking);
+const top3equipos = equipos.slice(0, 3);
+    
+    let html = `
+      <table class="tabla">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Equipo</th>
+          <th>PTS</th>
+          <th>DG</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+
+  equipos.slice(0,3).forEach((e,index)=>{
+
+  let posicion =
+    e.ranking == 1 ? "🥇" :
+    e.ranking == 2 ? "🥈" :
+    e.ranking == 3 ? "🥉" :
+    e.ranking;
+
+  html += `
+    <tr>
+
+      <td style="font-size:13px;font-weight:bold;">
+        ${posicion}
+      </td>
+
+      <td style="text-align:left;font-size:14px;">
+        <img
+          src="${logos[e.equipo] || ""}"
+          style="
+            width:70px;
+            height:70px;
+            object-fit:contain;
+            margin-right:12px;
+            vertical-align:middle;
+          "
+        >
+        ${e.equipo}
+      </td>
+
+      <td style="font-size:14px;font-weight:bold;">
+        ${e.pts}
+      </td>
+
+      <td style="font-size:14px;font-weight:bold;">
+        ${e.dg}
+      </td>
+
+    </tr>
+  `;
+});
+
+html += `
+  </tbody>
+</table>
+`;
+
+document.getElementById("tabla-general").innerHTML = html;
+    document.getElementById("tabla-general").innerHTML = html;
+
+  }catch(error){
+    console.error(error);
+    document.getElementById("tabla-general").innerHTML = "Error cargando tabla";
+  }
 }
 
-#selector-ronda{
-    background:#1c3204;
-    color:#fff;
-    border:2px solid #5eb50d;
-    border-radius:12px;
-    padding:12px 18px;
-    font-size:16px;
-    font-weight:700;
-    cursor:pointer;
-    min-width:240px;
+// ==================== PARTIDOS ====================
+async function cargarPartidos(){
+  try{
+    const respuesta = await fetch(URL_PARTIDOS);
+    const texto = await respuesta.text();
+    const filas = texto.trim().split("\n");
+    const programados = [];
+    const jugados = [];
+
+    for(let i=1;i<filas.length;i++){
+      const c = filas[i].split(",");
+      const estado = (c[6] || "").trim();
+      const local = equiposID[Number(c[2])] || "";
+      const visita = equiposID[Number(c[3])] || "";
+      const partido = {
+        local,
+        visita,
+        gl: c[4] || "",
+        gv: c[5] || "",
+         fecha: c[8] || ""
+      };
+      if(estado === "Programado") programados.push(partido);
+      if(estado === "Jugado") jugados.push(partido);
+    }
+
+// Próxima Jornada
+if(programados.length > 0){
+
+  const fechaProxima = programados[0].fecha;
+
+  const lista = programados
+    .filter(p => p.fecha === fechaProxima)
+    .slice(0,4);
+
+  let html = `<div class="fecha-bloque">${fechaProxima}</div>`;
+
+  lista.forEach(p=>{
+
+    html += `
+    <div class="partido">
+      <div class="partido-top">
+
+        <div class="equipo">
+          <img src="${logos[p.local] || ""}" style="width:100px;height:100px;object-fit:contain;">
+          <div class="nombre" style="font-size:12px;">${p.local}</div>
+        </div>
+
+        <div class="centro">
+          <strong class="marcador" style="font-size:18px;">VS</strong>
+        </div>
+
+        <div class="equipo">
+          <img src="${logos[p.visita] || ""}" style="width:80px;height:80px;object-fit:contain;">
+          <div class="nombre" style="font-size:12px;">${p.visita}</div>
+        </div>
+
+      </div>
+    </div>
+    `;
+
+  });
+
+  document.getElementById("proxima-jornada").innerHTML = html;
 }
 
-#selector-ronda:hover{
-    box-shadow:0 0 15px #5eb50d;
+// Últimos Resultados
+if(jugados.length > 0){
+
+  const fechaResultado = jugados[jugados.length - 1].fecha;
+
+  const lista = jugados
+    .filter(p => p.fecha === fechaResultado)
+    .slice(0,4);
+
+  let html = `<div class="fecha-bloque">${fechaResultado}</div>`;
+
+  lista.forEach(p=>{
+
+    html += `
+    <div class="partido">
+      <div class="partido-top">
+
+        <div class="equipo">
+          <img src="${logos[p.local] || ""}" style="width:80px;height:80px;object-fit:contain;">
+          <div class="nombre" style="font-size:12px;">${p.local}</div>
+        </div>
+
+        <div class="centro">
+          <strong class="marcador" style="font-size:18px;">${p.gl} - ${p.gv}</strong>
+        </div>
+
+        <div class="equipo">
+          <img src="${logos[p.visita] || ""}" style="width:80px;height:80px;object-fit:contain;">
+          <div class="nombre" style="font-size:12px;">${p.visita}</div>
+        </div>
+
+      </div>
+    </div>
+    `;
+
+  });
+
+  document.getElementById("ultimos-resultados").innerHTML = html;
 }
 
-#contenedor-bracket{
-    width:100%;
-    overflow-x:auto;
-    padding:20px;
+  }catch(error){
+    console.error(error);
+  }
 }
 
-.bracket{
-    display:flex;
-    justify-content:space-between;
-    gap:50px;
-    min-width:1100px;
-}
+// ==================== INICIO ====================
+(async function iniciar(){
+  await cargarEquiposDesdeSheet();
+  cargarTablaGeneral();
+  cargarPartidos();
+  cargarEquipos();
+})();
 
-.columna-bracket{
-    flex:1;
-}
-
-.columna-bracket h3{
-    text-align:center;
-    color:#5eb50d;
-    font-size:26px;
-    margin-bottom:25px;
-    text-shadow:0 0 10px #5eb50d;
-}
-
-.liguilla-match{
-    background:#142702;
-    border:2px solid #5eb50d;
-    border-radius:15px;
-    padding:12px;
-    margin-bottom:20px;
-    box-shadow:0 0 15px rgba(94,181,13,.25);
-}
-
-.liguilla-equipo{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:8px 0;
-}
-
-.liguilla-logo{
-    width:32px;
-    height:32px;
-    object-fit:contain;
-    flex-shrink:0;
-}
-
-.liguilla-equipo span{
-    color:#fff;
-    font-size:16px;
-    font-weight:700;
-}
-
-.liguilla-vs{
-    text-align:center;
-    margin:10px 0;
-}
-
-.liguilla-marcador{
-    color:#5eb50d;
-    font-size:22px;
-    font-weight:bold;
-}
-
-.liguilla-estado{
-    text-align:center;
-    color:#5eb50d;
-    font-size:13px;
-    margin-top:8px;
-    font-weight:bold;
-}
-
-/* SEMIFINALES BAJAN UN POCO */
-
-.columna-bracket:nth-child(2){
-    padding-top:90px;
-}
-
-/* FINAL BAJA MÁS */
-
-.columna-bracket:nth-child(3){
-    padding-top:180px;
-}
-
-/* MOVIL */
-
-@media(max-width:768px){
-
-.bracket{
-    flex-direction:column;
-    min-width:100%;
-}
-
-.columna-bracket:nth-child(2),
-.columna-bracket:nth-child(3){
-    padding-top:0;
-}
-
-.columna-bracket h3{
-    font-size:22px;
-}
-
-.liguilla-equipo span{
-    font-size:14px;
-}
-
-.liguilla-logo{
-    width:28px;
-    height:28px;
-}
-
+// ==================== EQUIPOS ====================
+function cargarEquipos(){
+  const contenedor = document.getElementById("lista-equipos");
+  if(!contenedor) return;
+  let html = "";
+  Object.keys(logos).forEach(nombre=>{
+    html += `
+    <div class="equipo-card">
+      <img src="${logos[nombre]}" class="equipo-logo">
+      <div class="equipo-nombre">${nombre}</div>
+    </div>
+    `;
+  });
+  contenedor.innerHTML = html;
 }
