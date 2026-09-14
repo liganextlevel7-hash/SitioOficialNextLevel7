@@ -239,11 +239,9 @@ async function cargarDatos() {
       });
       if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para ${equipoSel}`; return; }
       filtrados.sort((a,b) => {
-        const ja = a.Jornada ? Number(a.Jornada) : -1;
-        const jb = b.Jornada ? Number(b.Jornada) : -1;
-        if (ja === -1 && jb === -1) return Number(b.ID_Partido) - Number(a.ID_Partido);
-        if (ja === -1) return 1; if (jb === -1) return -1;
-        return jb - ja;
+        const ja = a.Jornada ? Number(a.Jornada) : 999;
+        const jb = b.Jornada ? Number(b.Jornada) : 999;
+        return ja - jb;
       });
     } else {
       statusEl.textContent = '⚠️ Selecciona un tipo de filtro'; return;
@@ -454,9 +452,11 @@ async function downloadPNG() {
   btn.textContent = '⏳ Generando...';
   btn.disabled = true;
 
-  const partidosOrdenados = ordenarPorCampoHora(ultimosFiltrados);
-  const firstP = partidosOrdenados[0];
   const tipoFiltro = document.getElementById('filterTipo').value;
+  const partidosOrdenados = tipoFiltro === 'equipo'
+    ? [...ultimosFiltrados]
+    : ordenarPorCampoHora(ultimosFiltrados);
+  const firstP = partidosOrdenados[0];
   let jornadaTitulo;
   if (tipoFiltro === 'equipo') {
     const equipoNombre = document.getElementById('filterEquipo').value.trim();
