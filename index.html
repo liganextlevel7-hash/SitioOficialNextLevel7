@@ -48,7 +48,7 @@
 .c-proxima .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; width:auto; z-index:2; }
 .card-fondo-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; opacity:0.35; }
 .card-overlay-color { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; background:rgba(0,0,0,0.55); }
-.card-contenido, .card-contenido + .car-btn { position:relative; z-index:2; }
+.card-contenido { position:relative; z-index:2; }
 .c-equipos .card-body { background:#142702; position:relative; overflow:hidden; padding:0 !important; }
 .c-equipos .card-titulo { color:#5eb50d; position:absolute; top:14px; left:0; right:0; z-index:2; text-shadow:0 2px 6px rgba(0,0,0,0.8); }
 .c-equipos .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; z-index:2; width:auto; }
@@ -462,7 +462,7 @@ const carCards=document.querySelectorAll('.card-sec'), carTotal=carCards.length;
 let carActivo=0;
 function carActualizar(){
   carCards.forEach((card,i)=>{
-    card.className=card.className.replace(/\b(c|l1|l2|r1|r2)\b/g,'').trim();
+    card.className=card.className.split(/\s+/).filter(cl=>!['c','l1','l2','r1','r2'].includes(cl)).join(' ');
     const diff=((i-carActivo)%carTotal+carTotal)%carTotal;
     let cls='';
     if(diff===0) cls='c';
