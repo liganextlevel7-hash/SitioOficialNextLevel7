@@ -164,6 +164,31 @@
     background: none;
     margin-top: 8px;
   }
+
+  /* ---- Panel de administrador ---- */
+  .tarjeta-adm {
+    background: rgba(20, 39, 2, 0.85);
+    border: 1px solid rgba(94,181,13,0.4);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .tarjeta-adm img { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; border: 2px solid #5eb50d; flex-shrink: 0; }
+  .tarjeta-adm .datos-adm { flex: 1; min-width: 0; }
+  .tarjeta-adm .nombre-adm { font-size: 1.05rem; font-weight: 900; color: #fff; }
+  .tarjeta-adm .campo-adm { font-size: 0.82rem; color: rgba(238,247,230,0.8); margin-top: 2px; }
+  .tarjeta-adm .campo-adm b { color: #8fe89a; }
+  .tarjeta-adm .quien-adm { font-size: 0.7rem; color: rgba(238,247,230,0.45); margin-top: 6px; }
+  .acciones-adm { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .btn-copiar-adm, .btn-borrar-adm, .btn-editar-adm {
+    font-size: 0.7rem; font-weight: bold; padding: 6px 12px; border-radius: 20px; border: 1px solid; cursor: pointer; background: none;
+  }
+  .btn-copiar-adm { color: #5eb50d; border-color: #5eb50d; }
+  .btn-editar-adm { color: #f2c200; border-color: #f2c200; }
+  .btn-borrar-adm { color: #ff6b6b; border-color: #ff6b6b; }
 </style>
 </head>
 <body>
@@ -179,6 +204,17 @@
     <input type="text" id="input-codigo" placeholder="Ej. NL7-05" maxlength="10" style="text-transform:uppercase;">
     <button type="button" class="btn-enviar" id="btn-login" style="margin-top:16px;">Entrar</button>
     <div class="msg" id="login-msg"></div>
+
+    <div style="text-align:center; margin-top:18px; border-top:1px solid rgba(94,181,13,0.25); padding-top:14px;">
+      <a href="#" id="link-soy-admin" style="font-size:0.72rem; color:rgba(238,247,230,0.5); text-decoration:underline;">🔑 ¿Eres el administrador? Entra aquí</a>
+    </div>
+
+    <div id="admin-login-zona" style="display:none; margin-top:14px;">
+      <label for="input-admin-pass">Contraseña de administrador</label>
+      <input type="password" id="input-admin-pass">
+      <button type="button" class="btn-enviar" id="btn-admin-login" style="margin-top:12px;">Entrar como admin</button>
+      <div class="msg" id="admin-login-msg"></div>
+    </div>
   </div>
 
   <!-- ===== FORMULARIO (oculto hasta que entra con su código) ===== -->
@@ -231,6 +267,44 @@
   <div id="mis-jugadores-wrap" style="display:none; margin-top:30px;">
     <h2 style="font-size:1rem; color:#5eb50d; text-align:center; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">📋 Mis Jugadores Registrados</h2>
     <div id="mis-jugadores-lista"></div>
+  </div>
+
+  <!-- ===== PANEL DE ADMINISTRADOR (ver todos, agregar, editar, borrar) ===== -->
+  <div id="admin-panel-wrap" style="display:none;">
+    <div style="text-align:center; margin-bottom:16px;">
+      <div style="font-size:1.1rem; font-weight:900; color:#5eb50d;">🔑 Panel de Administrador</div>
+      <a href="#" id="link-cerrar-admin" style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-decoration:underline;">Cerrar sesión de admin</a>
+    </div>
+
+    <button id="btn-toggle-agregar" style="display:block; width:100%; margin-bottom:16px; padding:12px; border:1px dashed #5eb50d; border-radius:14px; background:rgba(94,181,13,0.08); color:#5eb50d; font-weight:bold; font-size:0.85rem; cursor:pointer;">+ Agregar Jugador</button>
+
+    <div id="form-agregar-wrap" style="display:none; background:rgba(20,39,2,0.85); border:1px solid rgba(94,181,13,0.4); border-radius:16px; padding:16px; margin-bottom:20px;">
+      <input type="file" id="add-input-foto" accept="image/*" style="display:none;">
+      <div id="add-foto-zona" style="border:2px dashed rgba(94,181,13,0.4); border-radius:14px; padding:12px; text-align:center; cursor:pointer; margin-bottom:10px;">
+        <img id="add-foto-preview" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #5eb50d; display:none; margin:0 auto 6px;" alt="">
+        <div id="add-foto-placeholder" style="font-size:0.78rem; color:rgba(238,247,230,0.6);">📷 Toca para subir la foto</div>
+      </div>
+      <input type="text" id="add-nombre" placeholder="Nombre completo" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:8px; box-sizing:border-box;">
+      <select id="add-equipo" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:8px;"></select>
+      <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <input type="number" id="add-numero" placeholder="Número" style="flex:1; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; box-sizing:border-box;">
+        <select id="add-posicion" style="flex:1; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem;">
+          <option value="">Posición</option>
+          <option value="Portero">Portero</option>
+          <option value="Defensa">Defensa</option>
+          <option value="Mediocampista">Mediocampista</option>
+          <option value="Delantero">Delantero</option>
+        </select>
+      </div>
+      <input type="text" id="add-apodo" placeholder="Apodo (opcional)" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:10px; box-sizing:border-box;">
+      <button id="btn-guardar-nuevo" style="width:100%; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">Guardar Jugador</button>
+      <div class="msg" id="add-msg" style="text-align:center; font-size:0.78rem; margin-top:8px;"></div>
+    </div>
+
+    <p class="sub" style="font-size:0.72rem;">Al copiar, pega en la <b>columna A</b> de una fila vacía de tu hoja "Jugadores" — se acomoda solo en Nombre, Equipo, Número y Posición.</p>
+    <div class="contador" id="contador" style="text-align:center; font-size:0.78rem; color:rgba(238,247,230,0.5); margin-bottom:16px;"></div>
+
+    <div id="lista-admin"></div>
   </div>
 
   <p class="nota">Los datos se guardan directo en la base de la liga. Puedes registrar varios jugadores uno tras otro desde este mismo formulario.</p>
@@ -303,6 +377,231 @@
     const guardado = localStorage.getItem('nl7_codigo_equipo');
     if (guardado) entrarConCodigo(guardado);
   })();
+
+  // ===================== LOGIN DE ADMINISTRADOR (misma pantalla) =====================
+  const ADMIN_PASSWORD = 'domingo2026'; // cámbiala aquí cuando quieras
+  const adminPanelWrap = document.getElementById('admin-panel-wrap');
+
+  document.getElementById('link-soy-admin').addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('admin-login-zona').style.display = 'block';
+    document.getElementById('input-admin-pass').focus();
+  });
+
+  function intentarLoginAdmin() {
+    const val = document.getElementById('input-admin-pass').value;
+    const msg = document.getElementById('admin-login-msg');
+    if (val !== ADMIN_PASSWORD) {
+      msg.textContent = 'Contraseña incorrecta.';
+      msg.className = 'msg error';
+      return;
+    }
+    sessionStorage.setItem('nl7_domingo_admin_ok', '1');
+    loginCard.style.display = 'none';
+    adminPanelWrap.style.display = 'block';
+    cargarRegistrosAdmin();
+  }
+  document.getElementById('btn-admin-login').addEventListener('click', intentarLoginAdmin);
+  document.getElementById('input-admin-pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') intentarLoginAdmin(); });
+
+  document.getElementById('link-cerrar-admin').addEventListener('click', (e) => {
+    e.preventDefault();
+    sessionStorage.removeItem('nl7_domingo_admin_ok');
+    adminPanelWrap.style.display = 'none';
+    loginCard.style.display = 'block';
+  });
+
+  // Si ya entró como admin antes en esta pestaña, no se lo volvemos a pedir.
+  if (sessionStorage.getItem('nl7_domingo_admin_ok') === '1') {
+    loginCard.style.display = 'none';
+    adminPanelWrap.style.display = 'block';
+    cargarRegistrosAdmin();
+  }
+
+  // ---- Agregar jugador (admin) ----
+  const selectAddEquipo = document.getElementById('add-equipo');
+  selectAddEquipo.innerHTML = '<option value="">Selecciona equipo...</option>' +
+    EQUIPOS.map(e => `<option value="${e.nombre}" data-id="${e.id}">${e.nombre}</option>`).join('');
+
+  document.getElementById('btn-toggle-agregar').addEventListener('click', () => {
+    const wrap = document.getElementById('form-agregar-wrap');
+    wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  });
+
+  const addFotoZona = document.getElementById('add-foto-zona');
+  const addInputFoto = document.getElementById('add-input-foto');
+  const addFotoPreview = document.getElementById('add-foto-preview');
+  const addFotoPlaceholder = document.getElementById('add-foto-placeholder');
+  let addFotoBase64 = '';
+
+  addFotoZona.addEventListener('click', () => addInputFoto.click());
+  addInputFoto.addEventListener('change', () => {
+    const archivo = addInputFoto.files[0];
+    if (!archivo) return;
+    const lector = new FileReader();
+    lector.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxLado = 500;
+        let w = img.width, h = img.height;
+        if (w > h && w > maxLado) { h *= maxLado / w; w = maxLado; }
+        else if (h > maxLado) { w *= maxLado / h; h = maxLado; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        addFotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        addFotoPreview.src = addFotoBase64;
+        addFotoPreview.style.display = 'block';
+        addFotoPlaceholder.style.display = 'none';
+      };
+      img.src = e.target.result;
+    };
+    lector.readAsDataURL(archivo);
+  });
+
+  document.getElementById('btn-guardar-nuevo').addEventListener('click', async () => {
+    const addMsg = document.getElementById('add-msg');
+    const equipoOpt = selectAddEquipo.options[selectAddEquipo.selectedIndex];
+    const nombre = document.getElementById('add-nombre').value.trim();
+
+    if (!nombre || !selectAddEquipo.value || !addFotoBase64) {
+      addMsg.textContent = 'Falta nombre, equipo o foto.';
+      addMsg.style.color = '#ff6b6b';
+      return;
+    }
+
+    const nuevo = {
+      nombre,
+      equipo: selectAddEquipo.value,
+      equipoId: equipoOpt ? Number(equipoOpt.dataset.id) : '',
+      numero: document.getElementById('add-numero').value,
+      posicion: document.getElementById('add-posicion').value,
+      apodo: document.getElementById('add-apodo').value.trim(),
+      registradoPor: 'Administrador',
+      foto: addFotoBase64,
+      fecha: Date.now()
+    };
+
+    await fetch(FB + '/jugadoresRegistro.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nuevo)
+    });
+
+    addMsg.textContent = '✅ Jugador agregado.';
+    addMsg.style.color = '#5eb50d';
+    document.getElementById('add-nombre').value = '';
+    selectAddEquipo.value = '';
+    document.getElementById('add-numero').value = '';
+    document.getElementById('add-posicion').value = '';
+    document.getElementById('add-apodo').value = '';
+    addFotoBase64 = '';
+    addFotoPreview.style.display = 'none';
+    addFotoPlaceholder.style.display = 'block';
+    addInputFoto.value = '';
+    cargarRegistrosAdmin();
+  });
+
+  // ---- Ver / editar / borrar TODOS los registros (admin) ----
+  let registrosAdminCache = {};
+
+  async function cargarRegistrosAdmin() {
+    const lista = document.getElementById('lista-admin');
+    const contador = document.getElementById('contador');
+    lista.innerHTML = '<div class="nota">Cargando registros...</div>';
+    try {
+      const resp = await fetch(FB + '/jugadoresRegistro.json');
+      const data = await resp.json();
+      if (!data) {
+        lista.innerHTML = '<div class="nota">No hay jugadores registrados todavía.</div>';
+        contador.textContent = '';
+        return;
+      }
+      const entradas = Object.entries(data).sort((a, b) => (b[1].fecha || 0) - (a[1].fecha || 0));
+      contador.textContent = `${entradas.length} registro(s)`;
+      registrosAdminCache = Object.fromEntries(entradas);
+
+      lista.innerHTML = entradas.map(([id, j]) => {
+        const fecha = j.fecha ? new Date(j.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '';
+        const textoCopiar = `\t${j.nombre || ''}\t${j.equipoId || ''}\t${j.numero || ''}\t${j.posicion || ''}\t\t\t\t${j.apodo || ''}`;
+        return `
+          <div class="tarjeta-adm" id="adm-card-${id}">
+            <img src="${j.foto || ''}" alt="">
+            <div class="datos-adm">
+              <div class="nombre-adm">${j.nombre || '(sin nombre)'}</div>
+              <div class="campo-adm"><b>Equipo:</b> ${j.equipo || '-'}</div>
+              <div class="campo-adm"><b>Número:</b> ${j.numero || '-'} &nbsp; <b>Posición:</b> ${j.posicion || '-'}</div>
+              ${j.apodo ? `<div class="campo-adm"><b>Apodo:</b> ${j.apodo}</div>` : ''}
+              <div class="quien-adm">Registrado por ${j.registradoPor || '-'} · ${fecha}</div>
+              <div class="acciones-adm">
+                <button class="btn-copiar-adm" onclick="copiarDatosAdm(this, '${textoCopiar.replace(/'/g, "\\'")}')">📋 Copiar</button>
+                <button class="btn-editar-adm" onclick="editarRegistroAdm('${id}')">✏️ Editar</button>
+                <button class="btn-borrar-adm" onclick="borrarRegistroAdm('${id}')">🗑️ Borrar</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      lista.innerHTML = '<div class="nota">No se pudo cargar. Revisa tu conexión.</div>';
+    }
+  }
+
+  function copiarDatosAdm(btn, texto) {
+    navigator.clipboard.writeText(texto).then(() => {
+      const original = btn.textContent;
+      btn.textContent = '✅ Copiado';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+  }
+
+  function editarRegistroAdm(id) {
+    const j = registrosAdminCache[id];
+    const card = document.getElementById(`adm-card-${id}`);
+    const opciones = ['Portero', 'Defensa', 'Mediocampista', 'Delantero'];
+    card.querySelector('.datos-adm').innerHTML = `
+      <input type="text" id="edt-nombre-${id}" value="${(j.nombre || '').replace(/"/g, '&quot;')}" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:8px; box-sizing:border-box;">
+      <select id="edt-equipo-${id}" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:8px;">
+        ${EQUIPOS.map(e => `<option value="${e.nombre}" data-id="${e.id}" ${e.nombre === j.equipo ? 'selected' : ''}>${e.nombre}</option>`).join('')}
+      </select>
+      <div style="display:flex; gap:8px;">
+        <input type="number" id="edt-numero-${id}" value="${j.numero || ''}" style="flex:1; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; box-sizing:border-box;">
+        <select id="edt-posicion-${id}" style="flex:1; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem;">
+          ${opciones.map(o => `<option value="${o}" ${o === j.posicion ? 'selected' : ''}>${o}</option>`).join('')}
+        </select>
+      </div>
+      <input type="text" id="edt-apodo-${id}" value="${(j.apodo || '').replace(/"/g, '&quot;')}" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-top:8px; box-sizing:border-box;">
+      <div class="acciones-adm" style="margin-top:12px;">
+        <button class="btn-copiar-adm" onclick="guardarEdicionAdm('${id}')">💾 Guardar</button>
+        <button class="btn-borrar-adm" onclick="cargarRegistrosAdmin()">Cancelar</button>
+      </div>
+    `;
+  }
+
+  async function guardarEdicionAdm(id) {
+    const equipoSelect = document.getElementById(`edt-equipo-${id}`);
+    const equipoOpt = equipoSelect.options[equipoSelect.selectedIndex];
+    const actualizado = {
+      nombre: document.getElementById(`edt-nombre-${id}`).value.trim(),
+      equipo: equipoSelect.value,
+      equipoId: equipoOpt ? Number(equipoOpt.dataset.id) : '',
+      numero: document.getElementById(`edt-numero-${id}`).value,
+      posicion: document.getElementById(`edt-posicion-${id}`).value,
+      apodo: document.getElementById(`edt-apodo-${id}`).value.trim()
+    };
+    await fetch(`${FB}/jugadoresRegistro/${id}.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(actualizado)
+    });
+    cargarRegistrosAdmin();
+  }
+
+  async function borrarRegistroAdm(id) {
+    if (!confirm('¿Ya pasaste este jugador a tu hoja de Sheets? Se va a borrar (no se puede deshacer).')) return;
+    await fetch(`${FB}/jugadoresRegistro/${id}.json`, { method: 'DELETE' });
+    cargarRegistrosAdmin();
+  }
 
   // ---- Foto: abrir selector, comprimir antes de guardar ----
   const fotoZona = document.getElementById('foto-zona');
