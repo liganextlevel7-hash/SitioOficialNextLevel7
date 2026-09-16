@@ -120,6 +120,32 @@
   <div id="panel-registros" style="display:none;">
     <p class="sub">Revísalos aquí, edítalos si hace falta, y pásalos a mano a tu hoja de Google Sheets "Jugadores"</p>
     <p class="sub" style="font-size:0.72rem;">Al copiar, pega en la <b>columna A</b> de una fila vacía — se acomoda solo en Nombre, Equipo, Número y Posición. ID_Jugador, Logo, Foto, URL_Foto y Apodo los llenas tú.</p>
+
+    <button id="btn-toggle-agregar" style="display:block; width:100%; margin-bottom:16px; padding:12px; border:1px dashed #5eb50d; border-radius:14px; background:rgba(94,181,13,0.08); color:#5eb50d; font-weight:bold; font-size:0.85rem; cursor:pointer;">+ Agregar Jugador</button>
+
+    <div id="form-agregar-wrap" style="display:none; background:rgba(20,39,2,0.85); border:1px solid rgba(94,181,13,0.4); border-radius:16px; padding:16px; margin-bottom:20px;">
+      <input type="file" id="add-input-foto" accept="image/*" style="display:none;">
+      <div id="add-foto-zona" style="border:2px dashed rgba(94,181,13,0.4); border-radius:14px; padding:12px; text-align:center; cursor:pointer; margin-bottom:10px;">
+        <img id="add-foto-preview" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #5eb50d; display:none; margin:0 auto 6px;" alt="">
+        <div id="add-foto-placeholder" style="font-size:0.78rem; color:rgba(238,247,230,0.6);">📷 Toca para subir la foto</div>
+      </div>
+      <input type="text" id="add-nombre" placeholder="Nombre completo" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:8px; box-sizing:border-box;">
+      <select id="add-equipo" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:8px;"></select>
+      <div style="display:flex; gap:8px; margin-bottom:8px;">
+        <input type="number" id="add-numero" placeholder="Número" style="flex:1; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; box-sizing:border-box;">
+        <select id="add-posicion" style="flex:1; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem;">
+          <option value="">Posición</option>
+          <option value="Portero">Portero</option>
+          <option value="Defensa">Defensa</option>
+          <option value="Mediocampista">Mediocampista</option>
+          <option value="Delantero">Delantero</option>
+        </select>
+      </div>
+      <input type="text" id="add-apodo" placeholder="Apodo (opcional)" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:10px; box-sizing:border-box;">
+      <button id="btn-guardar-nuevo" style="width:100%; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">Guardar Jugador</button>
+      <div class="msg" id="add-msg" style="text-align:center; font-size:0.78rem; margin-top:8px;"></div>
+    </div>
+
     <div class="contador" id="contador"></div>
 
     <div id="lista">
@@ -164,6 +190,90 @@
     loginCard.style.display = 'none';
     panelRegistros.style.display = 'block';
   }
+
+  // ===================== AGREGAR JUGADOR (admin) =====================
+  const selectAddEquipo = document.getElementById('add-equipo');
+  selectAddEquipo.innerHTML = '<option value="">Selecciona equipo...</option>' +
+    EQUIPOS.map(e => `<option value="${e.nombre}" data-id="${e.id}">${e.nombre}</option>`).join('');
+
+  document.getElementById('btn-toggle-agregar').addEventListener('click', () => {
+    const wrap = document.getElementById('form-agregar-wrap');
+    wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  });
+
+  const addFotoZona = document.getElementById('add-foto-zona');
+  const addInputFoto = document.getElementById('add-input-foto');
+  const addFotoPreview = document.getElementById('add-foto-preview');
+  const addFotoPlaceholder = document.getElementById('add-foto-placeholder');
+  let addFotoBase64 = '';
+
+  addFotoZona.addEventListener('click', () => addInputFoto.click());
+  addInputFoto.addEventListener('change', () => {
+    const archivo = addInputFoto.files[0];
+    if (!archivo) return;
+    const lector = new FileReader();
+    lector.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const maxLado = 500;
+        let w = img.width, h = img.height;
+        if (w > h && w > maxLado) { h *= maxLado / w; w = maxLado; }
+        else if (h > maxLado) { w *= maxLado / h; h = maxLado; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        addFotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        addFotoPreview.src = addFotoBase64;
+        addFotoPreview.style.display = 'block';
+        addFotoPlaceholder.style.display = 'none';
+      };
+      img.src = e.target.result;
+    };
+    lector.readAsDataURL(archivo);
+  });
+
+  document.getElementById('btn-guardar-nuevo').addEventListener('click', async () => {
+    const addMsg = document.getElementById('add-msg');
+    const equipoOpt = selectAddEquipo.options[selectAddEquipo.selectedIndex];
+    const nombre = document.getElementById('add-nombre').value.trim();
+
+    if (!nombre || !selectAddEquipo.value || !addFotoBase64) {
+      addMsg.textContent = 'Falta nombre, equipo o foto.';
+      addMsg.style.color = '#ff6b6b';
+      return;
+    }
+
+    const nuevo = {
+      nombre,
+      equipo: selectAddEquipo.value,
+      equipoId: equipoOpt ? Number(equipoOpt.dataset.id) : '',
+      numero: document.getElementById('add-numero').value,
+      posicion: document.getElementById('add-posicion').value,
+      apodo: document.getElementById('add-apodo').value.trim(),
+      registradoPor: 'Administrador',
+      foto: addFotoBase64,
+      fecha: Date.now()
+    };
+
+    await fetch(FB + '/jugadoresRegistro.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nuevo)
+    });
+
+    addMsg.textContent = '✅ Jugador agregado.';
+    addMsg.style.color = '#5eb50d';
+    document.getElementById('add-nombre').value = '';
+    selectAddEquipo.value = '';
+    document.getElementById('add-numero').value = '';
+    document.getElementById('add-posicion').value = '';
+    document.getElementById('add-apodo').value = '';
+    addFotoBase64 = '';
+    addFotoPreview.style.display = 'none';
+    addFotoPlaceholder.style.display = 'block';
+    addInputFoto.value = '';
+    cargarRegistros();
+  });
 
   async function cargarRegistros() {
     const lista = document.getElementById('lista');
