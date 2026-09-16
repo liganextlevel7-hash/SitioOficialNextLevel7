@@ -200,8 +200,8 @@
 
   <!-- ===== PANTALLA DE LOGIN POR EQUIPO ===== -->
   <div class="card" id="login-card">
-    <label for="input-codigo">Código de tu equipo</label>
-    <input type="text" id="input-codigo" placeholder="Ej. NL7-05" maxlength="10" style="text-transform:uppercase;">
+    <label for="input-codigo">Contraseña de tu equipo</label>
+    <input type="text" id="input-codigo" placeholder="Ej. nl7union1" maxlength="20">
     <button type="button" class="btn-enviar" id="btn-login" style="margin-top:16px;">Entrar</button>
     <div class="msg" id="login-msg"></div>
 
@@ -316,20 +316,20 @@
   // ---- Códigos de acceso por equipo ----
   // Reparte cada código nada más al capitán de ese equipo.
   const EQUIPOS = [
-    { id: 1, nombre: 'Unión 8', codigo: '2LI3ER' },
-    { id: 2, nombre: 'Cuervos F.C', codigo: 'UWFWS4' },
-    { id: 3, nombre: 'Pumas KAP', codigo: 'B8G3S4' },
-    { id: 4, nombre: 'Soldados Del Amor', codigo: 'GLD2TH' },
-    { id: 5, nombre: 'Paris', codigo: 'GCHUPZ' },
-    { id: 6, nombre: 'Rivera F.C.', codigo: 'C49004' },
-    { id: 7, nombre: 'Real Alcoholicos', codigo: 'DQC2TD' },
-    { id: 8, nombre: 'Gambeta F.C.', codigo: 'Q1TE7C' },
-    { id: 9, nombre: 'USG Warriors', codigo: '4918TH' },
-    { id: 10, nombre: 'Real Mala Copa', codigo: 'R01N8B' },
-    { id: 11, nombre: 'Puebla 450', codigo: 'RBM9E9' },
-    { id: 12, nombre: 'Dream Team', codigo: '6YCQYD' },
-    { id: 13, nombre: 'Dragones F.F.', codigo: 'KD4671' },
-    { id: 14, nombre: 'Atletico Ballenitas', codigo: 'UCR11A' }
+    { id: 1, nombre: 'Unión 8', codigo: 'nl7union1' },
+    { id: 2, nombre: 'Cuervos F.C', codigo: 'nl7cuervos2' },
+    { id: 3, nombre: 'Pumas KAP', codigo: 'nl7pumas3' },
+    { id: 4, nombre: 'Soldados Del Amor', codigo: 'nl7solados4' },
+    { id: 5, nombre: 'Paris', codigo: 'nl7paris5' },
+    { id: 6, nombre: 'Rivera F.C.', codigo: 'nl7rivera6' },
+    { id: 7, nombre: 'Real Alcoholicos', codigo: 'nl7real7' },
+    { id: 8, nombre: 'Gambeta F.C.', codigo: 'nl7gambeta8' },
+    { id: 9, nombre: 'USG Warriors', codigo: 'nl7usg9' },
+    { id: 10, nombre: 'Real Mala Copa', codigo: 'nl7real10' },
+    { id: 11, nombre: 'Puebla 450', codigo: 'nl7puebla11' },
+    { id: 12, nombre: 'Dream Team', codigo: 'nl7dream12' },
+    { id: 13, nombre: 'Dragones F.F.', codigo: 'nl7dragones13' },
+    { id: 14, nombre: 'Atletico Ballenitas', codigo: 'nlatletico14' }
   ];
 
   let equipoActual = null; // { id, nombre, codigo } una vez que entra
@@ -379,7 +379,7 @@
   })();
 
   // ===================== LOGIN DE ADMINISTRADOR (misma pantalla) =====================
-  const ADMIN_PASSWORD = 'domingo2026'; // cámbiala aquí cuando quieras
+  const ADMIN_PASSWORD = 'nl7admin';
   const adminPanelWrap = document.getElementById('admin-panel-wrap');
 
   document.getElementById('link-soy-admin').addEventListener('click', (e) => {
