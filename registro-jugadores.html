@@ -523,10 +523,16 @@
 
       lista.innerHTML = entradas.map(([id, j]) => {
         const fecha = j.fecha ? new Date(j.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '';
-        const textoCopiar = `\t${j.nombre || ''}\t${j.equipoId || ''}\t${j.numero || ''}\t${j.posicion || ''}\t\t\t\t${j.apodo || ''}`;
+        // Bloque 1 = columnas A-E (ID_Jugador, Nombre, Equipo, Numero, Posicion)
+        const textoCopiarAE = `\t${j.nombre || ''}\t${j.equipoId || ''}\t${j.numero || ''}\t${j.posicion || ''}`;
+        // Bloque 2 = columnas G-I (Foto, URL_Foto, Apodo) — saltando F (Logo) para no pisar tu fórmula
+        const textoCopiarGI = `\t\t${j.apodo || ''}`;
         return `
           <div class="tarjeta-adm" id="adm-card-${id}">
-            <img src="${j.foto || ''}" alt="">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0;">
+              <img src="${j.foto || ''}" alt="">
+              <a href="${j.foto || ''}" download="${(j.nombre || 'jugador').replace(/\s+/g, '_')}.jpg" style="font-size:0.62rem; color:#5eb50d; text-decoration:underline;">⬇️ Descargar</a>
+            </div>
             <div class="datos-adm">
               <div class="nombre-adm">${j.nombre || '(sin nombre)'}</div>
               <div class="campo-adm"><b>Equipo:</b> ${j.equipo || '-'}</div>
@@ -534,7 +540,8 @@
               ${j.apodo ? `<div class="campo-adm"><b>Apodo:</b> ${j.apodo}</div>` : ''}
               <div class="quien-adm">Registrado por ${j.registradoPor || '-'} · ${fecha}</div>
               <div class="acciones-adm">
-                <button class="btn-copiar-adm" onclick="copiarDatosAdm(this, '${textoCopiar.replace(/'/g, "\\'")}')">📋 Copiar</button>
+                <button class="btn-copiar-adm" onclick="copiarDatosAdm(this, '${textoCopiarAE.replace(/'/g, "\\'")}')" title="Pega en la columna A">📋 Copiar A-E</button>
+                <button class="btn-copiar-adm" onclick="copiarDatosAdm(this, '${textoCopiarGI.replace(/'/g, "\\'")}')" title="Pega en la columna G, salta Logo">📋 Copiar G-I</button>
                 <button class="btn-editar-adm" onclick="editarRegistroAdm('${id}')">✏️ Editar</button>
                 <button class="btn-borrar-adm" onclick="borrarRegistroAdm('${id}')">🗑️ Borrar</button>
               </div>
