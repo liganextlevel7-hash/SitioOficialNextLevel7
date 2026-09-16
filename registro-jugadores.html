@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ver Registros — Next Level 7</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(circle at center, #12351a 0%, #0a1a0d 60%, #050805 100%);
+    font-family: Arial, sans-serif;
+    color: #eef7e6;
+    padding: 30px 14px 60px;
+  }
+
+  .wrap { max-width: 640px; margin: 0 auto; }
+
+  a.volver {
+    display: inline-block;
+    color: #111;
+    background: linear-gradient(145deg, #5eb50d, #f2c200);
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-size: 1.3rem;
+    color: #5eb50d;
+    text-align: center;
+    margin: 6px 0 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .sub {
+    text-align: center;
+    font-size: 0.8rem;
+    color: rgba(238,247,230,0.6);
+    margin-bottom: 22px;
+  }
+
+  .tarjeta {
+    background: rgba(20, 39, 2, 0.85);
+    border: 1px solid rgba(94,181,13,0.4);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .tarjeta img {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #5eb50d;
+    flex-shrink: 0;
+  }
+
+  .tarjeta .datos { flex: 1; min-width: 0; }
+  .tarjeta .nombre { font-size: 1.05rem; font-weight: 900; color: #fff; }
+  .tarjeta .campo { font-size: 0.82rem; color: rgba(238,247,230,0.8); margin-top: 2px; }
+  .tarjeta .campo b { color: #8fe89a; }
+  .tarjeta .quien {
+    font-size: 0.7rem;
+    color: rgba(238,247,230,0.45);
+    margin-top: 6px;
+  }
+
+  .acciones { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .btn-copiar, .btn-borrar, .btn-editar {
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+    cursor: pointer;
+    background: none;
+  }
+  .btn-copiar { color: #5eb50d; border-color: #5eb50d; }
+  .btn-editar { color: #f2c200; border-color: #f2c200; }
+  .btn-borrar { color: #ff6b6b; border-color: #ff6b6b; }
+
+  .vacio, .cargando {
+    text-align: center;
+    color: rgba(238,247,230,0.5);
+    padding: 40px 10px;
+    font-size: 0.9rem;
+  }
+
+  .contador {
+    text-align: center;
+    font-size: 0.78rem;
+    color: rgba(238,247,230,0.5);
+    margin-bottom: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <a href="index.html" class="volver">← Volver al inicio</a>
+  <h1>📋 Jugadores Registrados</h1>
+
+  <!-- ===== LOGIN DE ADMIN ===== -->
+  <div class="tarjeta" id="login-card" style="display:block;">
+    <label style="display:block; font-size:0.75rem; font-weight:bold; color:#8fe89a; margin-bottom:6px; text-transform:uppercase;">Contraseña de administrador</label>
+    <input type="password" id="input-admin-pass" style="width:100%; padding:11px 12px; border-radius:10px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.9rem; outline:none; box-sizing:border-box;">
+    <button id="btn-admin-login" style="width:100%; margin-top:12px; padding:12px; border:none; border-radius:12px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">Entrar</button>
+    <div class="msg" id="admin-login-msg" style="font-size:0.8rem; color:#ff6b6b; margin-top:8px;"></div>
+  </div>
+
+  <div id="panel-registros" style="display:none;">
+    <p class="sub">Revísalos aquí, edítalos si hace falta, y pásalos a mano a tu hoja de Google Sheets "Jugadores"</p>
+    <p class="sub" style="font-size:0.72rem;">Al copiar, pega en la <b>columna A</b> de una fila vacía — se acomoda solo en Nombre, Equipo, Número y Posición. ID_Jugador, Logo, Foto, URL_Foto y Apodo los llenas tú.</p>
+    <div class="contador" id="contador"></div>
+
+    <div id="lista">
+      <div class="cargando">Cargando registros...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const FB = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
+  const ADMIN_PASSWORD = 'domingo2026'; // cámbiala aquí cuando quieras
+
+  const EQUIPOS = [
+    { id: 1, nombre: 'Unión 8' }, { id: 2, nombre: 'Cuervos F.C' }, { id: 3, nombre: 'Pumas KAP' },
+    { id: 4, nombre: 'Soldados Del Amor' }, { id: 5, nombre: 'Paris' }, { id: 6, nombre: 'Rivera F.C.' },
+    { id: 7, nombre: 'Real Alcoholicos' }, { id: 8, nombre: 'Gambeta F.C.' }, { id: 9, nombre: 'USG Warriors' },
+    { id: 10, nombre: 'Real Mala Copa' }, { id: 11, nombre: 'Puebla 450' }, { id: 12, nombre: 'Dream Team' },
+    { id: 13, nombre: 'Dragones F.F.' }, { id: 14, nombre: 'Atletico Ballenitas' }
+  ];
+
+  // ===================== LOGIN DE ADMIN =====================
+  const loginCard = document.getElementById('login-card');
+  const panelRegistros = document.getElementById('panel-registros');
+  const inputAdminPass = document.getElementById('input-admin-pass');
+  const adminLoginMsg = document.getElementById('admin-login-msg');
+
+  function intentarLoginAdmin() {
+    if (inputAdminPass.value !== ADMIN_PASSWORD) {
+      adminLoginMsg.textContent = 'Contraseña incorrecta.';
+      return;
+    }
+    sessionStorage.setItem('nl7_domingo_admin_ok', '1');
+    loginCard.style.display = 'none';
+    panelRegistros.style.display = 'block';
+    cargarRegistros();
+  }
+  document.getElementById('btn-admin-login').addEventListener('click', intentarLoginAdmin);
+  inputAdminPass.addEventListener('keydown', (e) => { if (e.key === 'Enter') intentarLoginAdmin(); });
+
+  // Si ya entró antes en esta pestaña/sesión, no se lo volvemos a pedir.
+  if (sessionStorage.getItem('nl7_domingo_admin_ok') === '1') {
+    loginCard.style.display = 'none';
+    panelRegistros.style.display = 'block';
+  }
+
+  async function cargarRegistros() {
+    const lista = document.getElementById('lista');
+    const contador = document.getElementById('contador');
+    try {
+      const resp = await fetch(FB + '/jugadoresRegistro.json');
+      const data = await resp.json();
+
+      if (!data) {
+        lista.innerHTML = '<div class="vacio">No hay jugadores registrados todavía.</div>';
+        contador.textContent = '';
+        return;
+      }
+
+      const entradas = Object.entries(data).sort((a, b) => (b[1].fecha || 0) - (a[1].fecha || 0));
+      contador.textContent = `${entradas.length} registro(s) pendiente(s) de pasar a tu hoja`;
+
+      lista.innerHTML = entradas.map(([id, j]) => {
+        const fecha = j.fecha ? new Date(j.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '';
+        // Orden exacto de tu hoja "Jugadores":
+        // ID_Jugador | Nombre | Equipo | Numero | Posicion | Logo | Foto | URL_Foto | Apodo
+        // "Equipo" lleva el ID numérico (así lo usa tu index.html), no el nombre.
+        // Logo, Foto y URL_Foto quedan en blanco (los llenas tú a mano).
+        const textoCopiar = `\t${j.nombre || ''}\t${j.equipoId || ''}\t${j.numero || ''}\t${j.posicion || ''}\t\t\t\t${j.apodo || ''}`;
+        return `
+          <div class="tarjeta" id="card-${id}">
+            <img src="${j.foto || ''}" alt="">
+            <div class="datos">
+              <div class="nombre">${j.nombre || '(sin nombre)'}</div>
+              <div class="campo"><b>Equipo:</b> ${j.equipo || '-'}</div>
+              <div class="campo"><b>Número:</b> ${j.numero || '-'} &nbsp; <b>Posición:</b> ${j.posicion || '-'}</div>
+              ${j.apodo ? `<div class="campo"><b>Apodo:</b> ${j.apodo}</div>` : ''}
+              <div class="quien">Registrado por ${j.registradoPor || '-'} · ${fecha}</div>
+              <div class="acciones">
+                <button class="btn-copiar" onclick="copiarDatos(this, '${textoCopiar.replace(/'/g, "\\'")}')">📋 Copiar datos</button>
+                <button class="btn-editar" onclick="editarRegistro('${id}')">✏️ Editar</button>
+                <button class="btn-borrar" onclick="borrarRegistro('${id}')">✅ Ya lo pasé, borrar</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      registrosCache = Object.fromEntries(entradas);
+    } catch (e) {
+      lista.innerHTML = '<div class="vacio">No se pudo cargar. Revisa tu conexión.</div>';
+    }
+  }
+
+  let registrosCache = {};
+
+  function editarRegistro(id) {
+    const j = registrosCache[id];
+    const card = document.getElementById(`card-${id}`);
+    const opciones = ['Portero', 'Defensa', 'Mediocampista', 'Delantero'];
+    card.querySelector('.datos').innerHTML = `
+      <label style="display:block; font-size:0.68rem; color:#8fe89a; margin-bottom:3px;">Nombre</label>
+      <input type="text" id="edit-nombre-${id}" value="${(j.nombre || '').replace(/"/g, '&quot;')}" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:8px; box-sizing:border-box;">
+
+      <label style="display:block; font-size:0.68rem; color:#8fe89a; margin-bottom:3px;">Equipo</label>
+      <select id="edit-equipo-${id}" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:8px;">
+        ${EQUIPOS.map(e => `<option value="${e.nombre}" data-id="${e.id}" ${e.nombre === j.equipo ? 'selected' : ''}>${e.nombre}</option>`).join('')}
+      </select>
+
+      <div style="display:flex; gap:8px;">
+        <div style="flex:1;">
+          <label style="display:block; font-size:0.68rem; color:#8fe89a; margin-bottom:3px;">Número</label>
+          <input type="number" id="edit-numero-${id}" value="${j.numero || ''}" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; box-sizing:border-box;">
+        </div>
+        <div style="flex:1;">
+          <label style="display:block; font-size:0.68rem; color:#8fe89a; margin-bottom:3px;">Posición</label>
+          <select id="edit-posicion-${id}" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem;">
+            ${opciones.map(o => `<option value="${o}" ${o === j.posicion ? 'selected' : ''}>${o}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <label style="display:block; font-size:0.68rem; color:#8fe89a; margin:8px 0 3px;">Apodo</label>
+      <input type="text" id="edit-apodo-${id}" value="${(j.apodo || '').replace(/"/g, '&quot;')}" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; box-sizing:border-box;">
+
+      <div class="acciones" style="margin-top:12px;">
+        <button class="btn-copiar" onclick="guardarEdicion('${id}')">💾 Guardar cambios</button>
+        <button class="btn-borrar" onclick="cargarRegistros()">Cancelar</button>
+      </div>
+    `;
+  }
+
+  async function guardarEdicion(id) {
+    const equipoSelect = document.getElementById(`edit-equipo-${id}`);
+    const equipoOpt = equipoSelect.options[equipoSelect.selectedIndex];
+    const actualizado = {
+      nombre: document.getElementById(`edit-nombre-${id}`).value.trim(),
+      equipo: equipoSelect.value,
+      equipoId: equipoOpt ? Number(equipoOpt.dataset.id) : '',
+      numero: document.getElementById(`edit-numero-${id}`).value,
+      posicion: document.getElementById(`edit-posicion-${id}`).value,
+      apodo: document.getElementById(`edit-apodo-${id}`).value.trim()
+    };
+    await fetch(`${FB}/jugadoresRegistro/${id}.json`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(actualizado)
+    });
+    cargarRegistros();
+  }
+
+  function copiarDatos(btn, texto) {
+    navigator.clipboard.writeText(texto).then(() => {
+      const original = btn.textContent;
+      btn.textContent = '✅ Copiado';
+      setTimeout(() => { btn.textContent = original; }, 1500);
+    });
+  }
+
+  async function borrarRegistro(id) {
+    if (!confirm('¿Ya pasaste este jugador a tu hoja de Sheets? Se va a borrar de esta lista (no se puede deshacer).')) return;
+    await fetch(`${FB}/jugadoresRegistro/${id}.json`, { method: 'DELETE' });
+    document.getElementById(`card-${id}`).remove();
+    cargarRegistros();
+  }
+</script>
+
+</body>
+</html>
