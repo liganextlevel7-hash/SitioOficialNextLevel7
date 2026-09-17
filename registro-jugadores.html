@@ -312,25 +312,49 @@
 
 <script>
   const FB = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
+  const CAR_CAPITANES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1768443342&single=true&output=csv";
 
-  // ---- Códigos de acceso por equipo ----
-  // Reparte cada código nada más al capitán de ese equipo.
-  const EQUIPOS = [
-    { id: 1, nombre: 'Unión 8', codigo: 'nl7union1' },
-    { id: 2, nombre: 'Cuervos F.C', codigo: 'nl7cuervos2' },
-    { id: 3, nombre: 'Pumas KAP', codigo: 'nl7pumas3' },
-    { id: 4, nombre: 'Soldados Del Amor', codigo: 'nl7solados4' },
-    { id: 5, nombre: 'Paris', codigo: 'nl7paris5' },
-    { id: 6, nombre: 'Rivera F.C.', codigo: 'nl7rivera6' },
-    { id: 7, nombre: 'Real Alcoholicos', codigo: 'nl7real7' },
-    { id: 8, nombre: 'Gambeta F.C.', codigo: 'nl7gambeta8' },
-    { id: 9, nombre: 'USG Warriors', codigo: 'nl7usg9' },
-    { id: 10, nombre: 'Real Mala Copa', codigo: 'nl7real10' },
-    { id: 11, nombre: 'Puebla 450', codigo: 'nl7puebla11' },
-    { id: 12, nombre: 'Dream Team', codigo: 'nl7dream12' },
-    { id: 13, nombre: 'Dragones F.F.', codigo: 'nl7dragones13' },
-    { id: 14, nombre: 'Atletico Ballenitas', codigo: 'nlatletico14' }
-  ];
+  // ---- Equipos y contraseñas: se leen de tu hoja de Sheets cada vez que
+  // alguien abre la página, así que si cambias algo ahí, se refleja solo. ----
+  let EQUIPOS = [];
+  let equiposListos = false;
+
+  function parseCSVLinea(linea) {
+    // split simple por coma (suficiente para esta hoja, sin comas dentro de celdas)
+    return linea.split(',').map(c => c.trim());
+  }
+
+  async function cargarEquiposDesdeSheet() {
+    try {
+      const resp = await fetch(CAR_CAPITANES);
+      const texto = await resp.text();
+      const filas = texto.trim().split('\n');
+      const encontrados = [];
+      for (let i = 1; i < filas.length; i++) {
+        const c = parseCSVLinea(filas[i]);
+        // ID_Equipo, Equipo, Usuario, Contraseña, Estatus
+        const id = Number(c[0]);
+        const nombre = (c[1] || '').trim();
+        const codigo = (c[3] || '').trim();
+        const estatus = (c[4] || '').trim().toUpperCase();
+        if (!nombre || !codigo) continue;
+        if (estatus && estatus !== 'TRUE') continue; // se salta equipos dados de baja
+        encontrados.push({ id, nombre, codigo });
+      }
+      EQUIPOS = encontrados;
+    } catch (e) {
+      loginMsg.textContent = 'No se pudo cargar la lista de equipos. Revisa tu conexión y recarga la página.';
+      loginMsg.className = 'msg error';
+    }
+    equiposListos = true;
+
+    // Ya con los equipos cargados: llenamos el select del admin y probamos el login automático.
+    selectAddEquipo.innerHTML = '<option value="">Selecciona equipo...</option>' +
+      EQUIPOS.map(e => `<option value="${e.nombre}" data-id="${e.id}">${e.nombre}</option>`).join('');
+
+    const guardado = localStorage.getItem('nl7_codigo_equipo');
+    if (guardado) entrarConCodigo(guardado);
+  }
 
   let equipoActual = null; // { id, nombre, codigo } una vez que entra
 
@@ -342,6 +366,11 @@
   const equipoActualNombre = document.getElementById('equipo-actual-nombre');
 
   function entrarConCodigo(codigo) {
+    if (!equiposListos) {
+      loginMsg.textContent = 'Todavía está cargando, espera un segundo e intenta de nuevo.';
+      loginMsg.className = 'msg error';
+      return false;
+    }
     const encontrado = EQUIPOS.find(e => e.codigo.toUpperCase() === codigo.trim().toUpperCase());
     if (!encontrado) {
       loginMsg.textContent = 'Código no válido. Revísalo con tu organizador.';
@@ -372,11 +401,6 @@
     inputCodigo.focus();
   });
 
-  // Si este navegador ya entró antes con un código válido, lo recordamos.
-  (function entrarAutomatico() {
-    const guardado = localStorage.getItem('nl7_codigo_equipo');
-    if (guardado) entrarConCodigo(guardado);
-  })();
 
   // ===================== LOGIN DE ADMINISTRADOR (misma pantalla) =====================
   const ADMIN_PASSWORD = 'nl7admin';
@@ -420,8 +444,9 @@
 
   // ---- Agregar jugador (admin) ----
   const selectAddEquipo = document.getElementById('add-equipo');
-  selectAddEquipo.innerHTML = '<option value="">Selecciona equipo...</option>' +
-    EQUIPOS.map(e => `<option value="${e.nombre}" data-id="${e.id}">${e.nombre}</option>`).join('');
+
+  // Ahora que ya existen loginMsg y selectAddEquipo, disparamos la carga real desde el Sheet.
+  cargarEquiposDesdeSheet();
 
   document.getElementById('btn-toggle-agregar').addEventListener('click', () => {
     const wrap = document.getElementById('form-agregar-wrap');
