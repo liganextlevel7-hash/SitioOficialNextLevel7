@@ -22,12 +22,14 @@
 @keyframes balonGira { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
 .balon-sombra { width: 20px; height: 5px; background: rgba(94,181,13,0.4); border-radius: 50%; margin: 0 auto; animation: sombraBalon 0.55s ease infinite alternate; }
 @keyframes sombraBalon { 0% { transform: scaleX(0.3); opacity: 0.1; } 100% { transform: scaleX(1); opacity: 0.5; } }
-.carrusel-seccion { max-width: 1100px; margin: 20px auto 30px; padding: 0 10px; position: relative; height: 520px; }
-.escenario { width: 100%; height: 500px; perspective: 1500px; display: flex; align-items: center; justify-content: center; position: relative; }
-.carrusel-circular { width: 320px; height: 460px; position: relative; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4,0,0.2,1); }
-.card-sec { position: absolute; width: 320px; height: 460px; border-radius: 22px; cursor: pointer; overflow: hidden; border: 1px solid #5eb50d; box-shadow: 0 0 10px #5eb50d, 0 0 20px rgba(94,181,13,0.3); background:#142702; backface-visibility: hidden; transition: box-shadow 0.4s; }
-.card-sec.c { box-shadow: 0 0 18px #5eb50d, 0 0 35px rgba(94,181,13,0.5); }
-.card-body { padding:22px 18px 18px; display:flex; flex-direction:column; gap:10px; height:100%; box-sizing:border-box; background:#142702; }
+.carrusel-seccion { max-width: 1100px; margin: 20px auto 30px; padding: 0 10px; position: relative; height: 480px; }
+.card-sec { position: absolute; top: 50%; left: 50%; width: 320px; border-radius: 22px; cursor: pointer; transition: all 0.6s cubic-bezier(0.25,0.46,0.45,0.94); transform: translate(-50%,-50%) scale(0.4); opacity: 0; pointer-events: none; overflow: hidden; border: 1px solid #5eb50d; box-shadow: 0 0 10px #5eb50d, 0 0 20px rgba(94,181,13,0.3); background:#142702; }
+.card-sec.c  { transform:translate(-50%,-50%) scale(1); opacity:1; z-index:5; pointer-events:all; }
+.card-sec.l1 { transform:translate(calc(-50% - 240px),-50%) scale(0.75) rotateY(15deg); opacity:0.75; z-index:4; pointer-events:all; }
+.card-sec.r1 { transform:translate(calc(-50% + 240px),-50%) scale(0.75) rotateY(-15deg); opacity:0.75; z-index:4; pointer-events:all; }
+.card-sec.l2 { transform:translate(calc(-50% - 400px),-50%) scale(0.55) rotateY(22deg); opacity:0.3; z-index:3; pointer-events:all; }
+.card-sec.r2 { transform:translate(calc(-50% + 400px),-50%) scale(0.55) rotateY(-22deg); opacity:0.3; z-index:3; pointer-events:all; }
+.card-body { padding:22px 18px 18px; display:flex; flex-direction:column; gap:10px; min-height:440px; background:#142702; }
 .card-titulo { font-size:15px; font-weight:900; letter-spacing:2px; text-transform:uppercase; text-align:center; }
 .card-contenido { flex:1; font-size:12px; font-family:Arial,sans-serif; transition:opacity .35s ease; }
 .car-btn { display:block; text-align:center; padding:10px; border-radius:20px; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-decoration:none; cursor:pointer; border:none; width:100%; transition:filter 0.3s; touch-action:manipulation; }
@@ -149,8 +151,6 @@
 </header>
 
 <div class="carrusel-seccion" id="carrusel-wrap">
-<div class="escenario">
-<div class="carrusel-circular" id="carrusel-anillo">
 
   <div class="card-sec c-tabla" id="ccard-0">
     <div class="card-body" style="background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
@@ -262,8 +262,6 @@
   </div>
   <!-- ===== FIN CARD REGISTRO DE JUGADORES =====-->
 
-</div>
-</div>
   <div class="car-flecha car-fl" onclick="carMover(-1)">&#8592;</div>
   <div class="car-flecha car-fr" onclick="carMover(1)">&#8594;</div>
   <div class="car-dots" id="car-dots"></div>
@@ -476,63 +474,39 @@ async function cargarCarrusel() {
     document.getElementById('car-goles').innerHTML=htmlGoles;
   } catch(e){ console.error(e); }
 }
-const carAnillo=document.getElementById('carrusel-anillo');
 const carCards=document.querySelectorAll('.card-sec'), carTotal=carCards.length;
-const carAngulo=360/carTotal;
-const carRadio=480;
-carCards.forEach((card,i)=>{ card.style.transform=`rotateY(${carAngulo*i}deg) translateZ(${carRadio}px)`; });
-
 let carActivo=0;
-let carAnguloTotal=0;
-
-function carMarcarCentro(){
-  carCards.forEach((card,i)=>card.classList.toggle('c', i===carActivo));
-  document.querySelectorAll('.car-dot').forEach((d,i)=>d.classList.toggle('on', i===carActivo));
+function carActualizar(){
+  carCards.forEach((card,i)=>{
+    card.className=card.className.split(/\s+/).filter(cl=>!['c','l1','l2','r1','r2'].includes(cl)).join(' ');
+    const diff=((i-carActivo)%carTotal+carTotal)%carTotal;
+    let cls='';
+    if(diff===0) cls='c';
+    else if(diff===1) cls='r1';
+    else if(diff===2) cls='r2';
+    else if(diff===carTotal-1) cls='l1';
+    else if(diff===carTotal-2) cls='l2';
+    if(cls) card.classList.add(cls);
+  });
+  document.querySelectorAll('.car-dot').forEach((d,i)=>d.classList.toggle('on',i===carActivo));
 }
-
-function carMover(dir){
-  carActivo=((carActivo+dir)%carTotal+carTotal)%carTotal;
-  carAnguloTotal += -carAngulo*dir;
-  if(carActivo===0 && Math.abs(carAnguloTotal) > 360*3){
-    carAnillo.style.transition='none';
-    carAnguloTotal = carAnguloTotal % 360;
-    carAnillo.offsetHeight;
-    carAnillo.style.transition='transform 1s cubic-bezier(0.4,0,0.2,1)';
-  }
-  carAnillo.style.transform=`rotateY(${carAnguloTotal}deg)`;
-  carMarcarCentro();
-}
-
-function carIrA(i){
-  let paso=i-carActivo;
-  if(Math.abs(paso) > carTotal/2) paso = paso>0 ? paso-carTotal : paso+carTotal;
-  carAnguloTotal += -carAngulo*paso;
-  carActivo=i;
-  carAnillo.style.transform=`rotateY(${carAnguloTotal}deg)`;
-  carMarcarCentro();
-}
-
+function carMover(dir){ carActivo=((carActivo+dir)%carTotal+carTotal)%carTotal; carActualizar(); }
 const carDotsEl=document.getElementById('car-dots');
-carCards.forEach((_,i)=>{ const d=document.createElement('div'); d.className='car-dot'+(i===0?' on':''); d.onclick=()=>carIrA(i); carDotsEl.appendChild(d); });
-carCards.forEach((card,i)=>{ card.addEventListener('click',e=>{ if(i!==carActivo){ e.preventDefault(); e.stopPropagation(); carIrA(i); } }); });
+carCards.forEach((_,i)=>{ const d=document.createElement('div'); d.className='car-dot'+(i===0?' on':''); d.onclick=()=>{carActivo=i;carActualizar();}; carDotsEl.appendChild(d); });
+carCards.forEach((card,i)=>{ card.addEventListener('click',e=>{ if(!card.classList.contains('c')){ e.preventDefault(); e.stopPropagation(); carActivo=i; carActualizar(); } }); });
 
 let carTx=0;
 document.getElementById('carrusel-wrap').addEventListener('touchstart',e=>{carTx=e.touches[0].clientX;});
 document.getElementById('carrusel-wrap').addEventListener('touchend',e=>{ const d=carTx-e.changedTouches[0].clientX; if(Math.abs(d)>50) carMover(d>0?1:-1); });
 
 let carArrastrando=false, carXInicio=0;
-const carEscenario=document.querySelector('.escenario');
-carEscenario.addEventListener('mousedown',e=>{ carArrastrando=true; carXInicio=e.clientX; });
+document.getElementById('carrusel-wrap').addEventListener('mousedown',e=>{ carArrastrando=true; carXInicio=e.clientX; });
 document.addEventListener('mousemove',e=>{ if(!carArrastrando) return; const diff=carXInicio-e.clientX; if(Math.abs(diff)>50){ carMover(diff>0?1:-1); carArrastrando=false; } });
 document.addEventListener('mouseup',()=>{ carArrastrando=false; });
 
 document.addEventListener('keydown',e=>{ if(e.key==='ArrowLeft') carMover(-1); if(e.key==='ArrowRight') carMover(1); });
 
-let carAuto=setInterval(()=>carMover(1),5000);
-document.getElementById('carrusel-wrap').addEventListener('mouseenter',()=>clearInterval(carAuto));
-document.getElementById('carrusel-wrap').addEventListener('mouseleave',()=>{ carAuto=setInterval(()=>carMover(1),5000); });
-
-carMarcarCentro();
+carActualizar();
 cargarCarrusel();
 
 (function checkFirebase(){
