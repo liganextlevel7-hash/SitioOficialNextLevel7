@@ -302,6 +302,12 @@
     </div>
 
     <p class="sub" style="font-size:0.72rem;">Al copiar, pega en la <b>columna A</b> de una fila vacía de tu hoja "Jugadores" — se acomoda solo en Nombre, Equipo, Número y Posición.</p>
+
+    <label style="display:block; font-size:0.75rem; font-weight:bold; color:#8fe89a; margin-bottom:6px; text-transform:uppercase;">Filtrar por equipo</label>
+    <select id="filtro-equipo-admin" style="width:100%; padding:11px 12px; border-radius:10px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.9rem; margin-bottom:16px;">
+      <option value="">Todos los equipos</option>
+    </select>
+
     <div class="contador" id="contador" style="text-align:center; font-size:0.78rem; color:rgba(238,247,230,0.5); margin-bottom:16px;"></div>
 
     <div id="lista-admin"></div>
@@ -529,6 +535,8 @@
 
   // ---- Ver / editar / borrar TODOS los registros (admin) ----
   let registrosAdminCache = {};
+  const filtroEquipoAdmin = document.getElementById('filtro-equipo-admin');
+  filtroEquipoAdmin.addEventListener('change', () => pintarListaAdmin());
 
   async function cargarRegistrosAdmin() {
     const lista = document.getElementById('lista-admin');
@@ -543,10 +551,39 @@
         return;
       }
       const entradas = Object.entries(data).sort((a, b) => (b[1].fecha || 0) - (a[1].fecha || 0));
-      contador.textContent = `${entradas.length} registro(s)`;
       registrosAdminCache = Object.fromEntries(entradas);
 
-      lista.innerHTML = entradas.map(([id, j]) => {
+      // Llenamos el filtro con los equipos que ya tienen al menos un jugador registrado.
+      const valorPrevio = filtroEquipoAdmin.value;
+      const equiposConRegistros = [...new Set(entradas.map(([, j]) => j.equipo).filter(Boolean))].sort();
+      filtroEquipoAdmin.innerHTML = '<option value="">Todos los equipos</option>' +
+        equiposConRegistros.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
+      filtroEquipoAdmin.value = valorPrevio; // conserva el filtro si ya tenías uno elegido
+
+      pintarListaAdmin();
+    } catch (e) {
+      lista.innerHTML = '<div class="nota">No se pudo cargar. Revisa tu conexión.</div>';
+    }
+  }
+
+  function pintarListaAdmin() {
+    const lista = document.getElementById('lista-admin');
+    const contador = document.getElementById('contador');
+    const filtro = filtroEquipoAdmin.value;
+
+    let entradas = Object.entries(registrosAdminCache);
+    if (filtro) entradas = entradas.filter(([, j]) => j.equipo === filtro);
+
+    contador.textContent = filtro
+      ? `${entradas.length} jugador(es) de ${filtro}`
+      : `${entradas.length} registro(s) en total`;
+
+    if (!entradas.length) {
+      lista.innerHTML = '<div class="nota">No hay jugadores registrados en este equipo todavía.</div>';
+      return;
+    }
+
+    lista.innerHTML = entradas.map(([id, j]) => {
         const fecha = j.fecha ? new Date(j.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '';
         // Bloque 1 = columnas A-E (ID_Jugador, Nombre, Equipo, Numero, Posicion)
         const textoCopiarAE = `\t${j.nombre || ''}\t${j.equipoId || ''}\t${j.numero || ''}\t${j.posicion || ''}`;
@@ -574,9 +611,6 @@
           </div>
         `;
       }).join('');
-    } catch (e) {
-      lista.innerHTML = '<div class="nota">No se pudo cargar. Revisa tu conexión.</div>';
-    }
   }
 
   function copiarDatosAdm(btn, texto) {
