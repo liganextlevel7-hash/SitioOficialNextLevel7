@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="styles.css">
 <style>
 #titulo-letras { display:inline; }
+.logo-liga { height: clamp(56px, 14vw, 110px); width: auto; }
 .titulo-letra { display: inline-block; opacity: 0; }
 .titulo-letra.animar { animation: letraCae 0.5s cubic-bezier(0.36,0.07,0.19,0.97) forwards; }
 @keyframes letraCae {
@@ -22,13 +23,10 @@
 @keyframes balonGira { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
 .balon-sombra { width: 20px; height: 5px; background: rgba(94,181,13,0.4); border-radius: 50%; margin: 0 auto; animation: sombraBalon 0.55s ease infinite alternate; }
 @keyframes sombraBalon { 0% { transform: scaleX(0.3); opacity: 0.1; } 100% { transform: scaleX(1); opacity: 0.5; } }
-.carrusel-seccion { max-width: 1100px; margin: 20px auto 30px; padding: 0 10px; position: relative; height: 480px; }
-.card-sec { position: absolute; top: 50%; left: 50%; width: 320px; border-radius: 22px; cursor: pointer; transition: all 0.6s cubic-bezier(0.25,0.46,0.45,0.94); transform: translate(-50%,-50%) scale(0.4); opacity: 0; pointer-events: none; overflow: hidden; border: 1px solid #5eb50d; box-shadow: 0 0 10px #5eb50d, 0 0 20px rgba(94,181,13,0.3); background:#142702; }
-.card-sec.c  { transform:translate(-50%,-50%) scale(1); opacity:1; z-index:5; pointer-events:all; }
-.card-sec.l1 { transform:translate(calc(-50% - 240px),-50%) scale(0.75) rotateY(15deg); opacity:0.75; z-index:4; pointer-events:all; }
-.card-sec.r1 { transform:translate(calc(-50% + 240px),-50%) scale(0.75) rotateY(-15deg); opacity:0.75; z-index:4; pointer-events:all; }
-.card-sec.l2 { transform:translate(calc(-50% - 400px),-50%) scale(0.55) rotateY(22deg); opacity:0.3; z-index:3; pointer-events:all; }
-.card-sec.r2 { transform:translate(calc(-50% + 400px),-50%) scale(0.55) rotateY(-22deg); opacity:0.3; z-index:3; pointer-events:all; }
+.carrusel-seccion { max-width: 1100px; margin: 20px auto 30px; padding: 0 10px; position: relative; height: 480px; perspective: 1800px; }
+#carrusel-circular { position:absolute; top:0; left:0; width:100%; height:100%; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4,0,0.2,1); }
+.card-sec { position: absolute; top: 50%; left: 50%; width: 320px; border-radius: 22px; cursor: pointer; overflow: hidden; border: 1px solid #5eb50d; box-shadow: 0 0 10px #5eb50d, 0 0 20px rgba(94,181,13,0.3); background:#142702; backface-visibility: hidden; }
+.card-sec.card-sec-activa { cursor:default; }
 .card-body { padding:22px 18px 18px; display:flex; flex-direction:column; gap:10px; min-height:440px; background:#142702; }
 .card-titulo { font-size:15px; font-weight:900; letter-spacing:2px; text-transform:uppercase; text-align:center; }
 .card-contenido { flex:1; font-size:12px; font-family:Arial,sans-serif; transition:opacity .35s ease; }
@@ -474,31 +472,52 @@ async function cargarCarrusel() {
     document.getElementById('car-goles').innerHTML=htmlGoles;
   } catch(e){ console.error(e); }
 }
-const carCards=document.querySelectorAll('.card-sec'), carTotal=carCards.length;
+const carCardsOriginal=Array.from(document.querySelectorAll('.card-sec')), carTotal=carCardsOriginal.length;
+const CAR_ANCHO_TARJETA=320;
+const carAngulo=360/carTotal;
+const carRadio=Math.round((CAR_ANCHO_TARJETA/2)/Math.tan(Math.PI/carTotal))+120;
 let carActivo=0;
-function carActualizar(){
-  carCards.forEach((card,i)=>{
-    card.className=card.className.split(/\s+/).filter(cl=>!['c','l1','l2','r1','r2'].includes(cl)).join(' ');
-    const diff=((i-carActivo)%carTotal+carTotal)%carTotal;
-    let cls='';
-    if(diff===0) cls='c';
-    else if(diff===1) cls='r1';
-    else if(diff===2) cls='r2';
-    else if(diff===carTotal-1) cls='l1';
-    else if(diff===carTotal-2) cls='l2';
-    if(cls) card.classList.add(cls);
-  });
+let carAnguloTotal=0; // ángulo acumulado (nunca se resetea de golpe, así el giro no da un salto visual)
+
+const carWrap=document.getElementById('carrusel-wrap');
+const carCircular=document.createElement('div');
+carCircular.id='carrusel-circular';
+carCardsOriginal.forEach((card,i)=>{
+  card.style.transform=`translate(-50%,-50%) rotateY(${carAngulo*i}deg) translateZ(${carRadio}px)`;
+  carCircular.appendChild(card); // se mueven las tarjetas reales, no se clonan
+});
+carWrap.appendChild(carCircular);
+
+function carPintar(){
+  // translateZ(-carRadio) recorre TODO el anillo hacia atrás para que la tarjeta activa
+  // quede exactamente en el plano de la cámara (tamaño real, sin agrandarse por la perspectiva)
+  carCircular.style.transform=`translateZ(${-carRadio}px) rotateY(${carAnguloTotal}deg)`;
+  carCardsOriginal.forEach((card,i)=>card.classList.toggle('card-sec-activa', i===carActivo));
   document.querySelectorAll('.car-dot').forEach((d,i)=>d.classList.toggle('on',i===carActivo));
 }
-function carMover(dir){ carActivo=((carActivo+dir)%carTotal+carTotal)%carTotal; carActualizar(); }
+function irA(indice){
+  let diff = indice - carActivo;
+  diff = ((diff % carTotal) + carTotal) % carTotal;
+  if(diff > carTotal/2) diff -= carTotal; // camino más corto (nunca da la vuelta completa de más)
+  carActivo = indice;
+  carAnguloTotal += -carAngulo*diff;
+  // Reacomodo silencioso al completar vueltas enteras, para que el número no crezca sin límite
+  if(Math.abs(carAnguloTotal) > 360*3){
+    carCircular.style.transition='none';
+    carAnguloTotal = carAnguloTotal % 360;
+    carCircular.offsetHeight; // forzar reflow
+    carCircular.style.transition='transform 1s cubic-bezier(0.4,0,0.2,1)';
+  }
+  carPintar();
+}
+function carMover(dir){ irA(((carActivo+dir)%carTotal+carTotal)%carTotal); }
 const carDotsEl=document.getElementById('car-dots');
-carCards.forEach((_,i)=>{ const d=document.createElement('div'); d.className='car-dot'+(i===0?' on':''); d.onclick=()=>{carActivo=i;carActualizar();}; carDotsEl.appendChild(d); });
-carCards.forEach((card,i)=>{ card.addEventListener('click',e=>{ if(!card.classList.contains('c')){ e.preventDefault(); e.stopPropagation(); carActivo=i; carActualizar(); } }); });
+carCardsOriginal.forEach((_,i)=>{ const d=document.createElement('div'); d.className='car-dot'+(i===0?' on':''); d.onclick=()=>irA(i); carDotsEl.appendChild(d); });
+carCardsOriginal.forEach((card,i)=>{ card.addEventListener('click',e=>{ if(i!==carActivo){ e.preventDefault(); e.stopPropagation(); irA(i); } }); });
+carPintar();
 let carTx=0;
 document.getElementById('carrusel-wrap').addEventListener('touchstart',e=>{carTx=e.touches[0].clientX;});
 document.getElementById('carrusel-wrap').addEventListener('touchend',e=>{ const d=carTx-e.changedTouches[0].clientX; if(Math.abs(d)>50) carMover(d>0?1:-1); });
-setInterval(()=>carMover(1),5000);
-carActualizar();
 cargarCarrusel();
 
 (function checkFirebase(){
