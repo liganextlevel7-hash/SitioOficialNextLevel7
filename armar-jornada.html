@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Armar Jornada - Next Level 7</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --neon:#5eb50d;--neon-dim:rgba(94,181,13,0.15);
+  --mod:#7c3aed;--mod-dim:rgba(124,58,237,0.15);--mod-border:#a78bfa;
+  --g400:#94a3b8;--g500:#64748b;
+  --dark:#142702;--dark2:#1c3204;--dark3:#2f5606;
+  --w:#fff;--r:12px;--rs:8px;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c3204 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px 16px}
+
+#loading-screen{background:var(--dark);border:1px solid rgba(94,181,13,.2);border-radius:20px;padding:48px 32px;width:100%;max-width:400px;margin-top:40px;text-align:center}
+.load-ball{font-size:40px;margin-bottom:14px}
+.load-title{font-size:18px;font-weight:800;color:var(--neon);margin-bottom:6px}
+.load-sub{font-size:12px;color:var(--g400)}
+
+#login-screen{display:none;background:var(--dark);border:1px solid rgba(94,181,13,.2);border-radius:20px;width:100%;max-width:420px;margin-top:20px;overflow:hidden}
+.login-hero{background:linear-gradient(135deg,#142702,#1c3204);padding:28px;text-align:center;border-bottom:1px solid rgba(94,181,13,.15)}
+.login-hero-icon{font-size:38px;margin-bottom:10px}
+.login-hero-title{font-size:20px;font-weight:800;color:var(--neon);margin-bottom:4px;letter-spacing:1px}
+.login-hero-sub{font-size:12px;color:var(--g400)}
+.login-body{padding:24px 28px 28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.field input{width:100%;padding:11px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark2);outline:none}
+.field input:focus{border-color:var(--neon)}
+.btn-enter{width:100%;padding:14px;background:var(--neon);color:#122400;border:none;border-radius:var(--r);font-size:15px;font-weight:800;cursor:pointer}
+.btn-enter:hover{filter:brightness(1.1)}
+.login-msg{font-size:12px;color:var(--g400);text-align:center;margin-top:10px;min-height:18px}
+.login-msg.err{color:#f87171}
+
+#app-screen{display:none;width:100%;max-width:760px;background:var(--dark);border:1px solid rgba(94,181,13,.15);border-radius:20px;overflow:hidden;margin-top:20px}
+.app-header{background:linear-gradient(135deg,#142702,#1c3204);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(94,181,13,.15)}
+.app-header-title{font-size:15px;font-weight:800;color:var(--neon)}
+.app-header-sub{font-size:11px;color:var(--g400);margin-top:1px}
+.btn-logout{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:var(--g400);padding:7px 14px;border-radius:20px;font-size:12px;text-decoration:none;white-space:nowrap}
+.btn-logout:hover{color:var(--w)}
+
+.panel{padding:20px;display:flex;flex-direction:column;gap:22px}
+.mod-section-title{font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.mod-hint{font-size:11px;color:var(--g500);margin-bottom:12px;margin-top:-6px}
+
+.msg-input{flex:1;padding:10px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark);outline:none}
+.msg-input:focus{border-color:var(--neon)}
+
+.vbtn{flex:1;padding:9px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--dark3);background:var(--dark2);color:var(--g500)}
+.vbtn.active{border-color:var(--neon);background:var(--neon-dim);color:var(--neon)}
+
+.mod-match-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark3);border-radius:var(--rs);border:1px solid rgba(255,255,255,.05);margin-bottom:10px}
+.mod-match-row img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.mod-match-name{flex:1;font-size:13px;font-weight:700;color:var(--w);min-width:0}
+.mod-match-meta{font-size:11px;color:var(--g500)}
+.mod-preview-empty{font-size:13px;color:var(--g500);text-align:center;padding:16px 0;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:var(--r)}
+
+.programar-box{background:var(--dark2);border:1px solid rgba(94,181,13,.25);border-radius:var(--r);padding:16px}
+.programar-box label{display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.programar-hint{font-size:12px;color:var(--neon);background:var(--neon-dim);border:1px solid rgba(94,181,13,.25);border-radius:var(--rs);padding:10px 12px}
+
+.btn-anunciar{width:100%;padding:12px;background:var(--mod);color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer}
+.btn-anunciar:hover{background:#6d28d9}
+.btn-anunciar:disabled{background:var(--dark3);color:var(--g500);cursor:not-allowed}
+
+.cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
+.cartel-poster{position:relative;width:760px;min-height:983px;margin:0 auto;border-radius:10px;overflow:hidden;
+  background-image:url('fondonuevo.png');background-size:cover;background-position:center;
+  font-family:'Arial Black',Arial,sans-serif;padding:300px 40px 0;box-sizing:border-box;}
+.cartel-header{position:absolute;top:16px;left:0;right:0;z-index:2;text-align:center}
+.cartel-h1{font-size:26px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 16px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
+.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center}
+.cartel-pagina-tag{position:absolute;bottom:10px;right:18px;z-index:2;font-size:12px;color:rgba(255,255,255,.4);font-weight:700}
+.cartel-row{display:flex;align-items:center;gap:6px;padding:11px 0}
+.cartel-sep{border:none;border-top:2px dotted rgba(243,201,74,.55);margin:0}
+.cartel-team{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.cartel-team.local{flex-direction:row-reverse;justify-content:flex-start;text-align:right}
+.cartel-team.visita{flex-direction:row;justify-content:flex-start;text-align:left}
+.cartel-crest{width:88px;height:88px;object-fit:contain;flex-shrink:0}
+.cartel-name{font-size:18px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
+.cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:2px}
+.cartel-jv{font-size:12px;color:#5eb50d;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
+.cartel-fecha{font-size:11px;color:#d9d9d9;font-weight:700}
+.cartel-hora{font-size:18px;color:#fff;font-weight:900;white-space:nowrap}
+.cartel-campo{font-size:12px;color:#5eb50d;font-weight:700}
+.cartel-linea{width:24px;height:3px;background:#5eb50d;border-radius:2px;margin:2px 0}
+.btn-descargar-cartel{width:100%;padding:12px;background:#f3c94a;color:#1a1200;border:none;border-radius:var(--r);font-size:14px;font-weight:800;cursor:pointer;margin-top:10px}
+.btn-descargar-cartel:hover{filter:brightness(1.08)}
+
+@media(max-width:580px){
+  .cartel-poster{min-width:760px}
+  body{padding:0;align-items:flex-start}
+  #login-screen,#app-screen{border-radius:0;margin-top:0}
+}
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="load-ball">⚽</div>
+  <div class="load-title">ARMAR JORNADA</div>
+  <div class="load-sub" id="load-msg">Conectando con Google Sheets...</div>
+</div>
+
+<div id="login-screen">
+  <div class="login-hero">
+    <div class="login-hero-icon">🛠️</div>
+    <div class="login-hero-title">ARMAR JORNADA</div>
+    <div class="login-hero-sub">Liga Next Level 7 · Panel de administración</div>
+  </div>
+  <div class="login-body">
+    <div class="field">
+      <label>Contraseña de moderador</label>
+      <input type="password" id="mod-password" placeholder="Ingresa la contraseña..." onkeydown="if(event.key==='Enter')entrarPanel()">
+    </div>
+    <button class="btn-enter" onclick="entrarPanel()">Entrar →</button>
+    <div class="login-msg" id="login-msg"></div>
+  </div>
+</div>
+
+<div id="app-screen">
+  <div class="app-header">
+    <div>
+      <div class="app-header-title">🛠️ Armar Jornada</div>
+      <div class="app-header-sub">Liga Next Level 7</div>
+    </div>
+    <a href="partidos.html" class="btn-logout">← Partidos</a>
+  </div>
+
+  <div class="panel">
+
+    <!-- EDITAR / PROGRAMAR PARTIDO -->
+    <div>
+      <div class="mod-section-title" style="color:var(--neon)">🔁 Editar / Programar un partido</div>
+      <div class="mod-hint">Elige los dos equipos que se enfrentan (o ya se enfrentaron) y confirma los nombres antes de guardar — así no se mueve el partido equivocado.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div>
+          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo A</label>
+          <select id="buscar-equipo-a" class="msg-input" style="width:100%" onchange="buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo B</label>
+          <select id="buscar-equipo-b" class="msg-input" style="width:100%" onchange="buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
+        </div>
+      </div>
+      <div id="buscar-resultado"></div>
+    </div>
+
+    <!-- ARMAR ROL DEL DOMINGO -->
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
+      <div class="mod-section-title" style="color:var(--neon)">📋 Armar Rol del Domingo (cartel)</div>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="vbtn active" id="vbtn1" onclick="setVuelta(1)">🔜 Vuelta 1</button>
+        <button class="vbtn" id="vbtn2" onclick="setVuelta(2)">🔄 Vuelta 2</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <label style="font-size:12px;color:var(--g400);white-space:nowrap">📆 Fecha:</label>
+        <input type="date" id="rol-fecha" class="msg-input" style="flex:1;padding:8px 12px;font-size:13px">
+      </div>
+
+      <div id="rol-slots" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="addSlot()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(94,181,13,0.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:600;cursor:pointer">+ Agregar horario</button>
+        <button onclick="autoRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(167,139,250,0.3);border-radius:var(--rs);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer">⚡ Auto-proponer rol</button>
+      </div>
+
+      <div id="rol-preview-wrap" style="display:none;margin-top:16px">
+        <div class="mod-section-title">👁️ Vista previa</div>
+        <div id="rol-preview" style="background:var(--dark2);border:1px solid rgba(94,181,13,0.2);border-radius:var(--r);padding:14px"></div>
+
+        <div class="mod-section-title" style="margin-top:16px">🖼️ Cartel de la jornada</div>
+        <div class="cartel-wrap-scroll">
+          <div class="cartel-poster" id="cartel-poster"></div>
+        </div>
+        <div id="cartel-paginas-aviso" style="font-size:11px;color:var(--neon);margin-top:8px;text-align:center"></div>
+
+        <button class="btn-descargar-cartel" onclick="descargarCartelPNG()">📥 Descargar cartel PNG</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+//  CONFIG
+// ════════════════════════════════
+const SHEET_ID     = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
+const GID_EQUIPOS  = '1894947293';
+const GID_PARTIDOS = '1362473459';
+const MOD_PASS     = 'nl7admin';
+const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd1NDZg1IY2_y_VGc5xX7b_pmV85PE69c_10Aw58vG8mFPO79K2/exec'; // mismo Apps Script de nextlevelenvivo.html y chat-next-level-7.html
+
+// ════════════════════════════════
+//  ESTADO LOCAL
+// ════════════════════════════════
+let S = {
+  teams: {},
+  allMatches: [],  // TODOS los partidos (pendiente/programado/jugado)
+  matches: [],     // solo los pendientes (para el Rol del Domingo)
+  vuelta: 1,
+  matchToProgram: null
+};
+
+// ════════════════════════════════
+//  GOOGLE SHEETS
+// ════════════════════════════════
+async function fetchCSV(gid){
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`);
+  if(!r.ok) throw new Error('No se pudo leer el Sheet (gid='+gid+'). Asegúrate de que sea público.');
+  return parseCSV(await r.text());
+}
+function parseCSV(text){
+  const lines=text.trim().split('\n');
+  if(lines.length<2)return[];
+  const sep=lines[0].includes('\t')?'\t':',';
+  const headers=csvLine(lines[0],sep).map(h=>h.toLowerCase().trim().replace(/\s+/g,'_'));
+  return lines.slice(1).map(l=>{
+    const vals=csvLine(l,sep);
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=(vals[i]||'').trim().replace(/^"|"$/g,''));
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v));
+}
+function csvLine(line,sep){
+  const res=[];let cur='';let q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){q=!q}else if(c===sep&&!q){res.push(cur);cur=''}else{cur+=c}
+  }
+  res.push(cur);
+  return res;
+}
+
+// ════════════════════════════════
+//  INIT
+// ════════════════════════════════
+async function init(){
+  const msg = document.getElementById('load-msg');
+  try{
+    msg.textContent = 'Cargando equipos...';
+    const eq = await fetchCSV(GID_EQUIPOS);
+    eq.forEach(r=>{
+      const id=r['id_equipo']||r['id'];
+      if(!id||id==='10') return;
+      S.teams[id]={id, nombre:r['nombre']||'Equipo '+id, logo:r['url']||r['logo']||'', descripcion:r['descripción']||r['descripcion']||''};
+    });
+
+    msg.textContent = 'Cargando partidos...';
+    const pt = await fetchCSV(GID_PARTIDOS);
+    S.allMatches = pt
+      .map(r=>({
+        id:r['id_partido']||r['id']||'',
+        jornada:r['jornada']||'',
+        local:r['equipo_local']||r['local']||'',
+        visita:r['equipo_visita']||r['visita']||'',
+        ll:r['ll']||'', lv:r['lv']||'',
+        vuelta:r['vuelta']||'1',
+        estado:r['estado']||'',
+        fecha:r['fecha']||'',
+        hora:r['hora']||'',
+        cancha:r['cancha']||''
+      }))
+      .filter(m=>m.local&&m.visita);
+    S.matches = S.allMatches.filter(m=>(m.estado||'').toLowerCase()==='pendiente');
+
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('login-screen').style.display='block';
+  }catch(e){
+    console.error(e);
+    msg.textContent = 'Error al cargar datos: '+e.message;
+  }
+}
+init();
+
+// ════════════════════════════════
+//  LOGIN
+// ════════════════════════════════
+function entrarPanel(){
+  const pass = document.getElementById('mod-password').value;
+  const loginMsg = document.getElementById('login-msg');
+  if(pass !== MOD_PASS){
+    loginMsg.textContent = 'Contraseña incorrecta.';
+    loginMsg.classList.add('err');
+    return;
+  }
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  llenarSelectsEquipos();
+  initRol();
+}
+
+function llenarSelectsEquipos(){
+  const ordenados = Object.values(S.teams).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
+  const opts = '<option value="">— Selecciona —</option>' + ordenados.map(t=>`<option value="${t.id}">${esc(t.nombre)}</option>`).join('');
+  document.getElementById('buscar-equipo-a').innerHTML = opts;
+  document.getElementById('buscar-equipo-b').innerHTML = opts;
+}
+
+// ════════════════════════════════
+//  EDITAR / PROGRAMAR PARTIDO (por pareja de equipos)
+// ════════════════════════════════
+function buscarPartidoEntreEquipos(){
+  const a = document.getElementById('buscar-equipo-a').value;
+  const b = document.getElementById('buscar-equipo-b').value;
+  const cont = document.getElementById('buscar-resultado');
+  S.matchToProgram = null;
+  if(!a || !b){ cont.innerHTML=''; return; }
+  if(a === b){ cont.innerHTML = '<div class="mod-preview-empty">Elige dos equipos distintos</div>'; return; }
+
+  const m = S.allMatches.find(x =>
+    (x.estado||'').toLowerCase() !== 'jugado' &&
+    ((x.local===a && x.visita===b) || (x.local===b && x.visita===a))
+  );
+  if(!m){
+    cont.innerHTML = `<div class="mod-preview-empty">No hay partido pendiente ni programado entre ${esc(tname(a))} y ${esc(tname(b))}</div>`;
+    return;
+  }
+  abrirFormEditar(m);
+}
+
+function pad2(n){ return n<10 ? '0'+n : ''+n; }
+function buildHoraSelects(defaultH, defaultM){
+  let hOpts=''; for(let h=0;h<24;h++){ hOpts+=`<option value="${pad2(h)}" ${h===defaultH?'selected':''}>${pad2(h)}</option>`; }
+  let mOpts=''; for(let m=0;m<60;m+=5){ mOpts+=`<option value="${pad2(m)}" ${m===defaultM?'selected':''}>${pad2(m)}</option>`; }
+  return {hOpts,mOpts};
+}
+
+function abrirFormEditar(m){
+  S.matchToProgram = m;
+  const [d,mo,y] = (m.fecha||'').split('/');
+  const fechaInput = (y&&mo&&d) ? `${y}-${mo}-${d}` : '';
+  const horaParts = (m.hora||'09:00:00').split(':');
+  const {hOpts,mOpts} = buildHoraSelects(parseInt(horaParts[0],10)||9, parseInt(horaParts[1],10)||0);
+
+  document.getElementById('buscar-resultado').innerHTML = `
+    <div class="mod-match-row">
+      <img src="${m.ll||tlogo(m.local)}" onerror="this.style.opacity='.2'">
+      <div>
+        <div class="mod-match-name">${esc(tname(m.local))} vs ${esc(tname(m.visita))}</div>
+        <div class="mod-match-meta">ID interno: ${esc(m.id)} · Estado actual: ${esc(m.estado||'?')}</div>
+      </div>
+      <img src="${m.lv||tlogo(m.visita)}" onerror="this.style.opacity='.2'">
+    </div>
+    <div class="programar-box">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <label>Jornada</label>
+          <input type="number" id="edit-jornada" class="msg-input" style="width:100%" min="1" value="${esc(m.jornada||'')}">
+        </div>
+        <div>
+          <label>Fecha</label>
+          <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}">
+        </div>
+        <div>
+          <label>Hora</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <select id="edit-hora-h" class="msg-input" style="flex:1;text-align:center">${hOpts}</select>
+            <span style="color:var(--g400);font-weight:700">:</span>
+            <select id="edit-hora-m" class="msg-input" style="flex:1;text-align:center">${mOpts}</select>
+          </div>
+        </div>
+        <div>
+          <label>Campo / Cancha</label>
+          <input type="text" id="edit-cancha" class="msg-input" style="width:100%" value="${esc(m.cancha||'')}">
+        </div>
+      </div>
+      <button class="btn-anunciar" id="btn-guardar-editar" style="margin-top:14px" onclick="guardarEdicionPartido()">✅ Guardar cambios</button>
+    </div>
+  `;
+}
+
+async function guardarEdicionPartido(){
+  const m = S.matchToProgram;
+  if(!m) return;
+  const jornada = document.getElementById('edit-jornada').value.trim();
+  const fecha = document.getElementById('edit-fecha').value;
+  const horaH = document.getElementById('edit-hora-h').value;
+  const horaM = document.getElementById('edit-hora-m').value;
+  const hora = (horaH&&horaM) ? `${horaH}:${horaM}:00` : '';
+  const cancha = document.getElementById('edit-cancha').value.trim();
+
+  if(!jornada || !fecha || !hora || !cancha){
+    alert('Completa Jornada, Fecha, Hora y Campo antes de guardar.');
+    return;
+  }
+  const [anioF,mesF,diaF] = fecha.split('-');
+  const fechaSheet = `${diaF}/${mesF}/${anioF}`;
+
+  const btn = document.getElementById('btn-guardar-editar');
+  if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
+
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({accion:'programar_partido', idPartido:m.id, jornada, fecha:fechaSheet, hora, cancha})
+    });
+  }catch(e){
+    console.error(e);
+  }
+
+  // Actualización local optimista
+  m.estado='programado'; m.fecha=fechaSheet; m.hora=hora; m.cancha=cancha; m.jornada=jornada;
+  S.matches = S.allMatches.filter(x=>(x.estado||'').toLowerCase()==='pendiente');
+
+  document.getElementById('buscar-resultado').innerHTML = `<div class="programar-hint">✅ Guardado: ${esc(tname(m.local))} vs ${esc(tname(m.visita))} — Jornada ${esc(jornada)}, ${esc(fechaSheet)}, ${esc(horaH)}:${esc(horaM)}, ${esc(cancha)}</div>`;
+  document.getElementById('buscar-equipo-a').value='';
+  document.getElementById('buscar-equipo-b').value='';
+}
+
+// ════════════════════════════════
+//  ARMAR ROL DEL DOMINGO (rolSlots)
+// ════════════════════════════════
+function setVuelta(v){
+  S.vuelta=v;
+  document.getElementById('vbtn1').className='vbtn'+(v===1?' active':'');
+  document.getElementById('vbtn2').className='vbtn'+(v===2?' active':'');
+  renderSlots();
+}
+
+const HORARIOS_DEFAULT = ['09:00','09:00','10:00','10:00','11:00','11:00','12:00'];
+const CAMPOS_DEFAULT = ['Campo 1','Campo 2','Campo 1','Campo 2','Campo 1','Campo 2','Campo 1'];
+let rolSlots = [];
+
+function initRol(){
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const diasHastaDom = dia===0 ? 7 : 7-dia;
+  const dom = new Date(hoy);
+  dom.setDate(hoy.getDate()+diasHastaDom);
+  document.getElementById('rol-fecha').value = dom.toISOString().split('T')[0];
+  rolSlots = [];
+  document.getElementById('rol-slots').innerHTML = '';
+  document.getElementById('rol-preview-wrap').style.display = 'none';
+}
+
+function addSlot(hora, matchId){
+  const vuelta = String(S.vuelta);
+  const pending = S.matches.filter(m => m.vuelta===vuelta);
+  const idx = rolSlots.length;
+  const horaDefault = hora || HORARIOS_DEFAULT[idx] || '09:00';
+
+  const usados = {};
+  rolSlots.forEach(s=>{
+    if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
+    if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
+  });
+
+  const disponibles = pending.filter(m=>{
+    const lUsos = usados[m.local]||0;
+    const vUsos = usados[m.visita]||0;
+    return lUsos < 2 && vUsos < 2;
+  });
+
+  const slot = { hora: horaDefault, matchId: matchId || (disponibles[0]?.id||''), localId:'', visitaId:'', campo:'' };
+  if(slot.matchId){
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(m){ slot.localId=m.local; slot.visitaId=m.visita; }
+  }
+  rolSlots.push(slot);
+  renderSlots();
+}
+
+function removeSlot(idx){
+  rolSlots.splice(idx,1);
+  renderSlots();
+}
+
+function renderSlots(){
+  const vuelta = String(S.vuelta);
+  const pending = S.matches.filter(m=>m.vuelta===vuelta);
+  const container = document.getElementById('rol-slots');
+
+  container.innerHTML = rolSlots.map((slot,idx)=>{
+    const usados = {};
+    rolSlots.forEach((s,i)=>{
+      if(i===idx) return;
+      if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
+      if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
+    });
+
+    const disponibles = pending.filter(m=>{
+      const lUsos = usados[m.local]||0;
+      const vUsos = usados[m.visita]||0;
+      return lUsos<2 && vUsos<2;
+    });
+
+    const options = disponibles.map(m=>
+      `<option value="${m.id}" ${m.id===slot.matchId?'selected':''}>
+        ${esc(tname(m.local))} vs ${esc(tname(m.visita))} (J${esc(m.jornada)})
+      </option>`
+    ).join('');
+
+    const ll = slot.localId ? (S.matches.find(m=>m.id===slot.matchId)?.ll || tlogo(slot.localId)) : '';
+    const lv = slot.visitaId ? (S.matches.find(m=>m.id===slot.matchId)?.lv || tlogo(slot.visitaId)) : '';
+
+    return `<div style="display:flex;align-items:center;gap:8px;background:var(--dark2);border:1px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:10px 12px;flex-wrap:wrap;">
+      <input type="time" value="${slot.hora}" onchange="updateSlotHora(${idx},this.value)" style="padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--neon);font-size:13px;font-weight:700;width:90px;flex-shrink:0">
+      ${ll?`<img src="${ll}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <select onchange="updateSlotMatch(${idx},this.value)" style="flex:1;padding:7px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;min-width:0">
+        <option value="">-- Seleccionar partido --</option>
+        ${options}
+      </select>
+      ${lv?`<img src="${lv}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <input type="text" value="${slot.campo||''}" onchange="updateSlotCampo(${idx},this.value)" placeholder="Campo (opcional)" style="width:110px;padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;flex-shrink:0">
+      <button onclick="removeSlot(${idx})" style="background:none;border:none;color:#f87171;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 4px">✕</button>
+    </div>`;
+  }).join('');
+
+  updateRolPreview();
+}
+
+function updateSlotHora(idx, hora){ rolSlots[idx].hora = hora; updateRolPreview(); }
+function updateSlotCampo(idx, campo){ rolSlots[idx].campo = campo; updateRolPreview(); }
+function updateSlotMatch(idx, matchId){
+  rolSlots[idx].matchId = matchId;
+  if(matchId){
+    const m = S.matches.find(x=>x.id===matchId);
+    if(m){ rolSlots[idx].localId=m.local; rolSlots[idx].visitaId=m.visita; }
+  } else {
+    rolSlots[idx].localId=''; rolSlots[idx].visitaId='';
+  }
+  renderSlots();
+}
+
+function autoRol(){
+  const vuelta = String(S.vuelta);
+  const pending = [...S.matches.filter(m=>m.vuelta===vuelta)]
+    .sort((a,b) => (Number(a.jornada)||0) - (Number(b.jornada)||0) || (Number(a.id)||0) - (Number(b.id)||0));
+  rolSlots = [];
+  const usados = new Set();
+  const seleccionados = [];
+
+  for(let m of pending){
+    if(seleccionados.length>=7) break;
+    if(!usados.has(m.local) && !usados.has(m.visita)){
+      seleccionados.push(m);
+      usados.add(m.local);
+      usados.add(m.visita);
+    }
+  }
+
+  seleccionados.forEach((m,i)=>{
+    rolSlots.push({
+      hora: HORARIOS_DEFAULT[i]||'09:00',
+      matchId: m.id,
+      localId: m.local,
+      visitaId: m.visita,
+      campo: CAMPOS_DEFAULT[i]||''
+    });
+  });
+
+  renderSlots();
+  document.getElementById('rol-preview-wrap').style.display='block';
+}
+
+function minutosDeHora(hora){
+  if(!hora) return 99999;
+  const partes = hora.split(':');
+  const h = parseInt(partes[0],10) || 0;
+  const m = parseInt(partes[1],10) || 0;
+  return h*60+m;
+}
+function ordenarPorCampoHora(lista){
+  return [...lista].sort((a,b)=>{
+    const ha = minutosDeHora(a.hora);
+    const hb = minutosDeHora(b.hora);
+    if(ha !== hb) return ha - hb;
+    const ca = (a.campo||'').trim();
+    const cb = (b.campo||'').trim();
+    if(!ca) return 1;
+    if(!cb) return -1;
+    return ca.localeCompare(cb, 'es', {numeric:true, sensitivity:'base'});
+  });
+}
+
+function updateRolPreview(){
+  const fecha = document.getElementById('rol-fecha').value;
+  const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) : 'Domingo pendiente';
+  const filled = ordenarPorCampoHora(rolSlots.filter(s=>s.matchId));
+
+  if(!filled.length){
+    document.getElementById('rol-preview-wrap').style.display='none';
+    return;
+  }
+  document.getElementById('rol-preview-wrap').style.display='block';
+
+  let html = `<div style="text-align:center;font-size:13px;font-weight:700;color:var(--neon);margin-bottom:12px;text-transform:capitalize">📅 ${fechaStr}</div>`;
+  filled.forEach(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    const ll = m.ll||tlogo(m.local);
+    const lv = m.lv||tlogo(m.visita);
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
+      <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${esc(slot.hora)}</span>
+      <img src="${ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${esc(tname(m.local))}</span>
+      <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${esc(tname(m.visita))}</span>
+      <img src="${lv}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+    </div>`;
+  });
+  document.getElementById('rol-preview').innerHTML = html;
+  renderCartelPreview(fechaStr, filled);
+}
+
+// ════════════════════════════════
+//  CARTEL DE JORNADA (PNG descargable)
+// ════════════════════════════════
+const CARTEL_POR_PAGINA = 7;
+
+function calcularEquipoDescansa(filled){
+  const idsJuegan = new Set();
+  filled.forEach(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    if(m.local) idsJuegan.add(String(m.local));
+    if(m.visita) idsJuegan.add(String(m.visita));
+  });
+  const descansan = Object.values(S.teams).filter(t=>!idsJuegan.has(String(t.id)));
+  if(descansan.length === 1){
+    const t = descansan[0];
+    return { nombre:(t.nombre||'').toUpperCase(), descripcion:t.descripcion||'' };
+  }
+  return null;
+}
+
+function pintarCartelPagina(paginaSlots, numPagina, totalPaginas, equipoDescansa){
+  const poster = document.getElementById('cartel-poster');
+  if(!poster) return;
+
+  const T = {crest:88, name:18, jv:15, fecha:14, hora:20, campo:14, padY:11, gap:3};
+
+  let filasHtml = '';
+  paginaSlots.forEach((slot, i)=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    const ll = m.ll||tlogo(m.local);
+    const lv = m.lv||tlogo(m.visita);
+    const horaFmt = formatHora12(slot.hora);
+    filasHtml += `
+      <div class="cartel-row" style="padding:${T.padY}px 0;">
+        <div class="cartel-team local">
+          <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${ll}" onerror="this.style.opacity='.2'">
+          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.local))}</span>
+        </div>
+        <div class="cartel-center">
+          <span class="cartel-jv" style="font-size:${T.jv}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">Jornada ${esc(m.jornada||'?')}</span>
+          <span class="cartel-fecha" style="font-size:${T.fecha}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(document.getElementById('rol-fecha').value.split('-').reverse().join('/'))}</span>
+          <div class="cartel-linea" style="margin:${T.gap}px 0;"></div>
+          <span class="cartel-hora" style="font-size:${T.hora}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${horaFmt}</span>
+          ${slot.campo?`<span class="cartel-campo" style="font-size:${T.campo}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(slot.campo)}</span>`:''}
+        </div>
+        <div class="cartel-team visita">
+          <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${lv}" onerror="this.style.opacity='.2'">
+          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.visita))}</span>
+        </div>
+      </div>
+      ${i < paginaSlots.length-1 ? '<hr class="cartel-sep">' : ''}
+    `;
+  });
+
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
+    <div style="text-align:center;margin-bottom:14px;display:flex;flex-direction:column;align-items:center;gap:5px;">
+      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:22px;letter-spacing:1px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,.5),0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.nombre)}</div>
+      <div style="font-size:13px;font-weight:700;color:#f3c94a;text-shadow:0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.descripcion)}</div>
+      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:14px;letter-spacing:1px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,.8);">DESCANSA ESTA JORNADA</div>
+    </div>
+  ` : '';
+
+  poster.innerHTML = `
+    <div class="cartel-header">
+      <div class="cartel-h1">Torneo Dominical Libre</div>
+    </div>
+    ${descansaHTML}
+    <div class="cartel-matches">${filasHtml}</div>
+    ${totalPaginas>1?`<div class="cartel-pagina-tag">Página ${numPagina} de ${totalPaginas}</div>`:''}
+  `;
+}
+
+function renderCartelPreview(fechaStr, filled){
+  const poster = document.getElementById('cartel-poster');
+  if(!poster) return;
+  if(!filled.length){ poster.innerHTML=''; return; }
+
+  const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
+  const equipoDescansa = calcularEquipoDescansa(filled);
+  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas, equipoDescansa);
+
+  const aviso = document.getElementById('cartel-paginas-aviso');
+  if(aviso){
+    aviso.textContent = totalPaginas>1
+      ? `📄 Se generarán ${totalPaginas} páginas de PNG al descargar (7 partidos por página). Aquí se muestra la página 1.`
+      : '';
+  }
+}
+
+function formatHora12(hora24){
+  if(!hora24) return '';
+  const [hStr,mStr] = hora24.split(':');
+  let h = parseInt(hStr,10);
+  const m = mStr || '00';
+  const ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12; if(h===0) h = 12;
+  return `${h}:${m} ${ampm}`;
+}
+
+async function esperarImagenes(el){
+  const imgs = el.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img=> new Promise(resolve=>{
+    if(img.complete) resolve(); else { img.onload=resolve; img.onerror=resolve; }
+  })));
+  await new Promise(r=>setTimeout(r,150));
+}
+
+async function descargarCartelPNG(){
+  const poster = document.getElementById('cartel-poster');
+  const filled = ordenarPorCampoHora(rolSlots.filter(s=>s.matchId));
+  if(!poster || !filled.length){
+    alert('Primero arma el Rol del Domingo (Auto-proponer o agregar horarios) para generar el cartel.');
+    return;
+  }
+  const btn = document.querySelector('.btn-descargar-cartel');
+  const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
+  const fecha = document.getElementById('rol-fecha').value || 'jornada';
+  const equipoDescansa = calcularEquipoDescansa(filled);
+
+  if(btn){ btn.disabled=true; btn.textContent='Generando...'; }
+
+  try{
+    for(let p=0; p<totalPaginas; p++){
+      const pagina = filled.slice(p*CARTEL_POR_PAGINA, (p+1)*CARTEL_POR_PAGINA);
+      pintarCartelPagina(pagina, p+1, totalPaginas, equipoDescansa);
+      await esperarImagenes(poster);
+      const canvas = await html2canvas(poster, { backgroundColor: null, scale: 4, useCORS: true });
+      const link = document.createElement('a');
+      link.download = totalPaginas>1 ? `jornada_${fecha}_pagina${p+1}.png` : `jornada_${fecha}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      await new Promise(r=>setTimeout(r,400));
+    }
+  }catch(err){
+    console.error(err);
+    alert('No se pudo generar el PNG. Revisa que las imágenes (escudos y logo) permitan descarga (CORS).');
+  }
+
+  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas, equipoDescansa);
+  if(btn){ btn.disabled=false; btn.textContent='📥 Descargar cartel PNG'; }
+}
+
+// ════════════════════════════════
+//  HELPERS
+// ════════════════════════════════
+function tname(id){ return (S.teams[id]||{}).nombre||'Equipo '+id; }
+function tlogo(id){ return (S.teams[id]||{}).logo||''; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
