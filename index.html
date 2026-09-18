@@ -494,18 +494,10 @@ function carMover(dir){ carActivo=((carActivo+dir)%carTotal+carTotal)%carTotal; 
 const carDotsEl=document.getElementById('car-dots');
 carCards.forEach((_,i)=>{ const d=document.createElement('div'); d.className='car-dot'+(i===0?' on':''); d.onclick=()=>{carActivo=i;carActualizar();}; carDotsEl.appendChild(d); });
 carCards.forEach((card,i)=>{ card.addEventListener('click',e=>{ if(!card.classList.contains('c')){ e.preventDefault(); e.stopPropagation(); carActivo=i; carActualizar(); } }); });
-
 let carTx=0;
 document.getElementById('carrusel-wrap').addEventListener('touchstart',e=>{carTx=e.touches[0].clientX;});
 document.getElementById('carrusel-wrap').addEventListener('touchend',e=>{ const d=carTx-e.changedTouches[0].clientX; if(Math.abs(d)>50) carMover(d>0?1:-1); });
-
-let carArrastrando=false, carXInicio=0;
-document.getElementById('carrusel-wrap').addEventListener('mousedown',e=>{ carArrastrando=true; carXInicio=e.clientX; });
-document.addEventListener('mousemove',e=>{ if(!carArrastrando) return; const diff=carXInicio-e.clientX; if(Math.abs(diff)>50){ carMover(diff>0?1:-1); carArrastrando=false; } });
-document.addEventListener('mouseup',()=>{ carArrastrando=false; });
-
-document.addEventListener('keydown',e=>{ if(e.key==='ArrowLeft') carMover(-1); if(e.key==='ArrowRight') carMover(1); });
-
+setInterval(()=>carMover(1),5000);
 carActualizar();
 cargarCarrusel();
 
