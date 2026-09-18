@@ -371,7 +371,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
     </div>
   ` : '';
   content.innerHTML = `
-    <div style="text-align:center;margin-top:170px;margin-bottom:8px;">
+    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
     </div>
     ${descansaHTML}
