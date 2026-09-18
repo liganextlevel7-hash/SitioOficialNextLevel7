@@ -792,7 +792,7 @@ async function init(){
     eq.forEach(r=>{
       const id=r['id_equipo']||r['id'];
       if(!id||id==='10') return;
-      S.teams[id]={id, nombre:r['nombre']||'Equipo '+id, ciudad:r['ciudad']||'', logo:r['url']||r['logo']||''};
+      S.teams[id]={id, nombre:r['nombre']||'Equipo '+id, ciudad:r['ciudad']||'', logo:r['url']||r['logo']||'', descripcion:r['descripción']||r['descripcion']||''};
     });
     setP(65,'Cargando partidos...');
     const pt = await fetchCSV(GID_PARTIDOS);
@@ -1830,12 +1830,28 @@ const FONDO_CARTEL_URL = 'fondonuevo.png';
 
 const CARTEL_POR_PAGINA = 7;
 
+function calcularEquipoDescansa(filled){
+  const idsJuegan = new Set();
+  filled.forEach(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    if(m.local) idsJuegan.add(String(m.local));
+    if(m.visita) idsJuegan.add(String(m.visita));
+  });
+  const descansan = Object.values(S.teams).filter(t=>!idsJuegan.has(String(t.id)));
+  if(descansan.length === 1){
+    const t = descansan[0];
+    return { nombre:(t.nombre||'').toUpperCase(), descripcion:t.descripcion||'' };
+  }
+  return null;
+}
+
 // Pinta UNA página del cartel (hasta 4 partidos) en el elemento #cartel-poster
-function pintarCartelPagina(paginaSlots, numPagina, totalPaginas){
+function pintarCartelPagina(paginaSlots, numPagina, totalPaginas, equipoDescansa){
   const poster = document.getElementById('cartel-poster');
   if(!poster) return;
 
-  const T = {crest:88, name:18, jv:12, fecha:11, hora:18, campo:12, padY:11, gap:3};
+  const T = {crest:88, name:18, jv:15, fecha:14, hora:20, campo:14, padY:11, gap:3};
 
   let filasHtml = '';
   paginaSlots.forEach((slot, i)=>{
@@ -1851,11 +1867,11 @@ function pintarCartelPagina(paginaSlots, numPagina, totalPaginas){
           <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.local))}</span>
         </div>
         <div class="cartel-center">
-          <span class="cartel-jv" style="font-size:${T.jv}px;">Jornada ${esc(m.jornada||'?')} · Vuelta ${esc(m.vuelta||'1')}</span>
-          <span class="cartel-fecha" style="font-size:${T.fecha}px;">${esc(document.getElementById('rol-fecha').value.split('-').reverse().join('/'))}</span>
+          <span class="cartel-jv" style="font-size:${T.jv}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">Jornada ${esc(m.jornada||'?')}</span>
+          <span class="cartel-fecha" style="font-size:${T.fecha}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(document.getElementById('rol-fecha').value.split('-').reverse().join('/'))}</span>
           <div class="cartel-linea" style="margin:${T.gap}px 0;"></div>
-          <span class="cartel-hora" style="font-size:${T.hora}px;">${horaFmt}</span>
-          ${slot.campo?`<span class="cartel-campo" style="font-size:${T.campo}px;">${esc(slot.campo)}</span>`:''}
+          <span class="cartel-hora" style="font-size:${T.hora}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${horaFmt}</span>
+          ${slot.campo?`<span class="cartel-campo" style="font-size:${T.campo}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(slot.campo)}</span>`:''}
         </div>
         <div class="cartel-team visita">
           <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${lv}" onerror="this.style.opacity='.2'">
@@ -1866,10 +1882,19 @@ function pintarCartelPagina(paginaSlots, numPagina, totalPaginas){
     `;
   });
 
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
+    <div style="text-align:center;margin-bottom:14px;display:flex;flex-direction:column;align-items:center;gap:5px;">
+      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:22px;letter-spacing:1px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,.5),0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.nombre)}</div>
+      <div style="font-size:13px;font-weight:700;color:#f3c94a;text-shadow:0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.descripcion)}</div>
+      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:14px;letter-spacing:1px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,.8);">DESCANSA ESTA JORNADA</div>
+    </div>
+  ` : '';
+
   poster.innerHTML = `
     <div class="cartel-header">
       <div class="cartel-h1">Torneo Dominical Libre</div>
     </div>
+    ${descansaHTML}
     <div class="cartel-matches">${filasHtml}</div>
     ${totalPaginas>1?`<div class="cartel-pagina-tag">Página ${numPagina} de ${totalPaginas}</div>`:''}
   `;
@@ -1881,7 +1906,8 @@ function renderCartelPreview(fechaStr, filled){
   if(!filled.length){ poster.innerHTML=''; return; }
 
   const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
-  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas);
+  const equipoDescansa = calcularEquipoDescansa(filled);
+  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas, equipoDescansa);
 
   const aviso = document.getElementById('cartel-paginas-aviso');
   if(aviso){
@@ -1919,13 +1945,14 @@ async function descargarCartelPNG(){
   const btn = document.querySelector('.btn-descargar-cartel');
   const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
   const fecha = document.getElementById('rol-fecha').value || 'jornada';
+  const equipoDescansa = calcularEquipoDescansa(filled);
 
   if(btn){ btn.disabled=true; btn.textContent='Generando...'; }
 
   try{
     for(let p=0; p<totalPaginas; p++){
       const pagina = filled.slice(p*CARTEL_POR_PAGINA, (p+1)*CARTEL_POR_PAGINA);
-      pintarCartelPagina(pagina, p+1, totalPaginas);
+      pintarCartelPagina(pagina, p+1, totalPaginas, equipoDescansa);
       await esperarImagenes(poster);
       const canvas = await html2canvas(poster, { backgroundColor: null, scale: 4, useCORS: true });
       const link = document.createElement('a');
