@@ -339,7 +339,7 @@ async function esperarImagenesReporte(el) {
   await new Promise(r => setTimeout(r, 200));
 }
 
-function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo) {
+function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa) {
   const eqMap = {};
   todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
@@ -363,11 +363,18 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
   content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
 
   const paginaTxt = totalPaginas > 1 ? ` · Página ${numPagina}/${totalPaginas}` : '';
-  content.innerHTML = `
-    <div style="text-align:center;margin-top:170px;margin-bottom:20px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:#5eb50d;text-shadow:0 0 15px rgba(94,181,13,0.4);">⚽ NEXT LEVEL 7</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:#5eb50d;margin-top:4px;">${jornadaTitulo} · ${vueltaTitulo}${paginaTxt}</div>
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
+    <div style="text-align:center;margin-top:14px;margin-bottom:6px;display:flex;flex-direction:column;align-items:center;gap:5px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,0.5),0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.nombre}</div>
+      <div style="font-family:'Roboto',Arial,sans-serif;font-size:13px;font-weight:700;color:#d5a610;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.descripcion}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,0.8);">DESCANSA ESTA JORNADA</div>
     </div>
+  ` : '';
+  content.innerHTML = `
+    <div style="text-align:center;margin-top:170px;margin-bottom:8px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo} · ${vueltaTitulo}${paginaTxt}</div>
+    </div>
+    ${descansaHTML}
     <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
   `;
 
@@ -403,11 +410,11 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
           <img src="${urlL}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:3px;">
-          ${jornadaFila ? `<div style="font-size:8px;color:rgba(255,255,255,0.45);font-weight:700;letter-spacing:0.5px;">${jornadaFila}</div>` : ''}
-          ${fecha ? `<div style="font-size:9px;color:#d9d9d9;font-weight:700;">${fecha}</div>` : ''}
+          ${jornadaFila ? `<div style="font-size:12px;color:#e8e8e8;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${jornadaFila}</div>` : ''}
+          ${fecha ? `<div style="font-size:13px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
           <div style="width:18px;height:2px;background:#5eb50d;border-radius:2px;margin:2px auto;"></div>
           ${centerHTML}
-          ${hora ? `<div style="font-size:10px;color:#ddc530;font-weight:700;">${hora}${cancha?' · '+cancha:''}</div>` : ''}
+          ${hora ? `<div style="font-size:14px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}${cancha?' · '+cancha:''}</div>` : ''}
         </div>
         <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;flex:1;min-width:0;">
           <img src="${urlV}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
@@ -468,6 +475,26 @@ async function downloadPNG() {
   }
   const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
 
+  let equipoDescansa = null;
+  if (tipoFiltro === 'jornada') {
+    const jornadaNum = String(firstP?.Jornada || '').trim();
+    const idsJuegan = new Set();
+    todosPartidos
+      .filter(p => String(p['Jornada']).trim() === jornadaNum)
+      .forEach(p => {
+        if (p['Equipo_Local']) idsJuegan.add(String(p['Equipo_Local']).trim());
+        if (p['Equipo_Visita']) idsJuegan.add(String(p['Equipo_Visita']).trim());
+      });
+    const equiposDescansan = todosEquipos.filter(e => !idsJuegan.has(String(e['ID_Equipo']).trim()));
+    if (equiposDescansan.length === 1) {
+      const eq = equiposDescansan[0];
+      equipoDescansa = {
+        nombre: (eq['Nombre'] || '').toUpperCase(),
+        descripcion: eq['Descripción'] || eq['Descripcion'] || ''
+      };
+    }
+  }
+
   const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
 
   try {
@@ -478,7 +505,7 @@ async function downloadPNG() {
       temp.style.left = '-9999px';
       temp.style.top = '0';
 
-      const inner = construirPaginaReporte(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo);
+      const inner = construirPaginaReporte(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa);
       temp.appendChild(inner);
       document.body.appendChild(temp);
 
