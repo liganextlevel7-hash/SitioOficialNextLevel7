@@ -31,7 +31,7 @@
 .card-sec.r2 { transform:translate(calc(-50% + 400px),-50%) scale(0.55) rotateY(-22deg); opacity:0.3; z-index:3; pointer-events:all; }
 .card-body { padding:22px 18px 18px; display:flex; flex-direction:column; gap:10px; min-height:440px; background:#142702; }
 .card-titulo { font-size:15px; font-weight:900; letter-spacing:2px; text-transform:uppercase; text-align:center; }
-.card-contenido { flex:1; font-size:12px; font-family:Arial,sans-serif; }
+.card-contenido { flex:1; font-size:12px; font-family:Arial,sans-serif; transition:opacity .35s ease; }
 .car-btn { display:block; text-align:center; padding:10px; border-radius:20px; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-decoration:none; cursor:pointer; border:none; width:100%; transition:filter 0.3s; touch-action:manipulation; }
 .car-btn:hover { filter:brightness(1.3); }
 .c-tabla .card-body { background:#142702; position:relative; overflow:hidden; }
@@ -364,11 +364,12 @@ const CAR_EQUIPOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-
 let carLogos = {};    // nombre -> logo, se llena solo desde la hoja "Equipos"
 let carEqID  = {};    // ID_Equipo -> nombre
 let carLogosID = {};  // ID_Equipo -> logo
+let carDesc  = {};    // nombre -> descripcion
 async function cargarCatalogoCarrusel(){
   const resp = await fetch(CAR_EQUIPOS);
   const texto = await resp.text();
   const filas = texto.trim().split("\n");
-  const logosTmp = {}, idNombreTmp = {}, idLogoTmp = {};
+  const logosTmp = {}, idNombreTmp = {}, idLogoTmp = {}, descTmp = {};
   for(let i=1;i<filas.length;i++){
     const c = filas[i].split(",");
     const id = Number(c[0]);
@@ -376,11 +377,13 @@ async function cargarCatalogoCarrusel(){
     if(!nombre) continue;
     const logoUrl = (c[4] || c[3] || "").trim();
     logosTmp[nombre] = logoUrl;
+    descTmp[nombre] = (c[2] || "").trim();
     if(id){ idNombreTmp[id] = nombre; idLogoTmp[id] = logoUrl; }
   }
   carLogos = logosTmp;
   carEqID = idNombreTmp;
   carLogosID = idLogoTmp;
+  carDesc = descTmp;
 }
 function carParseCSV(text) {
   const lines = text.replace(/\r/g,'').trim().split('\n');
@@ -417,7 +420,7 @@ async function cargarCarrusel() {
     }
     document.getElementById('car-tabla').innerHTML=htmlTabla||'<div class="car-cargando">Sin datos</div>';
     const filasP=tP.trim().split('\n'); const jugados=[],programados=[];
-    for(let i=1;i<filasP.length;i++){ const c=filasP[i].split(','); const estado=(c[6]||'').trim(); const local=carEqID[Number(c[2])]||'', visita=carEqID[Number(c[3])]||''; const p={local,visita,gl:c[4]||'',gv:c[5]||'',fecha:(c[8]||'').trim(),hora:(c[9]||'').trim(),cancha:(c[7]||'').trim()}; if(estado==='Jugado') jugados.push(p); if(estado==='Programado') programados.push(p); }
+    for(let i=1;i<filasP.length;i++){ const c=filasP[i].split(','); const estado=(c[6]||'').trim(); const local=carEqID[Number(c[2])]||'', visita=carEqID[Number(c[3])]||''; const p={local,visita,gl:c[4]||'',gv:c[5]||'',fecha:(c[8]||'').trim(),hora:(c[9]||'').trim(),cancha:(c[7]||'').trim(),jornada:(c[1]||'').trim()}; if(estado==='Jugado') jugados.push(p); if(estado==='Programado') programados.push(p); }
     function fmtHora12(hora24){
       if(!hora24) return '';
       const partes = hora24.split(':');
@@ -428,40 +431,91 @@ async function cargarCarrusel() {
       h = h % 12; if(h===0) h = 12;
       return `${h}:${m} ${ampm}`;
     }
-    let htmlRes='';
+
+    // Arma grupos de hasta 3 partidos para rotar dentro de la tarjeta
+    function armarGruposDe3(filas){
+      const grupos = [];
+      for(let i=0;i<filas.length;i+=3){ grupos.push(filas.slice(i,i+3)); }
+      return grupos;
+    }
+    // Equipo sin partido en esa jornada (solo si es exactamente uno)
+    function calcularEquipoDescansaIndex(filas){
+      if(!filas.length) return null;
+      const juegan = new Set();
+      filas.forEach(p=>{ if(p.local) juegan.add(p.local); if(p.visita) juegan.add(p.visita); });
+      const descansan = Object.values(carEqID).filter(n=>!juegan.has(n));
+      if(descansan.length===1){
+        return { nombre: descansan[0].toUpperCase(), descripcion: carDesc[descansan[0]]||'' };
+      }
+      return null;
+    }
+    function filaHTML(p, tipo){
+      const centro = tipo==='resultado'
+        ? `<span class="cartel-fecha">${p.fecha}</span><div class="cartel-linea"></div><span class="cartel-marcador">${p.gl}-${p.gv}</span>`
+        : `<span class="cartel-fecha">${p.fecha}</span><div class="cartel-linea"></div><span class="cartel-hora">${fmtHora12(p.hora)}</span>${p.cancha?`<span class="cartel-campo">${p.cancha}</span>`:''}`;
+      return `<div class="cartel-row">
+        <div class="cartel-team local"><img class="cartel-crest" src="${carLogos[p.local]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.local}</span></div>
+        <div class="cartel-center">${centro}</div>
+        <div class="cartel-team visita"><img class="cartel-crest" src="${carLogos[p.visita]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.visita}</span></div>
+      </div>`;
+    }
+    function descansaBlockHTML(equipoDescansa){
+      if(!equipoDescansa) return '';
+      return `<div style="text-align:center;margin-top:8px;padding-top:8px;border-top:1px dashed rgba(94,181,13,.4);">
+        <div style="font-size:11px;font-weight:900;color:#5eb50d;letter-spacing:.5px;">${equipoDescansa.nombre}</div>
+        <div style="font-size:9px;font-weight:700;color:#d5a610;margin-top:2px;">${equipoDescansa.descripcion}</div>
+        <div style="font-size:9px;font-weight:900;color:#f5f5f5;letter-spacing:.5px;margin-top:2px;">DESCANSA ESTA JORNADA</div>
+      </div>`;
+    }
+    if(!window.carruselesActivos) window.carruselesActivos = {};
+    function iniciarRotacionCartel(containerId, filas, tipo, equipoDescansa){
+      const cont = document.getElementById(containerId);
+      if(!cont) return;
+      if(window.carruselesActivos[containerId]) clearInterval(window.carruselesActivos[containerId]);
+      if(!filas.length){
+        cont.innerHTML = '<div class="car-cargando">Sin datos</div>';
+        return;
+      }
+      const grupos = armarGruposDe3(filas);
+      let idx = 0;
+      function pintarGrupo(i){
+        const grupo = grupos[i];
+        let html = grupo.map((p,j)=> filaHTML(p,tipo) + (j<grupo.length-1?'<hr class="cartel-sep">':'')).join('');
+        if(i === grupos.length-1 && equipoDescansa) html += descansaBlockHTML(equipoDescansa);
+        cont.style.opacity = '0';
+        setTimeout(()=>{ cont.innerHTML = html; cont.style.opacity = '1'; }, 350);
+      }
+      pintarGrupo(0);
+      if(grupos.length > 1){
+        window.carruselesActivos[containerId] = setInterval(()=>{
+          idx = (idx+1) % grupos.length;
+          pintarGrupo(idx);
+        }, 4000);
+      }
+    }
+
     if(jugados.length){
       jugados.sort((a,b)=>{const pa=a.fecha.split('/').reverse().join('');const pb=b.fecha.split('/').reverse().join('');return pb.localeCompare(pa);});
       const fu=jugados[0].fecha;
-      const filasFu = jugados.filter(p=>p.fecha===fu).slice(0,4);
-      filasFu.forEach((p,i)=>{
-        htmlRes+=`<div class="cartel-row">
-          <div class="cartel-team local"><img class="cartel-crest" src="${carLogos[p.local]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.local}</span></div>
-          <div class="cartel-center"><span class="cartel-fecha">${p.fecha}</span><div class="cartel-linea"></div><span class="cartel-marcador">${p.gl}-${p.gv}</span></div>
-          <div class="cartel-team visita"><img class="cartel-crest" src="${carLogos[p.visita]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.visita}</span></div>
-        </div>${i < filasFu.length-1 ? '<hr class="cartel-sep">' : ''}`;
-      });
+      const filasFu = jugados.filter(p=>p.fecha===fu);
+      iniciarRotacionCartel('car-resultados', filasFu, 'resultado', calcularEquipoDescansaIndex(filasFu));
+    } else {
+      document.getElementById('car-resultados').innerHTML = '<div class="car-cargando">Sin resultados</div>';
     }
-    document.getElementById('car-resultados').innerHTML=htmlRes||'<div class="car-cargando">Sin resultados</div>';
 
     // CAMBIO 1: Próxima Jornada ordenada por hora y luego por cancha
-    let htmlProx='';
     if(programados.length){
       const fp=programados[0].fecha;
-      const filasFp = programados.filter(p=>p.fecha===fp).slice(0,6);
+      const filasFp = programados.filter(p=>p.fecha===fp);
       filasFp.sort((a,b)=>{
         const ha=a.hora||'99:99', hb=b.hora||'99:99';
         if(ha!==hb) return ha.localeCompare(hb);
         return (a.cancha||'').localeCompare(b.cancha||'');
       });
-      filasFp.forEach((p,i)=>{
-        htmlProx+=`<div class="cartel-row">
-          <div class="cartel-team local"><img class="cartel-crest" src="${carLogos[p.local]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.local}</span></div>
-          <div class="cartel-center"><span class="cartel-fecha">${p.fecha}</span><div class="cartel-linea"></div><span class="cartel-hora">${fmtHora12(p.hora)}</span>${p.cancha?`<span class="cartel-campo">${p.cancha}</span>`:''}</div>
-          <div class="cartel-team visita"><img class="cartel-crest" src="${carLogos[p.visita]||''}" onerror="this.style.opacity='.2'"><span class="cartel-name">${p.visita}</span></div>
-        </div>${i < filasFp.length-1 ? '<hr class="cartel-sep">' : ''}`;
-      });
+      iniciarRotacionCartel('car-proxima', filasFp, 'proxima', calcularEquipoDescansaIndex(filasFp));
+    } else {
+      document.getElementById('car-proxima').innerHTML = '<div class="car-cargando">Sin partidos programados</div>';
     }
-    document.getElementById('car-proxima').innerHTML=htmlProx||'<div class="car-cargando">Sin partidos programados</div>';
 
     const jugadores=carParseCSV(tJ), eventos=carParseCSV(tEv), partic=carParseCSV(tPart);
     const golMap={}, partMap={};
