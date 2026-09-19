@@ -32,6 +32,7 @@
 .card-contenido { flex:1; font-size:12px; font-family:Arial,sans-serif; transition:opacity .35s ease; }
 .car-btn { display:block; text-align:center; padding:10px; border-radius:20px; font-size:12px; font-weight:700; letter-spacing:1px; text-transform:uppercase; text-decoration:none; cursor:pointer; border:none; width:100%; transition:filter 0.3s; touch-action:manipulation; }
 .car-btn:hover { filter:brightness(1.3); }
+.car-hint { position:absolute; bottom:10px; left:0; right:0; text-align:center; font-size:10px; color:rgba(255,255,255,0.35); font-weight:600; letter-spacing:0.5px; pointer-events:none; z-index:2; }
 .c-tabla .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-tabla .card-titulo { color:#5eb50d; position:relative; z-index:2; }
 .c-goles .card-body { background:#142702; position:relative; overflow:hidden; }
@@ -140,6 +141,7 @@
     <div class="card-body">
       <div class="card-titulo">🏆 Tabla General</div>
       <div class="card-contenido" id="car-tabla"><div class="car-cargando">Cargando...</div></div>
+      <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
 
@@ -147,6 +149,7 @@
     <div class="card-body" style="padding:14px 10px;background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <div class="card-titulo">⚽ Top Goleadores</div>
       <div class="card-contenido" id="car-goles" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:4px 0;"><div class="car-cargando">Cargando...</div></div>
+      <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
 
@@ -154,6 +157,7 @@
     <div class="card-body" style="background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <div class="card-titulo">📊 Últimos Resultados</div>
       <div class="card-contenido" id="car-resultados" style="margin-top:90px;"><div class="car-cargando">Cargando...</div></div>
+      <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
 
@@ -161,6 +165,7 @@
     <div class="card-body" style="background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <div class="card-titulo">📅 Próxima Jornada</div>
       <div class="card-contenido" id="car-proxima" style="margin-top:90px;"><div class="car-cargando">Cargando...</div></div>
+      <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
 
@@ -168,6 +173,7 @@
     <div class="card-body" style="position:relative;padding:0 !important;">
       <img src="equipos.png" class="liguilla-img" alt="Equipos" onerror="this.style.display='none'">
       <div class="card-titulo">👕 EQUIPOS</div>
+      <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
 
@@ -175,6 +181,7 @@
     <div class="card-body" style="position:relative;background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <img src="liguilla.png" class="liguilla-img" alt="Liguilla" onerror="this.style.display='none'">
       <div class="card-titulo">🥇 LIGUILLA</div>
+      <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
 
@@ -220,6 +227,7 @@
           <span style="width:8px;height:8px;background:#142702;border-radius:50%;animation:blink 1.2s infinite;display:inline-block;"></span> RADIO EN VIVO
         </span>
       </div>
+      <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
   <!-- ===== FIN CARD RADIO ===== -->
@@ -234,6 +242,7 @@
         <div style="font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;text-align:center;color:#5eb50d;">Registro de<br>Jugadores</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.7;font-family:Arial,sans-serif;">Capitanes: registren a su<br>plantilla con foto, número<br>y posición. 📸⚽</div>
       </div>
+      <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
   <!-- ===== FIN CARD REGISTRO DE JUGADORES =====-->
