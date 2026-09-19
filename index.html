@@ -23,7 +23,7 @@
 @keyframes balonGira { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
 .balon-sombra { width: 20px; height: 5px; background: rgba(94,181,13,0.4); border-radius: 50%; margin: 0 auto; animation: sombraBalon 0.55s ease infinite alternate; }
 @keyframes sombraBalon { 0% { transform: scaleX(0.3); opacity: 0.1; } 100% { transform: scaleX(1); opacity: 0.5; } }
-.carrusel-seccion { max-width: 1100px; margin: 20px auto 30px; padding: 0 10px; position: relative; height: 480px; perspective: 1800px; }
+.carrusel-seccion { max-width: 1320px; margin: 20px auto 30px; padding: 0 10px; position: relative; height: 480px; perspective: 1800px; }
 #carrusel-circular { position:absolute; top:0; left:0; width:100%; height:100%; transform-style: preserve-3d; transition: transform 1s cubic-bezier(0.4,0,0.2,1); z-index:1; }
 .card-sec { position: absolute; top: 50%; left: 50%; width: 320px; border-radius: 22px; cursor: pointer; overflow: hidden; border: 1px solid #5eb50d; box-shadow: 0 0 10px #5eb50d, 0 0 20px rgba(94,181,13,0.3); background:#142702; backface-visibility: visible; }
 .card-sec.card-sec-activa { cursor:default; }
@@ -34,33 +34,25 @@
 .car-btn:hover { filter:brightness(1.3); }
 .c-tabla .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-tabla .card-titulo { color:#5eb50d; position:relative; z-index:2; }
-.c-tabla .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; width:auto; z-index:2; }
 .c-goles .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-goles .card-titulo { color:#5eb50d; position:relative; z-index:2; }
-.c-goles .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; width:auto; z-index:2; }
 .c-partidos .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-partidos .card-titulo { color:#5eb50d; position:relative; z-index:2; }
-.c-partidos .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; width:auto; z-index:2; }
 .c-proxima .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-proxima .card-titulo { color:#5eb50d; position:relative; z-index:2; }
-.c-proxima .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; width:auto; z-index:2; }
 .card-fondo-img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; opacity:0.35; }
 .card-overlay-color { position:absolute; top:0; left:0; width:100%; height:100%; z-index:1; background:rgba(0,0,0,0.55); }
 .card-contenido { position:relative; z-index:2; }
 .c-equipos .card-body { background:#142702; position:relative; overflow:hidden; padding:0 !important; }
 .c-equipos .card-titulo { color:#5eb50d; position:absolute; top:14px; left:0; right:0; z-index:2; text-shadow:0 2px 6px rgba(0,0,0,0.8); }
-.c-equipos .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; z-index:2; width:auto; }
 .c-equipos .liguilla-img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:0; opacity:0.55; }
 .c-liguilla .card-body { background:#142702; padding:0 !important; }
 .c-liguilla .card-titulo { color:#5eb50d; position:absolute; top:14px; left:0; right:0; z-index:2; text-shadow:0 2px 6px rgba(0,0,0,0.8); }
-.c-liguilla .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; z-index:2; width:auto; }
 .c-liguilla .liguilla-img { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; }
 .c-radio .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-radio .card-titulo { color:#5eb50d; position:relative; z-index:2; }
-.c-radio .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; width:auto; z-index:2; }
 .c-jugadores .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-jugadores .card-titulo { color:#5eb50d; position:relative; z-index:2; }
-.c-jugadores .car-btn { background:rgba(94,181,13,0.2); color:#5eb50d; border:1px solid #5eb50d; position:absolute; bottom:14px; left:18px; right:18px; width:auto; z-index:2; }
 .mini-fila { display:flex; align-items:center; gap:8px; padding:7px 4px; border-bottom:1px solid rgba(255,255,255,0.07); font-size:12px; color:rgba(255,255,255,0.85); }
 .mini-fila img { width:28px; height:28px; object-fit:contain; }
 .mini-rank { font-weight:900; color:#5eb50d; min-width:20px; text-align:center; }
@@ -113,22 +105,16 @@
 .piramide-1 { grid-column: 1 / 3; justify-self: center; }
 .piramide-2 { grid-column: 1; justify-self: end; }
 .piramide-3 { grid-column: 2; justify-self: start; }
-.podio-frame { position: relative; width: 175px; }
-.piramide-2 .podio-frame, .piramide-3 .podio-frame { width: 135px; }
-.podio-frame img.podio-bg { width: 100%; display: block; }
-.podio-frame .podio-content-box { position: absolute; top: 34%; left: 50%; transform: translate(-50%, -50%); width: 42%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.podio-content-box .pc-escudo { width: 100%; object-fit: contain; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8)); }
-.podio-medal-num { position: absolute; top: 99%; left: 50%; transform: translate(-50%, 0); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 900; color: #000; z-index: 4; border: 2px solid #000; }
-.piramide-1 .podio-medal-num { background: #5eb50d; }
-.piramide-2 .podio-medal-num { background: #c0c0c0; }
-.piramide-3 .podio-medal-num { background: #cd7f32; }
-.podio-info { text-align: center; margin-top: 0; }
-.podio-nombre2 { font-size: 11px; font-weight: 900; color: #fff; text-transform: uppercase; line-height: 1.2; max-width: 130px; margin: 0 auto; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.piramide-1 .podio-nombre2 { font-size: 13px; max-width: 160px; }
-.podio-pts2 { font-size: 11px; font-weight: 700; margin-top: 3px; }
-.piramide-1 .podio-pts2 { font-size: 14px; color: #5eb50d; }
-.piramide-2 .podio-pts2 { color: #c0c0c0; }
-.piramide-3 .podio-pts2 { color: #cd7f32; }
+.podio-nuevo { position:absolute; inset:0; background-image:url('primer_lugar.png'); background-size:cover; background-position:center top; }
+.pn-escudo { position:absolute; transform:translate(-50%,-50%); filter:drop-shadow(0 2px 8px rgba(0,0,0,0.85)); }
+.pn-escudo img { width:100%; display:block; }
+.pn-escudo.pn-1 { left:50%; top:59%; width:19%; }
+.pn-escudo.pn-2 { left:20%; top:70%; width:14%; }
+.pn-escudo.pn-3 { left:78%; top:70%; width:14%; }
+.pn-pts { position:absolute; transform:translate(-50%,-50%); font-weight:900; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.95); text-align:center; white-space:nowrap; }
+.pn-pts.pn-1 { left:50%; top:80%; font-size:14px; color:#ffd83d; }
+.pn-pts.pn-2 { left:20%; top:83%; font-size:11px; }
+.pn-pts.pn-3 { left:78%; top:83%; font-size:11px; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
 </style>
 </head>
@@ -150,51 +136,45 @@
 
 <div class="carrusel-seccion" id="carrusel-wrap">
 
-  <div class="card-sec c-tabla" id="ccard-0">
-    <div class="card-body" style="background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
+  <div class="card-sec c-tabla" id="ccard-0" data-link="tablaGeneral.html">
+    <div class="card-body">
       <div class="card-titulo">🏆 Tabla General</div>
       <div class="card-contenido" id="car-tabla"><div class="car-cargando">Cargando...</div></div>
-      <a href="tablaGeneral.html" class="car-btn">VER TABLA COMPLETA</a>
     </div>
   </div>
 
-  <div class="card-sec c-goles" id="ccard-1">
+  <div class="card-sec c-goles" id="ccard-1" data-link="jugadores.html">
     <div class="card-body" style="padding:14px 10px;background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <div class="card-titulo">⚽ Top Goleadores</div>
       <div class="card-contenido" id="car-goles" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:4px 0;"><div class="car-cargando">Cargando...</div></div>
-      <a href="jugadores.html" class="car-btn">VER TODOS</a>
     </div>
   </div>
 
-  <div class="card-sec c-partidos" id="ccard-2">
+  <div class="card-sec c-partidos" id="ccard-2" data-link="partidos.html">
     <div class="card-body" style="background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <div class="card-titulo">📊 Últimos Resultados</div>
       <div class="card-contenido" id="car-resultados" style="margin-top:90px;"><div class="car-cargando">Cargando...</div></div>
-      <a href="partidos.html" class="car-btn">VER PARTIDOS</a>
     </div>
   </div>
 
-  <div class="card-sec c-proxima" id="ccard-3">
+  <div class="card-sec c-proxima" id="ccard-3" data-link="partidos.html">
     <div class="card-body" style="background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <div class="card-titulo">📅 Próxima Jornada</div>
       <div class="card-contenido" id="car-proxima" style="margin-top:90px;"><div class="car-cargando">Cargando...</div></div>
-      <a href="partidos.html" class="car-btn">VER JORNADA</a>
     </div>
   </div>
 
-  <div class="card-sec c-equipos" id="ccard-4">
+  <div class="card-sec c-equipos" id="ccard-4" data-link="equipos.html">
     <div class="card-body" style="position:relative;padding:0 !important;">
       <img src="equipos.png" class="liguilla-img" alt="Equipos" onerror="this.style.display='none'">
       <div class="card-titulo">👕 EQUIPOS</div>
-      <a href="equipos.html" class="car-btn">VER EQUIPOS</a>
     </div>
   </div>
 
-  <div class="card-sec c-liguilla" id="ccard-5">
+  <div class="card-sec c-liguilla" id="ccard-5" data-link="liguilla.html">
     <div class="card-body" style="position:relative;background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <img src="liguilla.png" class="liguilla-img" alt="Liguilla" onerror="this.style.display='none'">
       <div class="card-titulo">🥇 LIGUILLA</div>
-      <a href="liguilla.html" class="car-btn">VER LIGUILLA</a>
     </div>
   </div>
 
@@ -226,7 +206,7 @@
   <!-- ===== FIN CARD EN VIVO ===== -->
 
   <!-- ===== CARD RADIO ===== -->
-  <div class="card-sec c-radio" id="ccard-9">
+  <div class="card-sec c-radio" id="ccard-9" data-link="radio.html">
     <div class="card-body" style="position:relative;padding:0 !important;background-image:url('fondoradio.png');background-size:cover;background-position:center;min-height:440px;overflow:hidden;">
       <div class="card-overlay-color"></div>
       <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 30%,rgba(94,181,13,0.12) 0%,transparent 65%);pointer-events:none;z-index:0;"></div>
@@ -240,13 +220,12 @@
           <span style="width:8px;height:8px;background:#142702;border-radius:50%;animation:blink 1.2s infinite;display:inline-block;"></span> RADIO EN VIVO
         </span>
       </div>
-      <a href="radio.html" class="car-btn" style="position:absolute;bottom:14px;left:18px;right:18px;width:auto;z-index:5;background:rgba(94,181,13,0.2);color:#5eb50d;border:1px solid #5eb50d;">🎧 ESCUCHAR RADIO</a>
     </div>
   </div>
   <!-- ===== FIN CARD RADIO ===== -->
 
   <!-- ===== CARD REGISTRO DE JUGADORES ===== -->
-  <div class="card-sec c-jugadores" id="ccard-10">
+  <div class="card-sec c-jugadores" id="ccard-10" data-link="registro-jugadores.html">
     <div class="card-body" style="position:relative;padding:0 !important;background-image:url('fondonuevo.png');background-size:cover;background-position:center;min-height:440px;overflow:hidden;">
       <div class="card-overlay-color"></div>
       <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 30%,rgba(94,181,13,0.12) 0%,transparent 65%);pointer-events:none;z-index:0;"></div>
@@ -255,7 +234,6 @@
         <div style="font-size:16px;font-weight:900;letter-spacing:2px;text-transform:uppercase;text-align:center;color:#5eb50d;">Registro de<br>Jugadores</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.7;font-family:Arial,sans-serif;">Capitanes: registren a su<br>plantilla con foto, número<br>y posición. 📸⚽</div>
       </div>
-      <a href="registro-jugadores.html" class="car-btn" style="position:absolute;bottom:14px;left:18px;right:18px;width:auto;z-index:5;background:rgba(94,181,13,0.2);color:#5eb50d;border:1px solid #5eb50d;">📋 REGISTRAR JUGADORES</a>
     </div>
   </div>
   <!-- ===== FIN CARD REGISTRO DE JUGADORES =====-->
@@ -355,9 +333,9 @@ async function cargarCarrusel() {
     const top3eq = equipos.slice(0,3);
     let htmlTabla='';
     if (top3eq.length) {
-      const claves = ['piramide-1','piramide-2','piramide-3'];
-      htmlTabla = '<div class="piramide-wrap">';
-      top3eq.forEach((e, i) => { htmlTabla += `<div class="${claves[i]}"><div class="podio-frame"><img src="podio.png" class="podio-bg" onerror="this.style.display='none'"><div class="podio-content-box"><span class="podio-medal-num">${i+1}</span><img src="${carLogos[e.nombre]||''}" class="pc-escudo" onerror="this.style.display='none'"></div></div><div class="podio-info"><div class="podio-nombre2">${e.nombre}</div><div class="podio-pts2">${e.pts} PTS</div></div></div>`; });
+      const claves = ['pn-1','pn-2','pn-3'];
+      htmlTabla = '<div class="podio-nuevo">';
+      top3eq.forEach((e, i) => { htmlTabla += `<div class="pn-escudo ${claves[i]}"><img src="${carLogos[e.nombre]||''}" onerror="this.style.display='none'"></div><div class="pn-pts ${claves[i]}">${e.pts} PTS</div>`; });
       htmlTabla += '</div>';
     }
     document.getElementById('car-tabla').innerHTML=htmlTabla||'<div class="car-cargando">Sin datos</div>';
@@ -514,6 +492,11 @@ function carMover(dir){ irA(((carActivo+dir)%carTotal+carTotal)%carTotal); }
 const carDotsEl=document.getElementById('car-dots');
 carCardsOriginal.forEach((_,i)=>{ const d=document.createElement('div'); d.className='car-dot'+(i===0?' on':''); d.onclick=()=>irA(i); carDotsEl.appendChild(d); });
 carCardsOriginal.forEach((card,i)=>{ card.addEventListener('click',e=>{ if(i!==carActivo){ e.preventDefault(); e.stopPropagation(); irA(i); } }); });
+carCardsOriginal.forEach(card=>{
+  const link=card.dataset.link;
+  if(!link) return;
+  card.addEventListener('dblclick', e=>{ e.preventDefault(); window.location.href=link; });
+});
 carPintar();
 let carTx=0;
 document.getElementById('carrusel-wrap').addEventListener('touchstart',e=>{carTx=e.touches[0].clientX;});
