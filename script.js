@@ -28,6 +28,8 @@ function parseCSV(text){
 
 let logos = {};
 let equiposID = {};
+let bajas = new Set();    // nombres con Status = Baja
+let bajasID = new Set();  // IDs con Status = Baja
 
 async function cargarEquiposDesdeSheet(){
   try{
@@ -36,6 +38,7 @@ async function cargarEquiposDesdeSheet(){
       const id = e.ID_Equipo || e.id_equipo || e.ID || e.id;
       const nombre = e.Nombre || e.nombre;
       const url = e.URL || e.url || e.Logo || e.logo;
+      if ((e.Status || e.status || '').toLowerCase() === 'baja') { if (nombre) bajas.add(nombre); if (id) bajasID.add(String(id)); return; }
       if (nombre) logos[nombre] = url;
       if (id) equiposID[id] = nombre;
     });
@@ -55,7 +58,7 @@ async function cargarTablaGeneral(){
     for(let i=1;i<filas.length;i++){
       const c = filas[i].split(",");
       const nombre = c[1];
-      if(nombre === "Descansa") continue;
+      if(nombre === "Descansa" || bajas.has((nombre||"").trim())) continue;
       equipos.push({
         ranking: Number(c[10]) || 999,
         equipo: nombre,
@@ -83,10 +86,10 @@ const top3equipos = equipos.slice(0, 3);
   equipos.slice(0,3).forEach((e,index)=>{
 
   let posicion =
-    e.ranking == 1 ? "🥇" :
-    e.ranking == 2 ? "🥈" :
-    e.ranking == 3 ? "🥉" :
-    e.ranking;
+    index == 0 ? "🥇" :
+    index == 1 ? "🥈" :
+    index == 2 ? "🥉" :
+    index + 1;
 
   html += `
     <tr>
@@ -147,6 +150,7 @@ async function cargarPartidos(){
     for(let i=1;i<filas.length;i++){
       const c = filas[i].split(",");
       const estado = (c[6] || "").trim();
+      if(bajasID.has((c[2]||"").trim()) || bajasID.has((c[3]||"").trim())) continue; // partido con equipo de baja: no se muestra
       const local = equiposID[Number(c[2])] || "";
       const visita = equiposID[Number(c[3])] || "";
       const partido = {
