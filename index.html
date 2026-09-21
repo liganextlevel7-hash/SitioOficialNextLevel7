@@ -40,14 +40,6 @@
 .c-goles .goleadores-bg { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:0; opacity:1; filter:saturate(1.2) contrast(1.08) brightness(1.03); }
 .c-goles .goleadores-overlay { position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, rgba(10,20,2,0.55) 0%, rgba(10,20,2,0.25) 35%, rgba(10,20,2,0.75) 100%); }
 .c-goles .card-contenido, .c-goles .car-hint { position:relative; z-index:2; }
-.c-goles .card-contenido { flex:0 0 auto; margin-top:6px; }
-.c-goles .piramide-wrap { gap:8px 6px; padding:0; }
-.c-goles .eg-escudo { width:48px; height:48px; }
-.c-goles .piramide-1 .eg-escudo { width:62px; height:62px; }
-.c-goles .eg-nombre { font-size:9.5px; max-width:78px; text-shadow:0 2px 4px rgba(0,0,0,0.9); }
-.c-goles .piramide-1 .eg-nombre { font-size:11.5px; max-width:110px; }
-.c-goles .eg-goles { font-size:10px; text-shadow:0 2px 4px rgba(0,0,0,0.9); }
-.c-goles .piramide-1 .eg-goles { font-size:12.5px; }
 .c-partidos .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-partidos .card-titulo { color:#5eb50d; position:relative; z-index:2; }
 .c-proxima .card-body { background:#142702; position:relative; overflow:hidden; }
@@ -90,15 +82,29 @@
 .car-dots { position:absolute; bottom:0; left:50%; transform:translateX(-50%); display:flex; gap:8px; z-index:50; }
 .car-dot { width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.2); cursor:pointer; transition:all 0.3s; }
 .car-dot.on { background:#5eb50d; transform:scale(1.3); }
+.fifa-mini { width:75px; height:120px; border-radius:10px 10px 6px 6px; position:relative; display:flex; flex-direction:column; align-items:center; overflow:hidden; }
+.fifa-mini.gold   { background:linear-gradient(160deg,#ddc530,#f5a500,#b8720a,#f5d020); border:1.5px solid #5eb50d; box-shadow:0 0 10px #5eb50d; }
+.fifa-mini.silver { background:linear-gradient(160deg,#f0f0f0,#c0c0c0,#808080,#d8d8d8); border:1.5px solid #c0c0c0; box-shadow:0 0 8px #bbb; }
+.fifa-mini.blue   { background:linear-gradient(160deg,#64d0ff,#0288d1,#01579b,#29b6f6); border:1.5px solid #29b6f6; box-shadow:0 0 8px #29b6f6; }
+.fifa-mini .mn-shimmer { position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(255,255,255,0.2) 0%,transparent 50%);pointer-events:none;border-radius:inherit; }
+.fifa-mini .mn-svg  { width:70px; height:80px; z-index:1; }
+.fifa-mini .mn-nombre { font-size:6.5px; font-weight:900; text-align:center; padding:1px 4px; line-height:1.2; z-index:1; text-transform:uppercase; max-width:70px; word-break:break-word; }
+.fifa-mini .mn-sep  { width:80%; height:1px; opacity:0.3; margin:2px 0; z-index:1; }
+.fifa-mini .mn-stats { display:flex; gap:8px; z-index:1; margin-bottom:4px; }
+.fifa-mini .mn-stat { text-align:center; }
+.fifa-mini .mn-val  { font-size:11px; font-weight:900; line-height:1; }
+.fifa-mini .mn-lbl  { font-size:5.5px; opacity:0.8; }
+.fifa-mini.gold .mn-nombre,.fifa-mini.gold .mn-val,.fifa-mini.gold .mn-lbl { color:#3d2200; }
+.fifa-mini.gold .mn-sep { background:#3d2200; }
+.fifa-mini.silver .mn-nombre,.fifa-mini.silver .mn-val,.fifa-mini.silver .mn-lbl { color:#1a1a1a; }
+.fifa-mini.silver .mn-sep { background:#1a1a1a; }
+.fifa-mini.blue .mn-nombre,.fifa-mini.blue .mn-val,.fifa-mini.blue .mn-lbl { color:#fff; }
+.fifa-mini.blue .mn-sep { background:#fff; }
+.fifa-mini-wrap { display:flex; flex-direction:column; align-items:center; gap:4px; }
 .fifa-mini-medal { font-size:20px; }
+.piramide-1 .fifa-mini { width: 95px; height: 150px; }
 .piramide-1 .fifa-mini-medal { font-size: 26px; }
-.eg-item { display:flex; flex-direction:column; align-items:center; gap:6px; }
-.eg-escudo { width:65px; height:65px; object-fit:contain; filter:drop-shadow(0 2px 8px rgba(0,0,0,0.8)); }
-.piramide-1 .eg-escudo { width:92px; height:92px; }
-.eg-nombre { font-size:10.5px; font-weight:900; color:#fff; text-transform:uppercase; text-align:center; line-height:1.2; max-width:95px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.piramide-1 .eg-nombre { font-size:13px; max-width:150px; }
-.eg-goles { font-size:12px; font-weight:800; color:#5eb50d; }
-.piramide-1 .eg-goles { font-size:15px; }
+.piramide-2 .fifa-mini, .piramide-3 .fifa-mini { width: 75px; height: 120px; }
 .piramide-wrap { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 18px 10px; padding: 10px 6px 6px; align-items: end; justify-content: center; }
 .piramide-1 { grid-column: 1 / 3; justify-self: center; }
 .piramide-2 { grid-column: 1; justify-self: end; }
@@ -147,7 +153,7 @@
       <img src="goleadores.png" class="goleadores-bg" alt="">
       <div class="goleadores-overlay"></div>
       <div class="card-titulo">⚽ Top Goleadores</div>
-      <div class="card-contenido" id="car-goles" style="padding:2px 0;"><div class="car-cargando">Cargando...</div></div>
+      <div class="card-contenido" id="car-goles" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:4px 0;"><div class="car-cargando">Cargando...</div></div>
       <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
@@ -293,6 +299,8 @@ let carLogos = {};    // nombre -> logo, se llena solo desde la hoja "Equipos"
 let carEqID  = {};    // ID_Equipo -> nombre
 let carLogosID = {};  // ID_Equipo -> logo
 let carDesc  = {};    // nombre -> descripcion
+let carBajas = new Set();   // nombres con Status = Baja
+let carBajasID = new Set(); // IDs con Status = Baja
 async function cargarCatalogoCarrusel(){
   const resp = await fetch(CAR_EQUIPOS);
   const texto = await resp.text();
@@ -303,6 +311,7 @@ async function cargarCatalogoCarrusel(){
     const id = Number(c[0]);
     const nombre = (c[1] || "").trim();
     if(!nombre) continue;
+    if((c[5] || "").trim().toLowerCase() === "baja"){ carBajas.add(nombre); if(id) carBajasID.add(id); continue; }
     const logoUrl = (c[4] || c[3] || "").trim();
     logosTmp[nombre] = logoUrl;
     descTmp[nombre] = (c[2] || "").trim();
@@ -336,7 +345,7 @@ async function cargarCarrusel() {
     const [resE,resP,resJ,resEv,resPart] = await Promise.all([fetch(CAR_ESTADISTICAS),fetch(CAR_PARTIDOS),fetch(CAR_JUGADORES),fetch(CAR_EVENTOS),fetch(CAR_PARTIC)]);
     const [tE,tP,tJ,tEv,tPart] = await Promise.all([resE.text(),resP.text(),resJ.text(),resEv.text(),resPart.text()]);
     const filasE=tE.trim().split('\n'); const equipos=[];
-    for(let i=1;i<filasE.length;i++){ const c=filasE[i].split(','); const n=(c[1]||'').trim(); if(n==='Descansa'||!n) continue; equipos.push({ranking:Number(c[10])||999,nombre:n,pts:Number(c[9])||0}); }
+    for(let i=1;i<filasE.length;i++){ const c=filasE[i].split(','); const n=(c[1]||'').trim(); if(n==='Descansa'||!n||carBajas.has(n)) continue; equipos.push({ranking:Number(c[10])||999,nombre:n,pts:Number(c[9])||0}); }
     equipos.sort((a,b)=>a.ranking-b.ranking);
     const top3eq = equipos.slice(0,3);
     let htmlTabla='';
@@ -346,7 +355,7 @@ async function cargarCarrusel() {
     }
     document.getElementById('car-tabla').innerHTML=htmlTabla||'<div class="car-cargando">Sin datos</div>';
     const filasP=tP.trim().split('\n'); const jugados=[],programados=[];
-    for(let i=1;i<filasP.length;i++){ const c=filasP[i].split(','); const estado=(c[6]||'').trim(); const local=carEqID[Number(c[2])]||'', visita=carEqID[Number(c[3])]||''; const p={local,visita,gl:c[4]||'',gv:c[5]||'',fecha:(c[8]||'').trim(),hora:(c[9]||'').trim(),cancha:(c[7]||'').trim(),jornada:(c[1]||'').trim()}; if(estado==='Jugado') jugados.push(p); if(estado==='Programado') programados.push(p); }
+    for(let i=1;i<filasP.length;i++){ const c=filasP[i].split(','); const estado=(c[6]||'').trim(); if(carBajasID.has(Number(c[2]))||carBajasID.has(Number(c[3]))) continue; const local=carEqID[Number(c[2])]||'', visita=carEqID[Number(c[3])]||''; const p={local,visita,gl:c[4]||'',gv:c[5]||'',fecha:(c[8]||'').trim(),hora:(c[9]||'').trim(),cancha:(c[7]||'').trim(),jornada:(c[1]||'').trim()}; if(estado==='Jugado') jugados.push(p); if(estado==='Programado') programados.push(p); }
     function fmtHora12(hora24){
       if(!hora24) return '';
       const partes = hora24.split(':');
@@ -450,9 +459,9 @@ async function cargarCarrusel() {
     const jornadasJugadas = new Set();
     filasP.slice(1).forEach(line => { const c = line.split(','); if ((c[6]||'').trim() === 'Jugado' && c[1]) jornadasJugadas.add(c[1].trim()); });
     const totalJornadas = jornadasJugadas.size || 1;
-    const top3=jugadores.filter(j=>golMap[j.ID_Jugador]>0).map(j=>({nombre:j.Nombre||'',equipoID:Number(j.Equipo),numero:j.Numero||'-',goles:golMap[j.ID_Jugador]||0,partidosJugados:partMap[j.ID_Jugador]||0})).sort((a,b)=>b.goles-a.goles).slice(0,3);
+    const top3=jugadores.filter(j=>golMap[j.ID_Jugador]>0&&!carBajasID.has(Number(j.Equipo))).map(j=>({nombre:j.Nombre||'',equipoID:Number(j.Equipo),numero:j.Numero||'-',goles:golMap[j.ID_Jugador]||0,partidosJugados:partMap[j.ID_Jugador]||0})).sort((a,b)=>b.goles-a.goles).slice(0,3);
     let htmlGoles='';
-    if(top3.length){ const claves = ['piramide-1','piramide-2','piramide-3']; htmlGoles = '<div class="piramide-wrap">'; top3.forEach((j,i)=>{ htmlGoles += `<div class="${claves[i]}"><div class="eg-item"><img src="${carLogosID[j.equipoID]||''}" class="eg-escudo" onerror="this.style.display='none'"><div class="eg-nombre">${j.nombre}</div><div class="eg-goles">${j.goles} GOLES</div></div></div>`; }); htmlGoles += '</div>'; } else { htmlGoles='<div class="car-cargando">Sin goles aún</div>'; }
+    if(top3.length){ const tg=['gold','silver','blue'], med=['🥇','🥈','🥉']; const claves = ['piramide-1','piramide-2','piramide-3']; htmlGoles = '<div class="piramide-wrap">'; top3.forEach((j,i)=>{ const pct = Math.min(100, Math.round((j.partidosJugados / totalJornadas) * 100)); htmlGoles += `<div class="${claves[i]}"><div class="fifa-mini-medal">${med[i]}</div><div class="fifa-mini ${tg[i]}"><div class="mn-shimmer"></div><div class="mn-svg">${svgMini(tg[i],j.numero,carLogosID[j.equipoID]||'')}</div><div class="mn-nombre">${j.nombre}</div><div class="mn-sep"></div><div class="mn-stats"><div class="mn-stat"><div class="mn-val">${j.goles}</div><div class="mn-lbl">GOLES</div></div><div class="mn-stat"><div class="mn-val">${pct}%</div><div class="mn-lbl">ASIST</div></div></div></div></div>`; }); htmlGoles += '</div>'; } else { htmlGoles='<div class="car-cargando">Sin goles aún</div>'; }
     document.getElementById('car-goles').innerHTML=htmlGoles;
   } catch(e){ console.error(e); }
 }
