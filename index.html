@@ -40,13 +40,13 @@
 .c-goles .goleadores-bg { width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:0; opacity:1; filter:saturate(1.2) contrast(1.08) brightness(1.03); }
 .c-goles .goleadores-overlay { position:absolute; inset:0; z-index:1; background:linear-gradient(180deg, rgba(10,20,2,0.55) 0%, rgba(10,20,2,0.25) 35%, rgba(10,20,2,0.75) 100%); }
 .c-goles .card-contenido, .c-goles .car-hint { position:relative; z-index:2; }
-.c-goles .card-contenido { margin-top:2px; }
-.c-goles .piramide-wrap { gap:10px 8px; padding:8px 8px 10px; background:rgba(10,20,2,0.6); border-radius:16px; }
+.c-goles .card-contenido { flex:0 0 auto; margin-top:6px; }
+.c-goles .piramide-wrap { gap:8px 6px; padding:0; }
 .c-goles .eg-escudo { width:48px; height:48px; }
 .c-goles .piramide-1 .eg-escudo { width:62px; height:62px; }
-.c-goles .eg-nombre { font-size:9.5px; max-width:78px; }
+.c-goles .eg-nombre { font-size:9.5px; max-width:78px; text-shadow:0 2px 4px rgba(0,0,0,0.9); }
 .c-goles .piramide-1 .eg-nombre { font-size:11.5px; max-width:110px; }
-.c-goles .eg-goles { font-size:10px; }
+.c-goles .eg-goles { font-size:10px; text-shadow:0 2px 4px rgba(0,0,0,0.9); }
 .c-goles .piramide-1 .eg-goles { font-size:12.5px; }
 .c-partidos .card-body { background:#142702; position:relative; overflow:hidden; }
 .c-partidos .card-titulo { color:#5eb50d; position:relative; z-index:2; }
@@ -147,7 +147,7 @@
       <img src="goleadores.png" class="goleadores-bg" alt="">
       <div class="goleadores-overlay"></div>
       <div class="card-titulo">⚽ Top Goleadores</div>
-      <div class="card-contenido" id="car-goles" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:4px 0;"><div class="car-cargando">Cargando...</div></div>
+      <div class="card-contenido" id="car-goles" style="padding:2px 0;"><div class="car-cargando">Cargando...</div></div>
       <div class="car-hint">👆👆 Doble clic para entrar</div>
     </div>
   </div>
