@@ -58,6 +58,11 @@ async function cargarCatalogoEquipos(){
     .dg-neg { color: #ff4444 !important; font-weight: 700 !important; }
     .dg-neu { color: rgba(255,255,255,0.4) !important; }
 
+    .tbl-gn-bar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+    .btn-png-tabla { background: #5eb50d; color: #142702; border: none; border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .btn-png-tabla:hover { background: #ddc530; }
+    .btn-png-tabla:disabled { opacity: 0.6; cursor: default; }
+
     /* POPUP */
     .popup-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
     .popup-overlay.active { display: flex; }
@@ -179,6 +184,7 @@ async function cargarTablaCompleta() {
   }
 
   equipos.sort((a, b) => (Number(a.ranking) || 999) - (Number(b.ranking) || 999));
+  equipos.forEach((e, i) => { e.ranking = i + 1; }); // posición real, sin depender del número que mande la hoja
 
   let rows = '';
   equipos.forEach((e, i) => {
@@ -215,6 +221,7 @@ async function cargarTablaCompleta() {
   window.equiposTabla = equipos;
 
   document.getElementById("tabla-general-completa").innerHTML = `
+  <div class="tbl-gn-bar"><button id="btn-png-tabla" class="btn-png-tabla" onclick="descargarTablaPNG()">Descargar PNG para imprimir</button></div>
   <div class="tbl-gn-wrap">
     <table class="tbl-gn">
       <thead>
@@ -235,6 +242,223 @@ async function cargarTablaCompleta() {
       <tbody>${rows}</tbody>
     </table>
   </div>`;
+}
+
+// ==================== PNG IMPRIMIBLE (horizontal, tamaño A4) ====================
+// Mismo diseño que la tabla de la página: fondo azul marino, dorado, píldoras y zonas Líder / Clasificados / Resto
+const PNG_FONDO = "fondo-tabla.png";   // opcional: si subes esta imagen al repo se usa de fondo
+const PNG_LOGO  = "logo-liga.png.png"; // logo de la liga (opcional)
+
+function cargarImagenPNG(src){
+  return new Promise(res => {
+    if(!src) return res(null);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => res(img);
+    img.onerror = () => res(null);
+    img.src = src;
+  });
+}
+
+function rectRedondo(g, x, y, w, h, r){
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.arcTo(x + w, y, x + w, y + h, r);
+  g.arcTo(x + w, y + h, x, y + h, r);
+  g.arcTo(x, y + h, x, y, r);
+  g.arcTo(x, y, x + w, y, r);
+  g.closePath();
+}
+
+async function descargarTablaPNG(){
+  const lista = window.equiposTabla || [];
+  if(!lista.length) return;
+  const btn = document.getElementById("btn-png-tabla");
+  if(btn){ btn.disabled = true; btn.textContent = "Generando PNG..."; }
+  try{
+    const W = 3508, H = 2480; // A4 horizontal a 300 dpi
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    const F = "Arial, sans-serif";
+
+    const [fondo, logoLiga, ...escudos] = await Promise.all([
+      cargarImagenPNG(PNG_FONDO),
+      cargarImagenPNG(PNG_LOGO),
+      ...lista.map(e => cargarImagenPNG(logos[e.equipo]))
+    ]);
+
+    // Fondo exterior
+    if(fondo){
+      const r = Math.max(W / fondo.width, H / fondo.height);
+      const w = fondo.width * r, h = fondo.height * r;
+      g.drawImage(fondo, (W - w) / 2, (H - h) / 2, w, h);
+      g.fillStyle = "rgba(5,12,24,0.55)";
+      g.fillRect(0, 0, W, H);
+    } else {
+      const bg = g.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, "#06121f");
+      bg.addColorStop(1, "#0d2a10");
+      g.fillStyle = bg;
+      g.fillRect(0, 0, W, H);
+    }
+
+    // Panel azul marino con borde verde
+    const px = 110, pw = W - 220, pTop = 80, pBottom = 2370;
+    g.save();
+    g.shadowColor = "rgba(94,181,13,0.6)"; g.shadowBlur = 40;
+    rectRedondo(g, px, pTop, pw, pBottom - pTop, 50);
+    g.fillStyle = "#0a1830"; g.fill();
+    g.restore();
+    rectRedondo(g, px, pTop, pw, pBottom - pTop, 50);
+    g.strokeStyle = "#5eb50d"; g.lineWidth = 6; g.stroke();
+
+    // Título
+    g.textBaseline = "middle";
+    g.textAlign = "center";
+    g.fillStyle = "#5eb50d";
+    g.font = "bold 96px " + F;
+    g.fillText("\uD83C\uDFC6 Tabla General Completa", W / 2, 195);
+    if(logoLiga){
+      const lh = 170, lw = logoLiga.width * (lh / logoLiga.height);
+      g.drawImage(logoLiga, px + 70, 110, lw, lh);
+    }
+    g.textAlign = "right";
+    g.fillStyle = "rgba(255,255,255,0.55)";
+    g.font = "42px " + F;
+    g.fillText("Actualizada al " + new Date().toLocaleDateString("es-MX"), px + pw - 70, 195);
+
+    // Columnas
+    const cols = [["JJ","jj",230],["JG","jg",230],["JE","je",230],["JP","jp",230],["GF","gf",230],["GC","gc",230],["+/-","dg",240],["PTS","pts",300]];
+    const numW = cols.reduce((a, c) => a + c[2], 0);
+    const numX = px + pw - 50 - numW;
+    const headTop = 300, headH = 80;
+    const rowsTop = headTop + headH;
+    const n = lista.length;
+    const rowH = Math.min(140, (pBottom - 30 - rowsTop) / n);
+
+    // Encabezados
+    g.fillStyle = "rgba(255,215,0,0.7)";
+    g.font = "bold 36px " + F;
+    if("letterSpacing" in g) g.letterSpacing = "6px";
+    g.textAlign = "center";
+    g.fillText("NO", px + 180, headTop + headH / 2);
+    g.textAlign = "left";
+    g.fillText("EQUIPO", px + 260, headTop + headH / 2);
+    g.textAlign = "center";
+    let hx = numX;
+    cols.forEach(c => { g.fillText(c[0], hx + c[2] / 2, headTop + headH / 2); hx += c[2]; });
+    if("letterSpacing" in g) g.letterSpacing = "0px";
+    g.strokeStyle = "rgba(255,215,0,0.3)"; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(px + 30, rowsTop); g.lineTo(px + pw - 30, rowsTop); g.stroke();
+
+    // Filas
+    lista.forEach((e, i) => {
+      const y = rowsTop + i * rowH;
+      const cy = y + rowH / 2;
+
+      // separador fino entre filas
+      g.strokeStyle = "rgba(255,255,255,0.06)"; g.lineWidth = 2;
+      g.beginPath(); g.moveTo(px + 30, y + rowH); g.lineTo(px + pw - 30, y + rowH); g.stroke();
+      // líneas doradas: después del líder y después del 4.º lugar
+      if((i === 1 || i === 4) && n > i){
+        g.strokeStyle = "rgba(255,215,0,0.45)"; g.lineWidth = 4;
+        g.beginPath(); g.moveTo(px + 30, y); g.lineTo(px + pw - 30, y); g.stroke();
+      }
+      // borde dorado a la izquierda: líder y clasificados
+      if(i < 4){ g.fillStyle = "#ffd700"; g.fillRect(px + 30, y, 8, rowH); }
+
+      // Número de posición
+      const rx = px + 180;
+      g.beginPath(); g.arc(rx, cy, 38, 0, Math.PI * 2);
+      let txt;
+      if(i === 0){ g.fillStyle = "#ffd700"; g.fill(); txt = "#3d2200"; }
+      else if(i === 1){ g.fillStyle = "#c0c0c0"; g.fill(); txt = "#1a1a1a"; }
+      else if(i === 2){ g.fillStyle = "#cd7f32"; g.fill(); txt = "#ffffff"; }
+      else if(i < 4){ g.fillStyle = "rgba(255,215,0,0.15)"; g.fill(); g.strokeStyle = "rgba(255,215,0,0.5)"; g.lineWidth = 3; g.stroke(); txt = "#ffd700"; }
+      else { g.fillStyle = "rgba(255,255,255,0.08)"; g.fill(); txt = "rgba(255,255,255,0.5)"; }
+      g.fillStyle = txt; g.textAlign = "center";
+      g.font = "bold 42px " + F;
+      g.fillText(String(i + 1), rx, cy + 2);
+
+      // Escudo
+      const sz = rowH - 24, sx = px + 260, sy = y + 12;
+      const im = escudos[i];
+      if(im){
+        const k = Math.min(sz / im.width, sz / im.height);
+        g.drawImage(im, sx + (sz - im.width * k) / 2, sy + (sz - im.height * k) / 2, im.width * k, im.height * k);
+      } else {
+        g.strokeStyle = "rgba(255,255,255,0.2)"; g.lineWidth = 3;
+        g.beginPath(); g.arc(sx + sz / 2, cy, sz / 2 - 4, 0, Math.PI * 2); g.stroke();
+      }
+
+      // Nombre (mayúsculas como en la página; se achica si no cabe)
+      const nx = sx + sz + 40, maxNombre = numX - nx - 30;
+      const nombre = String(e.equipo).toUpperCase();
+      let fs = 56;
+      g.textAlign = "left"; g.fillStyle = "rgba(255,255,255,0.9)";
+      g.font = "bold " + fs + "px " + F;
+      while(g.measureText(nombre).width > maxNombre && fs > 30){ fs -= 2; g.font = "bold " + fs + "px " + F; }
+      g.fillText(nombre, nx, cy + 2);
+
+      // Números
+      let cx = numX;
+      cols.forEach(c => {
+        const mid = cx + c[2] / 2;
+        cx += c[2];
+        g.textAlign = "center";
+        if(c[1] === "pts"){
+          g.fillStyle = "#ffffff"; g.font = "bold 76px " + F;
+          g.fillText(String(e.pts), mid, cy + 3);
+        } else if(c[1] === "dg"){
+          const d = Number(e.dg);
+          g.fillStyle = d > 0 ? "#ffd700" : d < 0 ? "#ff4444" : "rgba(255,255,255,0.4)";
+          g.font = "bold 46px " + F;
+          g.fillText(d > 0 ? "+" + d : String(d), mid, cy + 2);
+        } else {
+          rectRedondo(g, mid - 62, cy - 32, 124, 64, 32);
+          g.fillStyle = "rgba(255,255,255,0.08)"; g.fill();
+          g.fillStyle = "rgba(255,255,255,0.75)"; g.font = "bold 40px " + F;
+          g.fillText(String(e[c[1]]), mid, cy + 2);
+        }
+      });
+    });
+
+    // Etiquetas verticales de zona (Líder / Clasificados / Resto)
+    function zona(texto, filaIni, filaFin){
+      const yMid = rowsTop + ((filaIni + filaFin + 1) / 2) * rowH;
+      g.save();
+      g.translate(px + 85, yMid);
+      g.rotate(-Math.PI / 2);
+      g.fillStyle = "rgba(255,255,255,0.4)";
+      g.font = "bold 30px " + F;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      if("letterSpacing" in g) g.letterSpacing = "4px";
+      g.fillText(texto.toUpperCase(), 0, 0);
+      g.restore();
+    }
+    zona("Líder", 0, 0);
+    if(n > 1) zona("Clasificados", 1, Math.min(3, n - 1));
+    if(n > 4) zona("Resto", 4, Math.min(6, n - 1));
+
+    // Leyenda
+    g.textBaseline = "middle"; g.textAlign = "center";
+    if("letterSpacing" in g) g.letterSpacing = "0px";
+    g.fillStyle = "rgba(255,255,255,0.6)"; g.font = "38px " + F;
+    g.fillText("JJ jugados, JG ganados, JE empatados, JP perdidos, GF goles a favor, GC goles en contra, +/- diferencia de goles, PTS puntos", W / 2, 2425);
+
+    const blob = await new Promise(res => cv.toBlob(res, "image/png"));
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "Tabla-General-Liga-Next-Level-7.png";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }catch(err){
+    console.error("Error generando PNG:", err);
+    alert("No se pudo generar el PNG. Revisa la consola.");
+  }finally{
+    if(btn){ btn.disabled = false; btn.textContent = "Descargar PNG para imprimir"; }
+  }
 }
 
 cargarTablaCompleta();
