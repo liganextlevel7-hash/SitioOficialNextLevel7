@@ -5,6 +5,7 @@ const URL_EQUIPOS =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv";
 
 let logos = {}; // nombre -> logo, se llena solo desde la hoja "Equipos"
+let bajas = new Set(); // nombres de equipos con Status = Baja (no se muestran)
 
 async function cargarCatalogoEquipos(){
   const respuesta = await fetch(URL_EQUIPOS);
@@ -15,6 +16,7 @@ async function cargarCatalogoEquipos(){
     const c = filas[i].split(",");
     const nombre = (c[1] || "").trim();
     if(!nombre) continue;
+    if((c[5] || "").trim().toLowerCase() === "baja"){ bajas.add(nombre); continue; }
     const logoUrl = (c[4] || c[3] || "").trim();
     logosTmp[nombre] = logoUrl;
   }
@@ -161,7 +163,7 @@ async function cargarTablaCompleta() {
   for (let i = 1; i < filas.length; i++) {
     const c = filas[i].split(",");
     const nombre = c[1]?.trim();
-    if (!nombre || nombre === "Descansa") continue;
+    if (!nombre || nombre === "Descansa" || bajas.has(nombre)) continue;
     equipos.push({
       ranking: c[10]?.trim() || "-",
       equipo:  nombre,
