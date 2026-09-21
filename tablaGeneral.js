@@ -91,7 +91,7 @@ async function cargarCatalogoEquipos(){
       .td-pts { font-size: 14px !important; }
       .col-hide { display: none; }
       .pill { font-size: 10px; padding: 2px 5px; min-width: 20px; }
-      .tbl-gn tbody tr { cursor: pointer; }
+      .tbl-gn tbody tr { cursor: pointer; touch-action: manipulation; }
     }
     @media(min-width: 601px) {
       .tbl-gn tbody tr { cursor: default; }
@@ -133,6 +133,19 @@ function crearPopup() {
   document.body.appendChild(overlay);
   document.getElementById("popup-close-btn").addEventListener("click", cerrarPopup);
   overlay.addEventListener("click", e => { if (e.target === overlay) cerrarPopup(); });
+}
+
+// En celular el popup se abre con doble toque (un toque suelto no hace nada, así no estorba al deslizar)
+let ultimoToqueFila = { i: -1, t: 0 };
+function tocarFilaEquipo(i) {
+  if (window.innerWidth > 600) return;
+  const ahora = Date.now();
+  if (ultimoToqueFila.i === i && ahora - ultimoToqueFila.t < 450) {
+    ultimoToqueFila = { i: -1, t: 0 };
+    abrirPopup(window.equiposTabla[i]);
+  } else {
+    ultimoToqueFila = { i: i, t: ahora };
+  }
 }
 
 function abrirPopup(e) {
@@ -198,7 +211,7 @@ async function cargarTablaCompleta() {
     const zoneLabel = i === 0 ? 'Líder' : i === 1 ? 'Clasificados' : i === 4 ? 'Resto' : '';
 
     rows += `
-    <tr class="${rowClass} ${sepClass}" onclick="abrirPopup(equiposTabla[${i}])" ontouchstart="abrirPopup(equiposTabla[${i}])">
+    <tr class="${rowClass} ${sepClass}" onclick="tocarFilaEquipo(${i})">
       <td class="td-zone">${zoneLabel ? `<span class="zone-label">${zoneLabel}</span>` : ''}</td>
       <td><span class="rank-circle ${rankClass}">${i + 1}</span></td>
       <td class="td-team">
