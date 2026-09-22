@@ -205,10 +205,10 @@ async function cargarTablaCompleta() {
     const dg = Number(e.dg);
     const dgStr = dg > 0 ? `+${dg}` : `${dg}`;
     const dgClass = dg > 0 ? 'dg-pos' : dg < 0 ? 'dg-neg' : 'dg-neu';
-    const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : i < 4 ? 'rank-top' : 'rank-normal';
-    const rowClass = i === 0 ? 'row-lider' : i < 4 ? 'row-clasificado' : '';
-    const sepClass = i === 1 ? 'sep-lider' : i === 4 ? 'sep-clasificado' : '';
-    const zoneLabel = i === 0 ? 'Líder' : i === 1 ? 'Clasificados' : i === 4 ? 'Resto' : '';
+    const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : i < 8 ? 'rank-top' : 'rank-normal';
+    const rowClass = i === 0 ? 'row-lider' : i < 8 ? 'row-clasificado' : '';
+    const sepClass = i === 1 ? 'sep-lider' : i === 8 ? 'sep-clasificado' : '';
+    const zoneLabel = i === 0 ? 'Líder' : i === 1 ? 'Clasificados' : i === 8 ? 'Resto' : '';
 
     rows += `
     <tr class="${rowClass} ${sepClass}" onclick="tocarFilaEquipo(${i})">
