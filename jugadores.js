@@ -1,3 +1,4 @@
+const CAMISETA_GENERICA = "camiseta-generica.png"; // jersey de fondo cuando no hay foto del jugador
 const URL_JUGADORES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1940220650&single=true&output=csv";
 const URL_EVENTOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=645868286&single=true&output=csv";
 const URL_PARTICIPACIONES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv";
@@ -69,8 +70,8 @@ function playerCardHTML(j, goles, asistencias, amarillas, rojas) {
       </div>
       <div class="pcard-center">
         <div class="pcard-jersey-wrap">
-          <div class="pcard-jersey-svg">${jerseySVG(j.numero || '-')}</div>
-          <img src="${j.foto}" class="pcard-foto-circle" onerror="this.src='${j.logo}'">
+          <img src="${CAMISETA_GENERICA}" class="pcard-jersey-svg">
+          <img src="${j.foto || CAMISETA_GENERICA}" class="pcard-foto-circle" onerror="this.src='${CAMISETA_GENERICA}'">
         </div>
       </div>
     </div>
@@ -85,8 +86,8 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
   return `
   <div class="jugador-card">
     <div class="jugador-jersey-wrap">
-      <div class="jugador-jersey-svg">${jerseySVG(j.numero)}</div>
-      <img src="${j.foto}" class="jugador-foto-circle" onerror="this.src='${j.logo}'">
+      <img src="${CAMISETA_GENERICA}" class="jugador-jersey-svg">
+      <img src="${j.foto || CAMISETA_GENERICA}" class="jugador-foto-circle" onerror="this.src='${CAMISETA_GENERICA}'">
     </div>
     <div class="jugador-info">
       <h3>${j.nombre}</h3>
@@ -148,7 +149,7 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     .pcard-val { font-size: 20px; font-weight: 900; color: #fff; line-height: 1.1; }
     .pcard-center { flex: 1; display: flex; justify-content: center; min-width: 0; }
     .pcard-jersey-wrap { position: relative; width: 120px; height: 130px; max-width: 100%; }
-    .pcard-jersey-svg { width: 100%; height: 100%; }
+    .pcard-jersey-svg { width: 100%; height: 100%; object-fit: contain; object-position: bottom; }
     .pcard-foto-circle {
       position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
       width: 62px; height: 62px; border-radius: 50%; object-fit: cover;
@@ -180,7 +181,7 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
       width: 100%; height: 100%; box-sizing: border-box;
     }
     .jugador-jersey-wrap { position: relative; width: 130px; height: 140px; max-width: 100%; }
-    .jugador-jersey-svg { width: 100%; height: 100%; }
+    .jugador-jersey-svg { width: 100%; height: 100%; object-fit: contain; object-position: bottom; }
     .jugador-foto-circle {
       position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
       width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
@@ -384,7 +385,7 @@ async function cargarJugadores() {
     jugadores.push({
       id: c[0]?.trim(), nombre: c[1]?.trim(), equipo: c[2]?.trim(),
       numero: c[3]?.trim(), posicion: c[4]?.trim() || '',
-      logo: c[5]?.trim(), foto: c[7]?.trim() ? c[7].trim() : c[5]?.trim()
+      logo: c[5]?.trim(), foto: c[7]?.trim() || ''
     });
   }
 
