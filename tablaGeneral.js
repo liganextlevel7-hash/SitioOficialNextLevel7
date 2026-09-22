@@ -352,7 +352,7 @@ async function descargarTablaPNG(){
 
     // Encabezados
     g.fillStyle = "rgba(255,215,0,0.7)";
-    g.font = "bold 36px " + F;
+    g.font = "bold 42px " + F;
     if("letterSpacing" in g) g.letterSpacing = "6px";
     g.textAlign = "center";
     g.fillText("NO", px + 180, headTop + headH / 2);
@@ -374,12 +374,12 @@ async function descargarTablaPNG(){
       g.strokeStyle = "rgba(255,255,255,0.06)"; g.lineWidth = 2;
       g.beginPath(); g.moveTo(px + 30, y + rowH); g.lineTo(px + pw - 30, y + rowH); g.stroke();
       // líneas doradas: después del líder y después del 4.º lugar
-      if((i === 1 || i === 4) && n > i){
+      if((i === 1 || i === 8) && n > i){
         g.strokeStyle = "rgba(255,215,0,0.45)"; g.lineWidth = 4;
         g.beginPath(); g.moveTo(px + 30, y); g.lineTo(px + pw - 30, y); g.stroke();
       }
       // borde dorado a la izquierda: líder y clasificados
-      if(i < 4){ g.fillStyle = "#ffd700"; g.fillRect(px + 30, y, 8, rowH); }
+      if(i < 8){ g.fillStyle = "#ffd700"; g.fillRect(px + 30, y, 8, rowH); }
 
       // Número de posición
       const rx = px + 180;
@@ -388,7 +388,7 @@ async function descargarTablaPNG(){
       if(i === 0){ g.fillStyle = "#ffd700"; g.fill(); txt = "#3d2200"; }
       else if(i === 1){ g.fillStyle = "#c0c0c0"; g.fill(); txt = "#1a1a1a"; }
       else if(i === 2){ g.fillStyle = "#cd7f32"; g.fill(); txt = "#ffffff"; }
-      else if(i < 4){ g.fillStyle = "rgba(255,215,0,0.15)"; g.fill(); g.strokeStyle = "rgba(255,215,0,0.5)"; g.lineWidth = 3; g.stroke(); txt = "#ffd700"; }
+      else if(i < 8){ g.fillStyle = "rgba(255,215,0,0.15)"; g.fill(); g.strokeStyle = "rgba(255,215,0,0.5)"; g.lineWidth = 3; g.stroke(); txt = "#ffd700"; }
       else { g.fillStyle = "rgba(255,255,255,0.08)"; g.fill(); txt = "rgba(255,255,255,0.5)"; }
       g.fillStyle = txt; g.textAlign = "center";
       g.font = "bold 42px " + F;
@@ -426,13 +426,13 @@ async function descargarTablaPNG(){
         } else if(c[1] === "dg"){
           const d = Number(e.dg);
           g.fillStyle = d > 0 ? "#ffd700" : d < 0 ? "#ff4444" : "rgba(255,255,255,0.4)";
-          g.font = "bold 46px " + F;
+          g.font = "bold 56px " + F;
           g.fillText(d > 0 ? "+" + d : String(d), mid, cy + 2);
         } else {
-          rectRedondo(g, mid - 62, cy - 32, 124, 64, 32);
+          rectRedondo(g, mid - 70, cy - 38, 140, 76, 36);
           g.fillStyle = "rgba(255,255,255,0.08)"; g.fill();
-          g.fillStyle = "rgba(255,255,255,0.75)"; g.font = "bold 40px " + F;
-          g.fillText(String(e[c[1]]), mid, cy + 2);
+          g.fillStyle = "rgba(255,255,255,0.9)"; g.font = "bold 50px " + F;
+          g.fillText(String(e[c[1]]), mid, cy + 3);
         }
       });
     });
@@ -451,8 +451,8 @@ async function descargarTablaPNG(){
       g.restore();
     }
     zona("Líder", 0, 0);
-    if(n > 1) zona("Clasificados", 1, Math.min(3, n - 1));
-    if(n > 4) zona("Resto", 4, Math.min(6, n - 1));
+    if(n > 1) zona("Clasificados", 1, Math.min(7, n - 1));
+    if(n > 8) zona("Resto", 8, Math.min(10, n - 1));
 
     // Leyenda
     g.textBaseline = "middle"; g.textAlign = "center";
