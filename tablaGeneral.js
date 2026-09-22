@@ -199,6 +199,10 @@ async function cargarTablaCompleta() {
   equipos.sort((a, b) => (Number(a.ranking) || 999) - (Number(b.ranking) || 999));
   equipos.forEach((e, i) => { e.ranking = i + 1; }); // posición real, sin depender del número que mande la hoja
 
+  const n = equipos.length;
+  const finClasif = Math.min(7, n - 1); // última fila (índice) que entra en "Clasificados"
+  const inicioResto = 8;
+
   let rows = '';
   equipos.forEach((e, i) => {
     const logo = logos[e.equipo] || '';
@@ -208,11 +212,23 @@ async function cargarTablaCompleta() {
     const rankClass = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : i < 8 ? 'rank-top' : 'rank-normal';
     const rowClass = i === 0 ? 'row-lider' : i < 8 ? 'row-clasificado' : '';
     const sepClass = i === 1 ? 'sep-lider' : i === 8 ? 'sep-clasificado' : '';
-    const zoneLabel = i === 0 ? 'Líder' : i === 1 ? 'Clasificados' : i === 8 ? 'Resto' : '';
+    // La etiqueta de zona usa rowspan para quedar centrada en TODAS sus filas, no solo en una
+    let zoneCell = '';
+    if (i === 0) {
+      zoneCell = `<td class="td-zone" rowspan="1"><span class="zone-label">Líder</span></td>`;
+    } else if (i === 1) {
+      zoneCell = `<td class="td-zone" rowspan="${finClasif}"><span class="zone-label">Clasificados</span></td>`;
+    } else if (i === inicioResto && n > inicioResto) {
+      zoneCell = `<td class="td-zone" rowspan="${n - inicioResto}"><span class="zone-label">Resto</span></td>`;
+    } else if (i > 1 && i <= finClasif) {
+      zoneCell = ''; // cubierta por el rowspan de la fila 2
+    } else if (i > inicioResto) {
+      zoneCell = ''; // cubierta por el rowspan de la fila 9
+    }
 
     rows += `
     <tr class="${rowClass} ${sepClass}" onclick="tocarFilaEquipo(${i})">
-      <td class="td-zone">${zoneLabel ? `<span class="zone-label">${zoneLabel}</span>` : ''}</td>
+      ${zoneCell}
       <td><span class="rank-circle ${rankClass}">${i + 1}</span></td>
       <td class="td-team">
         <div class="team-inner">
