@@ -85,18 +85,15 @@ function playerCardHTML(j, goles, asistencias, amarillas, rojas) {
 function jugadorCardHTML(j, goles, porcentaje, suspendido) {
   return `
   <div class="jugador-card">
-    <div class="jugador-jersey-wrap">
-      <img src="${CAMISETA_GENERICA}" class="jugador-jersey-svg">
-      <img src="${j.foto || CAMISETA_GENERICA}" class="jugador-foto-circle" onerror="this.src='${CAMISETA_GENERICA}'">
+    <img src="${j.foto || CAMISETA_GENERICA}" class="jugador-foto-full" onerror="this.src='${CAMISETA_GENERICA}'">
+    <div class="jugador-stats-lateral">
+      <div class="stat"><span>⚽</span><strong>${goles}</strong><small>GOLES</small></div>
+      <div class="stat"><span>🎯</span><strong>${porcentaje}%</strong><small>ASIST</small></div>
+      <div class="stat"><span>⛔</span><strong>${suspendido}</strong><small>SUSP</small></div>
     </div>
-    <div class="jugador-info">
+    <div class="jugador-info-bottom">
       <h3>${j.nombre}</h3>
-      <span class="jugador-posicion">${j.posicion}</span>
-    </div>
-    <div class="jugador-stats">
-      <div class="stat"><span>⚽</span><strong>${goles}</strong><small>Goles</small></div>
-      <div class="stat"><span>🎯</span><strong>${porcentaje}%</strong><small>Asist</small></div>
-      <div class="stat"><span>⛔</span><strong>${suspendido}</strong><small>Susp</small></div>
+      ${j.posicion ? `<span class="jugador-posicion">${j.posicion}</span>` : ''}
     </div>
   </div>`;
 }
@@ -171,36 +168,44 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
       font-size: 10px; font-weight: 700; margin-top: 5px;
     }
 
-    /* ===== JUGADOR CARD (por equipo, base sin cambios) ===== */
+    /* ===== JUGADOR CARD (por equipo): foto completa, sin círculo ===== */
     .jugador-card {
-      background: rgba(0,0,0,0.75); border: 2px solid #ffd700;
-      border-radius: 18px; padding: 12px; text-align: center;
-      color: white; box-shadow: 0 0 12px #ffd700;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 8px;
-      width: 100%; height: 100%; box-sizing: border-box;
+      position: relative; width: 100%; aspect-ratio: 3 / 4;
+      border: 2px solid #ffd700; border-radius: 18px;
+      overflow: hidden; box-shadow: 0 0 12px #ffd700;
+      background: #0a0a0a; box-sizing: border-box;
     }
-    .jugador-jersey-wrap { position: relative; width: 130px; height: 140px; max-width: 100%; }
-    .jugador-jersey-svg { width: 100%; height: 100%; object-fit: contain; object-position: bottom; }
-    .jugador-foto-circle {
-      position: absolute; top: -28px; left: 50%; transform: translateX(-50%);
-      width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
-      border: 3px solid #ffd700; box-shadow: 0 0 10px #ffd700; background: #111;
+    .jugador-foto-full {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: top center; display: block;
     }
-    .jugador-info h3 { margin: 4px 0 0 0; font-size: 13px; color: #fff; font-weight: bold; }
+    .jugador-stats-lateral {
+      position: absolute; top: 10px; left: 8px; z-index: 2;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .jugador-stats-lateral .stat {
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(2px);
+      border: 1px solid rgba(255,215,0,0.4); border-radius: 8px;
+      padding: 5px 7px; text-align: center; min-width: 46px;
+    }
+    .jugador-stats-lateral .stat span { display: block; font-size: 12px; }
+    .jugador-stats-lateral .stat strong { display: block; font-size: 13px; color: #ffd700; font-weight: 900; line-height: 1.15; }
+    .jugador-stats-lateral .stat small { display: block; font-size: 7.5px; color: #ddd; letter-spacing: 0.5px; }
+    .jugador-info-bottom {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+      padding: 26px 10px 10px;
+      background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0.92) 100%);
+      text-align: center;
+    }
+    .jugador-info-bottom h3 {
+      margin: 0; font-size: 13px; color: #fff; font-weight: 900;
+      text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 1px 3px #000;
+    }
     .jugador-posicion {
       display: inline-block; background: #ffd700; color: black;
-      padding: 2px 10px; border-radius: 12px; font-size: 11px;
-      font-weight: bold; margin-top: 4px;
+      padding: 2px 10px; border-radius: 12px; font-size: 10px;
+      font-weight: bold; margin-top: 5px;
     }
-    .jugador-stats {
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
-      gap: 4px; width: 100%; margin-top: 4px;
-    }
-    .jugador-stats .stat { background: rgba(255,255,255,0.07); border-radius: 8px; padding: 5px 3px; text-align: center; }
-    .jugador-stats .stat span { display: block; font-size: 14px; }
-    .jugador-stats .stat strong { display: block; font-size: 13px; color: #ffd700; font-weight: 900; }
-    .jugador-stats .stat small { display: block; font-size: 9px; color: #aaa; }
 
     /* ===== CARRUSEL 3D ===== */
     .pj-carrusel-wrap {
@@ -281,9 +286,10 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
       .pcard-foto-circle { width: 44px; height: 44px; top: -15px; }
       .pcard-nombre { font-size: 11px; }
 
-      .jugador-jersey-wrap { width: 110px; height: 118px; }
-      .jugador-foto-circle { width: 50px; height: 50px; top: -24px; }
-      .jugador-info h3 { font-size: 11px; }
+      .jugador-stats-lateral .stat { padding: 4px 5px; min-width: 38px; }
+      .jugador-stats-lateral .stat strong { font-size: 11px; }
+      .jugador-stats-lateral .stat small { font-size: 6.5px; }
+      .jugador-info-bottom h3 { font-size: 11px; }
     }
   `;
   document.head.appendChild(style);
