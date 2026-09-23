@@ -3,22 +3,29 @@ const URL_EVENTOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-
 const URL_PARTICIPACIONES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv";
 const URL_PARTIDOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv";
 
-const equiposID = {
-  1:"Unión 8", 2:"Cuervos F.C", 3:"Pumas KAP", 4:"Soldados Del Amor",
-  5:"Los Chipotles", 6:"La Garra", 7:"Gusanitos", 8:"Rivera F.C.",
-  9:"Real Alcoholicos", 10:"Gambeta F.C.", 11:"USG Warriors",
-  12:"Real Mala Copa", 13:"Puebla 450"
-};
+const SHEET_ID_EQUIPOS = "1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE";
+const GID_EQUIPOS = "1894947293";
+const URL_EQUIPOS_NL7 = `https://docs.google.com/spreadsheets/d/${SHEET_ID_EQUIPOS}/export?format=csv&gid=${GID_EQUIPOS}`;
 
-const logosEquipos = {
-  1:"https://i.imgur.com/Qrx4JSj.png", 2:"https://i.imgur.com/fGQAhE5.png",
-  3:"https://i.imgur.com/5TAVBS7.png", 4:"https://i.imgur.com/gBvmM4v.png",
-  5:"https://i.imgur.com/KTMLCv9.png", 6:"https://i.imgur.com/8BWFWBW.png",
-  7:"https://i.imgur.com/5TARJkD.png", 8:"https://i.imgur.com/5OdgpY3.png",
-  9:"https://i.imgur.com/TUYE08R.png", 10:"https://i.imgur.com/V9MmhZh.png",
-  11:"https://i.imgur.com/m3BIxVG.png", 12:"https://i.imgur.com/gBZxWD0.png",
-  13:"https://i.imgur.com/YsJU3aK.png"
-};
+let equiposID = {};
+let logosEquipos = {};
+
+async function cargarEquiposNL7() {
+  const res = await fetch(URL_EQUIPOS_NL7);
+  const txt = await res.text();
+  const filas = txt.replace(/\r/g,'').trim().split("\n");
+  const idTmp = {}, logoTmp = {};
+  for (let i = 1; i < filas.length; i++) {
+    const c = filas[i].split(",");
+    const id = c[0]?.trim();
+    const nombre = c[1]?.trim();
+    if (!id || !nombre) continue;
+    idTmp[id] = nombre;
+    logoTmp[id] = (c[4]?.trim() || c[3]?.trim() || '');
+  }
+  equiposID = idTmp;
+  logosEquipos = logoTmp;
+}
 
 function playerCardHTML(j, goles, asistencias, amarillas, rojas) {
   const equipoNombre = equiposID[Number(j.equipo)] || '';
@@ -296,6 +303,8 @@ function crearCarrusel(containerId, cardsHTML) {
 }
 
 async function cargarJugadores() {
+  await cargarEquiposNL7();
+
   const [resJ, resE, resP, resPart] = await Promise.all([
     fetch(URL_JUGADORES), fetch(URL_EVENTOS),
     fetch(URL_PARTICIPACIONES), fetch(URL_PARTIDOS)
