@@ -390,7 +390,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
     const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
     const estado = (p['Estado'] || '').trim();
     const fecha = p['Fecha'] || '';
-    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}` : '';
+    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}${p['Vuelta'] ? ' · Vuelta ' + (p['Vuelta']==='2'?'2':'1') : ''}` : '';
     const hora = p['Hora'] ? formatHora(p['Hora']) : '';
     const cancha = p['Cancha'] || '';
     const jugado = estado === 'Jugado' && gL !== null && gV !== null;
@@ -410,11 +410,12 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
           <img src="${urlL}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
         </div>
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:3px;">
-          ${jornadaFila ? `<div style="font-size:12px;color:#e8e8e8;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${jornadaFila}</div>` : ''}
+          ${jornadaFila ? `<div style="font-size:10px;color:#5eb50d;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">${jornadaFila}</div>` : ''}
           ${fecha ? `<div style="font-size:13px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
           <div style="width:18px;height:2px;background:#5eb50d;border-radius:2px;margin:2px auto;"></div>
           ${centerHTML}
-          ${hora ? `<div style="font-size:14px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}${cancha?' · '+cancha:''}</div>` : ''}
+          ${hora ? `<div style="font-size:14px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}</div>` : ''}
+          ${cancha ? `<div style="font-size:11px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${cancha}</div>` : ''}
         </div>
         <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;flex:1;min-width:0;">
           <img src="${urlV}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
@@ -532,6 +533,182 @@ async function downloadPNG() {
 
   btn.textContent = '⬇ Descargar Lista como PNG';
   btn.disabled = false;
+}
+
+
+// ===== VARIANTE 2: escudo/nombre más chicos, usando el color de playera (Color_Playera) =====
+function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa) {
+  const eqMap = {};
+  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
+
+  const inner = document.createElement('div');
+  inner.style.cssText = `
+    position:relative;
+    width:700px;
+    min-height:900px;
+    background-image:url('fondonuevo.png');
+    background-size:cover;
+    background-position:center;
+    padding:28px 24px 32px;
+    box-sizing:border-box;
+  `;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;`;
+  inner.appendChild(overlay);
+
+  const content = document.createElement('div');
+  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
+
+  const paginaTxt = totalPaginas > 1 ? ` · Página ${numPagina}/${totalPaginas}` : '';
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
+    <div style="text-align:center;margin-top:14px;margin-bottom:6px;display:flex;flex-direction:column;align-items:center;gap:5px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,0.5),0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.nombre}</div>
+      <div style="font-family:'Roboto',Arial,sans-serif;font-size:13px;font-weight:700;color:#d5a610;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.descripcion}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,0.8);">DESCANSA ESTA JORNADA</div>
+    </div>
+  ` : '';
+  content.innerHTML = `
+    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
+    </div>
+    ${descansaHTML}
+    <div id="reporte-filas-v2" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
+  `;
+
+  const filasWrap = content.querySelector('#reporte-filas-v2');
+  paginaPartidos.forEach((p, i) => {
+    const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
+    const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
+    const nomL = (eqL['Nombre'] || `Equipo ${p['Equipo_Local']}`).toUpperCase();
+    const nomV = (eqV['Nombre'] || `Equipo ${p['Equipo_Visita']}`).toUpperCase();
+    // Color_Playera (columna G de Equipos); si un equipo aún no la tiene cargada, usamos su escudo (URL) de respaldo
+    const colorL = eqL['Color_Playera'] || '';
+    const colorV = eqV['Color_Playera'] || '';
+    const urlL = eqL['URL'] || '';
+    const urlV = eqV['URL'] || '';
+    const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : null;
+    const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
+    const estado = (p['Estado'] || '').trim();
+    const fecha = p['Fecha'] || '';
+    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}${p['Vuelta'] ? ' · Vuelta ' + (p['Vuelta']==='2'?'2':'1') : ''}` : '';
+    const hora = p['Hora'] ? formatHora(p['Hora']) : '';
+    const cancha = p['Cancha'] || '';
+    const jugado = estado === 'Jugado' && gL !== null && gV !== null;
+    const centerHTML = jugado
+      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#ddc530;text-shadow:0 0 10px rgba(94,181,13,0.5);letter-spacing:2px;line-height:1;">${gL} - ${gV}</div>`
+      : `<div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:rgba(255,255,255,0.5);letter-spacing:2px;">VS</div>`;
+
+    const sep = i < paginaPartidos.length - 1
+      ? `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`
+      : '';
+
+    const equipoBloque = (nombre, colorImg, urlEscudo, align) => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0;">
+        <img src="${colorImg || urlEscudo}" style="width:46px;height:46px;object-fit:contain;" onerror="this.src='${urlEscudo}'; this.onerror=function(){this.style.opacity='0.2';};">
+        <div style="max-width:120px;font-size:11px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${align};">${nombre}</div>
+      </div>`;
+
+    const fila = document.createElement('div');
+    fila.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 4px;">
+        ${equipoBloque(nomL, colorL, urlL, 'center')}
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:80px;text-align:center;gap:2px;">
+          ${jornadaFila ? `<div style="font-size:9px;color:#5eb50d;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">${jornadaFila}</div>` : ''}
+          ${fecha ? `<div style="font-size:11px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
+          <div style="width:14px;height:2px;background:#5eb50d;border-radius:2px;margin:2px auto;"></div>
+          ${centerHTML}
+          ${hora ? `<div style="font-size:12px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}</div>` : ''}
+          ${cancha ? `<div style="font-size:9.5px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${cancha}</div>` : ''}
+        </div>
+        ${equipoBloque(nomV, colorV, urlV, 'center')}
+      </div>
+      ${sep}
+    `;
+    filasWrap.appendChild(fila);
+  });
+
+  inner.appendChild(content);
+  return inner;
+}
+
+async function downloadPNGv2() {
+  if (!ultimosFiltrados.length) { alert('Primero carga los datos de los partidos.'); return; }
+  const btn = document.getElementById('dlBtnV2');
+  if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
+
+  const tipoFiltro = document.getElementById('filterTipo').value;
+  const partidosOrdenados = tipoFiltro === 'equipo'
+    ? [...ultimosFiltrados]
+    : ordenarPorCampoHora(ultimosFiltrados);
+  const firstP = partidosOrdenados[0];
+  let jornadaTitulo;
+  if (tipoFiltro === 'equipo') {
+    const equipoNombre = document.getElementById('filterEquipo').value.trim();
+    jornadaTitulo = equipoNombre ? equipoNombre.toUpperCase() : 'Calendario del Equipo';
+  } else if (tipoFiltro === 'fecha') {
+    jornadaTitulo = firstP?.Fecha || 'Partidos';
+  } else {
+    jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+  }
+  const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
+
+  let equipoDescansa = null;
+  if (tipoFiltro === 'jornada') {
+    const jornadaNum = String(firstP?.Jornada || '').trim();
+    const idsJuegan = new Set();
+    todosPartidos
+      .filter(p => String(p['Jornada']).trim() === jornadaNum)
+      .forEach(p => {
+        if (p['Equipo_Local']) idsJuegan.add(String(p['Equipo_Local']).trim());
+        if (p['Equipo_Visita']) idsJuegan.add(String(p['Equipo_Visita']).trim());
+      });
+    const equiposDescansan = todosEquipos.filter(e => !idsJuegan.has(String(e['ID_Equipo']).trim()));
+    if (equiposDescansan.length === 1) {
+      const eq = equiposDescansan[0];
+      equipoDescansa = {
+        nombre: (eq['Nombre'] || '').toUpperCase(),
+        descripcion: eq['Descripción'] || eq['Descripcion'] || ''
+      };
+    }
+  }
+
+  const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
+
+  try {
+    for (let p = 0; p < totalPaginas; p++) {
+      const pagina = partidosOrdenados.slice(p*REPORTE_POR_PAGINA, (p+1)*REPORTE_POR_PAGINA);
+      const temp = document.createElement('div');
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      temp.style.top = '0';
+
+      const inner = construirPaginaReporteV2(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa);
+      temp.appendChild(inner);
+      document.body.appendChild(temp);
+
+      await esperarImagenesReporte(temp);
+
+      const canvas = await html2canvas(temp, {
+        useCORS: true, allowTaint: true, scale: 4,
+        backgroundColor: '#142702', imageTimeout: 20000, logging: false
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = totalPaginas > 1 ? `partidos_nextlevel7_colores_pagina${p+1}.png` : `partidos_nextlevel7_colores.png`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+
+      document.body.removeChild(temp);
+      await new Promise(r => setTimeout(r, 400));
+    }
+  } catch(e) {
+    alert('❌ Error: ' + e.message);
+  }
+
+  if (btn) { btn.textContent = '⬇ Descargar (escudos chicos)'; btn.disabled = false; }
 }
 
 cargarFechasYEquipos();
