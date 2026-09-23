@@ -14,12 +14,16 @@ async function cargarEquiposNL7() {
   const res = await fetch(URL_EQUIPOS_NL7);
   const txt = await res.text();
   const filas = txt.replace(/\r/g,'').trim().split("\n");
+  const encabezado = filas[0].split(",").map(h => h.trim().toLowerCase());
+  const colStatus = encabezado.indexOf("status");
   const idTmp = {}, logoTmp = {};
   for (let i = 1; i < filas.length; i++) {
     const c = filas[i].split(",");
     const id = c[0]?.trim();
     const nombre = c[1]?.trim();
     if (!id || !nombre) continue;
+    const status = colStatus >= 0 ? (c[colStatus]?.trim().toLowerCase() || '') : '';
+    if (status === 'baja') continue;
     idTmp[id] = nombre;
     logoTmp[id] = (c[4]?.trim() || c[3]?.trim() || '');
   }
