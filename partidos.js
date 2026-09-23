@@ -603,17 +603,21 @@ function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jorna
       ? `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`
       : '';
 
-    const equipoBloque = (nombre, colorImg, urlEscudo, align) => `
+    const equipoBloque = (nombre, urlEscudo, align) => `
       <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:0;">
         <img src="${urlEscudo}" style="width:46px;height:46px;object-fit:contain;" onerror="this.style.opacity='0.2';">
-        ${colorImg ? `<img src="${colorImg}" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none';">` : ''}
         <div style="max-width:120px;font-size:11px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${align};">${nombre}</div>
       </div>`;
+
+    const playeraBloque = (colorImg) => colorImg
+      ? `<div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="${colorImg}" style="width:64px;height:64px;object-fit:contain;" onerror="this.parentElement.style.display='none';"></div>`
+      : '';
 
     const fila = document.createElement('div');
     fila.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;padding:12px 4px;">
-        ${equipoBloque(nomL, colorL, urlL, 'center')}
+        ${equipoBloque(nomL, urlL, 'center')}
+        ${playeraBloque(colorL)}
         <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:80px;text-align:center;gap:2px;">
           ${jornadaFila ? `<div style="font-size:9px;color:#5eb50d;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">${jornadaFila}</div>` : ''}
           ${fecha ? `<div style="font-size:11px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
@@ -622,7 +626,8 @@ function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jorna
           ${hora ? `<div style="font-size:12px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}</div>` : ''}
           ${cancha ? `<div style="font-size:9.5px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${cancha}</div>` : ''}
         </div>
-        ${equipoBloque(nomV, colorV, urlV, 'center')}
+        ${playeraBloque(colorV)}
+        ${equipoBloque(nomV, urlV, 'center')}
       </div>
       ${sep}
     `;
