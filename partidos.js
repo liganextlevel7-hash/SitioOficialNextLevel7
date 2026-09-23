@@ -604,8 +604,9 @@ function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jorna
       : '';
 
     const equipoBloque = (nombre, colorImg, urlEscudo, align) => `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;min-width:0;">
-        <img src="${colorImg || urlEscudo}" style="width:46px;height:46px;object-fit:contain;" onerror="this.src='${urlEscudo}'; this.onerror=function(){this.style.opacity='0.2';};">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;min-width:0;">
+        <img src="${urlEscudo}" style="width:46px;height:46px;object-fit:contain;" onerror="this.style.opacity='0.2';">
+        ${colorImg ? `<img src="${colorImg}" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none';">` : ''}
         <div style="max-width:120px;font-size:11px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${align};">${nombre}</div>
       </div>`;
 
