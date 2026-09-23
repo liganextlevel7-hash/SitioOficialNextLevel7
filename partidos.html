@@ -83,6 +83,13 @@
       letter-spacing: 2px; padding: 12px 18px; text-transform: uppercase; width: 100%; margin-top: 10px;
       touch-action: manipulation;
     }
+    .dl-btn-v2 {
+      background: rgba(0,0,0,0.4); border: 1px solid #d5a610; border-radius: 8px;
+      color: #ddc530; cursor: pointer; font-size: 13px; font-weight: 700;
+      letter-spacing: 1.5px; padding: 10px 16px; text-transform: uppercase; width: 100%; margin-top: 8px;
+      touch-action: manipulation; transition: .3s;
+    }
+    .dl-btn-v2:hover { background: rgba(213,166,16,0.15); }
 
     /* ===== STACKING CARDS ===== */
     .stack-container {
@@ -234,6 +241,7 @@
     </div>
     <div class="status-msg" id="statusMsg">Selecciona jornada, fecha o equipo y presiona Cargar Datos</div>
     <button class="dl-btn" onclick="downloadPNG()" id="dlBtn">⬇ Descargar Lista como PNG</button>
+    <button class="dl-btn-v2" onclick="downloadPNGv2()" id="dlBtnV2">⬇ Descargar (escudos chicos)</button>
   </div>
 
   <div class="stack-container" id="stackContainer">
