@@ -486,7 +486,10 @@ async function downloadPNG() {
         if (p['Equipo_Local']) idsJuegan.add(String(p['Equipo_Local']).trim());
         if (p['Equipo_Visita']) idsJuegan.add(String(p['Equipo_Visita']).trim());
       });
-    const equiposDescansan = todosEquipos.filter(e => !idsJuegan.has(String(e['ID_Equipo']).trim()));
+    const equiposDescansan = todosEquipos.filter(e =>
+      !idsJuegan.has(String(e['ID_Equipo']).trim()) &&
+      (e['Status'] || '').trim().toLowerCase() === 'activo'
+    );
     if (equiposDescansan.length === 1) {
       const eq = equiposDescansan[0];
       equipoDescansa = {
@@ -669,7 +672,10 @@ async function downloadPNGv2() {
         if (p['Equipo_Local']) idsJuegan.add(String(p['Equipo_Local']).trim());
         if (p['Equipo_Visita']) idsJuegan.add(String(p['Equipo_Visita']).trim());
       });
-    const equiposDescansan = todosEquipos.filter(e => !idsJuegan.has(String(e['ID_Equipo']).trim()));
+    const equiposDescansan = todosEquipos.filter(e =>
+      !idsJuegan.has(String(e['ID_Equipo']).trim()) &&
+      (e['Status'] || '').trim().toLowerCase() === 'activo'
+    );
     if (equiposDescansan.length === 1) {
       const eq = equiposDescansan[0];
       equipoDescansa = {
