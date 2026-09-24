@@ -138,6 +138,19 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
     <div>
       <div class="mod-section-title" style="color:var(--neon)">🔁 Editar / Programar un partido</div>
       <div class="mod-hint">Elige los dos equipos que se enfrentan (o ya se enfrentaron) y confirma los nombres antes de guardar — así no se mueve el partido equivocado.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
+        <div>
+          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🗓️ Jornada que estoy armando</label>
+          <input type="number" id="armando-jornada" class="msg-input" style="width:100%" min="1" placeholder="Ej. 2" oninput="actualizarSelectsPorJornada()">
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Fecha de esta jornada</label>
+          <input type="date" id="armando-fecha" class="msg-input" style="width:100%" oninput="actualizarSelectsPorJornada()">
+        </div>
+      </div>
+      <div id="armando-descansa" style="font-size:12px;color:var(--neon);margin-bottom:12px;min-height:16px"></div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div>
           <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo A</label>
@@ -299,10 +312,65 @@ function entrarPanel(){
 }
 
 function llenarSelectsEquipos(){
+  actualizarSelectsPorJornada();
+}
+
+// Convierte el <input type=date> (yyyy-mm-dd) al formato dd/mm/yyyy que usa la hoja
+function fechaInputASheet(v){
+  if(!v) return '';
+  const [y,m,d] = v.split('-');
+  return (y&&m&&d) ? `${d}/${m}/${y}` : '';
+}
+
+// Repinta Equipo A / Equipo B: deshabilita (no oculta) los equipos que ya tienen partido
+// Programado o Jugado en la "Jornada que estoy armando", y calcula quién descansa esa fecha.
+function actualizarSelectsPorJornada(){
+  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
+  const fechaTarget = fechaInputASheet(document.getElementById('armando-fecha')?.value || '');
+
+  const ocupadosJornada = new Set();
+  if(jornadaTarget){
+    S.allMatches.forEach(m=>{
+      const est = (m.estado||'').toLowerCase();
+      if((est==='programado'||est==='jugado') && String(m.jornada).trim()===jornadaTarget){
+        if(m.local) ocupadosJornada.add(String(m.local));
+        if(m.visita) ocupadosJornada.add(String(m.visita));
+      }
+    });
+  }
+
   const ordenados = Object.values(S.teams).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
-  const opts = '<option value="">— Selecciona —</option>' + ordenados.map(t=>`<option value="${t.id}">${esc(t.nombre)}</option>`).join('');
-  document.getElementById('buscar-equipo-a').innerHTML = opts;
-  document.getElementById('buscar-equipo-b').innerHTML = opts;
+  const opts = '<option value="">— Selecciona —</option>' + ordenados.map(t=>{
+    const ocupado = ocupadosJornada.has(String(t.id));
+    return `<option value="${t.id}" ${ocupado?'disabled':''}>${esc(t.nombre)}${ocupado?' (ya tiene partido esta jornada)':''}</option>`;
+  }).join('');
+
+  ['buscar-equipo-a','buscar-equipo-b'].forEach(id=>{
+    const sel = document.getElementById(id);
+    const val = sel.value;
+    sel.innerHTML = opts;
+    if(val && !ocupadosJornada.has(val)) sel.value = val;
+  });
+
+  const descansaEl = document.getElementById('armando-descansa');
+  if(!descansaEl) return;
+  if(!fechaTarget){ descansaEl.textContent=''; return; }
+  const juegan = new Set();
+  S.allMatches.forEach(m=>{
+    const est = (m.estado||'').toLowerCase();
+    if((est==='programado'||est==='jugado') && (m.fecha||'').trim()===fechaTarget){
+      if(m.local) juegan.add(String(m.local));
+      if(m.visita) juegan.add(String(m.visita));
+    }
+  });
+  const descansan = Object.values(S.teams).filter(t=>!juegan.has(String(t.id)));
+  if(descansan.length===1){
+    descansaEl.textContent = `🛌 Descansa esta fecha: ${descansan[0].nombre}`;
+  } else if(descansan.length===0){
+    descansaEl.textContent = '';
+  } else {
+    descansaEl.textContent = `Faltan ${descansan.length} equipos por programar esta fecha.`;
+  }
 }
 
 // ════════════════════════════════
@@ -336,8 +404,11 @@ function buildHoraSelects(defaultH, defaultM){
 
 function abrirFormEditar(m){
   S.matchToProgram = m;
+  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
+  const fechaTarget = document.getElementById('armando-fecha')?.value || '';
   const [d,mo,y] = (m.fecha||'').split('/');
-  const fechaInput = (y&&mo&&d) ? `${y}-${mo}-${d}` : '';
+  const fechaInput = (y&&mo&&d) ? `${y}-${mo}-${d}` : fechaTarget;
+  const jornadaPrefill = m.jornada || jornadaTarget;
   const horaParts = (m.hora||'09:00:00').split(':');
   const {hOpts,mOpts} = buildHoraSelects(parseInt(horaParts[0],10)||9, parseInt(horaParts[1],10)||0);
 
@@ -354,7 +425,7 @@ function abrirFormEditar(m){
       <div style="display:flex;flex-direction:column;gap:10px">
         <div>
           <label>Jornada</label>
-          <input type="number" id="edit-jornada" class="msg-input" style="width:100%" min="1" value="${esc(m.jornada||'')}">
+          <input type="number" id="edit-jornada" class="msg-input" style="width:100%" min="1" value="${esc(jornadaPrefill||'')}">
         </div>
         <div>
           <label>Fecha</label>
@@ -415,6 +486,7 @@ async function guardarEdicionPartido(){
   document.getElementById('buscar-resultado').innerHTML = `<div class="programar-hint">✅ Guardado: ${esc(tname(m.local))} vs ${esc(tname(m.visita))} — Jornada ${esc(jornada)}, ${esc(fechaSheet)}, ${esc(horaH)}:${esc(horaM)}, ${esc(cancha)}</div>`;
   document.getElementById('buscar-equipo-a').value='';
   document.getElementById('buscar-equipo-b').value='';
+  actualizarSelectsPorJornada();
 }
 
 // ════════════════════════════════
