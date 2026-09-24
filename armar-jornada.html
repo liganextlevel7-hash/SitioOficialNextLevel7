@@ -263,7 +263,8 @@ async function init(){
     const eq = await fetchCSV(GID_EQUIPOS);
     eq.forEach(r=>{
       const id=r['id_equipo']||r['id'];
-      if(!id||id==='10') return;
+      if(!id) return;
+      if((r['status']||'').trim().toLowerCase()==='baja') return; // equipos de baja no se arman en jornadas
       S.teams[id]={id, nombre:r['nombre']||'Equipo '+id, logo:r['url']||r['logo']||'', descripcion:r['descripción']||r['descripcion']||''};
     });
 
