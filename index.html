@@ -447,9 +447,16 @@ async function cargarCarrusel() {
     if(programados.length){
       const fp=programados[0].fecha;
       const filasFp = programados.filter(p=>p.fecha===fp);
+      function horaAMinutos(hora){
+        if(!hora) return 99999;
+        const partes = hora.split(':');
+        const h = parseInt(partes[0],10) || 0;
+        const m = parseInt(partes[1],10) || 0;
+        return h*60+m;
+      }
       filasFp.sort((a,b)=>{
-        const ha=a.hora||'99:99', hb=b.hora||'99:99';
-        if(ha!==hb) return ha.localeCompare(hb);
+        const ha=horaAMinutos(a.hora), hb=horaAMinutos(b.hora);
+        if(ha!==hb) return ha-hb;
         return (a.cancha||'').localeCompare(b.cancha||'');
       });
       iniciarRotacionCartel('car-proxima', filasFp, 'proxima', calcularEquipoDescansaIndex(filasFp));
