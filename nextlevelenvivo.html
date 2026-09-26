@@ -259,6 +259,12 @@ var db = firebase.database();
           <option value="Default">Ganado por Default (W.O.)</option>
         </select>
       </div>
+      <div id="wrap-penales-ganador" class="hidden" style="margin-top:8px">
+        <label style="display:block;font-size:12px;color:#aaa;margin-bottom:4px">¿Quién ganó en penales?</label>
+        <select class="psel" id="sel-penales-ganador" onchange="cambiarPenalesGanador()" style="padding: 10px; font-size: 13px; color: #fff; background: var(--bg3); width:100%;">
+          <option value="">— Selecciona —</option>
+        </select>
+      </div>
     </div>
 
     <div class="section">
@@ -492,6 +498,7 @@ function seleccionarPartido(idx){
     minuto: 0,
     inicioTimestamp: 0,
     metodoFin: "Normal",
+    penalesGanador: "",
     events: []
   };
   
@@ -617,6 +624,13 @@ function cargarJugadoresPorEquipo(){
   if(document.getElementById('act-logo-local')) document.getElementById('act-logo-local').src = DB.equipos[idL]?.logo || '';
   if(document.getElementById('act-name-visita')) document.getElementById('act-name-visita').textContent = nombreV;
   if(document.getElementById('act-logo-visita')) document.getElementById('act-logo-visita').src = DB.equipos[idV]?.logo || '';
+
+  var selPen = document.getElementById('sel-penales-ganador');
+  if(selPen){
+     selPen.innerHTML = '<option value="">— Selecciona —</option>'
+        + '<option value="' + idL + '">' + nombreL + '</option>'
+        + '<option value="' + idV + '">' + nombreV + '</option>';
+  }
 }
 
 function setStatus(st){
@@ -635,7 +649,16 @@ function setStatus(st){
 function cambiarMetodoFin() {
   if(!liveState) return;
   var met = document.getElementById('sel-metodo-fin').value;
-  db.ref(CANCHA_PATH).update({ metodoFin: met });
+  document.getElementById('wrap-penales-ganador').classList.toggle('hidden', met !== 'Penales');
+  var updates = { metodoFin: met };
+  if(met !== 'Penales') updates.penalesGanador = ""; // si cambias de opinión, se limpia
+  db.ref(CANCHA_PATH).update(updates);
+}
+
+function cambiarPenalesGanador() {
+  if(!liveState) return;
+  var idGanador = document.getElementById('sel-penales-ganador').value;
+  db.ref(CANCHA_PATH).update({ penalesGanador: idGanador });
 }
 
 function addEvent(type, team){
@@ -784,7 +807,8 @@ function guardarPartidoFirebase(){
              accion: 'guardar_eventos',
              eventos: listaEventos,
              idPartido: idPartidoActual, // <--- ESTA LÍNEA CONECTA CON EL SCRIPT
-             guardadoPor: liveState.metodoFin || "Normal" // Método de finalización (Normal/Penales/Default)
+             guardadoPor: liveState.metodoFin || "Normal", // Método de finalización (Normal/Penales/Default)
+             penalesGanador: liveState.penalesGanador || "" // ID del equipo que ganó en penales (si aplica)
            })
          });
       }).then(() => {
@@ -849,6 +873,8 @@ function actualizarUI(){
   document.getElementById('st-rv').textContent = d.redVisita ?? 0;
   
   document.getElementById('sel-metodo-fin').value = d.metodoFin || "Normal";
+  document.getElementById('wrap-penales-ganador').classList.toggle('hidden', (d.metodoFin || "Normal") !== 'Penales');
+  if(document.getElementById('sel-penales-ganador')) document.getElementById('sel-penales-ganador').value = d.penalesGanador || "";
   
   // Resaltar el botón de estado activo (Iniciar / Medio tiempo / Fin)
   document.getElementById('btn-inicio').classList.remove('active');
