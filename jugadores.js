@@ -264,8 +264,8 @@ function crearCarrusel(containerId, cardsHTML) {
       if (diff === 0) cls = 'pj-c';
       else if (diff === 1) cls = 'pj-r1';
       else if (diff === 2) cls = 'pj-r2';
-      else if (diff === total - 1) cls = 'pj-l4';
-      else if (diff === total - 2) cls = 'pj-l5';
+      else if (diff === total - 1) cls = 'pj-l1';
+      else if (diff === total - 2) cls = 'pj-l2';
       if (cls) slide.classList.add(cls);
     });
     dots.forEach((d, i) => d.classList.toggle('pj-on', i === activo));
@@ -438,7 +438,7 @@ async function cargarJugadores() {
       const goles = golesMap[j.id] || 0;
       const rojas = rojasMap[j.id] || 0;
       const asist = asistMap[j.id] || 0;
-      const porcentaje = Math.round((asist / 8) * 100);
+      const porcentaje = Math.round((asist / 15) * 100);
       const suspendido = rojas > 0 ? "Sí" : "No";
       return jugadorCardHTML(j, goles, porcentaje, suspendido);
     });
