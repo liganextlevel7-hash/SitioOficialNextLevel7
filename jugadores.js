@@ -264,8 +264,8 @@ function crearCarrusel(containerId, cardsHTML) {
       if (diff === 0) cls = 'pj-c';
       else if (diff === 1) cls = 'pj-r1';
       else if (diff === 2) cls = 'pj-r2';
-      else if (diff === total - 1) cls = 'pj-l1';
-      else if (diff === total - 2) cls = 'pj-l2';
+      else if (diff === total - 1) cls = 'pj-l4';
+      else if (diff === total - 2) cls = 'pj-l5';
       if (cls) slide.classList.add(cls);
     });
     dots.forEach((d, i) => d.classList.toggle('pj-on', i === activo));
