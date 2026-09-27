@@ -222,7 +222,21 @@
     <div style="text-align:center; margin-bottom:16px;">
       <div style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-transform:uppercase;">Registrando jugadores de</div>
       <div style="font-size:1.2rem; font-weight:900; color:#5eb50d;" id="equipo-actual-nombre"></div>
-      <a href="#" id="link-cambiar-equipo" style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-decoration:underline;">¿No eres tú? Cambiar equipo</a>
+      <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:4px;">
+        <a href="#" id="link-cambiar-equipo" style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-decoration:underline;">¿No eres tú? Cambiar equipo</a>
+        <a href="#" id="link-cambiar-pass" style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-decoration:underline;">🔒 Cambiar mi contraseña</a>
+      </div>
+    </div>
+
+    <div id="cambiar-pass-zona" style="display:none; background:rgba(0,0,0,0.3); border:1px solid rgba(94,181,13,0.3); border-radius:14px; padding:14px; margin-bottom:18px;">
+      <label style="margin-top:0;">Contraseña actual</label>
+      <input type="text" id="pass-actual" maxlength="20">
+      <label>Contraseña nueva</label>
+      <input type="text" id="pass-nueva" maxlength="20" placeholder="Mínimo 4 caracteres">
+      <label>Repite la contraseña nueva</label>
+      <input type="text" id="pass-nueva2" maxlength="20">
+      <button type="button" class="btn-enviar" id="btn-cambiar-pass" style="margin-top:14px;">Guardar nueva contraseña</button>
+      <div class="msg" id="cambiar-pass-msg"></div>
     </div>
 
     <form id="form-registro">
@@ -275,6 +289,9 @@
       <div style="font-size:1.1rem; font-weight:900; color:#5eb50d;">🔑 Panel de Administrador</div>
       <a href="#" id="link-cerrar-admin" style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-decoration:underline;">Cerrar sesión de admin</a>
     </div>
+
+    <button id="btn-toggle-pass" style="display:block; width:100%; margin-bottom:16px; padding:12px; border:1px dashed #f2c200; border-radius:14px; background:rgba(242,194,0,0.08); color:#f2c200; font-weight:bold; font-size:0.85rem; cursor:pointer;">🔑 Ver Contraseñas de Equipos</button>
+    <div id="panel-contrasenas" style="display:none; margin-bottom:20px;"></div>
 
     <button id="btn-toggle-agregar" style="display:block; width:100%; margin-bottom:16px; padding:12px; border:1px dashed #5eb50d; border-radius:14px; background:rgba(94,181,13,0.08); color:#5eb50d; font-weight:bold; font-size:0.85rem; cursor:pointer;">+ Agregar Jugador</button>
 
@@ -348,6 +365,13 @@
         encontrados.push({ id, nombre, codigo });
       }
       EQUIPOS = encontrados;
+      try {
+        const respOv = await fetch(FB + '/passwordOverrides.json');
+        const overrides = await respOv.json();
+        if (overrides) {
+          EQUIPOS.forEach(eq => { if (overrides[eq.id]) eq.codigo = overrides[eq.id]; });
+        }
+      } catch (eOv) { /* si falla, seguimos con las contraseñas de la hoja */ }
     } catch (e) {
       loginMsg.textContent = 'No se pudo cargar la lista de equipos. Revisa tu conexión y recarga la página.';
       loginMsg.className = 'msg error';
@@ -396,11 +420,61 @@
   btnLogin.addEventListener('click', () => entrarConCodigo(inputCodigo.value));
   inputCodigo.addEventListener('keydown', (e) => { if (e.key === 'Enter') entrarConCodigo(inputCodigo.value); });
 
+  const cambiarPassZona = document.getElementById('cambiar-pass-zona');
+  document.getElementById('link-cambiar-pass').addEventListener('click', (e) => {
+    e.preventDefault();
+    cambiarPassZona.style.display = cambiarPassZona.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('cambiar-pass-msg').textContent = '';
+    document.getElementById('pass-actual').value = '';
+    document.getElementById('pass-nueva').value = '';
+    document.getElementById('pass-nueva2').value = '';
+  });
+
+  document.getElementById('btn-cambiar-pass').addEventListener('click', async () => {
+    const passMsg = document.getElementById('cambiar-pass-msg');
+    const actual = document.getElementById('pass-actual').value.trim();
+    const nueva = document.getElementById('pass-nueva').value.trim();
+    const nueva2 = document.getElementById('pass-nueva2').value.trim();
+    passMsg.className = 'msg';
+
+    if (actual.toUpperCase() !== equipoActual.codigo.toUpperCase()) {
+      passMsg.textContent = 'Tu contraseña actual no es correcta.';
+      passMsg.classList.add('error');
+      return;
+    }
+    if (nueva.length < 4) {
+      passMsg.textContent = 'La contraseña nueva debe tener al menos 4 caracteres.';
+      passMsg.classList.add('error');
+      return;
+    }
+    if (nueva !== nueva2) {
+      passMsg.textContent = 'Las dos contraseñas nuevas no coinciden.';
+      passMsg.classList.add('error');
+      return;
+    }
+
+    try {
+      await fetch(`${FB}/passwordOverrides/${equipoActual.id}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nueva)
+      });
+      equipoActual.codigo = nueva;
+      localStorage.setItem('nl7_codigo_equipo', nueva);
+      passMsg.textContent = '✅ Contraseña actualizada. Ya quedó guardada.';
+      passMsg.classList.add('ok');
+    } catch (err) {
+      passMsg.textContent = 'No se pudo guardar. Revisa tu conexión e intenta de nuevo.';
+      passMsg.classList.add('error');
+    }
+  });
+
   document.getElementById('link-cambiar-equipo').addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('nl7_codigo_equipo');
     equipoActual = null;
     formCard.style.display = 'none';
+    cambiarPassZona.style.display = 'none';
     document.getElementById('mis-jugadores-wrap').style.display = 'none';
     loginCard.style.display = 'block';
     inputCodigo.value = '';
@@ -453,6 +527,42 @@
 
   // Ahora que ya existen loginMsg y selectAddEquipo, disparamos la carga real desde el Sheet.
   cargarEquiposDesdeSheet();
+
+  async function pintarPanelContrasenas() {
+    const cont = document.getElementById('panel-contrasenas');
+    cont.innerHTML = '<div class="nota">Cargando...</div>';
+    let overrides = {};
+    try {
+      const resp = await fetch(FB + '/passwordOverrides.json');
+      overrides = (await resp.json()) || {};
+    } catch (e) { /* seguimos, aunque no haya overrides */ }
+
+    cont.innerHTML = EQUIPOS.slice().sort((a, b) => a.nombre.localeCompare(b.nombre)).map(eq => {
+      const cambiada = !!overrides[eq.id];
+      return `
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 10px; border-bottom:1px solid rgba(94,181,13,0.15);">
+          <div style="min-width:0;">
+            <div style="font-size:0.85rem; font-weight:bold; color:#fff;">${eq.nombre}</div>
+            <div style="font-size:0.8rem; color:#8fe89a; font-family:monospace;">${eq.codigo} ${cambiada ? '<span style="color:#f2c200;">(cambiada)</span>' : ''}</div>
+          </div>
+          ${cambiada ? `<button class="btn-borrar-adm" style="flex-shrink:0;" onclick="restablecerPassword(${eq.id})">Restablecer</button>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  async function restablecerPassword(id) {
+    if (!confirm('¿Borrar la contraseña que puso este equipo y dejar la original de la hoja?')) return;
+    await fetch(`${FB}/passwordOverrides/${id}.json`, { method: 'DELETE' });
+    await cargarEquiposDesdeSheet();
+    pintarPanelContrasenas();
+  }
+
+  document.getElementById('btn-toggle-pass').addEventListener('click', () => {
+    const wrap = document.getElementById('panel-contrasenas');
+    const abrir = wrap.style.display === 'none';
+    wrap.style.display = abrir ? 'block' : 'none';
+    if (abrir) pintarPanelContrasenas();
+  });
 
   document.getElementById('btn-toggle-agregar').addEventListener('click', () => {
     const wrap = document.getElementById('form-agregar-wrap');
