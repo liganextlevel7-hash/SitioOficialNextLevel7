@@ -97,6 +97,24 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
   body{padding:0;align-items:flex-start}
   #login-screen,#app-screen{border-radius:0;margin-top:0}
 }
+/* ===== CÉDULA DE JORNADA (hoja carta, fondo blanco para imprimir) ===== */
+.cedula-hoja { position:relative; width:850px; min-height:1100px; background:#fff; color:#111; padding:34px 28px; box-sizing:border-box; font-family:Arial,Helvetica,sans-serif; }
+.cedula-titulo { text-align:center; font-size:20px; font-weight:900; letter-spacing:1px; color:#142702; }
+.cedula-subtitulo { text-align:center; font-size:11px; color:#555; margin-bottom:16px; }
+.cedula-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.cedula-celda { border:1.5px solid #222; border-radius:6px; padding:6px; display:flex; flex-direction:column; }
+.cedula-meta { font-size:7px; color:#555; text-align:center; margin-bottom:3px; text-transform:uppercase; letter-spacing:.3px; }
+.cedula-encuentro-top { display:flex; align-items:flex-start; justify-content:space-between; gap:3px; margin-bottom:4px; }
+.cedula-equipo { display:flex; flex-direction:column; align-items:center; width:42%; }
+.cedula-equipo img { width:26px; height:26px; object-fit:contain; }
+.cedula-equipo span { font-size:7px; font-weight:700; text-align:center; line-height:1.15; margin-top:2px; text-transform:uppercase; }
+.cedula-vs { font-size:9px; font-weight:900; color:#999; margin-top:8px; }
+.cedula-tablas { display:flex; gap:4px; }
+.cedula-tabla { flex:1; border-collapse:collapse; font-size:6px; table-layout:fixed; }
+.cedula-tabla th, .cedula-tabla td { border:0.75px solid #444; padding:1px; text-align:center; height:10px; overflow:hidden; }
+.cedula-tabla th { background:#e4e4e4; font-size:5.5px; font-weight:700; }
+.cedula-resultado { margin-top:4px; font-size:7px; text-align:center; border-top:1px dashed #999; padding-top:3px; }
+.cedula-resultado .linea { display:inline-block; width:18px; border-bottom:1px solid #333; margin:0 3px; }
 </style>
 </head>
 <body>
@@ -197,6 +215,17 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 
         <button class="btn-descargar-cartel" onclick="descargarCartelPNG()">📥 Descargar cartel PNG</button>
       </div>
+    </div>
+
+    <!-- CÉDULA DE JORNADA -->
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
+      <div class="mod-section-title" style="color:var(--neon)">📋 Cédula de Jornada (para el árbitro)</div>
+      <div class="mod-hint">Hoja tamaño carta con los cruces de la jornada elegida (hasta 12 por página, 3x4) y una tabla en blanco por equipo — N°, Jugador, G, A, R — para que el árbitro anote a mano, más el resultado final.</div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <select id="cedula-jornada" class="msg-input" style="flex:1"><option value="">— Selecciona jornada —</option></select>
+        <button onclick="generarCedulaJornada()" style="padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">📥 Generar PNG</button>
+      </div>
+      <div id="cedula-aviso" style="font-size:12px;color:var(--g500);text-align:center;min-height:16px"></div>
     </div>
 
   </div>
@@ -309,6 +338,7 @@ function entrarPanel(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   llenarSelectsEquipos();
+  llenarSelectCedula();
   initRol();
 }
 
@@ -830,6 +860,90 @@ async function descargarCartelPNG(){
 
   pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas, equipoDescansa);
   if(btn){ btn.disabled=false; btn.textContent='📥 Descargar cartel PNG'; }
+}
+
+// ════════════════════════════════
+//  CÉDULA DE JORNADA (hoja carta imprimible, 3x4 encuentros por página)
+// ════════════════════════════════
+const CEDULA_POR_PAGINA = 12; // 3 columnas x 4 filas
+
+function llenarSelectCedula(){
+  const sel = document.getElementById('cedula-jornada');
+  if(!sel) return;
+  const jornadas = [...new Set(S.allMatches.map(m=>String(m.jornada||'').trim()).filter(Boolean))]
+    .sort((a,b)=>Number(a)-Number(b));
+  sel.innerHTML = '<option value="">— Selecciona jornada —</option>' + jornadas.map(j=>`<option value="${j}">Jornada ${esc(j)}</option>`).join('');
+}
+
+function cedulaTablaHTML(){
+  const filas = [1,2,3,4,5].map(n=>`<tr><td>${n}</td><td></td><td></td><td></td><td></td></tr>`).join('');
+  return `<table class="cedula-tabla"><thead><tr><th style="width:12%">N°</th><th>Jugador</th><th style="width:14%">G</th><th style="width:14%">A</th><th style="width:14%">R</th></tr></thead><tbody>${filas}</tbody></table>`;
+}
+
+function cedulaCasillaHTML(m){
+  const ll = m.ll || tlogo(m.local);
+  const lv = m.lv || tlogo(m.visita);
+  const metaPartes = [`Jornada ${esc(m.jornada||'')}`];
+  if(m.cancha) metaPartes.push(esc(m.cancha));
+  if(m.hora) metaPartes.push(esc(formatHora12(m.hora)));
+  return `
+    <div class="cedula-celda">
+      <div class="cedula-meta">${metaPartes.join(' · ')}</div>
+      <div class="cedula-encuentro-top">
+        <div class="cedula-equipo"><img src="${ll}" onerror="this.style.opacity='.15'"><span>${esc(tname(m.local))}</span></div>
+        <div class="cedula-vs">VS</div>
+        <div class="cedula-equipo"><img src="${lv}" onerror="this.style.opacity='.15'"><span>${esc(tname(m.visita))}</span></div>
+      </div>
+      <div class="cedula-tablas">
+        ${cedulaTablaHTML()}
+        ${cedulaTablaHTML()}
+      </div>
+      <div class="cedula-resultado">RESULTADO&nbsp; Local <span class="linea"></span> &nbsp;-&nbsp; Visitante <span class="linea"></span></div>
+    </div>`;
+}
+
+async function generarCedulaJornada(){
+  const jornadaSel = document.getElementById('cedula-jornada').value;
+  const aviso = document.getElementById('cedula-aviso');
+  if(!jornadaSel){ aviso.textContent = 'Selecciona una jornada primero.'; return; }
+
+  const partidos = S.allMatches
+    .filter(m => String(m.jornada||'').trim() === jornadaSel)
+    .sort((a,b) => (a.cancha||'').localeCompare(b.cancha||'') || (a.hora||'').localeCompare(b.hora||''));
+
+  if(!partidos.length){ aviso.textContent = 'No hay partidos en esa jornada.'; return; }
+
+  aviso.textContent = 'Generando...';
+
+  const temp = document.createElement('div');
+  temp.style.position = 'fixed'; temp.style.left = '-9999px'; temp.style.top = '0';
+  document.body.appendChild(temp);
+
+  const totalPaginas = Math.ceil(partidos.length / CEDULA_POR_PAGINA);
+  try{
+    for(let p=0; p<totalPaginas; p++){
+      const pagina = partidos.slice(p*CEDULA_POR_PAGINA, (p+1)*CEDULA_POR_PAGINA);
+      temp.innerHTML = `
+        <div class="cedula-hoja" id="cedula-hoja-tmp">
+          <div class="cedula-titulo">CÉDULA DE JORNADA ${esc(jornadaSel)}</div>
+          <div class="cedula-subtitulo">Liga Next Level 7${totalPaginas>1?(' · Página '+(p+1)+' de '+totalPaginas):''}</div>
+          <div class="cedula-grid">${pagina.map(cedulaCasillaHTML).join('')}</div>
+        </div>`;
+      const hoja = document.getElementById('cedula-hoja-tmp');
+      await esperarImagenes(hoja);
+      const canvas = await html2canvas(hoja, { backgroundColor: '#ffffff', scale: 3, useCORS: true });
+      const link = document.createElement('a');
+      link.download = totalPaginas>1 ? `cedula_jornada${jornadaSel}_pagina${p+1}.png` : `cedula_jornada${jornadaSel}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      await new Promise(r=>setTimeout(r,400));
+    }
+    aviso.textContent = `✅ Se generaron ${totalPaginas} página(s) — ${partidos.length} encuentro(s).`;
+  }catch(err){
+    console.error(err);
+    aviso.textContent = 'No se pudo generar el PNG.';
+  }
+  document.body.removeChild(temp);
 }
 
 // ════════════════════════════════
