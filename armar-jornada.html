@@ -876,7 +876,7 @@ function llenarSelectCedula(){
 }
 
 function cedulaTablaHTML(){
-  const filas = [1,2,3,4,5].map(n=>`<tr><td>${n}</td><td></td><td></td><td></td><td></td></tr>`).join('');
+  const filas = Array(7).fill(`<tr><td></td><td></td><td></td><td></td><td></td></tr>`).join('');
   return `<table class="cedula-tabla"><thead><tr><th style="width:12%">N°</th><th>Jugador</th><th style="width:14%">G</th><th style="width:14%">A</th><th style="width:14%">R</th></tr></thead><tbody>${filas}</tbody></table>`;
 }
 
