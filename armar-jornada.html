@@ -172,7 +172,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div>
           <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo A</label>
-          <select id="buscar-equipo-a" class="msg-input" style="width:100%" onchange="buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
+          <select id="buscar-equipo-a" class="msg-input" style="width:100%" onchange="actualizarSelectsPorJornada(); buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
         </div>
         <div>
           <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo B</label>
@@ -353,8 +353,17 @@ function fechaInputASheet(v){
   return (y&&m&&d) ? `${d}/${m}/${y}` : '';
 }
 
+// ¿Ya existe un partido con Estado=Jugado entre estos dos equipos?
+function jugaronYa(idA, idB){
+  return S.allMatches.some(m=>{
+    if((m.estado||'').toLowerCase() !== 'jugado') return false;
+    return (String(m.local)===idA && String(m.visita)===idB) || (String(m.local)===idB && String(m.visita)===idA);
+  });
+}
+
 // Repinta Equipo A / Equipo B: deshabilita (no oculta) los equipos que ya tienen partido
 // Programado o Jugado en la "Jornada que estoy armando", y calcula quién descansa esa fecha.
+// Además, en Equipo B deshabilita a los rivales con los que Equipo A ya jugó (Estado=Jugado).
 function actualizarSelectsPorJornada(){
   const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
   const fechaTarget = fechaInputASheet(document.getElementById('armando-fecha')?.value || '');
@@ -371,17 +380,30 @@ function actualizarSelectsPorJornada(){
   }
 
   const ordenados = Object.values(S.teams).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
-  const opts = '<option value="">— Selecciona —</option>' + ordenados.map(t=>{
-    const ocupado = ocupadosJornada.has(String(t.id));
-    return `<option value="${t.id}" ${ocupado?'disabled':''}>${esc(t.nombre)}${ocupado?' (ya tiene partido esta jornada)':''}</option>`;
-  }).join('');
+  const equipoASel = document.getElementById('buscar-equipo-a')?.value || '';
 
-  ['buscar-equipo-a','buscar-equipo-b'].forEach(id=>{
-    const sel = document.getElementById(id);
-    const val = sel.value;
-    sel.innerHTML = opts;
-    if(val && !ocupadosJornada.has(val)) sel.value = val;
-  });
+  function construirOpciones(esSelectB){
+    return '<option value="">— Selecciona —</option>' + ordenados.map(t=>{
+      const idStr = String(t.id);
+      const ocupadoJornada = ocupadosJornada.has(idStr);
+      const yaJugaron = esSelectB && equipoASel && idStr!==equipoASel && jugaronYa(equipoASel, idStr);
+      const deshabilitado = ocupadoJornada || yaJugaron;
+      let etiqueta = '';
+      if(ocupadoJornada) etiqueta = ' (ya tiene partido esta jornada)';
+      else if(yaJugaron) etiqueta = ' (ya jugaron)';
+      return `<option value="${t.id}" ${deshabilitado?'disabled':''}>${esc(t.nombre)}${etiqueta}</option>`;
+    }).join('');
+  }
+
+  const selA = document.getElementById('buscar-equipo-a');
+  const valA = selA.value;
+  selA.innerHTML = construirOpciones(false);
+  if(valA && !ocupadosJornada.has(valA)) selA.value = valA;
+
+  const selB = document.getElementById('buscar-equipo-b');
+  const valB = selB.value;
+  selB.innerHTML = construirOpciones(true);
+  if(valB && !ocupadosJornada.has(valB) && !jugaronYa(equipoASel, valB)) selB.value = valB;
 
   const descansaEl = document.getElementById('armando-descansa');
   if(!descansaEl) return;
