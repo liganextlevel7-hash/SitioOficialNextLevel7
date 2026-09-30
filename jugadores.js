@@ -329,7 +329,7 @@ async function cargarJugadores() {
     jugadores.push({
       id: c[0]?.trim(), nombre: c[1]?.trim(), equipo: c[2]?.trim(),
       numero: c[3]?.trim(), posicion: c[4]?.trim() || '',
-      logo: c[5]?.trim(), foto: c[7]?.trim() ? c[7].trim() : c[5]?.trim()
+      logo: c[5]?.trim(), foto: c[6]?.trim() ? c[6].trim() : c[7]?.trim()
     });
   }
 
