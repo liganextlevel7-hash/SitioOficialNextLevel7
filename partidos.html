@@ -190,6 +190,25 @@
 
     .empty-msg { text-align: center; color: rgba(255,255,255,0.3); font-size: 14px; padding: 40px; }
 
+    /* ===== CONFIRMAR ASISTENCIA ===== */
+    .stack-confirm { display:flex; gap:8px; margin-top:14px; position:relative; z-index:2; }
+    .confirm-lado { flex:1; display:flex; flex-direction:column; gap:5px; }
+    .confirm-lado input {
+      background: rgba(0,0,0,0.4); border: 1px solid rgba(94,181,13,0.4); border-radius: 6px;
+      color: #fff; font-size: 12px; padding: 6px 8px; outline: none; width: 100%; box-sizing: border-box;
+    }
+    .confirm-lado button {
+      background: rgba(94,181,13,0.15); border: 1px solid #5eb50d; border-radius: 6px;
+      color: #5eb50d; font-size: 11px; font-weight: 700; padding: 6px 8px; cursor: pointer;
+      text-transform: uppercase; letter-spacing: .5px; touch-action: manipulation;
+    }
+    .confirm-lado button:hover { background: rgba(94,181,13,0.3); }
+    .confirm-ok {
+      flex:1; display:flex; align-items:center; justify-content:center; text-align:center;
+      background: rgba(94,181,13,0.12); border: 1px solid #5eb50d; border-radius: 6px;
+      color: #5eb50d; font-size: 12px; font-weight: 700; padding: 8px 6px;
+    }
+
     @media (max-width: 600px) {
       .stack-team img { width: 70px; height: 70px; }
       .stack-team { width: 95px; }
