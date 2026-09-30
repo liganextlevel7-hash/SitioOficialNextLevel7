@@ -203,6 +203,28 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
     }
     .pj-flecha:hover { background: rgba(255,215,0,0.2); }
     .pj-fl { left: 0; } .pj-fr { right: 0; }
+
+    /* ===== VER FOTO EN PANTALLA COMPLETA (doble clic / doble toque) ===== */
+    .foto-lightbox-overlay {
+      position: fixed; inset: 0; z-index: 99999;
+      background: rgba(0,0,0,0.94);
+      display: none; align-items: center; justify-content: center;
+      padding: 24px; box-sizing: border-box;
+    }
+    .foto-lightbox-overlay.activo { display: flex; }
+    .foto-lightbox-img {
+      max-width: 94vw; max-height: 90vh; object-fit: contain;
+      border-radius: 14px; border: 2px solid rgba(255,215,0,0.45);
+      box-shadow: 0 0 40px rgba(255,215,0,0.25);
+    }
+    .foto-lightbox-cerrar {
+      position: absolute; top: 18px; right: 22px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(0,0,0,0.6); border: 1px solid rgba(255,215,0,0.5);
+      color: #ffd700; font-size: 22px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; touch-action: manipulation;
+    }
     .pj-dots {
       display: flex; justify-content: center; gap: 7px; margin-top: 6px;
     }
@@ -283,6 +305,10 @@ function crearCarrusel(containerId, cardsHTML) {
         actualizar();
       }
     });
+    slide.addEventListener('dblclick', e => {
+      const img = slide.querySelector('.pcard-foto-grande');
+      if (img) abrirFotoCompleta(img.src);
+    });
   });
 
   dots.forEach((dot, i) => {
@@ -304,6 +330,24 @@ function crearCarrusel(containerId, cardsHTML) {
   });
 
   actualizar();
+}
+
+function abrirFotoCompleta(src) {
+  if (!src) return;
+  let overlay = document.getElementById('foto-lightbox-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'foto-lightbox-overlay';
+    overlay.className = 'foto-lightbox-overlay';
+    overlay.innerHTML = `
+      <div class="foto-lightbox-cerrar">&times;</div>
+      <img class="foto-lightbox-img" id="foto-lightbox-img">
+    `;
+    overlay.addEventListener('click', () => overlay.classList.remove('activo'));
+    document.body.appendChild(overlay);
+  }
+  document.getElementById('foto-lightbox-img').src = src;
+  overlay.classList.add('activo');
 }
 
 async function cargarJugadores() {
