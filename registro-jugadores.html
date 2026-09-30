@@ -335,6 +335,14 @@
 
 <script>
   const FB = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
+
+  // ---- Aviso por WhatsApp (CallMeBot) cuando se registra un jugador ----
+  const WHATSAPP_PHONE = '5212217613594';
+  const WHATSAPP_APIKEY = '2019087';
+  function avisarWhatsApp(texto) {
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(texto)}&apikey=${WHATSAPP_APIKEY}`;
+    fetch(url).catch(() => { /* si falla el aviso, no interrumpimos el registro */ });
+  }
   const CAR_CAPITANES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1768443342&single=true&output=csv";
 
   // ---- Equipos y contraseñas: se leen de tu hoja de Sheets cada vez que
@@ -857,6 +865,8 @@
 
       msg.textContent = '✅ Jugador registrado con éxito.';
       msg.classList.add('ok');
+
+      avisarWhatsApp(`📋 Nuevo registro de jugador\nEquipo: ${datos.equipo}\nJugador: ${datos.nombre}`);
 
       // Limpiamos el formulario para registrar al siguiente jugador,
       // pero dejamos el equipo y el nombre del capitán puestos (se repiten seguido).
