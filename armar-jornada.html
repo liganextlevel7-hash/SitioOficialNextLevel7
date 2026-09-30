@@ -168,6 +168,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
         </div>
       </div>
       <div id="armando-descansa" style="font-size:12px;color:var(--neon);margin-bottom:12px;min-height:16px"></div>
+      <div id="armando-confirmaciones" style="font-size:12px;margin-bottom:12px"></div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div>
@@ -347,6 +348,34 @@ function llenarSelectsEquipos(){
 }
 
 // Convierte el <input type=date> (yyyy-mm-dd) al formato dd/mm/yyyy que usa la hoja
+async function pintarConfirmacionesJornada(){
+  const el = document.getElementById('armando-confirmaciones');
+  if(!el) return;
+  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
+  if(!jornadaTarget){ el.innerHTML=''; return; }
+  const partidosJornada = S.allMatches.filter(m=>{
+    const est=(m.estado||'').toLowerCase();
+    return (est==='programado'||est==='jugado') && String(m.jornada).trim()===jornadaTarget;
+  });
+  if(!partidosJornada.length){ el.innerHTML=''; return; }
+  let conf = {};
+  try{
+    const r = await fetch('https://liga-next-level-7-default-rtdb.firebaseio.com/confirmaciones.json');
+    conf = (await r.json()) || {};
+  }catch(e){ /* si falla, mostramos igual sin confirmaciones */ }
+  const filas = partidosJornada.map(m=>{
+    const c = conf[m.id] || {};
+    const nomL = S.teams[m.local]?.nombre || m.local;
+    const nomV = S.teams[m.visita]?.nombre || m.visita;
+    const okL = c.local ? '✅' : '⏳';
+    const okV = c.visita ? '✅' : '⏳';
+    return `<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;">
+      <span>${esc(nomL)} ${okL} &nbsp;vs&nbsp; ${okV} ${esc(nomV)}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div style="color:var(--neon);font-weight:700;margin-bottom:4px">Confirmaciones — Jornada ${esc(jornadaTarget)}</div>${filas}`;
+}
+
 function fechaInputASheet(v){
   if(!v) return '';
   const [y,m,d] = v.split('-');
@@ -364,7 +393,10 @@ function jugaronYa(idA, idB){
 // Repinta Equipo A / Equipo B: deshabilita (no oculta) los equipos que ya tienen partido
 // Programado o Jugado en la "Jornada que estoy armando", y calcula quién descansa esa fecha.
 // Además, en Equipo B deshabilita a los rivales con los que Equipo A ya jugó (Estado=Jugado).
+let confirmDebounce = null;
 function actualizarSelectsPorJornada(){
+  clearTimeout(confirmDebounce);
+  confirmDebounce = setTimeout(pintarConfirmacionesJornada, 350);
   const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
   const fechaTarget = fechaInputASheet(document.getElementById('armando-fecha')?.value || '');
 
