@@ -30,6 +30,14 @@ async function cargarConfirmaciones() {
   catch (e) { console.error('No se pudieron leer las confirmaciones:', e); }
 }
 
+// ---- Aviso por WhatsApp (CallMeBot) ----
+const WHATSAPP_PHONE = '5212217613594';
+const WHATSAPP_APIKEY = '2019087';
+function avisarWhatsApp(texto) {
+  const url = `https://api.callmebot.com/whatsapp.php?phone=${WHATSAPP_PHONE}&text=${encodeURIComponent(texto)}&apikey=${WHATSAPP_APIKEY}`;
+  fetch(url).catch(() => { /* si falla el aviso, no interrumpimos el flujo normal */ });
+}
+
 async function confirmarAsistencia(idPartido, lado, idEquipo, nombreEquipo) {
   const inputId = `clave-${idPartido}-${lado}`;
   const clave = (document.getElementById(inputId)?.value || '').trim();
@@ -43,6 +51,10 @@ async function confirmarAsistencia(idPartido, lado, idEquipo, nombreEquipo) {
     await fetch(`${FB_BASE}/confirmaciones/${idPartido}/${lado}.json`, { method: 'PUT', body: JSON.stringify(true) });
     await cargarConfirmaciones();
     renderStack(ultimosFiltrados);
+
+    const partido = todosPartidos.find(p => String(p['ID_Partido']) === String(idPartido));
+    const jornadaTxt = partido?.Jornada ? `Jornada ${partido.Jornada}` : '';
+    avisarWhatsApp(`✅ Confirmación de asistencia\nEquipo: ${nombreEquipo}\n${jornadaTxt}`);
   } catch (e) { alert('No se pudo guardar, revisa tu conexión.'); }
 }
 
