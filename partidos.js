@@ -3,9 +3,48 @@ const CSV_EQUIPOS  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY
 const CSV_JUGADORES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1940220650&single=true&output=csv';
 const CSV_PARTICIPACIONES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv';
 const CSV_EVENTOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=645868286&single=true&output=csv';
+const CSV_EQUIPOSLOGIN = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1768443342&single=true&output=csv';
+const FB_BASE = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
 
 let todosPartidos = [], todosEquipos = [], todosJugadores = [], todasParticipaciones = [], todosEventos = [];
 let ultimosFiltrados = [];
+let CLAVES_EQUIPOS = {}; // ID_Equipo -> contraseña actual (hoja EquiposLogin + cambios en Firebase)
+let S_CONFIRM = {};      // ID_Partido -> { local:true/false, visita:true/false }
+
+async function cargarClavesEquipos() {
+  try {
+    const texto = await (await fetch(CSV_EQUIPOSLOGIN)).text();
+    const filas = parseCSV(texto);
+    const mapa = {};
+    filas.forEach(f => { if (f['ID_Equipo']) mapa[String(f['ID_Equipo']).trim()] = f['Contraseña'] || f['Contrasena'] || ''; });
+    try {
+      const overrides = await (await fetch(FB_BASE + '/passwordOverrides.json')).json();
+      if (overrides) Object.keys(overrides).forEach(id => { mapa[String(id)] = overrides[id]; });
+    } catch (eOv) { /* seguimos con las de la hoja si Firebase falla */ }
+    CLAVES_EQUIPOS = mapa;
+  } catch (e) { console.error('No se pudieron cargar las contraseñas de equipos:', e); }
+}
+
+async function cargarConfirmaciones() {
+  try { S_CONFIRM = (await (await fetch(FB_BASE + '/confirmaciones.json')).json()) || {}; }
+  catch (e) { console.error('No se pudieron leer las confirmaciones:', e); }
+}
+
+async function confirmarAsistencia(idPartido, lado, idEquipo, nombreEquipo) {
+  const inputId = `clave-${idPartido}-${lado}`;
+  const clave = (document.getElementById(inputId)?.value || '').trim();
+  if (!clave) { alert('Escribe la contraseña de ' + nombreEquipo + '.'); return; }
+  const claveReal = CLAVES_EQUIPOS[String(idEquipo)] || '';
+  if (clave.toUpperCase() !== claveReal.trim().toUpperCase()) {
+    alert('Contraseña incorrecta para ' + nombreEquipo + '.');
+    return;
+  }
+  try {
+    await fetch(`${FB_BASE}/confirmaciones/${idPartido}/${lado}.json`, { method: 'PUT', body: JSON.stringify(true) });
+    await cargarConfirmaciones();
+    renderStack(ultimosFiltrados);
+  } catch (e) { alert('No se pudo guardar, revisa tu conexión.'); }
+}
 
 function parseCSV(text) {
   const lines = text.replace(/\r/g, '').trim().split('\n');
@@ -247,6 +286,7 @@ async function cargarDatos() {
       statusEl.textContent = '⚠️ Selecciona un tipo de filtro'; return;
     }
     ultimosFiltrados = filtrados;
+    await Promise.all([cargarClavesEquipos(), cargarConfirmaciones()]);
     renderStack(filtrados);
     statusEl.textContent = `✅ ${filtrados.length} partido(s) cargado(s)`;
   } catch(e) {
@@ -292,6 +332,12 @@ function renderStack(filtrados) {
       : (ganPor ? `<span class="stack-badge ${ganPorClass}">${ganPor.toUpperCase()}</span>` : '');
     const clickable = (estado === 'Jugado' || estado === 'Programado');
     const idxReal = todosPartidos.indexOf(p);
+    let confirmHTML = '';
+    if (estado === 'Programado') {
+      const conf = S_CONFIRM[idPartido] || {};
+      confirmHTML = `<div class="stack-confirm">${bloqueConfirmarLado(idPartido,'local',p['Equipo_Local'],nomL,!!conf.local)}${bloqueConfirmarLado(idPartido,'visita',p['Equipo_Visita'],nomV,!!conf.visita)}</div>`;
+    }
+
     const estadoClass = estado === 'Programado' ? 'estado-programado' : estado === 'Jugado' ? 'estado-jugado' : 'estado-pendiente';
     let bordeClass = '';
     if (estado === 'Programado') bordeClass = 'borde-programado';
@@ -323,9 +369,18 @@ function renderStack(filtrados) {
           ${cancha ? `<span>📍 ${cancha}</span>` : ''}
           ${badgeHTML}
         </div>
+        ${confirmHTML}
       </div>
     </div>`;
   });
+}
+
+function bloqueConfirmarLado(idPartido, lado, idEquipo, nombre, confirmado) {
+  if (confirmado) return `<div class="confirm-ok">✅ ${nombre}<br>confirmó</div>`;
+  return `<div class="confirm-lado">
+    <input type="text" id="clave-${idPartido}-${lado}" placeholder="Contraseña de ${nombre}" onclick="event.stopPropagation()">
+    <button onclick="event.stopPropagation();confirmarAsistencia('${idPartido}','${lado}','${idEquipo}','${nombre.replace(/'/g,"")}')">Confirmar ${nombre}</button>
+  </div>`;
 }
 
 // ===== DESCARGAR PNG (paginado: 4 partidos por página) =====
