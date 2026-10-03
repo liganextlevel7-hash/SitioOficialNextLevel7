@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registrar Asistencias Atrasadas | Next Level 7</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    background: #142702; color: #fff; font-family: Arial, sans-serif;
+    margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center;
+  }
+  h1 { color: #5eb50d; font-size: 18px; letter-spacing: 1px; text-align: center; margin-bottom: 4px; }
+  .sub { color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 18px; text-align: center; }
+  .panel { background: rgba(0,0,0,0.88); border: 1px solid #7f5f0d; border-radius: 14px; padding: 18px; width: 100%; max-width: 760px; margin-bottom: 16px; }
+  .panel label { display:block; color:#d5a610; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+  select, input[type=password] {
+    width: 100%; background: rgba(255,255,255,0.07); border: 1px solid #7f5f0d; border-radius: 6px;
+    color: #fff; font-size: 14px; padding: 10px; outline: none;
+  }
+  select option { background:#111; }
+  button {
+    background: linear-gradient(135deg, #7f5f0d, #d5a610); border: none; border-radius: 8px;
+    color: #fff; cursor: pointer; font-size: 14px; font-weight: 700; letter-spacing: 1px;
+    padding: 10px 18px; text-transform: uppercase; touch-action: manipulation;
+  }
+  button.guardar { background: linear-gradient(135deg, #5eb50d, #8fe89a); color:#0a1206; margin-top:14px; width:100%; }
+  button:disabled { opacity:.5; cursor:default; }
+  .status { color:#5eb50d; font-size:12px; text-align:center; min-height:18px; margin-top:8px; }
+  .jugador-row {
+    display:flex; align-items:center; gap:10px; padding:10px 6px; border-bottom:1px solid rgba(94,181,13,0.15); flex-wrap:wrap;
+  }
+  .jugador-nombre { flex:1; min-width:140px; font-weight:bold; font-size:13px; }
+  .al-dia { color: rgba(255,255,255,0.3); font-size:12px; font-style:italic; }
+  .falta-chip {
+    display:flex; align-items:center; gap:4px; background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.4);
+    border-radius:14px; padding:4px 9px; font-size:11px; color:#ff8a8a; cursor:pointer; user-select:none;
+  }
+  .falta-chip input { margin:0; accent-color:#5eb50d; }
+  .falta-chip.marcada { background:rgba(94,181,13,0.15); border-color:#5eb50d; color:#8fe89a; }
+  .resumen-jugador { font-size:11px; color:rgba(255,255,255,0.45); width:100%; margin-top:2px; }
+  #login-wrap { max-width: 320px; margin-top: 60px; text-align:center; }
+  #login-wrap input { margin-bottom: 10px; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<div id="login-wrap" class="panel">
+  <h1>🔒 Acceso Admin</h1>
+  <input type="password" id="pass-admin" placeholder="Contraseña">
+  <button onclick="intentarLogin()" style="width:100%;margin-top:10px;">Entrar</button>
+  <div class="status" id="login-msg"></div>
+</div>
+
+<div id="app-wrap" class="hidden" style="width:100%;display:flex;flex-direction:column;align-items:center;">
+  <h1>📋 Registrar Asistencias Atrasadas</h1>
+  <div class="sub">Jala, por equipo, qué jugadores tienen jornadas ya jugadas sin asistencia registrada.</div>
+
+  <div class="panel">
+    <label>Equipo</label>
+    <select id="sel-equipo"><option value="">— Selecciona un equipo —</option></select>
+  </div>
+
+  <div class="panel hidden" id="panel-resultado">
+    <div id="lista-jugadores"></div>
+    <button class="guardar" id="btn-guardar" onclick="guardarSeleccion()">✅ Registrar asistencias marcadas</button>
+    <div class="status" id="guardar-msg"></div>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd1NDZg1IY2_y_VGc5xX7b_pmV85PE69c_10Aw58vG8mFPO79K2/exec";
+const ADMIN_PASS = "nl7admin";
+
+const SHEET_ID = "1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE";
+function csvUrl(gid){ return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`; }
+const URL_EQUIPOS = csvUrl("1894947293");
+const URL_JUGADORES = csvUrl("1940220650");
+const URL_PARTIDOS = csvUrl("1362473459");
+const URL_PARTICIPACIONES = csvUrl("626975401");
+
+function parseCSV(text) {
+  const lines = text.replace(/\r/g,'').trim().split('\n');
+  const headers = lines[0].split(',').map(h=>h.trim());
+  return lines.slice(1).filter(l=>l.trim()).map(line=>{
+    const vals=[]; let cur='',inQ=false;
+    for(const ch of line){ if(ch==='"') inQ=!inQ; else if(ch===','&&!inQ){vals.push(cur.trim());cur='';} else cur+=ch; }
+    vals.push(cur.trim());
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/^"|"$/g,'').trim());
+    return obj;
+  });
+}
+
+let EQUIPOS = [], JUGADORES = [], PARTIDOS = [], PARTICIPACIONES = [];
+let registradoPorJugadorLocal = {}; // idJugador -> Set(jornada) guardadas en esta sesión, por si el CSV tarda en actualizarse
+
+function intentarLogin(){
+  const val = document.getElementById('pass-admin').value.trim();
+  if(val === ADMIN_PASS){
+    document.getElementById('login-wrap').classList.add('hidden');
+    document.getElementById('app-wrap').classList.remove('hidden');
+    cargarTodo();
+  } else {
+    document.getElementById('login-msg').textContent = 'Contraseña incorrecta.';
+  }
+}
+
+async function cargarTodo(){
+  const [tEq, tJu, tPa, tPart] = await Promise.all([
+    fetch(URL_EQUIPOS).then(r=>r.text()),
+    fetch(URL_JUGADORES).then(r=>r.text()),
+    fetch(URL_PARTIDOS).then(r=>r.text()),
+    fetch(URL_PARTICIPACIONES).then(r=>r.text())
+  ]);
+  EQUIPOS = parseCSV(tEq);
+  JUGADORES = parseCSV(tJu);
+  PARTIDOS = parseCSV(tPa);
+  PARTICIPACIONES = parseCSV(tPart);
+
+  const sel = document.getElementById('sel-equipo');
+  EQUIPOS
+    .filter(e => (e['Status']||'').trim().toLowerCase() !== 'baja')
+    .sort((a,b)=>(a['Nombre']||'').localeCompare(b['Nombre']||'','es'))
+    .forEach(e => sel.innerHTML += `<option value="${e['ID_Equipo']}">${e['Nombre']}</option>`);
+
+  sel.addEventListener('change', () => pintarEquipo(sel.value));
+}
+
+function pintarEquipo(idEquipo){
+  const panel = document.getElementById('panel-resultado');
+  const cont = document.getElementById('lista-jugadores');
+  if(!idEquipo){ panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+
+  // Partidos JUGADOS de este equipo: jornada -> {idPartido, fecha}
+  const partidosDelEquipo = {};
+  PARTIDOS.forEach(p=>{
+    if((p['Estado']||'').trim() !== 'Jugado') return;
+    const local = String(p['Equipo_Local']||'').trim(), visita = String(p['Equipo_Visita']||'').trim();
+    if(local === idEquipo || visita === idEquipo){
+      const jornada = String(p['Jornada']||'').trim();
+      if(jornada) partidosDelEquipo[jornada] = { idPartido: p['ID_Partido'], fecha: p['Fecha'] };
+    }
+  });
+  const jornadasDelEquipo = Object.keys(partidosDelEquipo).sort((a,b)=>Number(a)-Number(b));
+
+  // Qué jornadas ya tiene registradas cada jugador en Participaciones
+  const registradoPorJugador = {}; // idJugador -> Set(jornada)
+  PARTICIPACIONES.forEach(row=>{
+    const idJ = String(row['ID_Jugador']||'').trim();
+    const jornada = String(row['Jornada']||'').trim();
+    if(!idJ || !jornada) return;
+    if(!registradoPorJugador[idJ]) registradoPorJugador[idJ] = new Set();
+    registradoPorJugador[idJ].add(jornada);
+  });
+
+  const jugadoresEquipo = JUGADORES.filter(j => String(j['Equipo']||'').trim() === idEquipo && j['Nombre']);
+
+  if(!jornadasDelEquipo.length){
+    cont.innerHTML = '<div class="al-dia">Este equipo todavía no tiene partidos marcados como "Jugado".</div>';
+    return;
+  }
+
+  cont.innerHTML = jugadoresEquipo.map(j => {
+    const idJ = j['ID_Jugador'];
+    const yaRegistradas = new Set([...(registradoPorJugador[idJ] || []), ...(registradoPorJugadorLocal[idJ] || [])]);
+    const faltantes = jornadasDelEquipo.filter(jn => !yaRegistradas.has(jn));
+
+    if(!faltantes.length){
+      return `<div class="jugador-row"><div class="jugador-nombre">${j['Nombre']}</div><div class="al-dia">✅ Al día (${jornadasDelEquipo.length} jornada${jornadasDelEquipo.length>1?'s':''})</div></div>`;
+    }
+
+    const chips = faltantes.map(jn => `
+      <label class="falta-chip" data-jugador="${idJ}" data-jornada="${jn}">
+        <input type="checkbox" onchange="this.parentElement.classList.toggle('marcada', this.checked)">
+        J${jn}
+      </label>
+    `).join('');
+
+    return `<div class="jugador-row">
+      <div class="jugador-nombre">${j['Nombre']}</div>
+      ${chips}
+      <div class="resumen-jugador">Le faltan ${faltantes.length} de ${jornadasDelEquipo.length} jornada${jornadasDelEquipo.length>1?'s':''} jugadas.</div>
+    </div>`;
+  }).join('');
+
+  // guardamos referencia para el guardado
+  window._partidosDelEquipo = partidosDelEquipo;
+  window._idEquipoActual = idEquipo;
+}
+
+async function guardarSeleccion(){
+  const idEquipo = window._idEquipoActual;
+  const partidosDelEquipo = window._partidosDelEquipo || {};
+  const marcadas = Array.from(document.querySelectorAll('.falta-chip input:checked'))
+    .map(input => input.parentElement);
+
+  if(!marcadas.length){
+    document.getElementById('guardar-msg').textContent = 'No marcaste ninguna jornada.';
+    return;
+  }
+
+  const jugadoresPayload = marcadas.map(chip => {
+    const idJugador = chip.dataset.jugador;
+    const jornada = chip.dataset.jornada;
+    const info = partidosDelEquipo[jornada] || {};
+    return {
+      idPartido: info.idPartido || '',
+      jornada: jornada,
+      idEquipo: idEquipo,
+      idJugador: idJugador,
+      fecha: info.fecha || ''
+    };
+  });
+
+  const btn = document.getElementById('btn-guardar');
+  btn.disabled = true; btn.textContent = '⏳ Guardando...';
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'guardar_asistencia', jugadores: jugadoresPayload })
+    });
+    document.getElementById('guardar-msg').textContent = `✅ Se registraron ${jugadoresPayload.length} asistencia(s).`;
+
+    // Quitamos de la vista, al instante, lo que ya se guardó (sin esperar a que
+    // el CSV publicado de Google refleje el cambio, que a veces tarda un rato).
+    marcadas.forEach(chip => {
+      chip.dataset.jugador; // referencia ya usada arriba
+      if (!registradoPorJugadorLocal[chip.dataset.jugador]) registradoPorJugadorLocal[chip.dataset.jugador] = new Set();
+      registradoPorJugadorLocal[chip.dataset.jugador].add(chip.dataset.jornada);
+      chip.remove();
+    });
+    // Si a un jugador ya no le queda ningún chip pendiente, lo marcamos "Al día"
+    document.querySelectorAll('.jugador-row').forEach(row => {
+      const chipsRestantes = row.querySelectorAll('.falta-chip');
+      const resumen = row.querySelector('.resumen-jugador');
+      if (resumen && chipsRestantes.length === 0) {
+        resumen.outerHTML = '<div class="al-dia">✅ Al día</div>';
+      } else if (resumen) {
+        resumen.textContent = `Le faltan ${chipsRestantes.length} jornada${chipsRestantes.length>1?'s':''} jugada${chipsRestantes.length>1?'s':''}.`;
+      }
+    });
+  } catch(e) {
+    document.getElementById('guardar-msg').textContent = 'No se pudo guardar, revisa tu conexión.';
+  }
+  btn.disabled = false; btn.textContent = '✅ Registrar asistencias marcadas';
+}
+</script>
+</body>
+</html>
