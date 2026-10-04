@@ -63,6 +63,7 @@
   </div>
 
   <div class="panel hidden" id="panel-resultado">
+    <button id="btn-marcar-todo" onclick="marcarTodasLasFaltantes()" style="width:100%;margin-bottom:12px;background:rgba(94,181,13,0.15);border:1px solid #5eb50d;color:#8fe89a;">☑️ Marcar todas las jornadas faltantes</button>
     <div id="lista-jugadores"></div>
     <button class="guardar" id="btn-guardar" onclick="guardarSeleccion()">✅ Registrar asistencias marcadas</button>
     <div class="status" id="guardar-msg"></div>
@@ -163,14 +164,24 @@ function pintarEquipo(idEquipo){
     return;
   }
 
-  cont.innerHTML = jugadoresEquipo.map(j => {
-    const idJ = j['ID_Jugador'];
-    const yaRegistradas = new Set([...(registradoPorJugador[idJ] || []), ...(registradoPorJugadorLocal[idJ] || [])]);
-    const faltantes = jornadasDelEquipo.filter(jn => !yaRegistradas.has(jn));
+  // Mostramos a CUALQUIER jugador al que le falte al menos una jornada de las que ya jugó
+  // el equipo — no importa si ya tiene otras registradas (ej. tiene J1 pero le falta J2).
+  const jugadoresConFaltantes = jugadoresEquipo
+    .map(j => {
+      const idJ = j['ID_Jugador'];
+      const yaRegistradas = new Set([...(registradoPorJugador[idJ] || []), ...(registradoPorJugadorLocal[idJ] || [])]);
+      const faltantes = jornadasDelEquipo.filter(jn => !yaRegistradas.has(jn));
+      return { j, faltantes };
+    })
+    .filter(x => x.faltantes.length > 0);
 
-    if(!faltantes.length){
-      return `<div class="jugador-row"><div class="jugador-nombre">${j['Nombre']}</div><div class="al-dia">✅ Al día (${jornadasDelEquipo.length} jornada${jornadasDelEquipo.length>1?'s':''})</div></div>`;
-    }
+  if(!jugadoresConFaltantes.length){
+    cont.innerHTML = '<div class="al-dia">✅ Todos los jugadores de este equipo ya están al día.</div>';
+    return;
+  }
+
+  cont.innerHTML = jugadoresConFaltantes.map(({j, faltantes}) => {
+    const idJ = j['ID_Jugador'];
 
     const chips = faltantes.map(jn => `
       <label class="falta-chip" data-jugador="${idJ}" data-jornada="${jn}">
@@ -189,6 +200,13 @@ function pintarEquipo(idEquipo){
   // guardamos referencia para el guardado
   window._partidosDelEquipo = partidosDelEquipo;
   window._idEquipoActual = idEquipo;
+}
+
+function marcarTodasLasFaltantes(){
+  document.querySelectorAll('.falta-chip input[type=checkbox]').forEach(input => {
+    input.checked = true;
+    input.parentElement.classList.add('marcada');
+  });
 }
 
 async function guardarSeleccion(){
@@ -236,13 +254,16 @@ async function guardarSeleccion(){
     // Si a un jugador ya no le queda ningún chip pendiente, lo marcamos "Al día"
     document.querySelectorAll('.jugador-row').forEach(row => {
       const chipsRestantes = row.querySelectorAll('.falta-chip');
-      const resumen = row.querySelector('.resumen-jugador');
-      if (resumen && chipsRestantes.length === 0) {
-        resumen.outerHTML = '<div class="al-dia">✅ Al día</div>';
-      } else if (resumen) {
-        resumen.textContent = `Le faltan ${chipsRestantes.length} jornada${chipsRestantes.length>1?'s':''} jugada${chipsRestantes.length>1?'s':''}.`;
+      if (chipsRestantes.length === 0) {
+        row.remove(); // ya quedó completo -> ya no le falta nada
+      } else {
+        const resumen = row.querySelector('.resumen-jugador');
+        if (resumen) resumen.textContent = `Le faltan ${chipsRestantes.length} jornada${chipsRestantes.length>1?'s':''} jugada${chipsRestantes.length>1?'s':''}.`;
       }
     });
+    if (!document.querySelectorAll('.jugador-row').length) {
+      document.getElementById('lista-jugadores').innerHTML = '<div class="al-dia">✅ Todos los jugadores de este equipo ya están al día.</div>';
+    }
   } catch(e) {
     document.getElementById('guardar-msg').textContent = 'No se pudo guardar, revisa tu conexión.';
   }
