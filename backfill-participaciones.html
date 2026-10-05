@@ -38,6 +38,7 @@
   }
   .falta-chip input { margin:0; accent-color:#5eb50d; }
   .falta-chip.marcada { background:rgba(94,181,13,0.15); border-color:#5eb50d; color:#8fe89a; }
+  .falta-chip.chip-lista { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.15); color:rgba(255,255,255,0.35); cursor:default; }
   .resumen-jugador { font-size:11px; color:rgba(255,255,255,0.45); width:100%; margin-top:2px; }
   #login-wrap { max-width: 320px; margin-top: 60px; text-align:center; }
   #login-wrap input { margin-bottom: 10px; }
@@ -182,13 +183,21 @@ function pintarEquipo(idEquipo){
 
   cont.innerHTML = jugadoresConFaltantes.map(({j, faltantes}) => {
     const idJ = j['ID_Jugador'];
+    const faltantesSet = new Set(faltantes);
 
-    const chips = faltantes.map(jn => `
-      <label class="falta-chip" data-jugador="${idJ}" data-jornada="${jn}">
-        <input type="checkbox" onchange="this.parentElement.classList.toggle('marcada', this.checked)">
-        J${jn}
-      </label>
-    `).join('');
+    // Mostramos TODAS las jornadas que jugó el equipo: las que ya tiene, bloqueadas
+    // (no se pueden tocar), y las que le faltan, con casilla para marcarlas.
+    const chips = jornadasDelEquipo.map(jn => {
+      if (!faltantesSet.has(jn)) {
+        return `<label class="falta-chip chip-lista" title="Ya registrada">✅ J${jn}</label>`;
+      }
+      return `
+        <label class="falta-chip" data-jugador="${idJ}" data-jornada="${jn}">
+          <input type="checkbox" onchange="this.parentElement.classList.toggle('marcada', this.checked)">
+          J${jn}
+        </label>
+      `;
+    }).join('');
 
     return `<div class="jugador-row">
       <div class="jugador-nombre">${j['Nombre']}</div>
