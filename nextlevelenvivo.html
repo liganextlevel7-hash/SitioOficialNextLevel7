@@ -10,6 +10,7 @@
 body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-height:100vh;}
 .app{max-width:700px;margin:0 auto;padding:14px;}
 .inicio-btn{position:fixed;top:12px;left:12px;z-index:10000;display:inline-flex;align-items:center;gap:5px;background:#000;color:#ffd166;border:1px solid #ffd166;border-radius:20px;padding:6px 13px;font-size:11px;font-weight:700;text-decoration:none;}
+.asist-atrasadas-btn{position:fixed;top:12px;left:110px;z-index:10000;display:inline-flex;align-items:center;gap:5px;background:#000;color:#5eb50d;border:1px solid #5eb50d;border-radius:20px;padding:6px 13px;font-size:11px;font-weight:700;text-decoration:none;}
 .header{background:linear-gradient(135deg,var(--verde),var(--verde2));border-radius:14px;padding:18px;text-align:center;margin-bottom:14px;}
 .header h1{font-size:24px;font-weight:900;letter-spacing:2px;color:#fff;}
 .header p{font-size:12px;opacity:.8;margin-top:3px;color:#fff;}
@@ -152,6 +153,7 @@ var db = firebase.database();
 </div>
 
 <a href="index.html" class="inicio-btn">← Inicio</a>
+<a href="backfill-participaciones.html" class="asist-atrasadas-btn">📋 Asistencias Atrasadas</a>
 <div class="app" id="main-app" style="display:none;">
   <div class="header">
     <div class="live-badge"><span class="live-dot"></span> PANEL CONTROL · CANCHA <span id="cancha-badge">-</span></div>
