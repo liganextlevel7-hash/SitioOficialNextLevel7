@@ -151,7 +151,7 @@ function pintarEquipo(idEquipo){
   // Qué jornadas ya tiene registradas cada jugador en Participaciones
   const registradoPorJugador = {}; // idJugador -> Set(jornada)
   PARTICIPACIONES.forEach(row=>{
-    const idJ = String(row['ID_Jugador']||'').trim();
+    const idJ = String(row['Jugador']||'').trim();
     const jornada = String(row['Jornada']||'').trim();
     if(!idJ || !jornada) return;
     if(!registradoPorJugador[idJ]) registradoPorJugador[idJ] = new Set();
