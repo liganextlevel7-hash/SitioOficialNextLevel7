@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Familia Futbolera - Next Level 7</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; }
+body {
+  background: #142702; color: #fff; font-family: 'Roboto', Arial, sans-serif;
+  margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center;
+}
+.nav-top { width: 100%; max-width: 620px; margin: 0 auto 14px auto; display: flex; align-items: center; justify-content: space-between; }
+.nav-top a {
+  display: inline-block; padding: 8px 22px; background: rgba(0,0,0,.75); border: 1px solid #5eb50d;
+  border-radius: 12px; color: white; text-decoration: none; font-weight: bold; font-size: 13px; transition: .3s;
+}
+.nav-top a:hover { background: #5eb50d; color: black; }
+.nav-top .nav-admin-link { padding: 8px 12px; font-size: 13px; background: transparent; border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); }
+.nav-top .nav-admin-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+h1 { color: #5eb50d; font-size: 24px; letter-spacing: 1px; text-align: center; margin: 6px 0 2px; font-family: 'Bebas Neue', sans-serif; }
+.sub { color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 18px; text-align: center; }
+
+.wrap { width: 100%; max-width: 620px; }
+.panel { background: rgba(0,0,0,0.88); border: 1px solid #7f5f0d; border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+.panel label { display:block; color:#d5a610; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+input[type=text], input[type=password], textarea, select {
+  width: 100%; background: rgba(255,255,255,0.07); border: 1px solid #7f5f0d; border-radius: 6px;
+  color: #fff; font-size: 14px; padding: 10px; outline: none; font-family: inherit;
+}
+textarea { resize: vertical; min-height: 70px; }
+select option { background:#111; }
+button {
+  background: linear-gradient(135deg, #7f5f0d, #d5a610); border: none; border-radius: 8px;
+  color: #fff; cursor: pointer; font-size: 13px; font-weight: 700; letter-spacing: 1px;
+  padding: 10px 16px; text-transform: uppercase; touch-action: manipulation;
+}
+button.primario { background: linear-gradient(135deg, #5eb50d, #8fe89a); color:#0a1206; width:100%; margin-top: 10px; }
+button:disabled { opacity:.5; cursor:default; }
+.msg { font-size:12px; text-align:center; min-height:16px; margin-top:8px; }
+.msg.error { color:#ff8a8a; }
+.msg.ok { color:#8fe89a; }
+.hidden { display:none !important; }
+
+/* ---- Login de capitán ---- */
+#login-equipo { text-align:center; }
+#login-equipo input { margin-bottom: 10px; }
+.equipo-actual-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; }
+.equipo-actual-bar b { color:#5eb50d; }
+.equipo-actual-bar a { color: rgba(255,255,255,0.4); text-decoration: underline; font-size:11px; }
+
+/* ---- Foto ---- */
+.foto-zona {
+  border: 2px dashed rgba(94,181,13,0.4); border-radius: 10px; padding: 14px; text-align:center;
+  cursor: pointer; margin-bottom: 10px; color: rgba(255,255,255,0.5); font-size:12px;
+}
+.foto-zona img { max-width:100%; max-height:180px; border-radius:8px; display:none; }
+
+/* ---- Feed ---- */
+.post { background: rgba(0,0,0,0.75); border: 1px solid rgba(94,181,13,0.3); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+.post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.post-header img { width:36px; height:36px; border-radius:50%; object-fit:cover; background:#000; border:1px solid #5eb50d; }
+.post-equipo { font-weight:900; color:#5eb50d; font-size:13px; text-transform:uppercase; }
+.post-meta { font-size:11px; color:rgba(255,255,255,0.4); }
+.post-texto { font-size:14px; line-height:1.5; margin-bottom:10px; white-space:pre-wrap; }
+.post-foto { width:100%; border-radius:10px; margin-bottom:10px; display:block; }
+.post-yt { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px; margin-bottom:10px; }
+.post-yt iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
+.post-acciones { display:flex; align-items:center; gap:14px; border-top:1px solid rgba(255,255,255,0.08); padding-top:10px; }
+.btn-like {
+  background: rgba(94,181,13,0.12); border:1px solid #5eb50d; border-radius: 20px; color:#5eb50d;
+  font-size:12px; font-weight:700; padding:6px 14px; cursor:pointer; display:flex; align-items:center; gap:5px;
+}
+.btn-like.activo { background:#5eb50d; color:#0a1206; }
+.btn-borrar-post { background:none; border:1px solid rgba(255,80,80,0.5); color:#ff8a8a; border-radius:20px; font-size:11px; padding:6px 12px; margin-left:auto; }
+
+.comentarios { margin-top:12px; }
+.comentario { font-size:12px; padding:6px 0; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; gap:8px; }
+.comentario b { color:#d5a610; }
+.comentario .borrar-coment { color:rgba(255,80,80,0.6); cursor:pointer; font-size:11px; white-space:nowrap; }
+.form-comentario { display:flex; gap:6px; margin-top:10px; }
+.form-comentario input[type=text]:first-child { max-width:90px; flex-shrink:0; }
+.form-comentario button { padding:8px 12px; font-size:11px; }
+
+.vacio { text-align:center; color:rgba(255,255,255,0.3); font-size:13px; padding:30px 10px; }
+</style>
+</head>
+<body>
+
+<div class="nav-top">
+  <a href="index.html">← Inicio</a>
+  <a href="#" id="link-admin" class="nav-admin-link">⚙️ Admin</a>
+</div>
+
+<h1>⚽ La Familia Futbolera</h1>
+<div class="sub">Next Level 7 — el muro de la liga</div>
+
+<div class="wrap">
+
+  <!-- LOGIN DE ADMIN (oculto, se abre con el link de arriba) -->
+  <div class="panel hidden" id="panel-admin-login">
+    <label>Contraseña de administrador</label>
+    <input type="password" id="pass-admin" placeholder="Contraseña">
+    <button class="primario" onclick="intentarLoginAdmin()">Entrar como admin</button>
+    <div class="msg" id="admin-msg"></div>
+  </div>
+
+  <!-- LOGIN / COMPOSER DE CAPITÁN -->
+  <div class="panel" id="panel-capitan">
+    <div id="login-equipo">
+      <label>Contraseña de tu equipo (para publicar)</label>
+      <input type="password" id="input-codigo" placeholder="Contraseña de tu equipo">
+      <button class="primario" onclick="entrarConCodigo(document.getElementById('input-codigo').value)">Entrar y publicar</button>
+      <div class="msg" id="login-msg"></div>
+    </div>
+
+    <div id="composer" class="hidden">
+      <div class="equipo-actual-bar">
+        <span>Publicando como <b id="equipo-actual-nombre"></b></span>
+        <a href="#" id="link-cambiar-equipo">Cambiar equipo</a>
+      </div>
+      <label>¿Qué quieres compartir?</label>
+      <textarea id="input-texto" placeholder="Cuéntale algo a la Familia Futbolera..."></textarea>
+      <div class="foto-zona" id="foto-zona">
+        <span id="foto-placeholder">📷 Toca para agregar una foto (opcional)</span>
+        <img id="foto-preview">
+      </div>
+      <input type="file" id="input-foto" accept="image/*" class="hidden">
+      <label style="margin-top:10px">Link de YouTube (opcional)</label>
+      <input type="text" id="input-youtube" placeholder="https://youtube.com/watch?v=...">
+      <button class="primario" id="btn-publicar" onclick="publicar()">📣 Publicar</button>
+      <div class="msg" id="publicar-msg"></div>
+    </div>
+  </div>
+
+  <!-- FEED -->
+  <div id="feed"><div class="vacio">Cargando publicaciones...</div></div>
+
+</div>
+
+<script>
+const FB = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
+const CAR_CAPITANES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1768443342&single=true&output=csv";
+const CAR_EQUIPOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv";
+const ADMIN_PASS = "nl7admin";
+
+let EQUIPOS = [];       // [{id, nombre, codigo}] para el login de capitán
+let LOGOS = {};         // nombre -> logo
+let equipoActual = null;
+let esAdmin = false;
+let miId = localStorage.getItem('nl7_ff_visitante_id');
+if(!miId){ miId = 'v' + Date.now() + Math.random().toString(36).slice(2); localStorage.setItem('nl7_ff_visitante_id', miId); }
+
+function parseCSVLinea(linea){ return linea.split(',').map(c=>c.trim()); }
+
+async function cargarEquipos(){
+  try{
+    const texto = await (await fetch(CAR_CAPITANES)).text();
+    const filas = texto.trim().split('\n');
+    const encontrados = [];
+    for(let i=1;i<filas.length;i++){
+      const c = parseCSVLinea(filas[i]);
+      const id = Number(c[0]);
+      const nombre = (c[1]||'').trim();
+      const codigo = (c[3]||'').trim();
+      const estatus = (c[4]||'').trim().toUpperCase();
+      if(!nombre || !codigo) continue;
+      if(estatus && estatus !== 'TRUE') continue;
+      encontrados.push({id, nombre, codigo});
+    }
+    EQUIPOS = encontrados;
+    try{
+      const overrides = await (await fetch(FB+'/passwordOverrides.json')).json();
+      if(overrides) EQUIPOS.forEach(eq=>{ if(overrides[eq.id]) eq.codigo = overrides[eq.id]; });
+    }catch(e){}
+  }catch(e){
+    document.getElementById('login-msg').textContent = 'No se pudo cargar la lista de equipos.';
+    document.getElementById('login-msg').className = 'msg error';
+  }
+
+  const guardado = localStorage.getItem('nl7_ff_codigo_equipo');
+  if(guardado) entrarConCodigo(guardado);
+}
+
+async function cargarLogos(){
+  try{
+    const texto = await (await fetch(CAR_EQUIPOS)).text();
+    const filas = texto.trim().split('\n');
+    for(let i=1;i<filas.length;i++){
+      const c = filas[i].split(',');
+      const nombre = (c[1]||'').trim();
+      const logo = (c[4]||c[3]||'').trim();
+      if(nombre) LOGOS[nombre] = logo;
+    }
+  }catch(e){}
+}
+
+function entrarConCodigo(codigo){
+  codigo = (codigo||'').trim();
+  if(!codigo) return false;
+  const encontrado = EQUIPOS.find(e=>e.codigo.toUpperCase()===codigo.toUpperCase());
+  const loginMsg = document.getElementById('login-msg');
+  if(!encontrado){
+    loginMsg.textContent = 'Contraseña no válida.';
+    loginMsg.className = 'msg error';
+    return false;
+  }
+  equipoActual = encontrado;
+  localStorage.setItem('nl7_ff_codigo_equipo', encontrado.codigo);
+  document.getElementById('login-equipo').classList.add('hidden');
+  document.getElementById('composer').classList.remove('hidden');
+  document.getElementById('equipo-actual-nombre').textContent = encontrado.nombre;
+  loginMsg.textContent = '';
+  return true;
+}
+
+document.getElementById('link-cambiar-equipo').addEventListener('click', (e)=>{
+  e.preventDefault();
+  localStorage.removeItem('nl7_ff_codigo_equipo');
+  equipoActual = null;
+  document.getElementById('composer').classList.add('hidden');
+  document.getElementById('login-equipo').classList.remove('hidden');
+  document.getElementById('input-codigo').value = '';
+});
+
+document.getElementById('input-codigo').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter') entrarConCodigo(e.target.value);
+});
+
+// ---- Admin ----
+document.getElementById('link-admin').addEventListener('click', (e)=>{
+  e.preventDefault();
+  document.getElementById('panel-admin-login').classList.toggle('hidden');
+});
+function intentarLoginAdmin(){
+  const val = document.getElementById('pass-admin').value.trim();
+  const msg = document.getElementById('admin-msg');
+  if(val === ADMIN_PASS){
+    esAdmin = true;
+    document.getElementById('panel-admin-login').classList.add('hidden');
+    document.getElementById('link-admin').textContent = '⚙️ Admin ✅';
+    renderFeed();
+  } else {
+    msg.textContent = 'Contraseña incorrecta.';
+    msg.className = 'msg error';
+  }
+}
+
+// ---- Foto ----
+const fotoZona = document.getElementById('foto-zona');
+const inputFoto = document.getElementById('input-foto');
+const fotoPreview = document.getElementById('foto-preview');
+const fotoPlaceholder = document.getElementById('foto-placeholder');
+let fotoBase64 = '';
+fotoZona.addEventListener('click', ()=>inputFoto.click());
+inputFoto.addEventListener('change', ()=>{
+  const archivo = inputFoto.files[0];
+  if(!archivo) return;
+  const lector = new FileReader();
+  lector.onload = (e)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxLado = 900;
+      let w=img.width, h=img.height;
+      if(w>h && w>maxLado){ h*=maxLado/w; w=maxLado; }
+      else if(h>maxLado){ w*=maxLado/h; h=maxLado; }
+      const canvas = document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      fotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
+      fotoPreview.src = fotoBase64;
+      fotoPreview.style.display = 'block';
+      fotoPlaceholder.style.display = 'none';
+    };
+    img.src = e.target.result;
+  };
+  lector.readAsDataURL(archivo);
+});
+
+function youtubeEmbedId(url){
+  if(!url) return '';
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : '';
+}
+
+// ---- Publicar ----
+async function publicar(){
+  const texto = document.getElementById('input-texto').value.trim();
+  const youtube = document.getElementById('input-youtube').value.trim();
+  const msg = document.getElementById('publicar-msg');
+  msg.className = 'msg';
+
+  if(!texto && !fotoBase64 && !youtube){
+    msg.textContent = 'Escribe algo, sube una foto o pega un link antes de publicar.';
+    msg.className = 'msg error';
+    return;
+  }
+  if(youtube && !youtubeEmbedId(youtube)){
+    msg.textContent = 'Ese link de YouTube no se reconoce, revísalo.';
+    msg.className = 'msg error';
+    return;
+  }
+
+  const btn = document.getElementById('btn-publicar');
+  btn.disabled = true; btn.textContent = 'Publicando...';
+
+  const post = {
+    equipoId: equipoActual.id,
+    equipo: equipoActual.nombre,
+    texto: texto,
+    foto: fotoBase64 || '',
+    youtube: youtube || '',
+    fecha: Date.now()
+  };
+
+  try{
+    await fetch(FB + '/familiaFutbolera/posts.json', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(post)
+    });
+    msg.textContent = '✅ Publicado.';
+    msg.className = 'msg ok';
+    document.getElementById('input-texto').value = '';
+    document.getElementById('input-youtube').value = '';
+    fotoBase64 = '';
+    fotoPreview.style.display = 'none';
+    fotoPlaceholder.style.display = 'block';
+    inputFoto.value = '';
+    await renderFeed();
+  }catch(e){
+    msg.textContent = 'No se pudo publicar, revisa tu conexión.';
+    msg.className = 'msg error';
+  }
+  btn.disabled = false; btn.textContent = '📣 Publicar';
+}
+
+// ---- Feed ----
+function tiempoRelativo(ts){
+  const seg = Math.floor((Date.now()-ts)/1000);
+  if(seg < 60) return 'justo ahora';
+  const min = Math.floor(seg/60);
+  if(min < 60) return `hace ${min} min`;
+  const hr = Math.floor(min/60);
+  if(hr < 24) return `hace ${hr} h`;
+  const dias = Math.floor(hr/24);
+  return `hace ${dias} d`;
+}
+
+async function toggleLike(postId, yaLeDiLike){
+  const path = `${FB}/familiaFutbolera/posts/${postId}/likes/${miId}.json`;
+  if(yaLeDiLike) await fetch(path, {method:'DELETE'});
+  else await fetch(path, {method:'PUT', body: JSON.stringify(true)});
+  renderFeed();
+}
+
+async function enviarComentario(postId){
+  const nombreInput = document.getElementById(`coment-nombre-${postId}`);
+  const textoInput = document.getElementById(`coment-texto-${postId}`);
+  const nombre = nombreInput.value.trim() || 'Afición';
+  const texto = textoInput.value.trim();
+  if(!texto) return;
+  await fetch(`${FB}/familiaFutbolera/posts/${postId}/comentarios.json`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ nombre, texto, fecha: Date.now() })
+  });
+  textoInput.value = '';
+  renderFeed();
+}
+
+async function borrarPost(postId){
+  if(!confirm('¿Borrar esta publicación?')) return;
+  await fetch(`${FB}/familiaFutbolera/posts/${postId}.json`, {method:'DELETE'});
+  renderFeed();
+}
+async function borrarComentario(postId, comentId){
+  if(!confirm('¿Borrar este comentario?')) return;
+  await fetch(`${FB}/familiaFutbolera/posts/${postId}/comentarios/${comentId}.json`, {method:'DELETE'});
+  renderFeed();
+}
+
+function postHTML(id, p){
+  const logo = LOGOS[p.equipo] || '';
+  const likes = p.likes || {};
+  const numLikes = Object.keys(likes).length;
+  const yaLeDiLike = !!likes[miId];
+  const comentarios = p.comentarios ? Object.entries(p.comentarios).sort((a,b)=>(a[1].fecha||0)-(b[1].fecha||0)) : [];
+  const ytId = youtubeEmbedId(p.youtube);
+
+  return `
+    <div class="post">
+      <div class="post-header">
+        <img src="${logo}" onerror="this.style.opacity='.2'">
+        <div>
+          <div class="post-equipo">${esc(p.equipo||'')}</div>
+          <div class="post-meta">${tiempoRelativo(p.fecha||0)}</div>
+        </div>
+      </div>
+      ${p.texto ? `<div class="post-texto">${esc(p.texto)}</div>` : ''}
+      ${p.foto ? `<img class="post-foto" src="${p.foto}">` : ''}
+      ${ytId ? `<div class="post-yt"><iframe src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe></div>` : ''}
+      <div class="post-acciones">
+        <button class="btn-like ${yaLeDiLike?'activo':''}" onclick="toggleLike('${id}', ${yaLeDiLike})">⚽ Me gusta ${numLikes>0?('('+numLikes+')'):''}</button>
+        ${esAdmin ? `<button class="btn-borrar-post" onclick="borrarPost('${id}')">🗑 Borrar publicación</button>` : ''}
+      </div>
+      <div class="comentarios">
+        ${comentarios.map(([cid,c])=>`
+          <div class="comentario">
+            <div><b>${esc(c.nombre||'Afición')}:</b> ${esc(c.texto||'')}</div>
+            ${esAdmin ? `<span class="borrar-coment" onclick="borrarComentario('${id}','${cid}')">🗑</span>` : ''}
+          </div>
+        `).join('')}
+        <div class="form-comentario">
+          <input type="text" id="coment-nombre-${id}" placeholder="Tu nombre">
+          <input type="text" id="coment-texto-${id}" placeholder="Escribe un comentario..." onkeydown="if(event.key==='Enter')enviarComentario('${id}')">
+          <button onclick="enviarComentario('${id}')">Enviar</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function renderFeed(){
+  const cont = document.getElementById('feed');
+  try{
+    const data = await (await fetch(FB + '/familiaFutbolera/posts.json')).json();
+    if(!data){ cont.innerHTML = '<div class="vacio">Todavía no hay publicaciones. ¡Sé el primero!</div>'; return; }
+    const posts = Object.entries(data).sort((a,b)=>(b[1].fecha||0)-(a[1].fecha||0));
+    cont.innerHTML = posts.map(([id,p])=>postHTML(id,p)).join('');
+  }catch(e){
+    cont.innerHTML = '<div class="vacio">No se pudo cargar el muro. Revisa tu conexión.</div>';
+  }
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+cargarEquipos();
+cargarLogos();
+renderFeed();
+setInterval(renderFeed, 20000);
+</script>
+</body>
+</html>
