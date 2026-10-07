@@ -85,6 +85,11 @@ button:disabled { opacity:.5; cursor:default; }
 .form-comentario button { padding:8px 12px; font-size:11px; }
 
 .vacio { text-align:center; color:rgba(255,255,255,0.3); font-size:13px; padding:30px 10px; }
+.post-link-card {
+  display:flex; align-items:center; gap:10px; background:rgba(94,181,13,0.08); border:1px solid rgba(94,181,13,0.35);
+  border-radius:10px; padding:12px 14px; margin-bottom:10px; text-decoration:none; color:#8fe89a; font-size:13px; font-weight:700;
+}
+.post-link-card:hover { background:rgba(94,181,13,0.16); }
 </style>
 </head>
 <body>
@@ -128,8 +133,8 @@ button:disabled { opacity:.5; cursor:default; }
         <img id="foto-preview">
       </div>
       <input type="file" id="input-foto" accept="image/*" class="hidden">
-      <label style="margin-top:10px">Link de YouTube (opcional)</label>
-      <input type="text" id="input-youtube" placeholder="https://youtube.com/watch?v=...">
+      <label style="margin-top:10px">Link de red social (opcional)</label>
+      <input type="text" id="input-link" placeholder="Pega aquí un link de YouTube, TikTok, Instagram, Facebook...">
       <button class="primario" id="btn-publicar" onclick="publicar()">📣 Publicar</button>
       <div class="msg" id="publicar-msg"></div>
     </div>
@@ -241,6 +246,12 @@ function intentarLoginAdmin(){
     esAdmin = true;
     document.getElementById('panel-admin-login').classList.add('hidden');
     document.getElementById('link-admin').textContent = '⚙️ Admin ✅';
+    if(!equipoActual){
+      equipoActual = { id: 'admin', nombre: 'Liga Next Level 7', codigo: '' };
+      document.getElementById('login-equipo').classList.add('hidden');
+      document.getElementById('composer').classList.remove('hidden');
+      document.getElementById('equipo-actual-nombre').textContent = equipoActual.nombre;
+    }
     renderFeed();
   } else {
     msg.textContent = 'Contraseña incorrecta.';
@@ -285,20 +296,31 @@ function youtubeEmbedId(url){
   return m ? m[1] : '';
 }
 
+function datosDelLink(url){
+  if(!url) return null;
+  if(/youtube\.com|youtu\.be/i.test(url)) return { tipo:'youtube', etiqueta:'YouTube', icono:'▶️' };
+  if(/tiktok\.com/i.test(url)) return { tipo:'otro', etiqueta:'TikTok', icono:'🎵' };
+  if(/instagram\.com/i.test(url)) return { tipo:'otro', etiqueta:'Instagram', icono:'📸' };
+  if(/facebook\.com|fb\.watch/i.test(url)) return { tipo:'otro', etiqueta:'Facebook', icono:'👍' };
+  if(/(twitter\.com|x\.com)/i.test(url)) return { tipo:'otro', etiqueta:'X / Twitter', icono:'🐦' };
+  if(/whatsapp\.com/i.test(url)) return { tipo:'otro', etiqueta:'WhatsApp', icono:'💬' };
+  return { tipo:'otro', etiqueta:'enlace', icono:'🔗' };
+}
+
 // ---- Publicar ----
 async function publicar(){
   const texto = document.getElementById('input-texto').value.trim();
-  const youtube = document.getElementById('input-youtube').value.trim();
+  const link = document.getElementById('input-link').value.trim();
   const msg = document.getElementById('publicar-msg');
   msg.className = 'msg';
 
-  if(!texto && !fotoBase64 && !youtube){
+  if(!texto && !fotoBase64 && !link){
     msg.textContent = 'Escribe algo, sube una foto o pega un link antes de publicar.';
     msg.className = 'msg error';
     return;
   }
-  if(youtube && !youtubeEmbedId(youtube)){
-    msg.textContent = 'Ese link de YouTube no se reconoce, revísalo.';
+  if(link && !/^https?:\/\//i.test(link)){
+    msg.textContent = 'Ese link no se ve válido — debe empezar con http:// o https://';
     msg.className = 'msg error';
     return;
   }
@@ -311,7 +333,7 @@ async function publicar(){
     equipo: equipoActual.nombre,
     texto: texto,
     foto: fotoBase64 || '',
-    youtube: youtube || '',
+    link: link || '',
     fecha: Date.now()
   };
 
@@ -324,7 +346,7 @@ async function publicar(){
     msg.textContent = '✅ Publicado.';
     msg.className = 'msg ok';
     document.getElementById('input-texto').value = '';
-    document.getElementById('input-youtube').value = '';
+    document.getElementById('input-link').value = '';
     fotoBase64 = '';
     fotoPreview.style.display = 'none';
     fotoPlaceholder.style.display = 'block';
@@ -383,12 +405,14 @@ async function borrarComentario(postId, comentId){
 }
 
 function postHTML(id, p){
-  const logo = LOGOS[p.equipo] || '';
+  const logo = p.equipoId === 'admin' ? 'logo-liga.png.png' : (LOGOS[p.equipo] || '');
   const likes = p.likes || {};
   const numLikes = Object.keys(likes).length;
   const yaLeDiLike = !!likes[miId];
   const comentarios = p.comentarios ? Object.entries(p.comentarios).sort((a,b)=>(a[1].fecha||0)-(b[1].fecha||0)) : [];
-  const ytId = youtubeEmbedId(p.youtube);
+  const linkPost = p.link || p.youtube || ''; // p.youtube queda por compatibilidad con publicaciones viejas
+  const ytId = youtubeEmbedId(linkPost);
+  const infoLink = !ytId ? datosDelLink(linkPost) : null;
 
   return `
     <div class="post">
@@ -402,6 +426,7 @@ function postHTML(id, p){
       ${p.texto ? `<div class="post-texto">${esc(p.texto)}</div>` : ''}
       ${p.foto ? `<img class="post-foto" src="${p.foto}">` : ''}
       ${ytId ? `<div class="post-yt"><iframe src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe></div>` : ''}
+      ${(!ytId && infoLink) ? `<a class="post-link-card" href="${esc(linkPost)}" target="_blank" rel="noopener">${infoLink.icono} Ver en ${infoLink.etiqueta}</a>` : ''}
       <div class="post-acciones">
         <button class="btn-like ${yaLeDiLike?'activo':''}" onclick="toggleLike('${id}', ${yaLeDiLike})">⚽ Me gusta ${numLikes>0?('('+numLikes+')'):''}</button>
         ${esAdmin ? `<button class="btn-borrar-post" onclick="borrarPost('${id}')">🗑 Borrar publicación</button>` : ''}
