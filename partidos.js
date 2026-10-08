@@ -406,7 +406,51 @@ async function esperarImagenesReporte(el) {
   await new Promise(r => setTimeout(r, 200));
 }
 
-function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa) {
+
+function bloqueEquiposAtrasadosHTML(equiposAtrasados) {
+  if (!equiposAtrasados || !equiposAtrasados.length) return '';
+  const filas = equiposAtrasados.map(e =>
+    `<div style="font-size:13px;color:#f5f5f0;text-align:center;line-height:1.5;">
+      <strong style="color:#ff8a8a;">${e.nombre}</strong> — debe jornada${e.jornadas.length>1?'s':''} ${e.jornadas.join(', ')}
+    </div>`
+  ).join('');
+  return `
+    <div style="margin-top:16px;padding:14px 16px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,68,68,0.45);border-radius:12px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:#ff6666;text-align:center;margin-bottom:8px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">⚠️ EQUIPOS CON JORNADAS PENDIENTES</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">${filas}</div>
+    </div>`;
+}
+
+function calcularEquiposAtrasados(jornadaActual) {
+  const n = Number(jornadaActual) || 0;
+  if (n <= 1) return [];
+  const jornadasLiga = new Set();
+  todosPartidos.forEach(p => {
+    const jn = Number(p['Jornada']);
+    if ((p['Estado']||'').trim() === 'Jugado' && jn && jn < n) jornadasLiga.add(jn);
+  });
+  const jornadasLigaArr = [...jornadasLiga].sort((a,b)=>a-b);
+  if (!jornadasLigaArr.length) return [];
+
+  const atrasados = [];
+  todosEquipos
+    .filter(e => (e['Status']||'').trim().toLowerCase() === 'activo')
+    .forEach(e => {
+      const idE = String(e['ID_Equipo']).trim();
+      const jugadas = new Set();
+      todosPartidos.forEach(p => {
+        if ((p['Estado']||'').trim() === 'Jugado' &&
+            (String(p['Equipo_Local']).trim() === idE || String(p['Equipo_Visita']).trim() === idE)) {
+          jugadas.add(Number(p['Jornada']));
+        }
+      });
+      const debe = jornadasLigaArr.filter(jn => !jugadas.has(jn));
+      if (debe.length) atrasados.push({ nombre: (e['Nombre']||'').toUpperCase(), jornadas: debe });
+    });
+  return atrasados;
+}
+
+function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados) {
   const eqMap = {};
   todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
@@ -443,6 +487,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
     </div>
     ${descansaHTML}
     <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
+    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) : ''}
   `;
 
   const filasWrap = content.querySelector('#reporte-filas');
@@ -544,6 +589,7 @@ async function downloadPNG() {
   const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
 
   let equipoDescansa = null;
+  let equiposAtrasados = [];
   if (tipoFiltro === 'jornada') {
     const jornadaNum = String(firstP?.Jornada || '').trim();
     const idsJuegan = new Set();
@@ -564,6 +610,7 @@ async function downloadPNG() {
         descripcion: eq['Descripción'] || eq['Descripcion'] || ''
       };
     }
+    equiposAtrasados = calcularEquiposAtrasados(jornadaNum);
   }
 
   const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
@@ -576,7 +623,7 @@ async function downloadPNG() {
       temp.style.left = '-9999px';
       temp.style.top = '0';
 
-      const inner = construirPaginaReporte(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa);
+      const inner = construirPaginaReporte(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados);
       temp.appendChild(inner);
       document.body.appendChild(temp);
 
@@ -607,7 +654,7 @@ async function downloadPNG() {
 
 
 // ===== VARIANTE 2: escudo/nombre más chicos, usando el color de playera (Color_Playera) =====
-function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa) {
+function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados) {
   const eqMap = {};
   todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
@@ -644,6 +691,7 @@ function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jorna
     </div>
     ${descansaHTML}
     <div id="reporte-filas-v2" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
+    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) : ''}
   `;
 
   const filasWrap = content.querySelector('#reporte-filas-v2');
@@ -730,6 +778,7 @@ async function downloadPNGv2() {
   const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
 
   let equipoDescansa = null;
+  let equiposAtrasadosV2 = [];
   if (tipoFiltro === 'jornada') {
     const jornadaNum = String(firstP?.Jornada || '').trim();
     const idsJuegan = new Set();
@@ -750,6 +799,7 @@ async function downloadPNGv2() {
         descripcion: eq['Descripción'] || eq['Descripcion'] || ''
       };
     }
+    equiposAtrasadosV2 = calcularEquiposAtrasados(jornadaNum);
   }
 
   const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
@@ -762,7 +812,7 @@ async function downloadPNGv2() {
       temp.style.left = '-9999px';
       temp.style.top = '0';
 
-      const inner = construirPaginaReporteV2(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa);
+      const inner = construirPaginaReporteV2(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasadosV2);
       temp.appendChild(inner);
       document.body.appendChild(temp);
 
