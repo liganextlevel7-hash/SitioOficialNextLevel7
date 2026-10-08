@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Registro de Jugadores — Next Level 7</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -316,6 +317,18 @@
       <input type="text" id="add-apodo" placeholder="Apodo (opcional)" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:10px; box-sizing:border-box;">
       <button id="btn-guardar-nuevo" style="width:100%; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">Guardar Jugador</button>
       <div class="msg" id="add-msg" style="text-align:center; font-size:0.78rem; margin-top:8px;"></div>
+    </div>
+
+    <button id="btn-toggle-reportes" style="display:block; width:100%; margin-bottom:16px; padding:12px; border:1px dashed #8fe89a; border-radius:14px; background:rgba(143,232,154,0.08); color:#8fe89a; font-weight:bold; font-size:0.85rem; cursor:pointer;">📊 Reportes de revisión (PNG)</button>
+    <div id="panel-reportes" style="display:none; background:rgba(20,39,2,0.85); border:1px solid rgba(143,232,154,0.4); border-radius:16px; padding:16px; margin-bottom:20px;">
+      <p class="sub" style="font-size:0.74rem; margin:0 0 12px;">Compara los registros del formulario contra tu hoja <b>"Jugadores"</b> (por nombre y equipo, sin importar mayúsculas, acentos ni espacios de más) para saber cuáles ya pasaste y cuáles no.</p>
+      <label style="display:block; font-size:0.75rem; font-weight:bold; color:#8fe89a; margin-bottom:6px; text-transform:uppercase;">Mínimo de jugadores por equipo</label>
+      <input type="number" id="rv-min" min="0" max="30" value="7" style="width:100%; padding:9px 10px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.85rem; margin-bottom:12px; box-sizing:border-box;">
+      <button class="rv-btn" data-rv="pend" style="display:block; width:100%; margin-bottom:8px; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">📥 Pendientes de pasar a la hoja (lista)</button>
+      <button class="rv-btn" data-rv="dia" style="display:block; width:100%; margin-bottom:8px; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">📥 Registrados por día y equipo (conteo)</button>
+      <button class="rv-btn" data-rv="cont" style="display:block; width:100%; margin-bottom:8px; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">📥 Cuántos faltan de pasar, por equipo</button>
+      <button class="rv-btn" data-rv="todos" style="display:block; width:100%; padding:10px; border:1px solid #5eb50d; border-radius:10px; background:transparent; color:#5eb50d; font-weight:900; cursor:pointer;">📥 Descargar los 3</button>
+      <div id="rv-aviso" style="text-align:center; font-size:0.78rem; margin-top:10px; min-height:16px; color:rgba(238,247,230,0.7);"></div>
     </div>
 
     <p class="sub" style="font-size:0.72rem;">Al copiar, pega en la <b>columna A</b> de una fila vacía de tu hoja "Jugadores" — se acomoda solo en Nombre, Equipo, Número y Posición.</p>
@@ -956,6 +969,294 @@
     });
     cargarMisJugadores();
   }
+
+  // ════════════════════════════════════════════
+  //  REPORTES DE REVISIÓN (PNG) — solo para el admin
+  // ════════════════════════════════════════════
+  const RV_URL_JUGADORES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1940220650&single=true&output=csv";
+
+  const RV_CSS = `
+    .rv-hoja{background:#f3f5ef;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;box-sizing:border-box;}
+    .rv-hoja *{box-sizing:border-box;}
+    .rv-head{background:linear-gradient(135deg,#0f2002 0%,#1d3d05 60%,#2b5a0a 100%);padding:22px 30px 20px;border-bottom:5px solid #5eb50d;color:#fff;}
+    .rv-head-top{display:flex;justify-content:space-between;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:#b9d8a0;font-weight:600;}
+    .rv-titulo{font-size:30px;font-weight:800;margin-top:10px;letter-spacing:.3px;line-height:1.15;}
+    .rv-sub{font-size:14px;color:#d6e6c8;margin-top:5px;}
+    .rv-body{padding:24px 30px 20px;}
+    .rv-foot{display:flex;justify-content:space-between;gap:20px;padding:12px 30px;border-top:1px solid #d9dfd2;font-size:11px;color:#6b7280;background:#eaeee4;}
+    .rv-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+    .rv-cards.tres{grid-template-columns:repeat(3,1fr);}
+    .rv-card{background:#fff;border:1px solid #dde3d6;border-top:4px solid #5eb50d;border-radius:8px;padding:12px 10px;text-align:center;}
+    .rv-card b{display:block;font-size:30px;font-weight:800;line-height:1.15;color:#1f2933;}
+    .rv-card span{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.8px;font-weight:600;}
+    .rv-card.amar{border-top-color:#e0a800;} .rv-card.rojo{border-top-color:#d64545;} .rv-card.verde{border-top-color:#2f9e44;}
+    .rv-card.amar b{color:#a87500;} .rv-card.rojo b{color:#c0392b;} .rv-card.verde b{color:#1f7a35;}
+    .rv-marco{border:1px solid #dde3d6;border-radius:8px;overflow:hidden;background:#fff;}
+    .rv-tabla{width:100%;border-collapse:collapse;font-size:14px;}
+    .rv-tabla th{background:#1d3d05;color:#fff;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:10px 8px;font-weight:700;text-align:center;}
+    .rv-tabla th.l{text-align:left;padding-left:14px;}
+    .rv-tabla th small{display:block;font-size:10px;font-weight:500;color:#b9d8a0;letter-spacing:.5px;margin-top:1px;}
+    .rv-tabla td{padding:9px 8px;border-top:1px solid #edf0e8;text-align:center;font-variant-numeric:tabular-nums;}
+    .rv-tabla tbody tr:nth-child(even) td{background:#f9faf6;}
+    .rv-tabla td.l{text-align:left;padding-left:14px;}
+    .rv-tabla td.eq{text-align:left;padding-left:14px;font-weight:700;}
+    .rv-tabla td.n{font-weight:700;}
+    .rv-tabla td.cero{color:#c4cabd;}
+    .rv-tabla td.dim{color:#6b7280;font-size:13px;}
+    .rv-tabla tr.grupo td{background:#e8f1dc !important;color:#1d3d05;font-weight:800;text-align:left;padding:8px 14px;font-size:13px;letter-spacing:.6px;text-transform:uppercase;border-top:2px solid #5eb50d;}
+    .rv-tabla tr.pie td{background:#e8f1dc !important;font-weight:800;border-top:2px solid #5eb50d;color:#1d3d05;}
+    .rv-rojo{color:#c0392b !important;} .rv-amar{color:#a87500 !important;} .rv-verde{color:#1f7a35 !important;}
+    .rv-pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.4px;white-space:nowrap;}
+    .rv-pill.rojo{background:#fde8e8;color:#b42318;border:1px solid #f5b5b5;}
+    .rv-pill.amar{background:#fff4d6;color:#8a6100;border:1px solid #f0d58a;}
+    .rv-pill.verde{background:#e3f4e6;color:#1b6e2e;border:1px solid #a9d9b3;}
+    .rv-barra{display:flex;height:10px;border-radius:5px;overflow:hidden;background:#e5e9df;min-width:140px;}
+    .rv-barra i{display:block;height:100%;}
+    .rv-barra i.v{background:#2f9e44;} .rv-barra i.a{background:#e0a800;}
+    .rv-pct{font-size:12px;color:#6b7280;margin-top:3px;}
+    .rv-nota{margin-top:16px;background:#fff8e1;border:1px solid #f0d58a;border-left:5px solid #e0a800;border-radius:6px;padding:10px 14px;font-size:13px;color:#6b4e00;line-height:1.45;}
+    .rv-okbox{background:#e3f4e6;border:1px solid #a9d9b3;border-left:5px solid #2f9e44;border-radius:6px;padding:26px 16px;text-align:center;font-size:20px;font-weight:800;color:#1b6e2e;}
+    .rv-leyenda{margin-top:14px;font-size:12px;color:#6b7280;line-height:1.5;}
+  `;
+
+  function rvEsc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function rvNorm(s){
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()
+      .replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  }
+  function rvParseCSV(text){
+    const rows = []; let row = [], cur = '', q = false;
+    for (let i = 0; i < text.length; i++){
+      const ch = text[i];
+      if (q){
+        if (ch === '"'){ if (text[i+1] === '"'){ cur += '"'; i++; } else q = false; }
+        else cur += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === ','){ row.push(cur); cur = ''; }
+      else if (ch === '\n'){ row.push(cur); rows.push(row); row = []; cur = ''; }
+      else if (ch !== '\r') cur += ch;
+    }
+    if (cur !== '' || row.length){ row.push(cur); rows.push(row); }
+    return rows;
+  }
+  function rvDiaKey(ms){
+    if (!ms) return 'sin-fecha';
+    const d = new Date(ms);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function rvDiaCorto(key){
+    if (key === 'sin-fecha') return 'S/F';
+    const [y,m,d] = key.split('-');
+    return d + '/' + m;
+  }
+  function rvDiaSemana(key){
+    if (key === 'sin-fecha') return '';
+    const [y,m,d] = key.split('-').map(Number);
+    return new Date(y, m-1, d).toLocaleDateString('es-MX', { weekday: 'short' }).replace('.','');
+  }
+
+  // ¿Ya está en la hoja Jugadores? 'hoja' = mismo equipo y mismo nombre (o uno contiene al otro),
+  // 'hoja_otro' = el nombre está en la hoja pero con otro equipo, 'pendiente' = no aparece.
+  function rvEstado(reg, hoja){
+    const n = rvNorm(reg.nombre);
+    if (!n) return 'pendiente';
+    const mismoEq = hoja.filter(h => h.equipo === reg.eqId);
+    const ordenado = x => x.split(' ').sort().join(' ');   // "Gómez Luis" = "Luis Gómez"
+    const coincide = mismoEq.some(h => h.nombre === n || ordenado(h.nombre) === ordenado(n) ||
+      (n.length >= 5 && h.nombre.length >= 5 && (h.nombre.includes(n) || n.includes(h.nombre))));
+    if (coincide) return 'hoja';
+    if (hoja.some(h => h.nombre === n)) return 'hoja_otro';
+    return 'pendiente';
+  }
+
+  async function rvCargarDatos(){
+    const [rFb, rSh] = await Promise.all([ fetch(FB + '/jugadoresRegistro.json'), fetch(RV_URL_JUGADORES) ]);
+    const data = (await rFb.json()) || {};
+    const filas = rvParseCSV(await rSh.text());
+    const hoja = filas.slice(1).map(c => ({ nombre: rvNorm(c[1]), equipo: String(c[2] || '').trim() })).filter(h => h.nombre);
+
+    const equipos = {};
+    const idPorNombre = {};
+    EQUIPOS.forEach(e => {
+      equipos[String(e.id)] = { id: String(e.id), nombre: e.nombre, regs: [] };
+      idPorNombre[rvNorm(e.nombre)] = String(e.id);
+    });
+
+    const registros = Object.entries(data).map(([id, j]) => {
+      let eqId = String(j.equipoId == null ? '' : j.equipoId).trim();
+      if (!eqId || eqId === 'NaN') eqId = idPorNombre[rvNorm(j.equipo)] || '';
+      const reg = {
+        id, nombre: (j.nombre || '').trim(), apodo: (j.apodo || '').trim(),
+        numero: j.numero, posicion: j.posicion || '', fecha: j.fecha || 0,
+        dia: rvDiaKey(j.fecha), eqId, eqNombre: j.equipo || ''
+      };
+      reg.estado = rvEstado(reg, hoja);
+      const clave = eqId || ('n:' + rvNorm(j.equipo));
+      if (!equipos[clave]) equipos[clave] = { id: clave, nombre: j.equipo || '(sin equipo)', regs: [] };
+      equipos[clave].regs.push(reg);
+      return reg;
+    });
+
+    const lista = Object.values(equipos).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    const dias = [...new Set(registros.map(r => r.dia))].sort();
+    return { equipos: lista, registros, dias };
+  }
+
+  function rvMin(){ return Math.max(0, parseInt(document.getElementById('rv-min').value, 10) || 0); }
+  function rvAhora(){ return new Date().toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }); }
+
+  // Marco común de los reportes: encabezado, cuerpo y pie.
+  function rvMarco(titulo, sub, cuerpo){
+    return `<div class="rv-head">
+        <div class="rv-head-top"><span>Liga Next Level 7</span><span>${rvAhora()}</span></div>
+        <div class="rv-titulo">${titulo}</div>
+        <div class="rv-sub">${sub}</div>
+      </div>
+      <div class="rv-body">${cuerpo}</div>
+      <div class="rv-foot"><span>Reporte interno de revisión · Registro de jugadores</span><span>Comparado contra la hoja "Jugadores"</span></div>`;
+  }
+  function rvTarjetas(items, clase){
+    return `<div class="rv-cards ${clase || ''}">` + items.map(i =>
+      `<div class="rv-card ${i.c || ''}"><b>${i.v}</b><span>${i.t}</span></div>`).join('') + '</div>';
+  }
+
+  // PNG 1: lista de jugadores que aún no se pasan a la hoja
+  function rvHTMLPendientes(d){
+    const enHoja = r => r.estado !== 'pendiente';
+    const pend = d.registros.filter(r => !enHoja(r));
+    const otros = d.registros.filter(r => r.estado === 'hoja_otro');
+    const tarjetas = rvTarjetas([
+      { v: d.registros.length, t: 'Registrados' },
+      { v: d.registros.length - pend.length, t: 'Ya en la hoja', c: 'verde' },
+      { v: pend.length, t: 'Pendientes de pasar', c: pend.length ? 'amar' : 'verde' }
+    ], 'tres');
+    let cuerpo = '';
+    if (!pend.length){
+      cuerpo = '<div class="rv-okbox">✅ Todos los registros ya están en tu hoja Jugadores</div>';
+    } else {
+      let n = 0;
+      const filas = d.equipos.map(eq => {
+        const p = eq.regs.filter(r => r.estado === 'pendiente').sort((a, b) => a.fecha - b.fecha);
+        if (!p.length) return '';
+        return `<tr class="grupo"><td colspan="5">${rvEsc(eq.nombre)} · ${p.length} pendiente${p.length > 1 ? 's' : ''}</td></tr>` + p.map(r => {
+          n++;
+          return `<tr><td class="dim">${n}</td>
+            <td class="l n">${rvEsc(r.nombre)}${r.apodo ? ' <span style="font-weight:400;color:#6b7280">“' + rvEsc(r.apodo) + '”</span>' : ''}</td>
+            <td>${r.numero !== '' && r.numero != null ? rvEsc(r.numero) : '—'}</td>
+            <td class="dim">${rvEsc(r.posicion) || '—'}</td>
+            <td class="dim">${rvDiaCorto(r.dia)}</td></tr>`;
+        }).join('');
+      }).join('');
+      cuerpo = `<div class="rv-marco"><table class="rv-tabla"><thead><tr><th style="width:44px">#</th><th class="l">Jugador</th><th style="width:60px">N°</th><th style="width:140px">Posición</th><th style="width:100px">Registrado</th></tr></thead><tbody>${filas}</tbody></table></div>`;
+    }
+    if (otros.length){
+      cuerpo += `<div class="rv-nota"><b>Para revisar:</b> ${otros.length} registro(s) tienen su nombre en la hoja pero con <b>otro equipo</b> y no se listan arriba: ${otros.slice(0, 10).map(r => rvEsc(r.nombre) + ' (' + rvEsc(r.eqNombre) + ')').join(', ')}${otros.length > 10 ? '…' : ''}.</div>`;
+    }
+    return rvMarco('Jugadores pendientes de pasar a la hoja',
+      `${pend.length} pendiente(s) de ${d.registros.length} registrados en el formulario`, tarjetas + cuerpo);
+  }
+
+  // PNG 2: cuántos se registraron cada día, por equipo (sin nombres)
+  function rvHTMLPorDia(d, min){
+    const max = Math.max(1, ...d.equipos.flatMap(eq => d.dias.map(k => eq.regs.filter(r => r.dia === k).length)));
+    const cab = d.dias.map(k => `<th>${rvDiaCorto(k)}<small>${rvDiaSemana(k)}</small></th>`).join('');
+    const filas = d.equipos.map(eq => {
+      const tot = eq.regs.length;
+      const celdas = d.dias.map(k => {
+        const n = eq.regs.filter(r => r.dia === k).length;
+        if (!n) return '<td class="cero">–</td>';
+        const a = (0.18 + 0.62 * n / max).toFixed(2);
+        return `<td class="n" style="background:rgba(47,158,68,${a}) !important;color:${a > 0.5 ? '#fff' : '#14532d'}">${n}</td>`;
+      }).join('');
+      const clase = tot === 0 ? 'rv-rojo' : (tot < min ? 'rv-amar' : 'rv-verde');
+      const pill = tot === 0 ? '<span class="rv-pill rojo">SIN REGISTROS</span>'
+        : (tot < min ? '<span class="rv-pill amar">POCOS</span>' : '<span class="rv-pill verde">COMPLETO</span>');
+      return `<tr><td class="eq">${rvEsc(eq.nombre)}</td>${celdas}<td class="n ${clase}" style="font-size:16px">${tot}</td><td>${pill}</td></tr>`;
+    }).join('');
+    const pie = d.dias.map(k => `<td>${d.registros.filter(r => r.dia === k).length}</td>`).join('');
+    const cuerpo = `<div class="rv-marco"><table class="rv-tabla"><thead><tr><th class="l">Equipo</th>${cab}<th>Total</th><th>Estado</th></tr></thead>
+      <tbody>${filas}<tr class="pie"><td class="l">TOTAL DEL DÍA</td>${pie}<td style="font-size:16px">${d.registros.length}</td><td></td></tr></tbody></table></div>
+      <div class="rv-leyenda">Cada celda muestra cuántos jugadores registró el equipo ese día; el color es más intenso con más registros. Mínimo por equipo: <b>${min}</b> (total en ámbar = menos del mínimo, en rojo = sin registros).</div>`;
+    return rvMarco('Registrados por día y equipo',
+      `${d.registros.length} registro(s) en ${d.dias.length} día(s) · ${d.equipos.length} equipo(s)`, cuerpo);
+  }
+
+  // PNG 3: registrados / ya en hoja / pendientes por equipo
+  function rvHTMLConteo(d, min){
+    const enHoja = r => r.estado !== 'pendiente';
+    const totReg = d.registros.length;
+    const totHoja = d.registros.filter(enHoja).length;
+    const totPend = totReg - totHoja;
+    const sinReg = d.equipos.filter(e => e.regs.length === 0).length;
+    const pocos = d.equipos.filter(e => e.regs.length > 0 && e.regs.length < min).length;
+    const tarjetas = rvTarjetas([
+      { v: totReg, t: 'Registrados' },
+      { v: totHoja, t: 'Ya en la hoja', c: 'verde' },
+      { v: totPend, t: 'Pendientes', c: totPend ? 'amar' : 'verde' },
+      { v: sinReg, t: 'Equipos sin registros', c: sinReg ? 'rojo' : 'verde' },
+      { v: pocos, t: `Con menos de ${min}`, c: pocos ? 'amar' : 'verde' }
+    ]);
+    const filas = d.equipos.map(eq => {
+      const t = eq.regs.length, h = eq.regs.filter(enHoja).length, p = t - h;
+      const pill = t === 0 ? '<span class="rv-pill rojo">SIN REGISTROS</span>'
+        : (t < min ? `<span class="rv-pill amar">POCOS ${t}/${min}</span>` : '<span class="rv-pill verde">OK</span>');
+      const pct = t ? Math.round(h / t * 100) : 0;
+      const barra = t ? `<div class="rv-barra"><i class="v" style="width:${pct}%"></i><i class="a" style="width:${100 - pct}%"></i></div><div class="rv-pct">${pct}% en la hoja</div>` : '<span style="color:#c4cabd">–</span>';
+      return `<tr><td class="eq">${rvEsc(eq.nombre)}</td><td class="n">${t}</td><td class="n rv-verde">${h}</td>
+        <td class="n ${p ? 'rv-amar' : ''}">${p}</td><td>${barra}</td><td>${pill}</td></tr>`;
+    }).join('');
+    const cuerpo = tarjetas + `<div class="rv-marco"><table class="rv-tabla"><thead><tr><th class="l">Equipo</th><th>Registrados</th><th>En hoja</th><th>Pendientes</th><th style="width:170px">Avance</th><th>Estado</th></tr></thead>
+      <tbody>${filas}<tr class="pie"><td class="l">TOTAL</td><td>${totReg}</td><td>${totHoja}</td><td>${totPend}</td><td></td><td></td></tr></tbody></table></div>
+      <div class="rv-leyenda">Verde = ya está en tu hoja "Jugadores" · Ámbar = registrado en el formulario pero pendiente de pasar. Mínimo por equipo: <b>${min}</b> jugadores registrados.</div>`;
+    return rvMarco('Cuántos faltan de pasar a la hoja',
+      `${totPend} pendiente(s) de ${totReg} registrados · ${d.equipos.length} equipo(s)`, cuerpo);
+  }
+
+  async function rvDescargar(html, ancho, nombre){
+    const temp = document.createElement('div');
+    temp.style.cssText = 'position:fixed;left:-99999px;top:0;';
+    temp.innerHTML = `<style>${RV_CSS}</style><div class="rv-hoja" id="rv-hoja-tmp" style="width:${ancho}px">${html}</div>`;
+    document.body.appendChild(temp);
+    try {
+      const el = document.getElementById('rv-hoja-tmp');
+      const canvas = await html2canvas(el, { backgroundColor: '#f3f5ef', scale: 2, useCORS: true });
+      const a = document.createElement('a');
+      a.download = nombre; a.href = canvas.toDataURL('image/png'); a.click();
+    } finally { document.body.removeChild(temp); }
+  }
+
+  async function rvGenerar(cual){
+    const aviso = document.getElementById('rv-aviso');
+    if (!equiposListos){ aviso.textContent = 'Espera a que carguen los equipos y vuelve a intentar.'; return; }
+    aviso.textContent = 'Generando...';
+    try {
+      const d = await rvCargarDatos();
+      if (!d.registros.length){ aviso.textContent = 'Todavía no hay jugadores registrados.'; return; }
+      const min = rvMin();
+      const hoy = rvDiaKey(Date.now());
+      const trabajos = {
+        pend: () => rvDescargar(rvHTMLPendientes(d), 900, `registro_pendientes_lista_${hoy}.png`),
+        dia:  () => rvDescargar(rvHTMLPorDia(d, min), Math.max(900, 300 + d.dias.length * 70 + 90), `registro_por_dia_${hoy}.png`),
+        cont: () => rvDescargar(rvHTMLConteo(d, min), 900, `registro_pendientes_conteo_${hoy}.png`)
+      };
+      const lista = cual === 'todos' ? ['pend', 'dia', 'cont'] : [cual];
+      for (const k of lista){ await trabajos[k](); await new Promise(r => setTimeout(r, 500)); }
+      const pend = d.registros.filter(r => r.estado === 'pendiente').length;
+      aviso.textContent = `✅ Listo — ${d.registros.length} registrados, ${pend} pendiente(s) de pasar a la hoja.`;
+    } catch (err) {
+      console.error(err);
+      aviso.textContent = 'No se pudo generar. Revisa tu conexión e intenta de nuevo.';
+    }
+  }
+
+  document.getElementById('btn-toggle-reportes').addEventListener('click', () => {
+    const p = document.getElementById('panel-reportes');
+    p.style.display = p.style.display === 'none' ? 'block' : 'none';
+  });
+  const rvMinInput = document.getElementById('rv-min');
+  rvMinInput.value = localStorage.getItem('nl7_rv_min') || '7';
+  rvMinInput.addEventListener('change', () => localStorage.setItem('nl7_rv_min', rvMinInput.value));
+  document.querySelectorAll('.rv-btn').forEach(b => b.addEventListener('click', () => rvGenerar(b.dataset.rv)));
 </script>
 
 </body>
