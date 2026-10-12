@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reporte por Equipo - Next Level 7</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+body {
+  background: #142702; color: #fff; font-family: 'Roboto', Arial, sans-serif;
+  margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center;
+}
+.nav-top { width: 100%; max-width: 700px; margin: 0 auto 14px; }
+.nav-top a {
+  display: inline-block; padding: 8px 22px; background: rgba(0,0,0,.75); border: 1px solid #5eb50d;
+  border-radius: 12px; color: #fff; text-decoration: none; font-weight: bold; font-size: 14px; transition: .3s;
+}
+.nav-top a:hover { background: #5eb50d; color: #000; }
+.panel { background: rgba(0,0,0,0.88); border: 1px solid #7f5f0d; border-radius: 14px; padding: 18px; width: 100%; max-width: 700px; margin-bottom: 16px; }
+.panel label { display:block; color:#d5a610; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+.panel select {
+  width:100%; background: rgba(255,255,255,0.07); border: 1px solid #7f5f0d; border-radius: 6px;
+  color:#fff; font-size:14px; padding:10px; outline:none;
+}
+.panel select option { background:#111; }
+.btn-dl {
+  width:100%; margin-top:12px; background: linear-gradient(135deg,#d5a610,#ddc530); border:none; border-radius:8px;
+  color:#000; cursor:pointer; font-size:14px; font-weight:700; letter-spacing:2px; padding:12px 18px; text-transform:uppercase;
+}
+.btn-dl:disabled { opacity:.45; cursor:default; }
+.msg { font-size:12px; text-align:center; min-height:16px; margin-top:8px; color:#5eb50d; }
+.msg.error { color:#ff8a8a; }
+
+#preview-wrap { width:100%; max-width:700px; position:relative; overflow:hidden; }
+#preview { width:700px; transform-origin: top left; }
+.vacio { text-align:center; color:rgba(255,255,255,0.35); font-size:14px; padding:40px 10px; }
+
+/* ===================== REPORTE ===================== */
+.rep {
+  width: 700px; padding: 0 0 22px; color:#fff; font-family:'Roboto', Arial, sans-serif;
+  background: linear-gradient(165deg, #0d1f03 0%, #142702 50%, #0a1602 100%);
+  border: 1px solid rgba(94,181,13,0.45); border-radius: 6px; position: relative; overflow: hidden;
+}
+.rep-bar { height: 6px; background: linear-gradient(90deg, #5eb50d 0%, #ddc530 100%); }
+.rep-body { padding: 22px 28px 0; }
+.rep-logos { display:flex; align-items:center; justify-content:center; gap:16px; margin-bottom:12px; }
+.rep-logos img { height: 58px; width:auto; object-fit:contain; }
+.rep-kicker {
+  text-align:center; font-family:'Bebas Neue', sans-serif; font-size:15px; letter-spacing:6px; color:#ddc530; margin-bottom:14px;
+}
+.rep-team { display:flex; align-items:center; gap:18px; padding:16px 18px; background:rgba(0,0,0,0.38); border:1px solid rgba(94,181,13,0.25); border-radius:10px; }
+.rep-team img { width:92px; height:92px; object-fit:contain; flex-shrink:0; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6)); }
+.rep-name { font-family:'Bebas Neue', sans-serif; font-size:42px; line-height:1; letter-spacing:2px; color:#fff; text-transform:uppercase; }
+.rep-sub { font-size:13px; color:#5eb50d; font-weight:700; letter-spacing:1px; margin-top:6px; text-transform:uppercase; }
+.rep-sub2 { font-size:12px; color:rgba(255,255,255,0.6); margin-top:3px; }
+
+.rep-stats { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin:16px 0 18px; }
+.rep-stat { background:rgba(0,0,0,0.38); border:1px solid rgba(255,255,255,0.1); border-radius:8px; text-align:center; padding:9px 4px 7px; }
+.rep-stat b { display:block; font-family:'Bebas Neue', sans-serif; font-size:30px; line-height:1; color:#fff; }
+.rep-stat span { display:block; font-size:9px; letter-spacing:1.2px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-top:3px; }
+.rep-stat.g b { color:#8fe89a; } .rep-stat.p b { color:#ff7b7b; } .rep-stat.e b { color:#ddc530; }
+
+.rep-th, .rep-row { display:grid; grid-template-columns: 56px 104px 1fr 66px 84px 78px; gap:8px; align-items:center; }
+.rep-th { padding:0 10px 7px; font-size:9px; letter-spacing:1.4px; text-transform:uppercase; color:#d5a610; font-weight:700; border-bottom:1px solid rgba(213,166,16,0.5); }
+.rep-th div:nth-child(n+4) { text-align:center; }
+.rep-row { padding:7px 10px; min-height:46px; border-bottom:1px solid rgba(255,255,255,0.07); }
+.rep-row:nth-child(even) { background:rgba(255,255,255,0.04); }
+.rep-jor { font-family:'Bebas Neue', sans-serif; font-size:20px; letter-spacing:1px; color:#5eb50d; }
+.rep-fecha { font-size:12px; color:#e8e8e0; line-height:1.25; }
+.rep-fecha small { display:block; font-size:10px; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:.5px; }
+.rep-rival { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; text-transform:uppercase; line-height:1.15; }
+.rep-rival img { width:30px; height:30px; object-fit:contain; flex-shrink:0; }
+.rep-marcador { text-align:center; font-family:'Bebas Neue', sans-serif; font-size:24px; letter-spacing:2px; color:#fff; }
+.rep-chip, .rep-tipo { display:block; text-align:center; font-size:10px; font-weight:900; letter-spacing:1px; text-transform:uppercase; border-radius:12px; padding:5px 0; }
+.rep-chip.g { background:#5eb50d; color:#0a1206; }
+.rep-chip.p { background:#e84c4c; color:#fff; }
+.rep-chip.e { background:#d5a610; color:#1a1200; }
+.rep-tipo { border:1px solid; background:transparent; }
+.rep-tipo.normal { color:#9fd36a; border-color:rgba(159,211,106,0.6); }
+.rep-tipo.default { color:#ffb400; border-color:rgba(255,180,0,0.8); }
+.rep-tipo.penales { color:#ff7b7b; border-color:rgba(255,123,123,0.8); }
+.rep-vacio { text-align:center; padding:26px 10px; color:rgba(255,255,255,0.5); font-size:13px; }
+
+.rep-foot { margin:14px 28px 0; padding-top:10px; border-top:1px solid rgba(255,255,255,0.12); display:flex; justify-content:space-between; gap:12px; font-size:10px; color:rgba(255,255,255,0.5); line-height:1.4; }
+</style>
+</head>
+<body>
+
+<div class="nav-top"><a href="index.html">← Inicio</a></div>
+
+<div class="panel">
+  <label>Equipo</label>
+  <select id="sel-equipo"><option value="">Cargando equipos...</option></select>
+  <button class="btn-dl" id="btn-dl" onclick="descargarPNG()" disabled>⬇ Descargar reporte PNG</button>
+  <div class="msg" id="msg"></div>
+</div>
+
+<div id="preview-wrap">
+  <div id="preview"><div class="vacio">Selecciona un equipo para ver su reporte</div></div>
+</div>
+
+<script>
+const SHEET_ID = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
+const csvUrl = gid => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+const URL_EQUIPOS  = csvUrl('1894947293');
+const URL_PARTIDOS = csvUrl('1362473459');
+
+// Si quieres fijar a mano la fecha de inicio del torneo, escríbela aquí (ej. '20/09/2026').
+// Si se deja vacía, se toma la fecha más antigua que aparezca en la hoja de Partidos.
+const FECHA_INICIO_TORNEO = '';
+
+let EQUIPOS = [], PARTIDOS = [];
+
+function parseCSV(text) {
+  text = text.replace(/^\uFEFF/, '');
+  const rows = []; let cur = [], val = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQ) {
+      if (ch === '"') { if (text[i+1] === '"') { val += '"'; i++; } else inQ = false; }
+      else val += ch;
+    } else if (ch === '"') inQ = true;
+    else if (ch === ',') { cur.push(val); val = ''; }
+    else if (ch === '\n') { cur.push(val); rows.push(cur); cur = []; val = ''; }
+    else if (ch !== '\r') val += ch;
+  }
+  if (val.length || cur.length) { cur.push(val); rows.push(cur); }
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => h.trim());
+  return rows.slice(1).filter(r => r.some(c => c.trim())).map(r => {
+    const o = {}; headers.forEach((h, i) => o[h] = (r[i] || '').trim()); return o;
+  });
+}
+
+const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const pad2 = n => String(n).padStart(2, '0');
+
+function parseFecha(f) {
+  const p = String(f || '').trim().split('/');
+  if (p.length !== 3) return null;
+  const [d, m, y] = p.map(x => parseInt(x, 10));
+  if ([d, m, y].some(isNaN)) return null;
+  return { d, m, y, date: new Date(y, m - 1, d) };
+}
+const fmtFecha = pf => `${pad2(pf.d)}/${pad2(pf.m)}/${pf.y}`;
+const DIAS_CORTO = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+function fechaInicioTorneo() {
+  const manual = parseFecha(FECHA_INICIO_TORNEO);
+  if (manual) return fmtFecha(manual);
+  let min = null;
+  PARTIDOS.forEach(p => {
+    const pf = parseFecha(p['Fecha']);
+    if (pf && (!min || pf.date < min.date)) min = pf;
+  });
+  return min ? fmtFecha(min) : '';
+}
+
+async function init() {
+  const sel = document.getElementById('sel-equipo');
+  try {
+    const [tEq, tPa] = await Promise.all([
+      fetch(URL_EQUIPOS).then(r => r.text()),
+      fetch(URL_PARTIDOS).then(r => r.text())
+    ]);
+    EQUIPOS = parseCSV(tEq);
+    PARTIDOS = parseCSV(tPa);
+
+    const esBaja = e => (e['Status'] || '').trim().toLowerCase() === 'baja';
+    const ordenados = [...EQUIPOS].sort((a, b) =>
+      (esBaja(a) - esBaja(b)) || (a['Nombre'] || '').localeCompare(b['Nombre'] || '', 'es'));
+    sel.innerHTML = '<option value="">— Selecciona un equipo —</option>' +
+      ordenados.map(e => `<option value="${esc(e['ID_Equipo'])}">${esc(e['Nombre'])}${esBaja(e) ? ' (baja)' : ''}</option>`).join('');
+  } catch (e) {
+    sel.innerHTML = '<option value="">No se pudieron cargar los datos</option>';
+    setMsg('No se pudo leer la hoja de Google. Revisa tu conexión.', true);
+  }
+}
+
+function setMsg(t, err) {
+  const m = document.getElementById('msg');
+  m.textContent = t || ''; m.className = 'msg' + (err ? ' error' : '');
+}
+
+// Resultado desde la perspectiva del equipo idE
+function resultadoParaEquipo(p, idE) {
+  const esLocal = String(p['Equipo_Local']).trim() === idE;
+  const gl = parseInt(p['Goles_Local'], 10), gv = parseInt(p['Goles_Visita'], 10);
+  const gf = esLocal ? gl : gv, gc = esLocal ? gv : gl;
+  const ganPor = (p['Ganado_Por'] || '').trim().toLowerCase();
+  const tipo = ganPor === 'penales' ? 'penales' : ganPor === 'default' ? 'default' : 'normal';
+  const porMarcador = (isNaN(gf) || isNaN(gc)) ? 'e' : gf > gc ? 'g' : gf < gc ? 'p' : 'e';
+  let res = porMarcador;
+  if (tipo === 'penales') {
+    const ganador = String(p['Penales'] || '').trim();   // ID del equipo que ganó en penales
+    if (ganador) res = ganador === idE ? 'g' : 'p';
+  }
+  return { gf, gc, tipo, res, idRival: esLocal ? String(p['Equipo_Visita']).trim() : String(p['Equipo_Local']).trim() };
+}
+
+function crearReporte(idE) {
+  const eq = EQUIPOS.find(e => String(e['ID_Equipo']).trim() === idE) || {};
+  const eqMap = {}; EQUIPOS.forEach(e => eqMap[String(e['ID_Equipo']).trim()] = e);
+
+  const jugados = PARTIDOS.filter(p =>
+    (p['Estado'] || '').trim().toLowerCase() === 'jugado' &&
+    (String(p['Equipo_Local']).trim() === idE || String(p['Equipo_Visita']).trim() === idE)
+  ).sort((a, b) => {
+    const fa = parseFecha(a['Fecha']), fb = parseFecha(b['Fecha']);
+    return ((fa ? fa.date : 0) - (fb ? fb.date : 0)) || (Number(a['Jornada']) - Number(b['Jornada']));
+  });
+
+  const filas = jugados.map(p => ({ p, r: resultadoParaEquipo(p, idE) }));
+  const cuenta = k => filas.filter(x => x.r.res === k).length;
+  const gfTot = filas.reduce((s, x) => s + (isNaN(x.r.gf) ? 0 : x.r.gf), 0);
+  const gcTot = filas.reduce((s, x) => s + (isNaN(x.r.gc) ? 0 : x.r.gc), 0);
+
+  const TXT_RES = { g: 'Ganó', p: 'Perdió', e: 'Empató' };
+  const TXT_TIPO = { normal: 'Normal', default: 'Default', penales: 'Penales' };
+
+  const filasHTML = filas.length ? filas.map(({ p, r }) => {
+    const rival = eqMap[r.idRival] || {};
+    const pf = parseFecha(p['Fecha']);
+    const fechaHTML = pf
+      ? `${fmtFecha(pf)}<small>${DIAS_CORTO[pf.date.getDay()]}</small>`
+      : '—';
+    const marcador = (isNaN(r.gf) || isNaN(r.gc)) ? '—' : `${r.gf} - ${r.gc}`;
+    return `
+      <div class="rep-row">
+        <div class="rep-jor">J${esc(p['Jornada'])}</div>
+        <div class="rep-fecha">${fechaHTML}</div>
+        <div class="rep-rival"><img src="${esc(rival['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rival['Nombre'] || 'Equipo ' + r.idRival)}</span></div>
+        <div class="rep-marcador">${marcador}</div>
+        <div><span class="rep-chip ${r.res}">${TXT_RES[r.res]}</span></div>
+        <div><span class="rep-tipo ${r.tipo}">${TXT_TIPO[r.tipo]}</span></div>
+      </div>`;
+  }).join('') : '<div class="rep-vacio">Este equipo todavía no tiene partidos jugados.</div>';
+
+  const inicio = fechaInicioTorneo();
+  const hoy = new Date();
+  const hoyTxt = `${pad2(hoy.getDate())}/${pad2(hoy.getMonth() + 1)}/${hoy.getFullYear()}`;
+
+  const el = document.createElement('div');
+  el.className = 'rep';
+  el.innerHTML = `
+    <div class="rep-bar"></div>
+    <div class="rep-body">
+      <div class="rep-logos">
+        <img src="logo-liga.png.png" onerror="this.style.display='none'">
+        <img src="laregionallstars.png" onerror="this.style.display='none'">
+      </div>
+      <div class="rep-kicker">REPORTE DE EQUIPO</div>
+      <div class="rep-team">
+        <img src="${esc(eq['URL'] || '')}" onerror="this.style.opacity='.15'">
+        <div>
+          <div class="rep-name">${esc(eq['Nombre'] || '')}</div>
+          <div class="rep-sub">Liga Next Level 7 · Torneo Dominical</div>
+          ${inicio ? `<div class="rep-sub2">Torneo iniciado el ${inicio}</div>` : ''}
+        </div>
+      </div>
+
+      <div class="rep-stats">
+        <div class="rep-stat"><b>${filas.length}</b><span>Jugados</span></div>
+        <div class="rep-stat g"><b>${cuenta('g')}</b><span>Ganados</span></div>
+        <div class="rep-stat e"><b>${cuenta('e')}</b><span>Empatados</span></div>
+        <div class="rep-stat p"><b>${cuenta('p')}</b><span>Perdidos</span></div>
+        <div class="rep-stat"><b>${gfTot}</b><span>Goles a favor</span></div>
+        <div class="rep-stat"><b>${gcTot}</b><span>Goles en contra</span></div>
+      </div>
+
+      <div class="rep-th">
+        <div>Jornada</div><div>Fecha</div><div>Rival</div><div>Marcador</div><div>Resultado</div><div>Tipo</div>
+      </div>
+      ${filasHTML}
+    </div>
+    <div class="rep-foot">
+      <div>Los partidos definidos en penales cuentan como ganados o perdidos. Default = victoria por incomparecencia.</div>
+      <div style="white-space:nowrap">Generado el ${hoyTxt}</div>
+    </div>`;
+  return el;
+}
+
+function ajustarVistaPrevia() {
+  const wrap = document.getElementById('preview-wrap');
+  const prev = document.getElementById('preview');
+  const s = Math.min(1, wrap.clientWidth / 700);
+  prev.style.transform = `scale(${s})`;
+  wrap.style.height = (prev.offsetHeight * s) + 'px';
+}
+
+function mostrarReporte() {
+  const id = document.getElementById('sel-equipo').value;
+  const prev = document.getElementById('preview');
+  const btn = document.getElementById('btn-dl');
+  setMsg('');
+  if (!id) {
+    prev.innerHTML = '<div class="vacio">Selecciona un equipo para ver su reporte</div>';
+    btn.disabled = true; ajustarVistaPrevia(); return;
+  }
+  prev.innerHTML = '';
+  prev.appendChild(crearReporte(id));
+  btn.disabled = false;
+  ajustarVistaPrevia();
+}
+document.getElementById('sel-equipo').addEventListener('change', mostrarReporte);
+window.addEventListener('resize', ajustarVistaPrevia);
+
+async function esperarImagenes(el) {
+  const imgs = el.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img => new Promise(res => {
+    if (img.complete) res(); else { img.onload = res; img.onerror = res; }
+  })));
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  await new Promise(r => setTimeout(r, 200));
+}
+
+async function descargarPNG() {
+  const sel = document.getElementById('sel-equipo');
+  const id = sel.value;
+  if (!id) return;
+  const btn = document.getElementById('btn-dl');
+  btn.disabled = true; btn.textContent = '⏳ Generando...';
+  const nombre = (EQUIPOS.find(e => String(e['ID_Equipo']).trim() === id) || {})['Nombre'] || 'equipo';
+  const temp = document.createElement('div');
+  temp.style.cssText = 'position:fixed;left:-9999px;top:0;';
+  const el = crearReporte(id);
+  temp.appendChild(el);
+  document.body.appendChild(temp);
+  try {
+    await esperarImagenes(temp);
+    const canvas = await html2canvas(el, { useCORS: true, allowTaint: true, scale: 3, backgroundColor: '#0a1602', imageTimeout: 20000, logging: false });
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'reporte_' + nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_') + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setMsg('✅ Reporte descargado.');
+  } catch (e) {
+    setMsg('No se pudo generar el PNG: ' + e.message, true);
+  }
+  document.body.removeChild(temp);
+  btn.textContent = '⬇ Descargar reporte PNG'; btn.disabled = false;
+}
+
+init();
+</script>
+</body>
+</html>
