@@ -507,15 +507,129 @@ function buildHoraSelects(defaultH, defaultM){
   return {hOpts,mOpts};
 }
 
+// ── Disponibilidad al programar un partido ──────────────────────────────
+// Solo cuentan como "ocupados" los partidos Programado o Jugado (igual que en el resto del archivo).
+// Los horarios y campos que se ofrecen salen de HORARIOS_DEFAULT / CAMPOS_DEFAULT (Rol del Domingo)
+// más los que ya existan en la hoja de partidos.
+function partidoOcupa(x, m){
+  return x!==m && ['programado','jugado'].includes((x.estado||'').toLowerCase());
+}
+function normFechaSheet(f){
+  const p=(f||'').trim().split('/');
+  if(p.length!==3) return '';
+  return `${pad2(parseInt(p[0],10))}/${pad2(parseInt(p[1],10))}/${p[2].trim()}`;
+}
+function normHora(h){
+  const p=(h||'').trim().split(':');
+  const hh=parseInt(p[0],10), mm=parseInt(p[1]||'0',10);
+  if(isNaN(hh)) return '';
+  return `${pad2(hh)}:${pad2(isNaN(mm)?0:mm)}`;
+}
+function normCampo(c){ return (c||'').trim().toLowerCase(); }
+function mismoEquipo(x, ids){ return ids.includes(String(x.local)) || ids.includes(String(x.visita)); }
+
+function catalogoHoras(){
+  const set = new Set(HORARIOS_DEFAULT.map(normHora));
+  S.allMatches.forEach(x=>{ const h=normHora(x.hora); if(h) set.add(h); });
+  return [...set].sort();
+}
+function catalogoCampos(){
+  const mapa = new Map();
+  CAMPOS_DEFAULT.forEach(c=>{ if(c && !mapa.has(normCampo(c))) mapa.set(normCampo(c), c); });
+  S.allMatches.forEach(x=>{ const c=(x.cancha||'').trim(); if(c && !mapa.has(normCampo(c))) mapa.set(normCampo(c), c); });
+  return [...mapa.values()].sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
+}
+
+// Jornadas en las que AMBOS equipos todavía no tienen partido Programado/Jugado.
+function jornadasDisponiblesPara(m){
+  const ids=[String(m.local),String(m.visita)];
+  const nums = S.allMatches.map(x=>parseInt(x.jornada,10)).filter(n=>!isNaN(n));
+  const maxExist = nums.length ? Math.max(...nums) : 0;
+  const porJornada = Math.floor(Object.keys(S.teams).length/2) || 1;
+  const totalEstimado = Math.ceil(S.allMatches.length / porJornada);
+  const tope = Math.max(maxExist, totalEstimado);
+  const ocupadas = new Set();
+  S.allMatches.forEach(x=>{
+    if(!partidoOcupa(x,m) || !mismoEquipo(x,ids)) return;
+    const j=parseInt(x.jornada,10);
+    if(!isNaN(j)) ocupadas.add(j);
+  });
+  const res=[];
+  for(let j=1;j<=tope;j++){ if(!ocupadas.has(j)) res.push(String(j)); }
+  return res;
+}
+// Horarios de ese día en los que ninguno de los dos equipos juega y queda al menos un campo libre.
+function horasDisponiblesPara(m, fecha){
+  const ids=[String(m.local),String(m.visita)];
+  const campos=catalogoCampos();
+  return catalogoHoras().filter(h=>{
+    const campoOcupados=new Set();
+    for(const x of S.allMatches){
+      if(!partidoOcupa(x,m)) continue;
+      if(normFechaSheet(x.fecha)!==fecha || normHora(x.hora)!==h) continue;
+      if(mismoEquipo(x,ids)) return false;
+      campoOcupados.add(normCampo(x.cancha));
+    }
+    return campos.some(c=>!campoOcupados.has(normCampo(c)));
+  });
+}
+// Campos libres en esa fecha y horario.
+function camposDisponiblesPara(m, fecha, hora){
+  const ocupados=new Set();
+  S.allMatches.forEach(x=>{
+    if(!partidoOcupa(x,m)) return;
+    if(normFechaSheet(x.fecha)===fecha && normHora(x.hora)===hora) ocupados.add(normCampo(x.cancha));
+  });
+  return catalogoCampos().filter(c=>!ocupados.has(normCampo(c)));
+}
+function opcionesSelect(lista, sel, textoVacio){
+  return `<option value="">${textoVacio}</option>` + lista.map(v=>
+    `<option value="${esc(v)}" ${normCampo(v)===normCampo(sel)?'selected':''}>${esc(v)}</option>`).join('');
+}
+function refrescarHorasEdit(prefHora, prefCampo){
+  const m=S.matchToProgram; if(!m) return;
+  const selH=document.getElementById('edit-hora');
+  const fechaIn=document.getElementById('edit-fecha').value;
+  if(!fechaIn){
+    selH.innerHTML='<option value="">— Elige primero la fecha —</option>';
+    refrescarCamposEdit(); return;
+  }
+  const horas=horasDisponiblesPara(m, fechaInputASheet(fechaIn));
+  const prev = prefHora!==undefined ? prefHora : selH.value;
+  selH.innerHTML = horas.length
+    ? opcionesSelect(horas, horas.includes(prev)?prev:'', '— Selecciona horario —')
+    : '<option value="">— Sin horarios libres ese día —</option>';
+  refrescarCamposEdit(prefCampo);
+}
+function refrescarCamposEdit(prefCampo){
+  const m=S.matchToProgram; if(!m) return;
+  const selC=document.getElementById('edit-cancha');
+  const fechaIn=document.getElementById('edit-fecha').value;
+  const hora=document.getElementById('edit-hora').value;
+  if(!fechaIn || !hora){
+    selC.innerHTML='<option value="">— Elige primero fecha y horario —</option>'; return;
+  }
+  const campos=camposDisponiblesPara(m, fechaInputASheet(fechaIn), hora);
+  const prev = prefCampo!==undefined ? prefCampo : selC.value;
+  selC.innerHTML = campos.length
+    ? opcionesSelect(campos, prev, '— Selecciona campo —')
+    : '<option value="">— Sin campos libres a esa hora —</option>';
+}
+
 function abrirFormEditar(m){
   S.matchToProgram = m;
   const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
   const fechaTarget = document.getElementById('armando-fecha')?.value || '';
   const [d,mo,y] = (m.fecha||'').split('/');
   const fechaInput = (y&&mo&&d) ? `${y}-${mo}-${d}` : fechaTarget;
-  const jornadaPrefill = m.jornada || jornadaTarget;
-  const horaParts = (m.hora||'09:00:00').split(':');
-  const {hOpts,mOpts} = buildHoraSelects(parseInt(horaParts[0],10)||9, parseInt(horaParts[1],10)||0);
+  const jornadaPrefill = String(m.jornada || jornadaTarget || '').trim();
+  const jornadas = jornadasDisponiblesPara(m);
+  const jornadaOpts = jornadas.length
+    ? opcionesSelect(jornadas, jornadas.includes(jornadaPrefill)?jornadaPrefill:'', '— Selecciona jornada —')
+    : '<option value="">— Sin jornadas disponibles para estos equipos —</option>';
+  // Si el partido ya estaba programado, se conservan su horario y campo (siguen siendo válidos para él).
+  const horaPrevia = (m.fecha && m.hora) ? normHora(m.hora) : '';
+  const campoPrevio = (m.fecha && m.cancha) ? m.cancha : '';
 
   document.getElementById('buscar-resultado').innerHTML = `
     <div class="mod-match-row">
@@ -530,28 +644,25 @@ function abrirFormEditar(m){
       <div style="display:flex;flex-direction:column;gap:10px">
         <div>
           <label>Jornada</label>
-          <input type="number" id="edit-jornada" class="msg-input" style="width:100%" min="1" value="${esc(jornadaPrefill||'')}">
+          <select id="edit-jornada" class="msg-input" style="width:100%">${jornadaOpts}</select>
         </div>
         <div>
           <label>Fecha</label>
-          <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}">
+          <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}" onchange="refrescarHorasEdit()">
         </div>
         <div>
           <label>Hora</label>
-          <div style="display:flex;align-items:center;gap:8px">
-            <select id="edit-hora-h" class="msg-input" style="flex:1;text-align:center">${hOpts}</select>
-            <span style="color:var(--g400);font-weight:700">:</span>
-            <select id="edit-hora-m" class="msg-input" style="flex:1;text-align:center">${mOpts}</select>
-          </div>
+          <select id="edit-hora" class="msg-input" style="width:100%" onchange="refrescarCamposEdit()"></select>
         </div>
         <div>
           <label>Campo / Cancha</label>
-          <input type="text" id="edit-cancha" class="msg-input" style="width:100%" value="${esc(m.cancha||'')}">
+          <select id="edit-cancha" class="msg-input" style="width:100%"></select>
         </div>
       </div>
       <button class="btn-anunciar" id="btn-guardar-editar" style="margin-top:14px" onclick="guardarEdicionPartido()">✅ Guardar cambios</button>
     </div>
   `;
+  refrescarHorasEdit(horaPrevia, campoPrevio);
 }
 
 async function guardarEdicionPartido(){
@@ -559,8 +670,8 @@ async function guardarEdicionPartido(){
   if(!m) return;
   const jornada = document.getElementById('edit-jornada').value.trim();
   const fecha = document.getElementById('edit-fecha').value;
-  const horaH = document.getElementById('edit-hora-h').value;
-  const horaM = document.getElementById('edit-hora-m').value;
+  const horaSel = document.getElementById('edit-hora').value;
+  const [horaH, horaM] = horaSel ? horaSel.split(':') : ['',''];
   const hora = (horaH&&horaM) ? `${horaH}:${horaM}:00` : '';
   const cancha = document.getElementById('edit-cancha').value.trim();
 
