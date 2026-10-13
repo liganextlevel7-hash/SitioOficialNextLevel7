@@ -711,22 +711,44 @@ function updateSlotMatch(idx, matchId){
   renderSlots();
 }
 
+// Busca, entre los partidos pendientes, el mayor número posible de partidos
+// (hasta "limite") donde ningún equipo se repita. A diferencia de un algoritmo
+// "greedy" simple -que recorre la lista una sola vez y, si un equipo ya quedó
+// usado en un partido, pierde la posibilidad de formar una pareja mejor más
+// adelante- esta búsqueda prueba combinaciones (con poda) para no dejar fuera
+// un partido válido solo por el orden en que aparece en la lista.
+function mejorConjuntoDePartidos(pending, limite){
+  let mejor = [];
+
+  function backtrack(desde, actuales, usados){
+    if(actuales.length > mejor.length) mejor = actuales.slice();
+    if(mejor.length >= limite) return;
+    for(let i = desde; i < pending.length; i++){
+      // Poda: si ni agregando todos los partidos restantes se supera lo mejor
+      // encontrado hasta ahora, no vale la pena seguir explorando esta rama.
+      if(actuales.length + (pending.length - i) <= mejor.length) break;
+      const m = pending[i];
+      if(usados.has(m.local) || usados.has(m.visita)) continue;
+      usados.add(m.local); usados.add(m.visita);
+      actuales.push(m);
+      backtrack(i+1, actuales, usados);
+      actuales.pop();
+      usados.delete(m.local); usados.delete(m.visita);
+      if(mejor.length >= limite) return;
+    }
+  }
+
+  backtrack(0, [], new Set());
+  return mejor;
+}
+
 function autoRol(){
   const vuelta = String(S.vuelta);
   const pending = [...S.matches.filter(m=>m.vuelta===vuelta)]
     .sort((a,b) => (Number(a.jornada)||0) - (Number(b.jornada)||0) || (Number(a.id)||0) - (Number(b.id)||0));
   rolSlots = [];
-  const usados = new Set();
-  const seleccionados = [];
 
-  for(let m of pending){
-    if(seleccionados.length>=8) break;
-    if(!usados.has(m.local) && !usados.has(m.visita)){
-      seleccionados.push(m);
-      usados.add(m.local);
-      usados.add(m.visita);
-    }
-  }
+  const seleccionados = mejorConjuntoDePartidos(pending, 8);
 
   seleccionados.forEach((m,i)=>{
     rolSlots.push({
