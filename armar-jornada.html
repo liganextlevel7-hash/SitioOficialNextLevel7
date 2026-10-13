@@ -160,11 +160,11 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
         <div>
-          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🗓️ Jornada que estoy armando</label>
+          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🗓️ Jornada (opcional)</label>
           <input type="number" id="armando-jornada" class="msg-input" style="width:100%" min="1" placeholder="Ej. 2" oninput="actualizarSelectsPorJornada()">
         </div>
         <div>
-          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Fecha de esta jornada</label>
+          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">📆 Fecha (sombrea equipos que ya juegan ese día)</label>
           <input type="date" id="armando-fecha" class="msg-input" style="width:100%" oninput="actualizarSelectsPorJornada()">
         </div>
       </div>
@@ -431,6 +431,18 @@ function actualizarSelectsPorJornada(){
     });
   }
 
+  // NUEVO: equipos que ya tienen partido (programado/jugado) en la FECHA elegida
+  const ocupadosFecha = new Set();
+  if(fechaTarget){
+    S.allMatches.forEach(m=>{
+      const est = (m.estado||'').toLowerCase();
+      if((est==='programado'||est==='jugado') && fechaNumSheet(m.fecha)===fechaNumSheet(fechaTarget)){
+        if(m.local) ocupadosFecha.add(String(m.local));
+        if(m.visita) ocupadosFecha.add(String(m.visita));
+      }
+    });
+  }
+
   const ordenados = Object.values(S.teams).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
   const equipoASel = document.getElementById('buscar-equipo-a')?.value || '';
 
@@ -438,10 +450,12 @@ function actualizarSelectsPorJornada(){
     return '<option value="">— Selecciona —</option>' + ordenados.map(t=>{
       const idStr = String(t.id);
       const ocupadoJornada = ocupadosJornada.has(idStr);
+      const ocupadoFecha = ocupadosFecha.has(idStr);
       const yaJugaron = esSelectB && equipoASel && idStr!==equipoASel && jugaronYa(equipoASel, idStr);
-      const deshabilitado = ocupadoJornada || yaJugaron;
+      const deshabilitado = ocupadoJornada || ocupadoFecha || yaJugaron;
       let etiqueta = '';
-      if(ocupadoJornada) etiqueta = ' (ya tiene partido esta jornada)';
+      if(ocupadoFecha) etiqueta = ' (ya juega esta fecha)';
+      else if(ocupadoJornada) etiqueta = ' (ya tiene partido esta jornada)';
       else if(yaJugaron) etiqueta = ' (ya jugaron)';
       return `<option value="${t.id}" ${deshabilitado?'disabled':''}>${esc(t.nombre)}${etiqueta}</option>`;
     }).join('');
@@ -450,12 +464,12 @@ function actualizarSelectsPorJornada(){
   const selA = document.getElementById('buscar-equipo-a');
   const valA = selA.value;
   selA.innerHTML = construirOpciones(false);
-  if(valA && !ocupadosJornada.has(valA)) selA.value = valA;
+  if(valA && !ocupadosJornada.has(valA) && !ocupadosFecha.has(valA)) selA.value = valA;
 
   const selB = document.getElementById('buscar-equipo-b');
   const valB = selB.value;
   selB.innerHTML = construirOpciones(true);
-  if(valB && !ocupadosJornada.has(valB) && !jugaronYa(equipoASel, valB)) selB.value = valB;
+  if(valB && !ocupadosJornada.has(valB) && !ocupadosFecha.has(valB) && !jugaronYa(equipoASel, valB)) selB.value = valB;
 
   const descansaEl = document.getElementById('armando-descansa');
   if(!descansaEl) return;
@@ -507,113 +521,54 @@ function buildHoraSelects(defaultH, defaultM){
   return {hOpts,mOpts};
 }
 
-// ── Disponibilidad al programar un partido ──────────────────────────────
-// Solo cuentan como "ocupados" los partidos Programado o Jugado (igual que en el resto del archivo).
-// Los horarios y campos que se ofrecen salen de HORARIOS_DEFAULT / CAMPOS_DEFAULT (Rol del Domingo)
-// más los que ya existan en la hoja de partidos.
-function partidoOcupa(x, m){
-  return x!==m && ['programado','jugado'].includes((x.estado||'').toLowerCase());
-}
-function normFechaSheet(f){
-  const p=(f||'').trim().split('/');
-  if(p.length!==3) return '';
-  return `${pad2(parseInt(p[0],10))}/${pad2(parseInt(p[1],10))}/${p[2].trim()}`;
-}
-function normHora(h){
-  const p=(h||'').trim().split(':');
-  const hh=parseInt(p[0],10), mm=parseInt(p[1]||'0',10);
-  if(isNaN(hh)) return '';
-  return `${pad2(hh)}:${pad2(isNaN(mm)?0:mm)}`;
-}
-function normCampo(c){ return (c||'').trim().toLowerCase(); }
-function mismoEquipo(x, ids){ return ids.includes(String(x.local)) || ids.includes(String(x.visita)); }
+// ── Disponibilidad de jornada / horario / campo ──────────────────────────
+const DURACION_MIN = 60;                       // duración de un partido (para detectar traslapes en el mismo campo)
+const HORAS_BASE   = ['09:00','10:00','11:00','12:00'];
+const CAMPOS_BASE  = ['Campo 1','Campo 2'];
 
-function catalogoHoras(){
-  const set = new Set(HORARIOS_DEFAULT.map(normHora));
-  S.allMatches.forEach(x=>{ const h=normHora(x.hora); if(h) set.add(h); });
-  return [...set].sort();
-}
-function catalogoCampos(){
-  const mapa = new Map();
-  CAMPOS_DEFAULT.forEach(c=>{ if(c && !mapa.has(normCampo(c))) mapa.set(normCampo(c), c); });
-  S.allMatches.forEach(x=>{ const c=(x.cancha||'').trim(); if(c && !mapa.has(normCampo(c))) mapa.set(normCampo(c), c); });
-  return [...mapa.values()].sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
+function hhmm(hora){ const p=String(hora||'').split(':'); return pad2(parseInt(p[0],10)||0)+':'+pad2(parseInt(p[1],10)||0); }
+function esAgendado(m){ const e=(m.estado||'').toLowerCase(); return e==='programado'||e==='jugado'; }
+
+function listaCampos(){
+  const set = new Set(CAMPOS_BASE);
+  S.allMatches.forEach(x=>{ const c=(x.cancha||'').trim(); if(c) set.add(c); });
+  return [...set].sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
 }
 
-// Jornadas en las que AMBOS equipos todavía no tienen partido Programado/Jugado.
-function jornadasDisponiblesPara(m){
-  const ids=[String(m.local),String(m.visita)];
-  const nums = S.allMatches.map(x=>parseInt(x.jornada,10)).filter(n=>!isNaN(n));
-  const maxExist = nums.length ? Math.max(...nums) : 0;
-  const porJornada = Math.floor(Object.keys(S.teams).length/2) || 1;
-  const totalEstimado = Math.ceil(S.allMatches.length / porJornada);
-  const tope = Math.max(maxExist, totalEstimado);
+// Jornadas en las que NINGUNO de los dos equipos tiene ya partido programado/jugado
+function jornadasLibresPara(m){
+  const ids = [String(m.local), String(m.visita)];
   const ocupadas = new Set();
   S.allMatches.forEach(x=>{
-    if(!partidoOcupa(x,m) || !mismoEquipo(x,ids)) return;
-    const j=parseInt(x.jornada,10);
-    if(!isNaN(j)) ocupadas.add(j);
-  });
-  const res=[];
-  for(let j=1;j<=tope;j++){ if(!ocupadas.has(j)) res.push(String(j)); }
-  return res;
-}
-// Horarios de ese día en los que ninguno de los dos equipos juega y queda al menos un campo libre.
-function horasDisponiblesPara(m, fecha){
-  const ids=[String(m.local),String(m.visita)];
-  const campos=catalogoCampos();
-  return catalogoHoras().filter(h=>{
-    const campoOcupados=new Set();
-    for(const x of S.allMatches){
-      if(!partidoOcupa(x,m)) continue;
-      if(normFechaSheet(x.fecha)!==fecha || normHora(x.hora)!==h) continue;
-      if(mismoEquipo(x,ids)) return false;
-      campoOcupados.add(normCampo(x.cancha));
+    if(x.id===m.id || !esAgendado(x)) return;
+    if(ids.includes(String(x.local)) || ids.includes(String(x.visita))){
+      const j = parseInt(x.jornada,10); if(!isNaN(j)) ocupadas.add(j);
     }
-    return campos.some(c=>!campoOcupados.has(normCampo(c)));
   });
+  const n = Object.keys(S.teams).length;
+  const rondas = n%2===0 ? n-1 : n;                       // jornadas por vuelta
+  const maxVuelta = Math.max(1, ...S.allMatches.map(x=>parseInt(x.vuelta,10)||1));
+  const maxData = Math.max(0, ...S.allMatches.map(x=>parseInt(x.jornada,10)||0));
+  const total = Math.max(rondas*maxVuelta, maxData);
+  const libres = [];
+  for(let j=1;j<=total;j++){ if(!ocupadas.has(j)) libres.push(j); }
+  return libres;
 }
-// Campos libres en esa fecha y horario.
-function camposDisponiblesPara(m, fecha, hora){
-  const ocupados=new Set();
-  S.allMatches.forEach(x=>{
-    if(!partidoOcupa(x,m)) return;
-    if(normFechaSheet(x.fecha)===fecha && normHora(x.hora)===hora) ocupados.add(normCampo(x.cancha));
-  });
-  return catalogoCampos().filter(c=>!ocupados.has(normCampo(c)));
+
+function fechaDeJornada(j){
+  const f = S.allMatches.find(x=>String(x.jornada).trim()===String(j) && esAgendado(x) && x.fecha);
+  return f ? f.fecha : '';
 }
-function opcionesSelect(lista, sel, textoVacio){
-  return `<option value="">${textoVacio}</option>` + lista.map(v=>
-    `<option value="${esc(v)}" ${normCampo(v)===normCampo(sel)?'selected':''}>${esc(v)}</option>`).join('');
+
+function ocupadosDeFecha(fechaSheet, excluirId){
+  return S.allMatches.filter(x=>x.id!==excluirId && esAgendado(x) && fechaNumSheet(x.fecha)===fechaNumSheet(fechaSheet));
 }
-function refrescarHorasEdit(prefHora, prefCampo){
-  const m=S.matchToProgram; if(!m) return;
-  const selH=document.getElementById('edit-hora');
-  const fechaIn=document.getElementById('edit-fecha').value;
-  if(!fechaIn){
-    selH.innerHTML='<option value="">— Elige primero la fecha —</option>';
-    refrescarCamposEdit(); return;
-  }
-  const horas=horasDisponiblesPara(m, fechaInputASheet(fechaIn));
-  const prev = prefHora!==undefined ? prefHora : selH.value;
-  selH.innerHTML = horas.length
-    ? opcionesSelect(horas, horas.includes(prev)?prev:'', '— Selecciona horario —')
-    : '<option value="">— Sin horarios libres ese día —</option>';
-  refrescarCamposEdit(prefCampo);
-}
-function refrescarCamposEdit(prefCampo){
-  const m=S.matchToProgram; if(!m) return;
-  const selC=document.getElementById('edit-cancha');
-  const fechaIn=document.getElementById('edit-fecha').value;
-  const hora=document.getElementById('edit-hora').value;
-  if(!fechaIn || !hora){
-    selC.innerHTML='<option value="">— Elige primero fecha y horario —</option>'; return;
-  }
-  const campos=camposDisponiblesPara(m, fechaInputASheet(fechaIn), hora);
-  const prev = prefCampo!==undefined ? prefCampo : selC.value;
-  selC.innerHTML = campos.length
-    ? opcionesSelect(campos, prev, '— Selecciona campo —')
-    : '<option value="">— Sin campos libres a esa hora —</option>';
+
+// ¿Hay otro partido en ese campo cuyo horario se traslape con "hora"?
+function conflictoCampo(ocupados, campo, hora){
+  const t = minutosDeHora(hora);
+  return ocupados.find(x=> x.hora && (x.cancha||'').trim().toLowerCase()===String(campo).trim().toLowerCase()
+                        && Math.abs(minutosDeHora(x.hora)-t) < DURACION_MIN);
 }
 
 function abrirFormEditar(m){
@@ -621,15 +576,20 @@ function abrirFormEditar(m){
   const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
   const fechaTarget = document.getElementById('armando-fecha')?.value || '';
   const [d,mo,y] = (m.fecha||'').split('/');
-  const fechaInput = (y&&mo&&d) ? `${y}-${mo}-${d}` : fechaTarget;
-  const jornadaPrefill = String(m.jornada || jornadaTarget || '').trim();
-  const jornadas = jornadasDisponiblesPara(m);
-  const jornadaOpts = jornadas.length
-    ? opcionesSelect(jornadas, jornadas.includes(jornadaPrefill)?jornadaPrefill:'', '— Selecciona jornada —')
-    : '<option value="">— Sin jornadas disponibles para estos equipos —</option>';
-  // Si el partido ya estaba programado, se conservan su horario y campo (siguen siendo válidos para él).
-  const horaPrevia = (m.fecha && m.hora) ? normHora(m.hora) : '';
-  const campoPrevio = (m.fecha && m.cancha) ? m.cancha : '';
+  const fechaInput = (y&&mo&&d) ? `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}` : fechaTarget;
+
+  // Jornadas en las que estos dos equipos PUEDEN jugar
+  const libres = jornadasLibresPara(m);
+  const pref = String(m.jornada || jornadaTarget || '');
+  const jSel = libres.map(String).includes(pref) ? pref : (libres[0] ? String(libres[0]) : '');
+  const jOpts = libres.length
+    ? libres.map(j=>{ const f=fechaDeJornada(j); return `<option value="${j}" ${String(j)===jSel?'selected':''}>Jornada ${j}${f?' · '+f:''}</option>`; }).join('')
+    : '<option value="">(sin jornadas libres para estos equipos)</option>';
+
+  const horaParts = (m.hora||'09:00:00').split(':');
+  const {hOpts,mOpts} = buildHoraSelects(parseInt(horaParts[0],10)||9, parseInt(horaParts[1],10)||0);
+  const campoActual = (m.cancha||'').trim();
+  const cOpts = '<option value="">— Campo —</option>' + listaCampos().map(c=>`<option value="${esc(c)}" ${c.toLowerCase()===campoActual.toLowerCase()?'selected':''}>${esc(c)}</option>`).join('');
 
   document.getElementById('buscar-resultado').innerHTML = `
     <div class="mod-match-row">
@@ -643,26 +603,94 @@ function abrirFormEditar(m){
     <div class="programar-box">
       <div style="display:flex;flex-direction:column;gap:10px">
         <div>
-          <label>Jornada</label>
-          <select id="edit-jornada" class="msg-input" style="width:100%">${jornadaOpts}</select>
+          <label>Jornada (solo las que estos equipos pueden jugar)</label>
+          <select id="edit-jornada" class="msg-input" style="width:100%" onchange="alCambiarJornadaForm()">${jOpts}</select>
         </div>
         <div>
           <label>Fecha</label>
-          <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}" onchange="refrescarHorasEdit()">
+          <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}" oninput="refrescarDisponibilidad()">
         </div>
         <div>
           <label>Hora</label>
-          <select id="edit-hora" class="msg-input" style="width:100%" onchange="refrescarCamposEdit()"></select>
+          <div style="display:flex;align-items:center;gap:8px">
+            <select id="edit-hora-h" class="msg-input" style="flex:1;text-align:center" onchange="refrescarDisponibilidad()">${hOpts}</select>
+            <span style="color:var(--g400);font-weight:700">:</span>
+            <select id="edit-hora-m" class="msg-input" style="flex:1;text-align:center" onchange="refrescarDisponibilidad()">${mOpts}</select>
+          </div>
         </div>
         <div>
           <label>Campo / Cancha</label>
-          <select id="edit-cancha" class="msg-input" style="width:100%"></select>
+          <select id="edit-cancha" class="msg-input" style="width:100%" onchange="refrescarDisponibilidad()">${cOpts}</select>
         </div>
+        <div id="disp-panel"></div>
       </div>
       <button class="btn-anunciar" id="btn-guardar-editar" style="margin-top:14px" onclick="guardarEdicionPartido()">✅ Guardar cambios</button>
     </div>
   `;
-  refrescarHorasEdit(horaPrevia, campoPrevio);
+  alCambiarJornadaForm(true);
+}
+
+// Al elegir jornada: si esa jornada ya tiene fecha (otros partidos), se propone esa misma fecha
+function alCambiarJornadaForm(soloSiVacia){
+  const j = document.getElementById('edit-jornada')?.value;
+  const inp = document.getElementById('edit-fecha');
+  if(j && inp){
+    const f = fechaDeJornada(j);
+    if(f && (!soloSiVacia || !inp.value)){
+      const [d,mo,y] = f.split('/');
+      if(y&&mo&&d) inp.value = `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}`;
+    }
+  }
+  refrescarDisponibilidad();
+}
+
+// Cuadrícula horario × campo para la fecha elegida: libre / ocupado (y por quién)
+function refrescarDisponibilidad(){
+  const panel = document.getElementById('disp-panel');
+  const m = S.matchToProgram;
+  if(!panel || !m) return;
+  const fecha = fechaInputASheet(document.getElementById('edit-fecha')?.value || '');
+  if(!fecha){ panel.innerHTML = '<div class="mod-hint" style="margin:0">Elige una fecha para ver qué horarios y campos están disponibles.</div>'; return; }
+
+  const ocupados = ocupadosDeFecha(fecha, m.id);
+  const campos = listaCampos();
+  const horas = new Set(HORAS_BASE);
+  ocupados.forEach(x=>{ if(x.hora) horas.add(hhmm(x.hora)); });
+  const hSel = hhmm((document.getElementById('edit-hora-h')?.value||'09')+':'+(document.getElementById('edit-hora-m')?.value||'00'));
+  horas.add(hSel);
+  const cSel = (document.getElementById('edit-cancha')?.value||'').trim();
+
+  // avisos de equipos que ya juegan ese día
+  const ids = [String(m.local), String(m.visita)];
+  const choqueEq = ocupados.filter(x=>ids.includes(String(x.local))||ids.includes(String(x.visita)));
+  const aviso = choqueEq.length
+    ? `<div style="font-size:12px;color:#f87171;margin-bottom:8px">⚠️ ${choqueEq.map(x=>esc(tname(x.local))+' vs '+esc(tname(x.visita))+' ('+esc(hhmm(x.hora))+')').join(' · ')} ya juega(n) esa fecha.</div>` : '';
+
+  const th = campos.map(c=>`<th style="padding:6px 4px;font-size:11px;color:var(--g400)">${esc(c)}</th>`).join('');
+  const filas = [...horas].sort().map(h=>{
+    const celdas = campos.map(c=>{
+      const x = conflictoCampo(ocupados, c, h);
+      const elegido = (h===hSel && c.toLowerCase()===cSel.toLowerCase());
+      if(x) return `<td style="padding:4px"><div style="font-size:10px;line-height:1.2;padding:6px 4px;border-radius:6px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#f87171">✖ ${esc(tname(x.local))} vs ${esc(tname(x.visita))}</div></td>`;
+      return `<td style="padding:4px"><button type="button" onclick="elegirSlot('${h}','${esc(c).replace(/'/g,"\\'")}')" style="width:100%;padding:7px 4px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ${elegido?'var(--neon)':'rgba(94,181,13,.35)'};background:${elegido?'var(--neon)':'var(--neon-dim)'};color:${elegido?'#122400':'var(--neon)'}">${elegido?'✔ Elegido':'Libre'}</button></td>`;
+    }).join('');
+    return `<tr><td style="padding:4px 8px 4px 0;font-size:12px;font-weight:800;color:var(--w);white-space:nowrap">${h}</td>${celdas}</tr>`;
+  }).join('');
+
+  panel.innerHTML = `${aviso}<div style="font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Disponibilidad · ${esc(fecha)}</div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th></th>${th}</tr></thead><tbody>${filas}</tbody></table></div>`;
+}
+
+function elegirSlot(hora, campo){
+  const [h,mi] = hora.split(':');
+  const hs = document.getElementById('edit-hora-h'), ms = document.getElementById('edit-hora-m'), cs = document.getElementById('edit-cancha');
+  if(hs) hs.value = h;
+  if(ms) ms.value = mi;
+  if(cs){
+    if(![...cs.options].some(o=>o.value===campo)){ cs.add(new Option(campo,campo)); }
+    cs.value = campo;
+  }
+  refrescarDisponibilidad();
 }
 
 async function guardarEdicionPartido(){
@@ -670,8 +698,8 @@ async function guardarEdicionPartido(){
   if(!m) return;
   const jornada = document.getElementById('edit-jornada').value.trim();
   const fecha = document.getElementById('edit-fecha').value;
-  const horaSel = document.getElementById('edit-hora').value;
-  const [horaH, horaM] = horaSel ? horaSel.split(':') : ['',''];
+  const horaH = document.getElementById('edit-hora-h').value;
+  const horaM = document.getElementById('edit-hora-m').value;
   const hora = (horaH&&horaM) ? `${horaH}:${horaM}:00` : '';
   const cancha = document.getElementById('edit-cancha').value.trim();
 
@@ -681,6 +709,19 @@ async function guardarEdicionPartido(){
   }
   const [anioF,mesF,diaF] = fecha.split('-');
   const fechaSheet = `${diaF}/${mesF}/${anioF}`;
+
+  // Validaciones: campo/horario libre y equipos sin otro partido ese día
+  const ocupadosF = ocupadosDeFecha(fechaSheet, m.id);
+  const choqueCampo = conflictoCampo(ocupadosF, cancha, hora);
+  if(choqueCampo){
+    alert(`Ese horario/campo ya está ocupado: ${tname(choqueCampo.local)} vs ${tname(choqueCampo.visita)} (${hhmm(choqueCampo.hora)}, ${choqueCampo.cancha}).`);
+    return;
+  }
+  const choqueEquipo = ocupadosF.find(x=>[String(m.local),String(m.visita)].includes(String(x.local))||[String(m.local),String(m.visita)].includes(String(x.visita)));
+  if(choqueEquipo){
+    alert(`Uno de estos equipos ya juega esa fecha: ${tname(choqueEquipo.local)} vs ${tname(choqueEquipo.visita)}.`);
+    return;
+  }
 
   const btn = document.getElementById('btn-guardar-editar');
   if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
