@@ -159,7 +159,7 @@ const idDe = e => String(e['ID_Equipo']).trim();
 async function init(){
   try {
     const [te, tp] = await Promise.all([ fetch(URL_EQUIPOS).then(r => r.text()), fetch(URL_PARTIDOS).then(r => r.text()) ]);
-    EQUIPOS = parseCSV(te).filter(e => idDe(e)); PARTIDOS = parseCSV(tp).filter(p => p['Jornada']);
+    EQUIPOS = parseCSV(te).filter(e => idDe(e)); PARTIDOS = parseCSV(tp).filter(p => p['Equipo_Local'] && p['Equipo_Visita']);   // incluye pendientes aunque no tengan jornada
     const ord = [...EQUIPOS].sort((a, b) => a['Nombre'].localeCompare(b['Nombre'], 'es'));
     $('sel-equipo').innerHTML = '<option value="">— Selecciona un equipo —</option>' + ord.map(e => `<option value="${esc(idDe(e))}">${esc(e['Nombre'])}${esBaja(e) ? ' (baja)' : ''}</option>`).join('');
     msg('Elige un equipo y presiona "Ver reporte".');
@@ -180,9 +180,11 @@ function resultado(p, idE){
   const gf = local ? gl : gv, gc = local ? gv : gl;
   const gp = (p['Ganado_Por'] || '').trim().toLowerCase();
   const tipo = gp === 'penales' ? 'penales' : gp === 'default' ? 'default' : 'normal';
-  let res = (isNaN(gf) || isNaN(gc)) ? 'e' : gf > gc ? 'g' : gf < gc ? 'p' : 'e';
-  if (tipo === 'penales'){ const w = String(p['Penales'] || '').trim(); if (w) res = w === idE ? 'g' : 'p'; }
-  return { gf, gc, tipo, res, rival: local ? String(p['Equipo_Visita']).trim() : String(p['Equipo_Local']).trim() };
+  const res = (isNaN(gf) || isNaN(gc)) ? 'e' : gf > gc ? 'g' : gf < gc ? 'p' : 'e';
+  // Si terminó empatado y se definió en penales: sigue siendo EMPATE; los penales son el desempate (ganó / perdió).
+  let pen = null;
+  if (tipo === 'penales' && res === 'e'){ const w = String(p['Penales'] || '').trim(); if (w) pen = (w === idE) ? 'g' : 'p'; }
+  return { gf, gc, tipo, res, pen, rival: local ? String(p['Equipo_Visita']).trim() : String(p['Equipo_Local']).trim() };
 }
 
 function contexto(){
@@ -196,7 +198,7 @@ function contexto(){
 function analizarEquipo(idE){
   const { hoy, J } = contexto();
   const suyos = PARTIDOS.filter(p => String(p['Equipo_Local']).trim() === idE || String(p['Equipo_Visita']).trim() === idE);
-  const maxJ = Math.max(J, ...suyos.map(p => Number(p['Jornada'])), 0);
+  const maxJ = Math.max(J, ...suyos.map(p => Number(p['Jornada'])).filter(n => !isNaN(n)), 0);
   const filas = [];
   for (let j = 1; j <= maxJ; j++){
     const esperada = fechaDeJornada(j);
@@ -210,17 +212,33 @@ function analizarEquipo(idE){
       fila.control = fila.fReal == null ? 'sinfecha' : j === fila.fReal ? 'tiempo' : j > fila.fReal ? 'adelanto' : 'atrasada';
     } else {
       const vencido = d ? d < hoy && fmt(d) !== fmt(hoy) : j <= J;
-      fila.tipo = vencido ? 'debe' : 'programado';
+      fila.tipo = vencido ? 'debe' : (d ? 'programado' : 'pendiente');
     }
     filas.push(fila);
   }
   return filas;
 }
+// Todos los partidos del equipo que aún no se juegan, tengan o no jornada asignada.
+function pendientesEquipo(idE){
+  const { hoy, J } = contexto();
+  return PARTIDOS.filter(p => (String(p['Equipo_Local']).trim() === idE || String(p['Equipo_Visita']).trim() === idE)
+      && estadoDe(p) !== 'jugado' && !estadoDe(p).includes('cancel'))
+    .map(p => {
+      const j = parseInt(p['Jornada'], 10), d = parseFecha(p['Fecha']);
+      let tipo;
+      if (d) tipo = (d < hoy && fmt(d) !== fmt(hoy)) ? 'debe' : 'programado';
+      else tipo = (!isNaN(j) && j <= J) ? 'debe' : 'pendiente';
+      return { p, j: isNaN(j) ? null : j, fecha: d, tipo, rival: resultado(p, idE).rival };
+    })
+    .sort((a, b) => (a.fecha ? a.fecha.getTime() : 9e15) - (b.fecha ? b.fecha.getTime() : 9e15) || (a.j == null) - (b.j == null) || (a.j || 0) - (b.j || 0));
+}
+
 function resumen(filas){
   const jug = filas.filter(f => f.tipo === 'jugado');
   const c = k => jug.filter(f => f.r.res === k).length;
   return {
     jugados: jug.length, g: c('g'), e: c('e'), p: c('p'),
+    penG: jug.filter(f => f.r.pen === 'g').length, penP: jug.filter(f => f.r.pen === 'p').length,
     gf: jug.reduce((s, f) => s + (isNaN(f.r.gf) ? 0 : f.r.gf), 0), gc: jug.reduce((s, f) => s + (isNaN(f.r.gc) ? 0 : f.r.gc), 0),
     debe: filas.filter(f => f.tipo === 'debe'), adelanto: jug.filter(f => f.control === 'adelanto'),
     atrasada: jug.filter(f => f.control === 'atrasada'), descansos: filas.filter(f => f.tipo === 'descanso'),
@@ -242,7 +260,7 @@ function encabezado(titulo, sub){
 }
 const PILL = {
   tiempo: ['v', 'EN TIEMPO'], adelanto: ['b', 'ADELANTÓ'], atrasada: ['p', 'PAGÓ ATRASADA'], debe: ['r', 'DEBE'],
-  descanso: ['g', 'DESCANSO'], programado: ['a', 'PROGRAMADO'], sinfecha: ['g', 'SIN FECHA']
+  descanso: ['g', 'DESCANSO'], programado: ['a', 'PROGRAMADO'], pendiente: ['a', 'PENDIENTE'], sinfecha: ['g', 'SIN FECHA']
 };
 const RES = { g: ['v', 'GANÓ'], p: ['r', 'PERDIÓ'], e: ['a', 'EMPATÓ'] };
 const TIPO = { normal: 'Normal', default: 'Default', penales: 'Penales' };
@@ -274,6 +292,8 @@ function docEquipo(idE){
     chips = '<span class="rq-pill v">SIN ADEUDOS</span>' + chips;
   }
   if (r.descansos.length) textos.push(`Descansó en ${lista(r.descansos.map(f => f.j))} (no tiene partido en el rol).`);
+  const porJugar = pendientesEquipo(idE), sinJornada = porJugar.filter(x => x.j == null).length;
+  if (porJugar.length) textos.push(`<b>Por jugar:</b> le faltan ${porJugar.length} partido(s)${sinJornada ? ' (' + sinJornada + ' sin jornada asignada todavía)' : ''}; el detalle está más abajo.`);
   if (r.proximo){
     const p = r.proximo.p, riv = mapa[resultado(p, idE).rival] || {};
     textos.push(`<b>Próximo partido:</b> jornada ${r.proximo.j}${r.proximo.fecha ? ' · ' + fmt(r.proximo.fecha) + ' (' + DIAS[r.proximo.fecha.getDay()] + ')' : ''}${hora12(p['Hora']) ? ' · ' + hora12(p['Hora']) : ''}${p['Cancha'] ? ' · ' + esc(p['Cancha']) : ''} vs ${esc(riv['Nombre'] || 'por definir')}.`);
@@ -288,7 +308,7 @@ function docEquipo(idE){
     if (f.tipo === 'jugado'){
       const m = (isNaN(f.r.gf) || isNaN(f.r.gc)) ? '—' : `${f.r.gf} - ${f.r.gc}`;
       return `<tr><td class="j">J${f.j}</td><td>${esp}</td><td>${real}</td><td>${rival}</td><td class="rq-marc">${m}</td>
-        <td><span class="rq-pill ${RES[f.r.res][0]}">${RES[f.r.res][1]}</span></td><td>${TIPO[f.r.tipo]}</td>
+        <td><span class="rq-pill ${RES[f.r.res][0]}">${RES[f.r.res][1]}</span>${f.r.pen ? `<small style="display:block;margin-top:3px;font-weight:700;color:${f.r.pen === 'g' ? '#1b6e2e' : '#b42318'}">${f.r.pen === 'g' ? 'Ganó' : 'Perdió'} en penales</small>` : ''}</td><td>${TIPO[f.r.tipo]}</td>
         <td><span class="rq-pill ${PILL[f.control][0]}">${PILL[f.control][1]}</span></td></tr>`;
     }
     return `<tr class="${f.tipo === 'debe' ? 'fila-debe' : ''}"><td class="j">J${f.j}</td><td>${esp}</td><td>${real}</td><td>${rival}</td>
@@ -297,7 +317,20 @@ function docEquipo(idE){
 
   const kpis = [
     ['', r.jugados, 'Jugados'], ['v', r.g, 'Ganados'], ['a', r.e, 'Empatados'], ['r', r.p, 'Perdidos'], ['', r.gf, 'Goles a favor'], ['', r.gc, 'Goles en contra']
-  ].map(([c, v, t]) => `<div class="rq-kpi ${c}"><b>${v}</b><span>${t}</span></div>`).join('');
+  ].map(([c, v, t]) => `<div class="rq-kpi ${c}"><b>${v}</b><span>${t}</span>${t === 'Empatados' && (r.penG || r.penP) ? `<small style="display:block;font-size:10px;color:#6b7280;margin-top:2px">${r.penG} ganó · ${r.penP} perdió en pen.</small>` : ''}</div>`).join('');
+
+  const filasPend = porJugar.map(x => {
+    const rv = mapa[x.rival] || {}, p = x.p;
+    const fh = x.fecha ? `<b>${fmt(x.fecha)}</b><small>${DIAS[x.fecha.getDay()]} · F${fechaNum(x.fecha)}${hora12(p['Hora']) ? ' · ' + hora12(p['Hora']) : ''}</small>` : '<b>Por definir</b>';
+    const k = PILL[x.tipo];
+    return `<tr class="${x.tipo === 'debe' ? 'fila-debe' : ''}"><td class="j">${x.j != null ? 'J' + x.j : '—'}${x.j == null ? '<small>sin jornada</small>' : ''}</td><td>${fh}</td><td>${esc(p['Cancha'] || '—')}</td>
+      <td><div class="rq-rival"><img src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + x.rival)}</span></div></td>
+      <td><span class="rq-pill ${k[0]}">${k[1]}</span></td></tr>`;
+  }).join('');
+  const seccionPend = `<div style="margin-top:20px"><div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;font-weight:800;margin-bottom:6px">Juegos por jugar (${porJugar.length})</div>` +
+    (porJugar.length
+      ? `<table class="rq-tabla"><thead><tr><th style="width:84px">Jornada</th><th style="width:130px">Fecha y hora</th><th style="width:76px">Campo</th><th>Rival</th><th style="width:118px">Estado</th></tr></thead><tbody>${filasPend}</tbody></table>`
+      : '<div style="padding:10px 14px;border:1px solid #a9d9b3;background:#e3f4e6;border-radius:6px;color:#1b6e2e;font-weight:700;font-size:13px">✔ No tiene juegos pendientes por jugar.</div>') + '</div>';
 
   return `<div class="rq-doc" style="width:900px">
     ${encabezado('Reporte de equipo', `Jornadas, fechas y resultados${eq['Descripción'] ? ' · ' + esc(eq['Descripción']) : ''}`)}
@@ -305,8 +338,9 @@ function docEquipo(idE){
       <div class="rq-equipo"><img src="${esc(eq['URL'] || '')}" onerror="this.style.opacity='.15'"><div><h1>${esc(eq['Nombre'] || '')}</h1><small>${esBaja(eq) ? 'Equipo dado de baja' : 'Equipo activo'} · ${r.jugados} partido(s) jugado(s)</small></div></div>
       <div class="rq-kpis">${kpis}</div>
       <div class="rq-situacion ${clase}"><div class="chips">${chips}</div>${textos.map(t => `<p>${t}</p>`).join('')}</div>
-      <table class="rq-tabla"><thead><tr><th style="width:42px">Jor.</th><th style="width:96px">Le correspondía</th><th style="width:100px">Se jugó</th><th>Rival</th><th style="width:70px">Marcador</th><th style="width:92px">Resultado</th><th style="width:66px">Tipo</th><th style="width:118px">Control</th></tr></thead><tbody>${cuerpoFilas}</tbody></table>
-      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha; la jornada N corresponde a la fecha N. <b>En tiempo</b>: jornada = fecha. <b>Adelantó</b>: jugó una jornada mayor a la fecha. <b>Pagó atrasada</b>: jugó una jornada menor a la fecha. <b>Debe</b>: el partido estaba en el rol, su fecha ya pasó y no se jugó. <b>Descanso</b>: sin partido en el rol esa jornada. Los partidos definidos en penales cuentan como ganados o perdidos; Default = victoria por incomparecencia.</div>
+      <table class="rq-tabla"><thead><tr><th style="width:42px">Jor.</th><th style="width:96px">Le correspondía</th><th style="width:100px">Se jugó</th><th>Rival</th><th style="width:70px">Marcador</th><th style="width:112px">Resultado</th><th style="width:62px">Tipo</th><th style="width:118px">Control</th></tr></thead><tbody>${cuerpoFilas}</tbody></table>
+      ${seccionPend}
+      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha; la jornada N corresponde a la fecha N. <b>En tiempo</b>: jornada = fecha. <b>Adelantó</b>: jugó una jornada mayor a la fecha. <b>Pagó atrasada</b>: jugó una jornada menor a la fecha. <b>Debe</b>: el partido estaba en el rol, su fecha ya pasó y no se jugó. <b>Descanso</b>: sin partido en el rol esa jornada. <b>Pendiente</b>: partido por jugar sin fecha asignada (puede no tener jornada todavía). Un partido que termina empatado y se define en penales cuenta como <b>empate</b>; los penales se muestran debajo como desempate (ganó o perdió en penales). Default = victoria por incomparecencia.</div>
     </div>
     <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
 }
@@ -325,18 +359,18 @@ function docGeneral(){
       return `<td class="cel" style="color:${c}">${s}</td>`;
     }).join('');
     const est = r.debe.length ? `<span class="rq-pill r">DEBE ${r.debe.map(x => 'J' + x.j).join(', ')}</span>` : r.adelanto.length ? `<span class="rq-pill b">ADELANTADO</span>` : '<span class="rq-pill v">AL CORRIENTE</span>';
-    return `<tr><td class="eq"><div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'])}</span></div></td>${celdas}<td><b>${r.jugados}</b></td><td>${r.g}-${r.e}-${r.p}</td><td>${est}</td></tr>`;
+    return `<tr><td class="eq"><div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'])}</span></div></td>${celdas}<td><b>${r.jugados}</b></td><td>${r.g}-${r.e}-${r.p}</td><td><b>${pendientesEquipo(idDe(e)).length}</b></td><td>${est}</td></tr>`;
   }).join('');
   const nDebe = datos.filter(d => d.r.debe.length).length, nAdel = datos.filter(d => !d.r.debe.length && d.r.adelanto.length).length, nOk = datos.length - nDebe - nAdel;
   const kpis = [['', datos.length, 'Equipos activos'], ['v', nOk, 'Al corriente'], ['', nAdel, 'Adelantados'], ['r', nDebe, 'Con adeudos']].map(([c, v, t]) => `<div class="rq-kpi ${c}" style="flex:1"><b>${v}</b><span>${t}</span></div>`).join('');
-  const ancho = Math.max(900, 250 + maxJ * 50 + 330);
+  const ancho = Math.max(900, 250 + maxJ * 50 + 390);
   return `<div class="rq-doc" style="width:${ancho}px">
     ${encabezado('Control de jornadas por equipo', 'Quién va al corriente, quién adelantó y quién debe')}
     <div class="rq-body">
       <div style="display:flex;gap:10px;margin-bottom:16px">${kpis}</div>
-      <table class="rq-tabla rq-mx"><thead><tr><th style="text-align:left;padding-left:14px">Equipo</th>${cab}<th style="width:50px">PJ</th><th style="width:70px">G-E-P</th><th style="width:130px">Situación</th></tr></thead><tbody>${filas}</tbody></table>
+      <table class="rq-tabla rq-mx"><thead><tr><th style="text-align:left;padding-left:14px">Equipo</th>${cab}<th style="width:50px">PJ</th><th style="width:70px">G-E-P</th><th style="width:62px">Por jugar</th><th style="width:130px">Situación</th></tr></thead><tbody>${filas}</tbody></table>
       <div class="rq-sim"><span><b style="color:#1f7a35">✔</b> En tiempo</span><span><b style="color:#1e4e8c">⏩</b> Adelantó</span><span><b style="color:#5b3a99">↩</b> Pagó atrasada</span><span><b style="color:#c0392b">✖</b> Debe</span><span><b style="color:#9ca3af">–</b> Descanso</span><span><b style="color:#a87500">○</b> Programado</span></div>
-      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha; bajo cada jornada aparece el domingo que le corresponde. Los equipos dados de baja no se incluyen. PJ = partidos jugados; G-E-P = ganados, empatados y perdidos.</div>
+      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha; bajo cada jornada aparece el domingo que le corresponde. Los equipos dados de baja no se incluyen. PJ = partidos jugados; G-E-P = ganados, empatados y perdidos; Por jugar = partidos que le faltan (con o sin jornada asignada).</div>
     </div>
     <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
 }
