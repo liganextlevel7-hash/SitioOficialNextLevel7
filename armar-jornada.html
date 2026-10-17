@@ -156,7 +156,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
     <!-- EDITAR / PROGRAMAR PARTIDO -->
     <div>
       <div class="mod-section-title" style="color:var(--neon)">🔁 Editar / Programar un partido</div>
-      <div class="mod-hint">Elige los dos equipos que se enfrentan (o ya se enfrentaron) y confirma los nombres antes de guardar — así no se mueve el partido equivocado.</div>
+      <div class="mod-hint">Trae el partido por su ID, o elige los dos equipos que se enfrentan, y confirma los nombres antes de guardar — así no se mueve el partido equivocado.</div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
         <div>
@@ -170,6 +170,16 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
       </div>
       <div id="armando-descansa" style="font-size:12px;color:var(--neon);margin-bottom:12px;min-height:16px"></div>
       <div id="armando-confirmaciones" style="font-size:12px;margin-bottom:12px"></div>
+
+      <div style="margin-bottom:12px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
+        <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🔢 Traer partido por ID (el que sale en el reporte)</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="buscar-id-partido" list="lista-ids-partido" class="msg-input" style="flex:1" inputmode="numeric" autocomplete="off" placeholder="Escribe o elige el ID. Ej. 26" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarPartidoPorId();}" onchange="buscarPartidoPorId()">
+          <button type="button" onclick="buscarPartidoPorId()" style="padding:10px 16px;background:var(--dark);border:1px solid rgba(94,181,13,.35);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Traer →</button>
+        </div>
+        <datalist id="lista-ids-partido"></datalist>
+        <div class="mod-hint" style="margin:6px 0 0">Trae el partido directo para programarlo. Si arriba pones Jornada y Fecha, se usan como sugerencia. Con el mismo ID puedes volver a programar uno ya programado.</div>
+      </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div>
@@ -358,6 +368,7 @@ function entrarPanel(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   llenarSelectsEquipos();
+  llenarListaIds();
   llenarSelectCedula();
   llenarSelectConfirmacion();
   initRol();
@@ -495,6 +506,46 @@ function actualizarSelectsPorJornada(){
 // ════════════════════════════════
 //  EDITAR / PROGRAMAR PARTIDO (por pareja de equipos)
 // ════════════════════════════════
+// Lista de IDs sugeridos (partidos que aún no están Jugado y cuyos dos equipos siguen activos)
+function llenarListaIds(){
+  const dl = document.getElementById('lista-ids-partido');
+  if(!dl) return;
+  const nid = x => { const n = Number(x.id); return isNaN(n) ? 0 : n; };
+  dl.innerHTML = S.allMatches
+    .filter(m => m.id && (m.estado||'').toLowerCase() !== 'jugado' && S.teams[m.local] && S.teams[m.visita])
+    .sort((a,b) => nid(a) - nid(b))
+    .map(m => `<option value="${esc(m.id)}">${esc(tname(m.local))} vs ${esc(tname(m.visita))} · J${esc(m.jornada||'?')} · ${esc(m.estado||'?')}</option>`)
+    .join('');
+}
+
+// Trae un partido por su ID_Partido y abre el mismo formulario de programar/editar
+function buscarPartidoPorId(){
+  const inp = document.getElementById('buscar-id-partido');
+  const cont = document.getElementById('buscar-resultado');
+  const raw = (inp?.value || '').trim();
+  S.matchToProgram = null;
+  if(!raw){ cont.innerHTML = ''; return; }
+  const limpio = raw.replace(/\D/g,'');   // acepta "26", " 26 ", "#26"
+  const m = S.allMatches.find(x => String(x.id).trim() === raw)
+         || (limpio ? S.allMatches.find(x => String(Number(x.id)) === String(Number(limpio))) : null);
+  if(!m){
+    cont.innerHTML = `<div class="mod-preview-empty">No encontré el partido con ID ${esc(raw)}</div>`;
+    return;
+  }
+  if(!S.teams[m.local] || !S.teams[m.visita]){
+    cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} tiene un equipo dado de baja, no se puede programar.</div>`;
+    return;
+  }
+  if((m.estado||'').toLowerCase() === 'jugado'){
+    cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} (${esc(tname(m.local))} vs ${esc(tname(m.visita))}) ya está Jugado, no se puede programar.</div>`;
+    return;
+  }
+  // limpiar los selects de equipos para que no se confundan con el partido traído por ID
+  const a = document.getElementById('buscar-equipo-a'), b = document.getElementById('buscar-equipo-b');
+  if(a) a.value = ''; if(b) b.value = '';
+  abrirFormEditar(m);
+}
+
 function buscarPartidoEntreEquipos(){
   const a = document.getElementById('buscar-equipo-a').value;
   const b = document.getElementById('buscar-equipo-b').value;
@@ -744,6 +795,8 @@ async function guardarEdicionPartido(){
   document.getElementById('buscar-equipo-a').value='';
   document.getElementById('buscar-equipo-b').value='';
   actualizarSelectsPorJornada();
+  const idInp = document.getElementById('buscar-id-partido');
+  if(idInp){ idInp.value=''; llenarListaIds(); idInp.focus(); }
 }
 
 // ════════════════════════════════
