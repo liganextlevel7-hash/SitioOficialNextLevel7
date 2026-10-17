@@ -73,8 +73,6 @@ select{width:100%;padding:11px;border-radius:10px;border:1px solid #5eb50d66;bac
 .rq-rival img{width:30px;height:30px;object-fit:contain;flex-shrink:0}
 .rq-rival span{font-weight:700;text-transform:uppercase;font-size:12.5px;line-height:1.15}
 .rq-marc{font-size:16px;font-weight:800}
-.rq-recordatorio{margin:0;padding:11px 32px;background:#fff4d6;border-bottom:2px solid #e0a800;color:#6b4e00;font-size:13px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.rq-recordatorio b{color:#8a6100}
 .rq-leyenda{margin:16px 0 0;padding:12px 14px;border:1px solid #cfd8c5;border-radius:6px;font-size:11.5px;color:#4b5563;line-height:1.55;background:#fafbf8}
 .rq-leyenda b{color:#1d3d05}
 .rq-pie{display:flex;justify-content:space-between;gap:20px;margin-top:18px;padding:10px 32px;border-top:1px solid #cfd8c5;font-size:10.5px;color:#6b7280}
@@ -87,25 +85,10 @@ select{width:100%;padding:11px;border-radius:10px;border:1px solid #5eb50d66;bac
 .rq-tit{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;font-weight:800;margin:20px 0 6px}
 .rq-sim{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#374151;margin-top:12px}
 .rq-sim span b{display:inline-block;min-width:22px;text-align:center;font-size:15px}
-body:not(.auth) .panel, body:not(.auth) #vista-wrap{display:none !important}
-body.auth #login-reporte{display:none}
-#login-reporte{width:100%;max-width:420px;background:rgba(0,0,0,.75);border:1px solid #5eb50d55;border-radius:14px;padding:20px;margin-top:30px}
-#login-reporte h2{color:#5eb50d;font-size:17px;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
-#login-reporte input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #5eb50d66;background:#071019;color:#fff;font-size:15px;outline:none;margin-bottom:10px}
-#login-reporte .err{color:#ff6b6b;font-size:13px;min-height:18px;margin-top:8px}
-td.idp{font-weight:700;font-size:12px;color:#374151}
-td.n{font-weight:800;font-size:13px;color:#1d3d05}
 </style>
 </head>
 <body>
 <div class="nav"><a href="index.html">← Inicio</a></div>
-
-<div id="login-reporte">
-  <h2>🔒 Acceso de administrador</h2>
-  <input type="password" id="pass-reporte" placeholder="Contraseña de administrador" autocomplete="off">
-  <button class="btn pri" style="width:100%" onclick="entrarReporte()">Entrar</button>
-  <div class="err" id="err-reporte"></div>
-</div>
 
 <div class="panel">
   <h2>📋 Reporte por equipo</h2>
@@ -149,8 +132,6 @@ const p2 = n => String(n).padStart(2, '0');
 const DIA_MS = 86400000;
 const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 let EQUIPOS = [], PARTIDOS = [];
-const idTxt = v => (v != null && String(v).trim() !== '') ? esc(String(v).trim()) : '—';
-const idPartido = p => idTxt(p && p['ID_Partido']);
 
 function parseCSV(text){
   const rows = []; let row = [], cur = '', q = false;
@@ -180,15 +161,6 @@ function hora12(h){
   const m = String(h || '').match(/(\d+):(\d+)/); if (!m) return '';
   let H = parseInt(m[1], 10); const ap = H >= 12 ? 'pm' : 'am'; H = H % 12 || 12; return `${H}:${m[2]} ${ap}`;
 }
-// Equipo que NO jugó la jornada JORNADA_CUBIERTA pero se cuenta como si la hubiera jugado (solo para estadísticas y jornadas).
-const EQUIPO_SIN_J1 = 'Deportivo Azul';
-const JORNADA_CUBIERTA = 1;
-const normTxt = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
-const idSinJ1 = () => { const e = EQUIPOS.find(q => normTxt(q['Nombre']) === normTxt(EQUIPO_SIN_J1)); return e ? String(e['ID_Equipo']).trim() : null; };
-const RIVAL_CUBIERTA = 'Puebla 450';   // el juego Deportivo Azul vs Puebla 450 se toma como jugado en la jornada cubierta
-const idRivalCub = () => { const e = EQUIPOS.find(q => normTxt(q['Nombre']) === normTxt(RIVAL_CUBIERTA)); return e ? String(e['ID_Equipo']).trim() : null; };
-const esParCubierto = (x, y) => { const a = idSinJ1(), b = idRivalCub(); return !!a && !!b && ((x === a && y === b) || (x === b && y === a)); };
-const cubreJ = (id, j) => j === JORNADA_CUBIERTA && id === idSinJ1();
 const esBaja = e => (e['Status'] || '').trim().toLowerCase() === 'baja';
 const idDe = e => String(e['ID_Equipo']).trim();
 
@@ -248,7 +220,6 @@ const ultimaVencida = () => { let n = 0; while (vencidaJ(n + 1)) n++; return n; 
 
 // ¿El equipo tiene partido válido en la jornada j? (jugado, o programado contra un equipo activo)
 function tienePartidoJ(idT, j, actSet){
-  if (cubreJ(idT, j)) return true;
   return PARTIDOS.some(p => Number(p['Jornada']) === j && !cancelado(p) && involucra(p, idT) && (estadoDe(p) === 'jugado' || actSet.has(rivalDe(p, idT))));
 }
 // Solo hay descanso real cuando la liga tiene número impar de equipos activos y uno queda libre.
@@ -290,13 +261,13 @@ function crucesPendientes(){
   const actSet = new Set(act);
   const Lv = act.length % 2 === 0 ? act.length - 1 : act.length;
   const vuelta = j => Math.floor((j - 1) / Lv);
-  const enfrentados = (x, y, j) => esParCubierto(x, y) || PARTIDOS.some(p => !cancelado(p) && Number(p['Jornada']) !== j && !isNaN(Number(p['Jornada'])) &&
+  const enfrentados = (x, y, j) => PARTIDOS.some(p => !cancelado(p) && Number(p['Jornada']) !== j && !isNaN(Number(p['Jornada'])) &&
     vuelta(Number(p['Jornada'])) === vuelta(j) && involucra(p, x) && involucra(p, y));
   const out = [], sugeridos = new Set();
   const llave = (x, y, j) => vuelta(j) + ':' + [x, y].sort().join('-');
   for (let j = 1; j <= ultimaVencida(); j++){
     const delJ = PARTIDOS.filter(p => Number(p['Jornada']) === j && !cancelado(p));
-    const con = new Set(); if (j === JORNADA_CUBIERTA && idSinJ1()) con.add(idSinJ1());
+    const con = new Set();
     delJ.forEach(p => { const x = String(p['Equipo_Local']).trim(), y = String(p['Equipo_Visita']).trim(); if (estadoDe(p) === 'jugado' || (actSet.has(x) && actSet.has(y))){ con.add(x); con.add(y); } });
     let sin = act.filter(t => !con.has(t));
     if (act.length % 2 === 1 && sin.length === 1) sin = [];
@@ -325,7 +296,6 @@ function analizarEquipo(idE){
     const delJ = suyos.filter(x => Number(x['Jornada']) === j);
     const p = delJ.find(x => estadoDe(x) === 'jugado') || delJ.find(x => actSet.has(rivalDe(x, idE))) || delJ[0];
     const fila = { j, esperada, fEsp: j };
-    if (!p && cubreJ(idE, j)){ fila.tipo = 'cubierta'; filas.push(fila); continue; }
     if (!p){ fila.tipo = !venc ? 'sinasignar' : (descansoLegitimo(j, idE) ? 'descanso' : 'sinpartido'); filas.push(fila); continue; }
     const d = parseFecha(p['Fecha']);
     fila.p = p; fila.fecha = d; fila.fReal = fechaNum(d);
@@ -362,7 +332,7 @@ function resumen(filas){
   const c = k => jug.filter(f => f.r.res === k).length;
   const disp = filas.filter(f => f.tipo === 'adisputar').sort((x, y) => x.fecha - y.fecha);
   return {
-    jugados: jug.length + filas.filter(f => f.tipo === 'cubierta').length, g: c('g'), e: c('e'), p: c('p'),
+    jugados: jug.length, g: c('g'), e: c('e'), p: c('p'),
     penG: jug.filter(f => f.r.pen === 'g').length, penP: jug.filter(f => f.r.pen === 'p').length,
     gf: jug.reduce((t, f) => t + (isNaN(f.r.gf) ? 0 : f.r.gf), 0), gc: jug.reduce((t, f) => t + (isNaN(f.r.gc) ? 0 : f.r.gc), 0),
     debe: filas.filter(f => f.tipo === 'debe' || f.tipo === 'sinpartido'),
@@ -439,17 +409,15 @@ function planProgramacion(nFechas, doble){
   if (act.length < 2) return null;
   const actSet = new Set(act), { hoy } = contexto();
   const L = act.length % 2 === 0 ? act.length - 1 : act.length;                 // jornadas por vuelta
-  const num = p => { const t = String(p['Jornada'] == null ? '' : p['Jornada']).trim(); return t === '' ? NaN : Number(t); }, key = (x, y) => [x, y].sort().join('-');   // jornada en blanco = sin jornada (no 0)
+  const num = p => { const t = String(p['Jornada'] || '').trim(); return t === '' ? NaN : Number(t); }, key = (x, y) => [x, y].sort().join('-');   // jornada vacía = sin jornada
   const validos = PARTIDOS.filter(p => !cancelado(p) && actSet.has(String(p['Equipo_Local']).trim()) && actSet.has(String(p['Equipo_Visita']).trim()));
   const todos = []; for (let i = 0; i < act.length; i++) for (let k = i + 1; k < act.length; k++) todos.push([act[i], act[k]]);
 
-  const azId = idSinJ1(), puId = idRivalCub();
   // vuelta en curso: la primera donde todavía hay parejas sin jugar
   let v = 0;
   for (; v < 4; v++){
     const lo = v * L + 1, hi = (v + 1) * L;
     const jug = new Set(validos.filter(p => estadoDe(p) === 'jugado' && num(p) >= lo && num(p) <= hi).map(p => key(String(p['Equipo_Local']).trim(), String(p['Equipo_Visita']).trim())));
-    if (azId && puId && lo <= JORNADA_CUBIERTA && JORNADA_CUBIERTA <= hi) jug.add(key(azId, puId));
     if (todos.some(([x, y]) => !jug.has(key(x, y)))) break;
   }
   const lo = v * L + 1, hi = (v + 1) * L, rango = []; for (let j = lo; j <= hi; j++) rango.push(j);
@@ -460,17 +428,8 @@ function planProgramacion(nFechas, doble){
     const x = String(p['Equipo_Local']).trim(), y = String(p['Equipo_Visita']).trim();
     if (estadoDe(p) === 'jugado'){ hecho.add(key(x, y)); if (!isNaN(num(p))){ ocup[x].add(num(p)); ocup[y].add(num(p)); } }
     else if (claseNoJugado(p) === 'adisputar'){ hecho.add(key(x, y)); fijos.push(p); if (!isNaN(num(p))){ ocup[x].add(num(p)); ocup[y].add(num(p)); } }
-    else previo[key(x, y)] = { a: x, b: y, j: isNaN(num(p)) ? null : num(p), id: p['ID_Partido'] };       // conserva local/visita y la jornada del rol
+    else previo[key(x, y)] = { a: x, b: y, j: isNaN(num(p)) ? null : num(p), id: String(p['ID_Partido'] || '').trim() };       // conserva local/visita y la jornada del rol
   });
-  // Partidos jugados contra un equipo dado de baja: la jornada ya fue jugada por el equipo activo.
-  PARTIDOS.forEach(p => {
-    if (cancelado(p) || estadoDe(p) !== 'jugado') return;
-    const x = String(p['Equipo_Local']).trim(), y = String(p['Equipo_Visita']).trim(), jn = num(p);
-    if (isNaN(jn) || jn < lo || jn > hi) return;
-    if (actSet.has(x) && !actSet.has(y)) ocup[x].add(jn); else if (actSet.has(y) && !actSet.has(x)) ocup[y].add(jn);
-  });
-  if (azId && puId && rango.includes(JORNADA_CUBIERTA)) hecho.add(key(azId, puId));   // Deportivo Azul vs Puebla 450: se toma como jugado en J1
-  { const az = idSinJ1(); if (az && ocup[az] && rango.includes(JORNADA_CUBIERTA)) ocup[az].add(JORNADA_CUBIERTA); }
   const missing = t => rango.filter(j => !ocup[t].has(j));
   const comun = (x, y) => missing(x).filter(j => !ocup[y].has(j));
   let pend = todos.filter(([x, y]) => !hecho.has(key(x, y))).map(([x, y]) => { const pv = previo[key(x, y)]; return { a: pv ? pv.a : x, b: pv ? pv.b : y, pref: pv ? pv.j : null, id: pv ? pv.id : '' }; });
@@ -480,13 +439,13 @@ function planProgramacion(nFechas, doble){
     const x = String(p['Equipo_Local']).trim(), y = String(p['Equipo_Visita']).trim();
     let j = num(p);
     if (isNaN(j)){ const cm = comun(x, y); j = cm.length ? Math.min(...cm) : null; if (j != null){ ocup[x].add(j); ocup[y].add(j); } }
-    return { a: x, b: y, j, fecha: parseFecha(p['Fecha']), hora: p['Hora'], cancha: p['Cancha'], id: p['ID_Partido'] };
+    return { a: x, b: y, j, fecha: parseFecha(p['Fecha']), hora: p['Hora'], cancha: p['Cancha'], id: String(p['ID_Partido'] || '').trim() };
   }).sort((x, y) => x.fecha - y.fecha);
 
   // jornada de cada partido pendiente (global, sin que un equipo repita jornada)
   const pref = new Map(); pend.forEach((e, i) => { if (e.pref != null) pref.set(i, e.pref); });
   const asign = asignarJornadas(pend, ocup, rango, pref);
-  pend = pend.map((e, i) => ({ a: e.a, b: e.b, id: e.id, j: asign.has(i) ? asign.get(i) : null }));      // conserva el ID_Partido real
+  pend = pend.map((e, i) => ({ a: e.a, b: e.b, id: e.id, j: asign.has(i) ? asign.get(i) : null }));
 
   // domingos por proponer: los que aún no se publican (antes del jueves)
   const domingos = [];
@@ -501,14 +460,14 @@ function planProgramacion(nFechas, doble){
       pend.forEach((e, i) => {
         if (e.j == null) return;
         const ok1 = ronda === 1 ? (cnt[e.a] === 0 && cnt[e.b] === 0) : (cnt[e.a] === 1 && cnt[e.b] === 1 && deuda(e.a) > 0 && deuda(e.b) > 0);
-        if (ok1) edges.push({ a: e.a, b: e.b, c: e.j, i });
+        if (ok1) edges.push({ a: e.a, b: e.b, c: e.j, i, id: e.id });
       });
       const nodos = [...new Set(edges.flatMap(e => [e.a, e.b]))];
       const sel = mejorEmparejamiento(nodos, edges);
       sel.forEach(e => {
         cnt[e.a]++; cnt[e.b]++;
         const fj = fechaDeJornada(e.c), efecto = fj < sdom ? 'corriente' : (fj.getTime() === sdom.getTime() ? 'tiempo' : 'adelanto');
-        filasDom.push({ ronda, j: e.c, a: e.a, b: e.b, efecto, id: pend[e.i].id });
+        filasDom.push({ ronda, j: e.c, a: e.a, b: e.b, efecto, id: e.id });
       });
       const usadas = new Set(sel.map(e => e.i)); pend = pend.filter((_, i) => !usadas.has(i));
     }
@@ -532,20 +491,18 @@ const lista = arr => arr.length === 1 ? 'la jornada ' + arr[0] : 'las jornadas '
 //  DOCUMENTOS
 // ═══════════════════════════════════════════════
 const ahoraTxt = () => { const a = new Date(); return `${p2(a.getDate())}/${p2(a.getMonth() + 1)}/${a.getFullYear()} ${p2(a.getHours())}:${p2(a.getMinutes())}`; };
-// Recordatorio fijo (aparece arriba de todos los informes). Cambia el texto aquí si ya se decide qué hacer con el equipo.
-const notaRecordatorio = () => `<div class="rq-recordatorio">📌 <b>Recordatorio:</b> ${esc(EQUIPO_SIN_J1)} <b>no jugó la Jornada ${JORNADA_CUBIERTA}</b>, pero se toma como si hubiera jugado contra ${esc(RIVAL_CUBIERTA)} (cuenta en jornadas, encuentros y estadísticas; ese juego ya no se programa). Al final del torneo hay que decidir qué se hará con ese equipo.</div>`;
 function encabezado(titulo, sub){
   const { hoy, fechaHoy } = contexto();
   return `<div class="rq-head">
     <div><div class="rq-liga">Liga Next Level 7 · Torneo Dominical</div><div class="rq-titulo">${esc(titulo)}</div><div class="rq-sub">${sub}</div></div>
     <div class="rq-der"><div class="rq-logos"><img src="logo-liga.png.png" alt="" onerror="this.style.display='none'"><img src="laregionallstars.png" alt="" onerror="this.style.display='none'"></div>
-      <div>Torneo iniciado el <b>${esc(FECHA_INICIO)}</b><br>Hoy: Fecha ${fechaHoy || '—'} · Emitido ${ahoraTxt()}</div></div></div>${notaRecordatorio()}`;
+      <div>Torneo iniciado el <b>${esc(FECHA_INICIO)}</b><br>Hoy: Fecha ${fechaHoy || '—'} · Emitido ${ahoraTxt()}</div></div></div>`;
 }
 const PILL = {
   tiempo: ['v', 'EN TIEMPO'], adelanto: ['b', 'ADELANTÓ'], atrasada: ['p', 'PAGÓ ATRASADA'], debe: ['r', 'DEBE'],
   descanso: ['g', 'DESCANSO'], programado: ['a', 'PROGRAMADO'], pendiente: ['a', 'PENDIENTE'], sinfecha: ['g', 'SIN FECHA'],
   sinpartido: ['r', 'DEBE'], porprogramar: ['r', 'POR PROGRAMAR'], sinasignar: ['g', 'SIN ASIGNAR'],
-  adisputar: ['b', 'A DISPUTAR'], tentativo: ['g', 'TENTATIVO'], cubierta: ['b', 'CONTADA']
+  adisputar: ['b', 'A DISPUTAR'], tentativo: ['g', 'TENTATIVO']
 };
 const RES = { g: ['v', 'GANÓ'], p: ['r', 'PERDIÓ'], e: ['a', 'EMPATÓ'] };
 const TIPO = { normal: 'Normal', default: 'Default', penales: 'Penales' };
@@ -605,24 +562,22 @@ function docEquipo(idE){
     textos.push(`<b>Próximo partido:</b> jornada ${r.proximo.j}${r.proximo.fecha ? ' · ' + fmt(r.proximo.fecha) + ' (' + DIAS[r.proximo.fecha.getDay()] + ')' : ''}${hora12(p['Hora']) ? ' · ' + hora12(p['Hora']) : ''}${p['Cancha'] ? ' · ' + esc(p['Cancha']) : ''} vs ${esc(riv['Nombre'] || 'por definir')}.`);
   }
 
-  let nJuego = 0;
   const cuerpoFilas = filas.map(f => {
     const esp = `<b>F${f.fEsp}</b><small>${fmt(f.esperada)}</small>`;
-    if (f.tipo === 'descanso') return `<tr class="fila-desc"><td class="n">—</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px">Descanso del rol</td><td><span class="rq-pill g">DESCANSO</span></td></tr>`;
-    if (f.tipo === 'sinpartido') return `<tr class="fila-debe"><td class="n">—</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px"><b style="display:inline;color:#b42318">Sin partido asignado en el rol — debe jugar esta jornada</b></td><td><span class="rq-pill r">DEBE</span></td></tr>`;
-    if (f.tipo === 'cubierta'){ const rc = mapa[idRivalCub()] || {}; return `<tr class="fila-desc"><td class="n">${++nJuego}</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td>—</td><td><div class="rq-rival"><img src="${esc(rc['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rc['Nombre'] || RIVAL_CUBIERTA)}</span></div></td><td colspan="3" style="text-align:left;padding-left:10px">Se toma como jugado en la jornada ${f.j} (no se disputó); cuenta para estadísticas y jornadas</td><td><span class="rq-pill b">CONTADO</span></td></tr>`; }
-    if (f.tipo === 'sinasignar') return `<tr class="fila-desc"><td class="n">—</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px">Aún sin partido asignado</td><td><span class="rq-pill g">SIN ASIGNAR</span></td></tr>`;
+    if (f.tipo === 'descanso') return `<tr class="fila-desc"><td class="j">J${f.j}</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px">Descanso del rol</td><td><span class="rq-pill g">DESCANSO</span></td></tr>`;
+    if (f.tipo === 'sinpartido') return `<tr class="fila-debe"><td class="j">J${f.j}</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px"><b style="display:inline;color:#b42318">Sin partido asignado en el rol — debe jugar esta jornada</b></td><td><span class="rq-pill r">DEBE</span></td></tr>`;
+    if (f.tipo === 'sinasignar') return `<tr class="fila-desc"><td class="j">J${f.j}</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px">Aún sin partido asignado</td><td><span class="rq-pill g">SIN ASIGNAR</span></td></tr>`;
     const p = f.p, rid = rivalDe(p, idE), rv = mapa[rid] || {};
     const rival = `<div class="rq-rival"><img src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + rid)}</span></div>`;
     const real = f.fecha ? `<b>${fmt(f.fecha)}</b><small>${DIAS[f.fecha.getDay()]} · F${f.fReal}${hora12(p['Hora']) && f.tipo !== 'jugado' ? ' · ' + hora12(p['Hora']) : ''}</small>` : '—';
     if (f.tipo === 'jugado'){
       const m = (isNaN(f.r.gf) || isNaN(f.r.gc)) ? '—' : `${f.r.gf} - ${f.r.gc}`;
-      return `<tr><td class="n">${++nJuego}</td><td class="j">J${f.j}</td><td class="idp">${idPartido(p)}</td><td>${esp}</td><td>${real}</td><td>${rival}</td><td class="rq-marc">${m}</td>
+      return `<tr><td class="j">J${f.j}</td><td>${esp}</td><td>${real}</td><td>${rival}</td><td class="rq-marc">${m}</td>
         <td><span class="rq-pill ${RES[f.r.res][0]}">${RES[f.r.res][1]}</span>${f.r.pen ? `<small style="display:block;margin-top:3px;font-weight:700;color:${f.r.pen === 'g' ? '#1b6e2e' : '#b42318'}">${f.r.pen === 'g' ? 'Ganó' : 'Perdió'} en penales</small>` : ''}</td><td>${TIPO[f.r.tipo]}</td>
         <td><span class="rq-pill ${PILL[f.control][0]}">${PILL[f.control][1]}</span></td></tr>`;
     }
     const nota = f.tipo === 'adisputar' && f.alCorriente ? 'Pone al corriente' : f.tentativo ? 'Tentativo' : f.rivalBaja ? 'Rival en baja' : '';
-    return `<tr class="${f.tipo === 'debe' ? 'fila-debe' : ''}"><td class="n">${++nJuego}</td><td class="j">J${f.j}</td><td class="idp">${idPartido(p)}</td><td>${esp}</td><td>${real}</td><td>${rival}</td>
+    return `<tr class="${f.tipo === 'debe' ? 'fila-debe' : ''}"><td class="j">J${f.j}</td><td>${esp}</td><td>${real}</td><td>${rival}</td>
       <td>—</td><td>—</td><td>—</td><td><span class="rq-pill ${PILL[f.tipo][0]}">${PILL[f.tipo][1]}</span>${nota ? `<small style="display:block;margin-top:3px;color:#8a6100;font-weight:700">${nota}</small>` : ''}</td></tr>`;
   }).join('');
 
@@ -634,13 +589,13 @@ function docEquipo(idE){
   const total = r.jugados + aDisp.length + porProg.length;
   const calendario = `<div class="rq-cal"><span><b>${r.jugados}</b> jugados</span><span class="op">+</span><span><b>${aDisp.length}</b> a disputar</span><span class="op">+</span><span><b>${porProg.length}</b> por programar</span><span class="op">=</span><span><b>${total}</b> partidos en total</span></div>`;
 
-  const hdrPend = '<table class="rq-tabla"><thead><tr><th style="width:36px">No.</th><th style="width:84px">Jornada</th><th style="width:48px">ID</th><th style="width:130px">Fecha y hora</th><th style="width:76px">Campo</th><th>Rival</th><th style="width:130px">Estado</th></tr></thead><tbody>';
-  const filaPend = (x, i) => {
+  const hdrPend = '<table class="rq-tabla"><thead><tr><th style="width:84px">Jornada</th><th style="width:130px">Fecha y hora</th><th style="width:76px">Campo</th><th>Rival</th><th style="width:130px">Estado</th></tr></thead><tbody>';
+  const filaPend = x => {
     const rv = mapa[x.rival] || {}, p = x.p;
     const fh = x.fecha ? `<b>${fmt(x.fecha)}</b><small>${DIAS[x.fecha.getDay()]} · F${fechaNum(x.fecha)}${hora12(p['Hora']) ? ' · ' + hora12(p['Hora']) : ''}</small>` : '<b>Por definir</b>';
     const k = PILL[x.tipo];
     const nota = x.baja ? 'Rival en baja' : x.tipo === 'tentativo' ? 'Se confirma el jueves anterior' : (x.tipo === 'debe' && x.fecha && x.cl === 'vencido') ? 'Fecha ya pasada' : '';
-    return `<tr class="${x.tipo === 'debe' ? 'fila-debe' : ''}"><td class="n">${i + 1}</td><td class="j">${x.j != null ? 'J' + x.j : '—'}${x.j == null ? '<small>sin jornada</small>' : ''}</td><td class="idp">${idPartido(p)}</td><td>${fh}</td><td>${esc(p['Cancha'] || '—')}</td>
+    return `<tr class="${x.tipo === 'debe' ? 'fila-debe' : ''}"><td class="j">${x.j != null ? 'J' + x.j : '—'}${x.j == null ? '<small>sin jornada</small>' : ''}</td><td>${fh}</td><td>${esc(p['Cancha'] || '—')}</td>
       <td><div class="rq-rival"><img src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + x.rival)}</span></div></td>
       <td><span class="rq-pill ${k[0]}">${k[1]}</span>${nota ? `<small style="display:block;margin-top:3px;color:#8a6100;font-weight:700">${nota}</small>` : ''}</td></tr>`;
   };
@@ -653,7 +608,7 @@ function docEquipo(idE){
       <div class="rq-kpis">${kpis}</div>
       ${calendario}
       <div class="rq-situacion ${clase}"><div class="chips">${chips}</div>${textos.map(t => `<p>${t.replace(/\.\.(?=\s*$)/, '.')}</p>`).join('')}</div>
-      <table class="rq-tabla"><thead><tr><th style="width:36px">No.</th><th style="width:42px">Jor.</th><th style="width:48px">ID</th><th style="width:96px">Le correspondía</th><th style="width:100px">Se jugó</th><th>Rival</th><th style="width:70px">Marcador</th><th style="width:112px">Resultado</th><th style="width:62px">Tipo</th><th style="width:118px">Control</th></tr></thead><tbody>${cuerpoFilas}</tbody></table>
+      <table class="rq-tabla"><thead><tr><th style="width:42px">Jor.</th><th style="width:96px">Le correspondía</th><th style="width:100px">Se jugó</th><th>Rival</th><th style="width:70px">Marcador</th><th style="width:112px">Resultado</th><th style="width:62px">Tipo</th><th style="width:118px">Control</th></tr></thead><tbody>${cuerpoFilas}</tbody></table>
       ${seccion('A disputar', aDisp, 'No tiene partidos confirmados por disputar.')}
       ${seccion('Por programar', porProg, '✔ No tiene partidos por programar.')}
       <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha; la jornada N corresponde a la fecha N. <b>A disputar</b>: partido con fecha que ya se confirmó; se confirma desde el <b>jueves</b> anterior a su domingo (antes puede haber cambios en el rol y cuenta como <b>por programar</b>). <b>En tiempo</b>: jornada = fecha. <b>Adelantó</b>: jugó una jornada mayor a la fecha. <b>Pagó atrasada</b>: jugó una jornada menor a la fecha. <b>Debe</b>: la jornada ya correspondía y todavía no está programada (sin partido, sin fecha, fecha pasada o solo tentativa). <b>Descanso</b>: solo cuando la liga tiene un número impar de equipos. Un partido empatado que se define en penales cuenta como <b>empate</b>; los penales se muestran como desempate. Default = victoria por incomparecencia. Jugados + a disputar + por programar = total de partidos del equipo.</div>
@@ -667,7 +622,7 @@ function docGeneral(){
   const CR = crucesPendientes();
   const datos = activos.map(e => { const f = analizarEquipo(idDe(e)), pe = pendientesEquipo(idDe(e)); return { e, f, r: resumen(f), disp: pe.filter(x => x.grupo === 'adisputar').length, prog: pe.filter(x => x.grupo === 'porprogramar').length }; });
   const maxJ = Math.max(J, ultimaVencida(), ...datos.map(d => d.f.length), 1);
-  const SIM = { tiempo: ['✔', '#1f7a35'], adelanto: ['⏩', '#1e4e8c'], atrasada: ['↩', '#5b3a99'], debe: ['✖', '#c0392b'], sinpartido: ['✖', '#c0392b'], descanso: ['–', '#9ca3af'], adisputar: ['○', '#1e4e8c'], tentativo: ['◌', '#9ca3af'], pendiente: ['◌', '#9ca3af'], sinasignar: ['·', '#c4c9d0'], cubierta: ['✔', '#1e4e8c'], sinfecha: ['?', '#9ca3af'] };
+  const SIM = { tiempo: ['✔', '#1f7a35'], adelanto: ['⏩', '#1e4e8c'], atrasada: ['↩', '#5b3a99'], debe: ['✖', '#c0392b'], sinpartido: ['✖', '#c0392b'], descanso: ['–', '#9ca3af'], adisputar: ['○', '#1e4e8c'], tentativo: ['◌', '#9ca3af'], pendiente: ['◌', '#9ca3af'], sinasignar: ['·', '#c4c9d0'], sinfecha: ['?', '#9ca3af'] };
   const cab = Array.from({ length: maxJ }, (_, i) => `<th>J${i + 1}<small style="display:block;font-size:9px;color:#6b7280;font-weight:500">${p2(fechaDeJornada(i + 1).getDate())}/${p2(fechaDeJornada(i + 1).getMonth() + 1)}</small></th>`).join('');
   const filas = datos.map(({ e, f, r, disp, prog }) => {
     const celdas = Array.from({ length: maxJ }, (_, i) => {
@@ -687,16 +642,13 @@ function docGeneral(){
   const ancho = Math.max(900, 250 + maxJ * 50 + 450);
 
   const par = (x, y) => `${esc(nombreEq(x))} <b>vs</b> ${esc(nombreEq(y))}`;
-  // ID_Partido real del partido pendiente entre dos equipos (el que hay que programar en Armar Jornada)
-  const idPar = (x, y) => idPartido(PARTIDOS.find(q => !cancelado(q) && estadoDe(q) !== 'jugado' && involucra(q, x) && involucra(q, y)));
-  let nCruce = 0;
   const filasC = CR.map(c => {
-    const sug = c.pares.map(pp => `<b style="display:inline">${++nCruce}.</b> <span style="color:#374151;font-weight:700">ID ${idPar(pp[0], pp[1])}</span> · ${par(pp[0], pp[1])}`).concat(c.solos.map(id => `<span style="color:#b42318">${esc(nombreEq(id))}: sin rival disponible</span>`)).join('<br>') || '—';
-    const prog = c.programados.map(g => `<b style="display:inline">${++nCruce}.</b> <span style="color:#374151;font-weight:700">ID ${idPartido(g.p)}</span> · ${par(g.a, g.b)} <span style="color:#6b7280">· ${g.fecha ? fmt(g.fecha) : 'sin fecha'} (${g.conf ? 'a disputar' : 'por programar'})</span>`).join('<br>') || '—';
+    const prog = c.programados.map(g => `${par(g.a, g.b)} <span style="color:#6b7280">· ${g.fecha ? fmt(g.fecha) : 'sin fecha'} (${g.conf ? 'a disputar' : 'por programar'})</span>`).join('<br>') || '—';
+    const sug = c.pares.map(pp => par(pp[0], pp[1])).concat(c.solos.map(id => `<span style="color:#b42318">${esc(nombreEq(id))}: sin rival disponible</span>`)).join('<br>') || '—';
     return `<tr><td class="j">J${c.j}<small>${fmt(c.esperada)}</small></td><td style="text-align:left;padding-left:12px">${c.sinPartido.map(id => esc(nombreEq(id))).join(', ') || '—'}</td><td style="text-align:left;padding-left:12px">${sug}</td><td style="text-align:left;padding-left:12px">${prog}</td></tr>`;
   }).join('');
   const seccionCruces = `<div class="rq-tit" style="margin-top:22px">Jornadas pendientes y cruces sugeridos</div>` +
-    (CR.length ? `<table class="rq-tabla"><thead><tr><th style="width:84px">Jornada</th><th>Equipos que la deben (sin partido)</th><th>Cruce sugerido (No. · ID)</th><th>Partidos ya existentes de esa jornada (No. · ID)</th></tr></thead><tbody>${filasC}</tbody></table>
+    (CR.length ? `<table class="rq-tabla"><thead><tr><th style="width:84px">Jornada</th><th>Equipos que la deben (sin partido)</th><th>Cruce sugerido</th><th>Partidos ya existentes de esa jornada</th></tr></thead><tbody>${filasC}</tbody></table>
       <div class="rq-leyenda" style="margin-top:10px"><b>Cruces sugeridos:</b> se emparejan equipos que deben la misma jornada, no tienen partido asignado y todavía no se han enfrentado en esta vuelta. Para una programación completa de las siguientes fechas usa el reporte <b>Propuesta de programación</b>.</div>`
       : '<div style="padding:10px 14px;border:1px solid #a9d9b3;background:#e3f4e6;border-radius:6px;color:#1b6e2e;font-weight:700;font-size:13px">✔ No hay jornadas pendientes por programar.</div>');
 
@@ -711,6 +663,8 @@ function docGeneral(){
     </div>
     <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
 }
+
+const celdaId = id => id ? `<td class="n" style="font-weight:800;color:#1f2933;font-size:13px">${esc(id)}</td>` : `<td class="n" style="color:#a87500;font-size:11px">nuevo<small style="display:block;font-size:10px">no está en la hoja</small></td>`;
 
 function docDomingo(){
   const P = planProgramacion(1, false);
@@ -730,7 +684,7 @@ function docDomingo(){
       : r.efecto === 'tiempo' ? `Jornada ${r.j}: es la que corresponde a esta fecha.`
       : `Adelanta la jornada ${r.j} (le corresponde el ${esp}).`;
   };
-  const filas = dia.filas.map((r, i) => `<tr><td class="n">${i + 1}</td><td class="j">J${r.j}</td><td class="idp">${idTxt(r.id)}</td><td>${eqCel(r.a)}</td><td>${eqCel(r.b)}</td>
+  const filas = dia.filas.map((r, i) => `<tr><td class="n">${i + 1}</td>${celdaId(r.id)}<td class="j">J${r.j}</td><td>${eqCel(r.a)}</td><td>${eqCel(r.b)}</td>
     <td><span class="rq-pill ${efecto[r.efecto][0]}">${efecto[r.efecto][1]}</span><small style="display:block;margin-top:4px;color:#4b5563;line-height:1.3">${obs(r)}</small></td></tr>`).join('');
   const total = dia.filas.length, esperados = Math.floor(activosIds().length / 2);
   const sin = dia.sinPartido.length ? `<div style="margin-top:10px;padding:10px 14px;border:1px solid #f5b5b5;background:#fdf3f3;border-radius:6px;font-size:12.5px;color:#b42318"><b>Sin partido ese domingo (no hay rival disponible):</b> ${dia.sinPartido.map(t => esc(nombreEq(t))).join(', ')}.</div>` : '';
@@ -739,9 +693,9 @@ function docDomingo(){
     ${encabezado('Rol propuesto del próximo domingo', `Domingo ${fmt(dia.fecha)} · Fecha ${dia.fnum} · ${total} encuentros`)}
     <div class="rq-body">
       <div class="rq-situacion adel"><p>Propuesta armada con los partidos que cada equipo <b>ya jugó</b>, las jornadas que le faltan y${pub ? ` suponiendo que se juegan los partidos ya publicados del <b>domingo ${pub}</b>` : ' los partidos ya confirmados'}. A cada encuentro se le asigna la jornada más atrasada que ambos equipos todavía no tienen.</p></div>
-      <table class="rq-tabla"><thead><tr><th style="width:36px">No.</th><th style="width:62px">Jornada</th><th style="width:50px">ID</th><th>Local</th><th>Visitante</th><th style="width:250px">Observación</th></tr></thead><tbody>${filas}</tbody></table>
+      <table class="rq-tabla"><thead><tr><th style="width:36px">No.</th><th style="width:78px">ID partido</th><th style="width:62px">Jornada</th><th>Local</th><th>Visitante</th><th style="width:230px">Observación</th></tr></thead><tbody>${filas}</tbody></table>
       ${sin}${aviso}
-      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha. <b>Pone al corriente</b>: la jornada ya correspondía antes y ambos equipos todavía la debían. <b>En tiempo</b>: la jornada es la de esta fecha. <b>Adelanta</b>: la jornada corresponde a un domingo posterior. Cada equipo juega un solo partido este domingo. Hora y campo quedan por definir. <b>Es una propuesta</b>: la liga la valida y la programa.</div>
+      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha. <b>Pone al corriente</b>: la jornada ya correspondía antes y ambos equipos todavía la debían. <b>En tiempo</b>: la jornada es la de esta fecha. <b>Adelanta</b>: la jornada corresponde a un domingo posterior. <b>ID partido</b> es el ID_Partido de tu hoja de Partidos (el renglón que habría que actualizar con esa jornada y fecha); “nuevo” significa que ese cruce no existe en la hoja y habría que crearlo. Cada equipo juega un solo partido este domingo. Hora y campo quedan por definir. <b>Es una propuesta</b>: la liga la valida y la programa.</div>
     </div>
     <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
 }
@@ -759,16 +713,16 @@ function docPropuesta(nFechas, doble){
     .map(([c, v, t]) => `<div class="rq-kpi ${c}" style="flex:1"><b>${v}</b><span>${t}</span></div>`).join('');
 
   const publicado = P.publicados.length ? `<div class="rq-tit">Ya publicado · domingo ${fmt(P.domingoPublicado)} (a disputar, se respeta)</div>
-    <table class="rq-tabla"><thead><tr><th style="width:36px">No.</th><th style="width:70px">Jornada</th><th style="width:50px">ID</th><th>Local</th><th>Visitante</th><th style="width:100px">Hora</th><th style="width:80px">Campo</th></tr></thead><tbody>` +
-    P.publicados.map((g, i) => `<tr><td class="n">${i + 1}</td><td class="j">${g.j != null ? 'J' + g.j : '—'}</td><td class="idp">${idTxt(g.id)}</td><td>${eqCel(g.a)}</td><td>${eqCel(g.b)}</td><td>${esc(hora12(g.hora) || '—')}</td><td>${esc(g.cancha || '—')}</td></tr>`).join('') + '</tbody></table>' : '';
+    <table class="rq-tabla"><thead><tr><th style="width:78px">ID partido</th><th style="width:70px">Jornada</th><th>Local</th><th>Visitante</th><th style="width:100px">Hora</th><th style="width:80px">Campo</th></tr></thead><tbody>` +
+    P.publicados.map(g => `${'<tr>'}${celdaId(g.id)}<td class="j">${g.j != null ? 'J' + g.j : '—'}</td><td>${eqCel(g.a)}</td><td>${eqCel(g.b)}</td><td>${esc(hora12(g.hora) || '—')}</td><td>${esc(g.cancha || '—')}</td></tr>`).join('') + '</tbody></table>' : '';
 
   const dias = P.dias.map(d => {
-    const filas = d.filas.map((r, i) => `<tr><td class="n">${i + 1}</td><td class="j">J${r.j}${r.ronda === 2 ? '<small>doble jornada</small>' : ''}</td><td class="idp">${idTxt(r.id)}</td><td>${eqCel(r.a)}</td><td>${eqCel(r.b)}</td>
+    const filas = d.filas.map(r => `<tr>${celdaId(r.id)}<td class="j">J${r.j}${r.ronda === 2 ? '<small>doble jornada</small>' : ''}</td><td>${eqCel(r.a)}</td><td>${eqCel(r.b)}</td>
       <td><span class="rq-pill ${efecto[r.efecto][0]}">${efecto[r.efecto][1]}</span></td><td>Por definir</td></tr>`).join('');
     const extra = (d.sinPartido.length ? `<p style="margin-top:6px;font-size:12.5px;color:#b42318"><b>Sin partido ese domingo (no hay rival disponible):</b> ${d.sinPartido.map(t => esc(nombreEq(t))).join(', ')}.</p>` : '')
       + (d.terminaron.length ? `<p style="margin-top:4px;font-size:12.5px;color:#6b7280"><b>Ya sin partidos pendientes:</b> ${d.terminaron.map(t => esc(nombreEq(t))).join(', ')}.</p>` : '');
     return `<div class="rq-tit">Domingo ${fmt(d.fecha)} · Fecha ${d.fnum}</div>` + (d.filas.length
-      ? `<table class="rq-tabla"><thead><tr><th style="width:36px">No.</th><th style="width:84px">Jornada</th><th style="width:50px">ID</th><th>Local</th><th>Visitante</th><th style="width:140px">Efecto</th><th style="width:96px">Hora / campo</th></tr></thead><tbody>${filas}</tbody></table>${extra}`
+      ? `<table class="rq-tabla"><thead><tr><th style="width:78px">ID partido</th><th style="width:84px">Jornada</th><th>Local</th><th>Visitante</th><th style="width:140px">Efecto</th><th style="width:96px">Hora / campo</th></tr></thead><tbody>${filas}</tbody></table>${extra}`
       : '<div style="padding:10px 14px;border:1px solid #cfd8c5;border-radius:6px;color:#6b7280;font-size:13px">No hay partidos por proponer para este domingo.</div>');
   }).join('');
 
@@ -832,17 +786,6 @@ async function imprimir(){
   await Promise.all([...d.images].map(i => i.complete ? 1 : new Promise(x => { i.onload = i.onerror = x; })));
   await new Promise(x => setTimeout(x, 200)); f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => { try { f.remove(); } catch (e) {} }, 60000);
 }
-// ═══ Acceso con contraseña de administrador ═══
-const ADMIN_PASSWORD = 'nl7admin';
-function entrarReporte(){
-  if ($('pass-reporte').value === ADMIN_PASSWORD){
-    sessionStorage.setItem('nl7_reporte_ok', '1');
-    document.body.classList.add('auth');
-  } else { $('err-reporte').textContent = 'Contraseña incorrecta.'; }
-}
-$('pass-reporte').addEventListener('keydown', e => { if (e.key === 'Enter') entrarReporte(); });
-if (sessionStorage.getItem('nl7_reporte_ok') === '1') document.body.classList.add('auth');
-
 init();
 </script>
 </body>
