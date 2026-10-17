@@ -372,7 +372,7 @@ async function cargarCarrusel() {
     }
     document.getElementById('car-tabla').innerHTML=htmlTabla||'<div class="car-cargando">Sin datos</div>';
     const filasP=tP.trim().split('\n'); const jugados=[],programados=[];
-    for(let i=1;i<filasP.length;i++){ const c=filasP[i].split(','); const estado=(c[6]||'').trim(); if(carBajasID.has(Number(c[2]))||carBajasID.has(Number(c[3]))) continue; const local=carEqID[Number(c[2])]||'', visita=carEqID[Number(c[3])]||''; const p={local,visita,gl:c[4]||'',gv:c[5]||'',fecha:(c[8]||'').trim(),hora:(c[9]||'').trim(),cancha:(c[7]||'').trim(),jornada:(c[1]||'').trim()}; if(estado==='Jugado') jugados.push(p); if(estado==='Programado') programados.push(p); }
+    for(let i=1;i<filasP.length;i++){ const c=filasP[i].split(','); const estado=(c[6]||'').trim(); if(carBajasID.has(Number(c[2]))||carBajasID.has(Number(c[3]))) continue; const local=carEqID[Number(c[2])]||'', visita=carEqID[Number(c[3])]||''; const p={local,visita,gl:c[4]||'',gv:c[5]||'',fecha:(c[8]||'').trim(),hora:(c[9]||'').trim(),cancha:(c[7]||'').trim(),jornada:(c[1]||'').trim()}; if(estado.toLowerCase()==='jugado') jugados.push(p); if(estado.toLowerCase()==='programado') programados.push(p); }
     function fmtHora12(hora24){
       if(!hora24) return '';
       const partes = hora24.split(':');
@@ -446,26 +446,41 @@ async function cargarCarrusel() {
       }
     }
 
-    if(jugados.length){
-      jugados.sort((a,b)=>{const pa=a.fecha.split('/').reverse().join('');const pb=b.fecha.split('/').reverse().join('');return pb.localeCompare(pa);});
-      const fu=jugados[0].fecha;
-      const filasFu = jugados.filter(p=>p.fecha===fu);
+    // Fecha dd/mm/yyyy -> número yyyymmdd (acepta d/m/yyyy sin ceros). 0 = fecha inválida o vacía
+    function fechaNum(f){
+      const m = String(f||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      return m ? Number(m[3])*10000 + Number(m[2])*100 + Number(m[1]) : 0;
+    }
+    function horaAMinutos(hora){
+      if(!hora) return 99999;
+      const partes = hora.split(':');
+      const h = parseInt(partes[0],10) || 0;
+      const m = parseInt(partes[1],10) || 0;
+      return h*60+m;
+    }
+
+    // ÚLTIMOS RESULTADOS: partidos con Estado = Jugado de la fecha MÁS RECIENTE.
+    // En cuanto capturas un resultado (Estado = Jugado) pasa solo a esta tarjeta.
+    const jugConFecha = jugados.filter(p=>fechaNum(p.fecha));
+    if(jugConFecha.length){
+      const fu = Math.max(...jugConFecha.map(p=>fechaNum(p.fecha)));
+      const filasFu = jugConFecha.filter(p=>fechaNum(p.fecha)===fu);
       iniciarRotacionCartel('car-resultados', filasFu, 'resultado', calcularEquipoDescansaIndex(filasFu));
     } else {
       document.getElementById('car-resultados').innerHTML = '<div class="car-cargando">Sin resultados</div>';
     }
 
-    // CAMBIO 1: Próxima Jornada ordenada por hora y luego por cancha
-    if(programados.length){
-      const fp=programados[0].fecha;
-      const filasFp = programados.filter(p=>p.fecha===fp);
-      function horaAMinutos(hora){
-        if(!hora) return 99999;
-        const partes = hora.split(':');
-        const h = parseInt(partes[0],10) || 0;
-        const m = parseInt(partes[1],10) || 0;
-        return h*60+m;
-      }
+    // PRÓXIMA JORNADA: partidos con Estado = Programado de la fecha MÁS CERCANA (hoy o futura).
+    // Si todos los programados ya quedaron en el pasado, muestra el más antiguo pendiente.
+    // Cuando el 18/10 ya no tenga programados, aquí aparece solo el 25/10.
+    const progConFecha = programados.filter(p=>fechaNum(p.fecha));
+    const hoy = new Date();
+    const hoyNum = hoy.getFullYear()*10000 + (hoy.getMonth()+1)*100 + hoy.getDate();
+    const progFuturos = progConFecha.filter(p=>fechaNum(p.fecha)>=hoyNum);
+    const progBase = progFuturos.length ? progFuturos : progConFecha;
+    if(progBase.length){
+      const fp = Math.min(...progBase.map(p=>fechaNum(p.fecha)));
+      const filasFp = progBase.filter(p=>fechaNum(p.fecha)===fp);
       filasFp.sort((a,b)=>{
         const ha=horaAMinutos(a.hora), hb=horaAMinutos(b.hora);
         if(ha!==hb) return ha-hb;
