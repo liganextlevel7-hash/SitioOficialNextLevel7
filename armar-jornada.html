@@ -606,6 +606,15 @@ function jornadasLibresPara(m){
   return libres;
 }
 
+// Calendario del torneo: la Jornada 1 es el domingo de inicio y cada jornada avanza 7 días (igual que el reporte del rol del domingo)
+const INICIO_TORNEO = [2026, 9, 20];   // año, mes, día
+function fechaCalendarioJornada(j){
+  const n = parseInt(j,10);
+  if(isNaN(n) || n < 1) return '';
+  const d = new Date(INICIO_TORNEO[0], INICIO_TORNEO[1]-1, INICIO_TORNEO[2] + 7*(n-1));
+  return pad2(d.getDate()) + '/' + pad2(d.getMonth()+1) + '/' + d.getFullYear();
+}
+
 function fechaDeJornada(j){
   const f = S.allMatches.find(x=>String(x.jornada).trim()===String(j) && esAgendado(x) && x.fecha);
   return f ? f.fecha : '';
@@ -660,6 +669,7 @@ function abrirFormEditar(m){
         <div>
           <label>Fecha</label>
           <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}" oninput="refrescarDisponibilidad()">
+          <div id="edit-fecha-hint" style="font-size:11px;color:var(--g400);margin-top:5px"></div>
         </div>
         <div>
           <label>Hora</label>
@@ -685,11 +695,18 @@ function abrirFormEditar(m){
 function alCambiarJornadaForm(soloSiVacia){
   const j = document.getElementById('edit-jornada')?.value;
   const inp = document.getElementById('edit-fecha');
+  const hint = document.getElementById('edit-fecha-hint');
   if(j && inp){
-    const f = fechaDeJornada(j);
+    const fCal = fechaCalendarioJornada(j);        // fecha que le toca por calendario (la del reporte)
+    const fHoja = fechaDeJornada(j);               // fecha de otros partidos ya agendados con esa jornada
+    const f = fCal || fHoja;
     if(f && (!soloSiVacia || !inp.value)){
       const [d,mo,y] = f.split('/');
       if(y&&mo&&d) inp.value = `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}`;
+    }
+    if(hint){
+      const otra = fHoja && fCal && fechaNumSheet(fHoja)!==fechaNumSheet(fCal);
+      hint.innerHTML = fCal ? `📆 Por calendario, la Jornada ${esc(j)} es el ${esc(fCal)}.` + (otra ? ` <span style="color:#f87171">⚠️ En la hoja ya hay partidos de la Jornada ${esc(j)} el ${esc(fHoja)}.</span>` : '') : '';
     }
   }
   refrescarDisponibilidad();
