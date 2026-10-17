@@ -615,6 +615,27 @@ function fechaCalendarioJornada(j){
   return pad2(d.getDate()) + '/' + pad2(d.getMonth()+1) + '/' + d.getFullYear();
 }
 
+// Fecha sugerida para programar un partido de la jornada j:
+// la de calendario; si ya pasó, o alguno de los dos equipos ya juega ese día, el siguiente domingo libre para ambos.
+// (Así un juego atrasado de la J5 se propone para el siguiente domingo, no para el 18/10 que ya está lleno.)
+function fechaSugerida(m, j){
+  const cal = fechaCalendarioJornada(j);
+  if(!cal || !m) return cal || '';
+  const [d,mo,y] = cal.split('/').map(Number);
+  const dt = new Date(y, mo-1, d);
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  while(dt < hoy) dt.setDate(dt.getDate()+7);
+  const ids = [String(m.local), String(m.visita)];
+  for(let i=0;i<60;i++){
+    const f = pad2(dt.getDate()) + '/' + pad2(dt.getMonth()+1) + '/' + dt.getFullYear();
+    const ocupado = S.allMatches.some(x => x.id!==m.id && esAgendado(x) && fechaNumSheet(x.fecha)===fechaNumSheet(f)
+                                           && (ids.includes(String(x.local)) || ids.includes(String(x.visita))));
+    if(!ocupado) return f;
+    dt.setDate(dt.getDate()+7);
+  }
+  return cal;
+}
+
 function fechaDeJornada(j){
   const f = S.allMatches.find(x=>String(x.jornada).trim()===String(j) && esAgendado(x) && x.fecha);
   return f ? f.fecha : '';
@@ -699,14 +720,15 @@ function alCambiarJornadaForm(soloSiVacia){
   if(j && inp){
     const fCal = fechaCalendarioJornada(j);        // fecha que le toca por calendario (la del reporte)
     const fHoja = fechaDeJornada(j);               // fecha de otros partidos ya agendados con esa jornada
-    const f = fCal || fHoja;
+    const fSug = fechaSugerida(S.matchToProgram, j) || fCal;
+    const f = fSug || fHoja;
     if(f && (!soloSiVacia || !inp.value)){
       const [d,mo,y] = f.split('/');
       if(y&&mo&&d) inp.value = `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}`;
     }
     if(hint){
       const otra = fHoja && fCal && fechaNumSheet(fHoja)!==fechaNumSheet(fCal);
-      hint.innerHTML = fCal ? `📆 Por calendario, la Jornada ${esc(j)} es el ${esc(fCal)}.` + (otra ? ` <span style="color:#f87171">⚠️ En la hoja ya hay partidos de la Jornada ${esc(j)} el ${esc(fHoja)}.</span>` : '') : '';
+      hint.innerHTML = fCal ? `📆 Por calendario, la Jornada ${esc(j)} es el ${esc(fCal)}.` + ((fSug && fSug!==fCal) ? ` <span style="color:var(--neon)">Se sugiere el ${esc(fSug)}, el siguiente domingo libre para estos equipos.</span>` : '') + (otra ? ` <span style="color:#f87171">⚠️ En la hoja ya hay partidos de la Jornada ${esc(j)} el ${esc(fHoja)}.</span>` : '') : '';
     }
   }
   refrescarDisponibilidad();
