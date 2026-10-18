@@ -291,6 +291,7 @@ var partidoSeleccionado = null;
 var liveState = null;
 var localTimer = null;
 var datosCargados = false;
+var _clavePartidoCargado = null;   // partido cuyos jugadores están cargados en las listas (para refrescarlas al cambiar de partido)
 
 // ── Cancha activa de esta sesión (1 o 2) y su ruta en Firebase ──
 var canchaActual = null;          // 1 o 2
@@ -518,6 +519,13 @@ function cargarJugadoresPorEquipo(){
   
   var nombreL = DB.equipos[idL]?.nombre || idL;
   var nombreV = DB.equipos[idV]?.nombre || idV;
+
+  // Si cambió el partido, las listas de jugadores (goles, tarjetas, asistencia) se vuelven a armar con los equipos NUEVOS.
+  // Antes solo se armaban si estaban vacías, y quedaban con los jugadores del partido anterior.
+  var clavePartido = idL + '|' + idV + '|' + (liveState?.idPartidoReal || '');
+  var cambioPartido = clavePartido !== _clavePartidoCargado;
+  var escAttr = function(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); };
+  var idDeJugador = function(j){ return (j.ID_Jugador || j.id_jugador || j.ID || j.id || '').toString().trim(); };
   
   var jL = DB.jugadores.filter(j => {
      var eqField = j.ID_Equipo || j.id_equipo || j.Equipo || j.equipo || '';
@@ -571,17 +579,17 @@ function cargarJugadoresPorEquipo(){
   
   idsL.forEach(id => {
     var s = document.getElementById(id);
-    if(s && s.children.length <= 1) {
+    if(s && (cambioPartido || s.children.length <= 1)) {
       s.innerHTML = '<option value="">— Seleccionar Jugador —</option>';
       jL.forEach(j => { 
         var textoFinal = obtenerTextoEstructurado(j);
-        s.innerHTML += `<option value="${textoFinal}">${textoFinal}</option>`; 
+        s.innerHTML += `<option value="${escAttr(textoFinal)}" data-id="${escAttr(idDeJugador(j))}">${escAttr(textoFinal)}</option>`; 
       });
     }
   });
 
   var divAsistL = document.getElementById('lista-asist-local');
-  if(divAsistL && divAsistL.children.length === 0) {
+  if(divAsistL && (cambioPartido || divAsistL.children.length === 0)) {
      jL.forEach(j => {
         var jId = j.ID_Jugador || j.id_jugador || j.ID || j.id;
         var textoFinal = obtenerTextoEstructurado(j);
@@ -598,17 +606,17 @@ function cargarJugadoresPorEquipo(){
   
   idsV.forEach(id => {
     var s = document.getElementById(id);
-    if(s && s.children.length <= 1) {
+    if(s && (cambioPartido || s.children.length <= 1)) {
       s.innerHTML = '<option value="">— Seleccionar Jugador —</option>';
       jV.forEach(j => { 
         var textoFinal = obtenerTextoEstructurado(j);
-        s.innerHTML += `<option value="${textoFinal}">${textoFinal}</option>`; 
+        s.innerHTML += `<option value="${escAttr(textoFinal)}" data-id="${escAttr(idDeJugador(j))}">${escAttr(textoFinal)}</option>`; 
       });
     }
   });
 
   var divAsistV = document.getElementById('lista-asist-visita');
-  if(divAsistV && divAsistV.children.length === 0) {
+  if(divAsistV && (cambioPartido || divAsistV.children.length === 0)) {
      jV.forEach(j => {
         var jId = j.ID_Jugador || j.id_jugador || j.ID || j.id;
         var textoFinal = obtenerTextoEstructurado(j);
@@ -619,6 +627,8 @@ function cargarJugadoresPorEquipo(){
      });
      divAsistV.innerHTML = htmlAsistVisita;
   }
+
+  _clavePartidoCargado = clavePartido;
 
   if(document.getElementById('asist-title-local')) document.getElementById('asist-title-local').textContent = "Asistencia: " + nombreL;
   if(document.getElementById('asist-title-visita')) document.getElementById('asist-title-visita').textContent = "Asistencia: " + nombreV;
@@ -663,27 +673,48 @@ function cambiarPenalesGanador() {
   db.ref(CANCHA_PATH).update({ penalesGanador: idGanador });
 }
 
+// ¿El jugador pertenece a ese equipo? (la hoja puede traer el ID o el nombre del equipo)
+function jugadorEsDeEquipo(j, idEq){
+  var eqField = (j.ID_Equipo || j.id_equipo || j.Equipo || j.equipo || '').toString().trim();
+  var nomEq = (DB.equipos[idEq] && DB.equipos[idEq].nombre ? DB.equipos[idEq].nombre : '').toString().trim();
+  return eqField === String(idEq).trim() || (nomEq !== '' && eqField === nomEq);
+}
+function idDeJugadorObj(j){ return (j.ID_Jugador || j.id_jugador || j.ID || j.id || '').toString().trim(); }
+// Busca al jugador: primero por su ID; si no, por nombre pero SOLO entre los jugadores de ese equipo
+function buscarJugadorEvento(playerId, nombre, idEq){
+  var encontrado = null;
+  if(playerId) encontrado = DB.jugadores.find(function(j){ return idDeJugadorObj(j) === String(playerId).trim(); }) || null;
+  if(!encontrado && nombre){
+    var nl = nombre.toLowerCase().trim();
+    encontrado = DB.jugadores.find(function(j){
+      return (j.Nombre || j.nombre || '').toString().toLowerCase().trim() === nl && jugadorEsDeEquipo(j, idEq);
+    }) || null;
+  }
+  return encontrado;
+}
+
 function addEvent(type, team){
   if(!liveState) return;
   var selectId = 'sel-' + type + '-' + team;
   var selectElem = document.getElementById(selectId);
   var pName = "Jugador Anónimo";
+  var pId = '';
   
   if(selectElem && selectElem.value) {
       pName = selectElem.value;
+      var opt = selectElem.options[selectElem.selectedIndex];
+      pId = opt ? (opt.getAttribute('data-id') || '') : '';
   }
   if(!pName || pName.trim() === ""){
      pName = "Jugador Anónimo";
   }
   
-  var nombreLimpio = pName.split(' - ')[1] || pName;
-  var jugadorEncontrado = DB.jugadores.find(function(j) {
-     var nomJ = (j.Nombre || j.nombre || '').toLowerCase().trim();
-     return nomJ === nombreLimpio.toLowerCase().trim();
-  });
-  if(jugadorEncontrado) {
-     var jId = jugadorEncontrado.ID_Jugador || jugadorEncontrado.id_jugador || jugadorEncontrado.ID || jugadorEncontrado.id;
-     var checkObj = document.getElementById('chk_' + jId);
+  var idEq = team === 'local' ? liveState.idLocal : liveState.idVisita;
+  var nombreLimpio = pName.split(' - ').slice(1).join(' - ') || pName;
+  var jugadorEncontrado = buscarJugadorEvento(pId, nombreLimpio, idEq);
+  var jIdReal = jugadorEncontrado ? idDeJugadorObj(jugadorEncontrado) : '';
+  if(jIdReal) {
+     var checkObj = document.getElementById('chk_' + jIdReal);
      if(checkObj) checkObj.checked = true;
   }
   
@@ -694,10 +725,7 @@ function addEvent(type, team){
   if(min < 0) min = 0;
 
   var tName = team === 'local' ? liveState.nombreLocal : liveState.nombreVisita;
-  var newEv = { type: type, team: team, teamName: tName, player: pName, minute: min };
-  
-  var evs = liveState.events || [];
-  evs.push(newEv);
+  var newEv = { type: type, team: team, teamName: tName, player: pName, playerId: jIdReal, idEquipo: String(idEq == null ? '' : idEq), minute: min };
   
   if (type === 'goal') {
      var caminoScore = team === 'local' ? 'scoreLocal' : 'scoreVisita';
@@ -716,7 +744,13 @@ function addEvent(type, team){
      });
   }
 
-  db.ref(CANCHA_PATH).update({ events: evs }).then(function() {
+  // El evento se agrega de forma atómica: si dos toques seguidos llegan antes de que la pantalla se actualice,
+  // ya no se pisan entre sí (antes se reescribía toda la lista y un gol podía perderse).
+  db.ref(CANCHA_PATH + '/events').transaction(function(actual) {
+     var lista = Array.isArray(actual) ? actual.slice() : (actual ? Object.values(actual) : []);
+     lista.push(newEv);
+     return lista;
+  }).then(function() {
      if(selectElem) selectElem.value = "";
   });
 }
@@ -770,7 +804,24 @@ function enviarSoloAsistencia() {
 
 function guardarPartidoFirebase(){
   if(!liveState) return;
-  if(confirm("¿Deseas guardar los eventos (Goles y Tarjetas) finales de este partido en Google Sheets?")){
+
+  // Revisión antes de guardar: que el marcador coincida con los goles registrados y que todos tengan jugador
+  var evsRev = liveState.events || [];
+  var golesEvL = 0, golesEvV = 0, golesSinJugador = 0;
+  evsRev.forEach(function(e) {
+     if(e.type !== 'goal') return;
+     if(e.team === 'local') golesEvL++; else golesEvV++;
+     if(!e.playerId && (!e.player || e.player === 'Jugador Anónimo' || !buscarJugadorEvento('', (e.player || '').split(' - ').slice(1).join(' - ') || e.player, e.team === 'local' ? liveState.idLocal : liveState.idVisita))) golesSinJugador++;
+  });
+  var scL = Number(liveState.scoreLocal) || 0, scV = Number(liveState.scoreVisita) || 0;
+  var avisos = [];
+  if(scL !== golesEvL || scV !== golesEvV) avisos.push("⚠️ El marcador dice " + scL + " - " + scV + " pero los goles registrados suman " + golesEvL + " - " + golesEvV + ".");
+  if(golesSinJugador > 0) avisos.push("⚠️ Hay " + golesSinJugador + " gol(es) sin jugador identificado.");
+  var textoConfirmar = avisos.length
+     ? avisos.join("\n") + "\n\nSe guardará con el marcador " + scL + " - " + scV + ". ¿Guardar de todos modos?"
+     : "¿Deseas guardar los eventos (Goles y Tarjetas) finales de este partido en Google Sheets?";
+
+  if(confirm(textoConfirmar)){
       var key = 'cancha' + canchaActual + '_' + liveState.idPartidoReal + "_" + Date.now();
       
       var idPartidoActual = liveState.idPartidoReal || (liveState.idLocal + "_" + liveState.idVisita);
@@ -778,12 +829,10 @@ function guardarPartidoFirebase(){
       var evs = liveState.events || [];
       
       evs.forEach(function(e) {
-         var nombreLimpio = e.player.split(' - ')[1] || e.player;
-         var jugadorEncontrado = DB.jugadores.find(function(j) {
-            var nomJ = (j.Nombre || j.nombre || '').toLowerCase().trim();
-            return nomJ === nombreLimpio.toLowerCase().trim();
-         });
-         var idJugadorReal = jugadorEncontrado ? (jugadorEncontrado.ID_Jugador || jugadorEncontrado.id_jugador || jugadorEncontrado.ID || jugadorEncontrado.id) : "ANONIMO";
+         var nombreLimpio = (e.player || '').split(' - ').slice(1).join(' - ') || e.player || '';
+         var idEqEvento = e.idEquipo || (e.team === 'local' ? liveState.idLocal : liveState.idVisita);
+         var jugadorEncontrado = buscarJugadorEvento(e.playerId, nombreLimpio, idEqEvento);
+         var idJugadorReal = jugadorEncontrado ? idDeJugadorObj(jugadorEncontrado) : "ANONIMO";
 
          var eventoEspañol = 'Gol';
          if (e.type === 'yellow') {
@@ -796,7 +845,9 @@ function guardarPartidoFirebase(){
             idPartido: idPartidoActual,
             idJugador: idJugadorReal,
             tipoEvento: eventoEspañol,
-            minuto: e.minute
+            minuto: e.minute,
+            idEquipo: String(idEqEvento == null ? '' : idEqEvento),   // equipo al que se le acredita el evento
+            lado: e.team === 'local' ? 'local' : 'visita'
          });
       });
 
@@ -809,6 +860,10 @@ function guardarPartidoFirebase(){
              accion: 'guardar_eventos',
              eventos: listaEventos,
              idPartido: idPartidoActual, // <--- ESTA LÍNEA CONECTA CON EL SCRIPT
+             golesLocal: scL,            // marcador final del tablero (para llenar Goles_Local en la hoja Partidos)
+             golesVisita: scV,           // marcador final del tablero (para llenar Goles_Visita en la hoja Partidos)
+             idLocal: liveState.idLocal,
+             idVisita: liveState.idVisita,
              guardadoPor: liveState.metodoFin || "Normal", // Método de finalización (Normal/Penales/Default)
              penalesGanador: liveState.penalesGanador || "" // ID del equipo que ganó en penales (si aplica)
            })
@@ -854,6 +909,7 @@ function resetLive(){
     db.ref(CANCHA_PATH).remove().then(()=>{
       document.getElementById('lista-asist-local').innerHTML = '';
       document.getElementById('lista-asist-visita').innerHTML = '';
+      _clavePartidoCargado = null;
       showTab('partidos');
     });
   }
