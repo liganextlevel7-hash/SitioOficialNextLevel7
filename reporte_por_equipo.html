@@ -117,6 +117,7 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
         <option value="general">Control general (todos los equipos)</option>
         <option value="propuesta">Propuesta de programación (varias fechas)</option>
         <option value="tentativo">Rol tentativo (ya programado, sin publicar)</option>
+        <option value="horarios">Propuesta con horarios y campos (varias fechas)</option>
       </select></label>
     <label class="campo" id="campo-equipo"><span>Equipo</span>
       <select id="sel-equipo"><option value="">Cargando equipos...</option></select></label>
@@ -209,7 +210,8 @@ function msg(t, err){ $('msg').textContent = t; $('msg').className = err ? 'err'
 function cambiarTipo(){
   const t = $('tipo').value;
   $('campo-equipo').style.display = t === 'equipo' ? '' : 'none';
-  $('campo-fechas').style.display = $('campo-doble').style.display = t === 'propuesta' ? '' : 'none';
+  $('campo-fechas').style.display = (t === 'propuesta' || t === 'horarios') ? '' : 'none';
+  $('campo-doble').style.display = t === 'propuesta' ? '' : 'none';
 }
 
 // ═══════════════════════════════════════════════
@@ -772,6 +774,104 @@ function docDomingo(){
 }
 
 // Reporte de lo que ya está programado en la hoja pero todavía no se publica (antes del jueves de su domingo)
+// ═══════════════════════════════════════════════
+//  REPORTE CON HORARIOS Y CAMPOS (rotación justa)
+// ═══════════════════════════════════════════════
+const HORAS_LIGA = [9, 10, 11, 12];            // horarios de juego de cada domingo
+const CAMPOS_LIGA = ['Campo 1', 'Campo 2'];
+// Restricciones opcionales: nombre del equipo (como está en la hoja) -> horas en las que NO puede jugar.
+// Ejemplo: const RESTRICCION_HORA = { 'Pumas KAP': [9, 10] };
+const RESTRICCION_HORA = {};
+
+function docHorarios(nFechas){
+  const P = planProgramacion(nFechas, false);
+  const mapa = {}; EQUIPOS.forEach(e => mapa[idDe(e)] = e);
+  const eqCel = id => { const e = mapa[id] || {}; return `<div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span></div>`; };
+  const vacio = msgTxt => `<div class="rq-doc" style="width:900px">${encabezado('Propuesta con horarios y campos', msgTxt)}<div class="rq-body"><p>${msgTxt}</p></div></div>`;
+  if (!P || !P.dias.length) return vacio('No hay domingos por proponer.');
+
+  const horaNum = h => { const m = String(h || '').match(/(\d+)\s*:/); return m ? parseInt(m[1], 10) : null; };
+  const campoNorm = c => String(c || '').trim();
+  const act = activosIds();
+  const cntH = {}, cntC = {};
+  act.forEach(t => { cntH[t] = {}; cntC[t] = {}; });
+  const suma = (t, h, c) => { if (!cntH[t]) return; if (h != null) cntH[t][h] = (cntH[t][h] || 0) + 1; if (c) cntC[t][c] = (cntC[t][c] || 0) + 1; };
+  // historial: lo que cada equipo ya jugó o ya tiene programado (hora y campo)
+  PARTIDOS.forEach(p => {
+    if (cancelado(p)) return;
+    const e = estadoDe(p); if (e !== 'jugado' && e !== 'programado') return;
+    const h = horaNum(p['Hora']), c = campoNorm(p['Cancha']);
+    [String(p['Equipo_Local']).trim(), String(p['Equipo_Visita']).trim()].forEach(t => suma(t, h, c));
+  });
+  const restr = {};
+  Object.keys(RESTRICCION_HORA).forEach(n => { const e = EQUIPOS.find(q => normTxt(q['Nombre']) === normTxt(n)); if (e) restr[idDe(e)] = RESTRICCION_HORA[n]; });
+
+  const dias = P.dias.map(d => {
+    const filas = d.filas.map(r => ({ ...r }));
+    const fijos = filas.filter(r => r.tentativo), nuevos = filas.filter(r => !r.tentativo);
+    const usados = new Set(fijos.map(r => horaNum(r.hora) + '|' + campoNorm(r.cancha)));
+    const horas = HORAS_LIGA.slice();
+    let libres = [];
+    const gen = () => { libres = []; horas.forEach(h => CAMPOS_LIGA.forEach(c => { if (!usados.has(h + '|' + c)) libres.push({ h, c }); })); };
+    gen();
+    for (let extra = HORAS_LIGA[HORAS_LIGA.length - 1] + 1; libres.length < nuevos.length && extra < 22; extra++){ horas.push(extra); gen(); }
+    const n = nuevos.length, m = libres.length;
+    // cada equipo suma "costo" por las veces que ya jugó a esa hora / en ese campo: se busca el reparto que menos repite
+    const cost = (r, sl) => { let c = 0; [r.a, r.b].forEach(t => { c += 2 * (2 * ((cntH[t] || {})[sl.h] || 0) + 1) + (2 * ((cntC[t] || {})[sl.c] || 0) + 1); if (restr[t] && restr[t].includes(sl.h)) c += 1000; }); return c; };
+    const memo = {};
+    const solve = (i, mask) => {
+      if (i === n) return [0, []];
+      const key = i + '|' + mask; if (memo[key]) return memo[key];
+      let best = [Infinity, null];
+      for (let sIdx = 0; sIdx < m; sIdx++){
+        if (mask & (1 << sIdx)) continue;
+        const [c, rest] = solve(i + 1, mask | (1 << sIdx));
+        const tot = c + cost(nuevos[i], libres[sIdx]) + sIdx * 0.0001;
+        if (tot < best[0]) best = [tot, [sIdx, ...rest]];
+      }
+      return memo[key] = best;
+    };
+    if (n && m >= n){
+      const asign = solve(0, 0)[1];
+      nuevos.forEach((r, i) => { const sl = libres[asign[i]]; r.hora = sl.h + ':00:00'; r.cancha = sl.c; r.sug = true; suma(r.a, sl.h, sl.c); suma(r.b, sl.h, sl.c); });
+    }
+    filas.sort((x, y) => (horaNum(x.hora) ?? 99) - (horaNum(y.hora) ?? 99) || campoNorm(x.cancha).localeCompare(campoNorm(y.cancha), 'es', { numeric: true }));
+    return { fecha: d.fecha, filas };
+  });
+
+  const efecto = { corriente: ['v', 'PONE AL CORRIENTE'], tiempo: ['g', 'EN TIEMPO'], adelanto: ['b', 'ADELANTA'] };
+  const cortoCampo = c => String(c || '').replace(/^campo\s*/i, 'C');
+  const bloques = dias.map(d => {
+    const filas = d.filas.map((r, i) => `<tr><td class="n">${i + 1}</td><td><b>${esc(hora12(r.hora) || 'Por definir')}</b></td><td>${esc(r.cancha || '—')}</td><td class="j">${r.j != null ? 'J' + r.j : '—'}</td><td class="idp">${idTxt(r.id)}</td><td>${eqCel(r.a)}</td><td>${eqCel(r.b)}</td>
+      <td>${r.sug ? `<span class="rq-pill a">SUGERIDO</span><small style="display:block;margin-top:3px;color:#4b5563">${esc((efecto[r.efecto] || ['', ''])[1].toLowerCase())}</small>` : `<span class="rq-pill g">TENTATIVO</span><small style="display:block;margin-top:3px;color:#4b5563">hora y campo ya programados</small>`}</td></tr>`).join('');
+    return `<div class="rq-tit">Domingo ${fmt(d.fecha)} · Fecha ${fechaNum(d.fecha)} · ${d.filas.length} encuentros</div>
+      <table class="rq-tabla"><thead><tr><th style="width:34px">No.</th><th style="width:78px">Hora</th><th style="width:70px">Campo</th><th style="width:56px">Jornada</th><th style="width:44px">ID</th><th>Local</th><th>Visitante</th><th style="width:140px">Estatus</th></tr></thead><tbody>${filas}</tbody></table>`;
+  }).join('');
+
+  // qué le toca a cada equipo cada domingo
+  const nombresOrd = act.slice().sort((x, y) => nombreEq(x).localeCompare(nombreEq(y), 'es'));
+  const cab = dias.map(d => `<th>${fmt(d.fecha).slice(0, 5)}</th>`).join('');
+  const filasEq = nombresOrd.map(t => `<tr><td>${eqCel(t)}</td>${dias.map(d => { const r = d.filas.find(x => x.a === t || x.b === t); return `<td style="text-align:center">${r ? esc((hora12(r.hora) || '—') + ' · ' + cortoCampo(r.cancha)) : '<span style="color:#9ca3af">Descansa</span>'}</td>`; }).join('')}</tr>`).join('');
+  // reparto acumulado
+  const horasTodas = Array.from(new Set([...HORAS_LIGA, ...act.flatMap(t => Object.keys(cntH[t]).map(Number))])).sort((x, y) => x - y);
+  const camposTodos = Array.from(new Set([...CAMPOS_LIGA, ...act.flatMap(t => Object.keys(cntC[t]))]));
+  const filasRep = nombresOrd.map(t => `<tr><td>${eqCel(t)}</td>${horasTodas.map(h => `<td style="text-align:center">${cntH[t][h] || 0}</td>`).join('')}${camposTodos.map(c => `<td style="text-align:center">${cntC[t][c] || 0}</td>`).join('')}</tr>`).join('');
+  const hayRestr = Object.keys(restr).length;
+
+  return `<div class="rq-doc" style="width:900px">
+    ${encabezado('Propuesta con horarios y campos', `${dias.length} fecha(s) · horas y campos asignados rotando para que no se repitan`)}
+    <div class="rq-body">
+      <div class="rq-situacion adel"><p>Cada encuentro lleva <b>hora y campo sugeridos</b>. Se reparten rotando: a cada equipo se le busca la hora y el campo que <b>menos</b> ha tenido entre lo que ya jugó, lo ya programado y lo que se va proponiendo. Los encuentros <b>tentativos</b> conservan la hora y el campo que ya tienen programados, y solo se acomodan los que faltan en los espacios libres.${hayRestr ? ' Se respetan las restricciones de horario configuradas.' : ''}</p></div>
+      ${bloques}
+      <div class="rq-tit">Qué le toca a cada equipo</div>
+      <table class="rq-tabla"><thead><tr><th>Equipo</th>${cab}</tr></thead><tbody>${filasEq}</tbody></table>
+      <div class="rq-tit">Reparto acumulado de horarios y campos <span style="font-weight:400;text-transform:none;letter-spacing:0">(jugados + programados + sugeridos)</span></div>
+      <table class="rq-tabla"><thead><tr><th>Equipo</th>${horasTodas.map(h => `<th>${esc(hora12(h + ':00:00'))}</th>`).join('')}${camposTodos.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${filasRep}</tbody></table>
+      <div class="rq-leyenda"><b>Cómo se lee:</b> <b>Sugerido</b>: la hora y el campo los propone el reporte y tú los confirmas al programar. <b>Tentativo</b>: ya está programado en la hoja con esa hora y campo. Si cambias una hora o un campo en la hoja, vuelve a generar el reporte y el reparto se ajusta solo. <b>Es una propuesta</b>: la liga la valida y la programa.</div>
+    </div>
+    <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
+}
+
 function docTentativo(){
   const P = planProgramacion(1, false);
   const mapa = {}; EQUIPOS.forEach(e => mapa[idDe(e)] = e);
@@ -863,6 +963,7 @@ function construir(){
   if (!PARTIDOS.length){ msg('Todavía no cargan los datos.', true); return null; }
   if ($('tipo').value === 'general') return { html: docGeneral(), nombre: 'control_jornadas' };
   if ($('tipo').value === 'domingo') return { html: docDomingo(), nombre: 'rol_propuesto_domingo' };
+  if ($('tipo').value === 'horarios') return { html: docHorarios(parseInt($('sel-fechas').value, 10) || 3), nombre: 'propuesta_horarios' };
   if ($('tipo').value === 'tentativo') return { html: docTentativo(), nombre: 'rol_tentativo' };
   if ($('tipo').value === 'propuesta') return { html: docPropuesta(parseInt($('sel-fechas').value, 10) || 3, $('sel-doble').value === 'si'), nombre: 'propuesta_programacion' };
   const id = $('sel-equipo').value; if (!id){ msg('Selecciona un equipo primero.', true); return null; }
