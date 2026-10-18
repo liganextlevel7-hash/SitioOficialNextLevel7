@@ -182,6 +182,19 @@
   .tarjeta-adm .nombre-adm { font-size: 1.05rem; font-weight: 900; color: #fff; }
   .tarjeta-adm .campo-adm { font-size: 0.82rem; color: rgba(238,247,230,0.8); margin-top: 2px; }
   .tarjeta-adm .campo-adm b { color: #8fe89a; }
+  .sec-titulo-adm { font-size: 0.95rem; font-weight: 900; margin: 18px 0 10px; padding: 10px 14px; border-radius: 10px; letter-spacing: .2px; }
+  .sec-titulo-adm.nuevos { background: rgba(224,168,0,0.14); border: 1px solid rgba(224,168,0,0.55); color: #ffd34d; }
+  .sec-titulo-adm.hechos { background: rgba(94,181,13,0.12); border: 1px solid rgba(94,181,13,0.45); color: #8fe89a; cursor: pointer; list-style: none; }
+  details.sec-capturados > summary::-webkit-details-marker { display: none; }
+  details.sec-capturados > summary::after { content: ' ▼'; font-size: 0.7rem; opacity: .7; }
+  details.sec-capturados[open] > summary::after { content: ' ▲'; }
+  .grupo-eq-adm { font-size: 0.82rem; font-weight: 800; color: #8fe89a; margin: 16px 2px 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(94,181,13,0.3); }
+  .chips-pend-adm { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
+  .chip-pend-adm { background: #071019; border: 1px solid rgba(224,168,0,0.55); color: #ffd34d; border-radius: 999px; padding: 4px 11px; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+  .badge-adm { display: inline-block; font-size: 0.62rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
+  .badge-adm.nuevo { background: rgba(224,168,0,0.2); color: #ffd34d; border: 1px solid rgba(224,168,0,0.6); }
+  .badge-adm.hoja { background: rgba(94,181,13,0.18); color: #8fe89a; border: 1px solid rgba(94,181,13,0.5); }
+  .badge-adm.otro { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); }
   .tarjeta-adm .quien-adm { font-size: 0.7rem; color: rgba(238,247,230,0.45); margin-top: 6px; }
   .acciones-adm { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
   .btn-copiar-adm, .btn-borrar-adm, .btn-editar-adm {
@@ -666,6 +679,8 @@
 
   // ---- Ver / editar / borrar TODOS los registros (admin) ----
   let registrosAdminCache = {};
+  let hojaAdminCache = null;          // jugadores que ya están en la hoja "Jugadores" (null = no se pudo leer)
+  let capturadosAbiertoAdm = false;   // la sección "Ya capturados" empieza cerrada
   const filtroEquipoAdmin = document.getElementById('filtro-equipo-admin');
   filtroEquipoAdmin.addEventListener('change', () => pintarListaAdmin());
 
@@ -691,43 +706,53 @@
         equiposConRegistros.map(nombre => `<option value="${nombre}">${nombre}</option>`).join('');
       filtroEquipoAdmin.value = valorPrevio; // conserva el filtro si ya tenías uno elegido
 
+      // Compara contra la hoja "Jugadores" para saber cuáles son nuevos (faltan por capturar) y cuáles ya están
+      try {
+        const rh = await fetch(RV_URL_JUGADORES);
+        const filasH = rvParseCSV(await rh.text());
+        hojaAdminCache = filasH.slice(1).map(c => ({ nombre: rvNorm(c[1]), equipo: String(c[2] || '').trim() })).filter(h => h.nombre);
+      } catch (e) { hojaAdminCache = null; }
+
       pintarListaAdmin();
     } catch (e) {
       lista.innerHTML = '<div class="nota">No se pudo cargar. Revisa tu conexión.</div>';
     }
   }
 
-  function pintarListaAdmin() {
-    const lista = document.getElementById('lista-admin');
-    const contador = document.getElementById('contador');
-    const filtro = filtroEquipoAdmin.value;
-
-    let entradas = Object.entries(registrosAdminCache);
-    if (filtro) entradas = entradas.filter(([, j]) => j.equipo === filtro);
-
-    contador.textContent = filtro
-      ? `${entradas.length} jugador(es) de ${filtro}`
-      : `${entradas.length} registro(s) en total`;
-
-    if (!entradas.length) {
-      lista.innerHTML = '<div class="nota">No hay jugadores registrados en este equipo todavía.</div>';
-      return;
+  // 'pendiente' = nuevo, falta capturar · 'hoja' = ya está · 'hoja_otro' = está en la hoja pero con otro equipo
+  function estadoRegistroAdm(j) {
+    if (!hojaAdminCache) return 'desconocido';
+    let eqId = String(j.equipoId == null ? '' : j.equipoId).trim();
+    if (!eqId || eqId === 'NaN') {
+      const e = EQUIPOS.find(q => rvNorm(q.nombre) === rvNorm(j.equipo));
+      eqId = e ? String(e.id) : '';
     }
+    return rvEstado({ nombre: j.nombre || '', eqId }, hojaAdminCache);
+  }
 
-    lista.innerHTML = entradas.map(([id, j]) => {
-        const fecha = j.fecha ? new Date(j.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '';
-        // Bloque 1 = columnas A-E (ID_Jugador, Nombre, Equipo, Numero, Posicion)
-        const textoCopiarAE = `\t${j.nombre || ''}\t${j.equipoId || ''}\t${j.numero || ''}\t${j.posicion || ''}`;
-        // Bloque 2 = columnas G-I (Foto, URL_Foto, Apodo) — saltando F (Logo) para no pisar tu fórmula
-        const textoCopiarGI = `\t\t${j.apodo || ''}`;
-        return `
+  function filtrarEquipoAdm(nombre) {
+    filtroEquipoAdmin.value = nombre;
+    pintarListaAdmin();
+    window.scrollTo({ top: filtroEquipoAdmin.offsetTop - 20, behavior: 'smooth' });
+  }
+
+  function tarjetaAdm(id, j, estado) {
+    const fecha = j.fecha ? new Date(j.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '';
+    // Bloque 1 = columnas A-E (ID_Jugador, Nombre, Equipo, Numero, Posicion)
+    const textoCopiarAE = `\t${j.nombre || ''}\t${j.equipoId || ''}\t${j.numero || ''}\t${j.posicion || ''}`;
+    // Bloque 2 = columnas G-I (Foto, URL_Foto, Apodo) — saltando F (Logo) para no pisar tu fórmula
+    const textoCopiarGI = `\t\t${j.apodo || ''}`;
+    const badge = estado === 'pendiente' ? '<span class="badge-adm nuevo">🆕 NUEVO</span>'
+      : estado === 'hoja' ? '<span class="badge-adm hoja">✅ EN LA HOJA</span>'
+      : estado === 'hoja_otro' ? '<span class="badge-adm otro">⚠️ EN LA HOJA CON OTRO EQUIPO</span>' : '';
+    return `
           <div class="tarjeta-adm" id="adm-card-${id}">
             <div style="display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0;">
               <img src="${j.foto || ''}" alt="">
               <a href="${j.foto || ''}" download="${(j.nombre || 'jugador').replace(/\s+/g, '_')}.jpg" style="font-size:0.62rem; color:#5eb50d; text-decoration:underline;">⬇️ Descargar</a>
             </div>
             <div class="datos-adm">
-              <div class="nombre-adm">${j.nombre || '(sin nombre)'}</div>
+              <div class="nombre-adm">${j.nombre || '(sin nombre)'}${badge}</div>
               <div class="campo-adm"><b>Equipo:</b> ${j.equipo || '-'}</div>
               <div class="campo-adm"><b>Número:</b> ${j.numero || '-'} &nbsp; <b>Posición:</b> ${j.posicion || '-'}</div>
               ${j.apodo ? `<div class="campo-adm"><b>Apodo:</b> ${j.apodo}</div>` : ''}
@@ -741,7 +766,64 @@
             </div>
           </div>
         `;
-      }).join('');
+  }
+
+  function pintarListaAdmin() {
+    const lista = document.getElementById('lista-admin');
+    const contador = document.getElementById('contador');
+    const filtro = filtroEquipoAdmin.value;
+
+    let entradas = Object.entries(registrosAdminCache);
+    if (filtro) entradas = entradas.filter(([, j]) => j.equipo === filtro);
+
+    if (!entradas.length) {
+      contador.textContent = '';
+      lista.innerHTML = '<div class="nota">No hay jugadores registrados en este equipo todavía.</div>';
+      return;
+    }
+
+    // Separa: nuevos (faltan por capturar) y ya capturados en la hoja
+    const conEstado = entradas.map(([id, j]) => [id, j, estadoRegistroAdm(j)]);
+    const nuevos = conEstado.filter(([, , e]) => e === 'pendiente' || e === 'desconocido');
+    const capturados = conEstado.filter(([, , e]) => e === 'hoja' || e === 'hoja_otro');
+
+    contador.textContent = (filtro ? filtro + ': ' : '') + `${nuevos.length} por capturar · ${capturados.length} ya capturados`;
+
+    // Si no se eligió equipo, se agrupa por equipo; si se eligió uno, va la lista directa
+    const pintaItems = (items) => {
+      if (filtro) return items.map(([id, j, e]) => tarjetaAdm(id, j, e)).join('');
+      const g = {};
+      items.forEach(it => { const k = it[1].equipo || '(sin equipo)'; (g[k] = g[k] || []).push(it); });
+      return Object.keys(g).sort((x, y) => x.localeCompare(y, 'es')).map(k =>
+        `<div class="grupo-eq-adm">${k} · ${g[k].length}</div>` + g[k].map(([id, j, e]) => tarjetaAdm(id, j, e)).join('')
+      ).join('');
+    };
+
+    // Resumen de pendientes por equipo (toca uno para ver solo ese equipo)
+    let chips = '';
+    if (!filtro && hojaAdminCache) {
+      const cuenta = {};
+      nuevos.forEach(([, j]) => { const k = j.equipo || '(sin equipo)'; cuenta[k] = (cuenta[k] || 0) + 1; });
+      const nombres = Object.keys(cuenta).sort((x, y) => x.localeCompare(y, 'es'));
+      if (nombres.length) {
+        chips = '<div class="chips-pend-adm">' + nombres.map(n =>
+          `<button class="chip-pend-adm" onclick="filtrarEquipoAdm(decodeURIComponent('${encodeURIComponent(n)}'))">${n} · ${cuenta[n]}</button>`).join('') + '</div>';
+      }
+    }
+
+    const avisoSinHoja = hojaAdminCache ? '' :
+      '<div class="nota">No se pudo leer la hoja «Jugadores», por eso no se puede saber cuáles ya están capturados. Se muestran todos como por capturar.</div>';
+
+    const seccionNuevos = `<div class="sec-titulo-adm nuevos">🆕 Nuevos por capturar · ${nuevos.length}</div>` + avisoSinHoja + chips +
+      (nuevos.length ? pintaItems(nuevos) : '<div class="nota">✅ No hay jugadores nuevos pendientes de capturar.</div>');
+
+    const seccionCapturados = hojaAdminCache
+      ? `<details class="sec-capturados" ${capturadosAbiertoAdm ? 'open' : ''} ontoggle="capturadosAbiertoAdm = this.open">
+           <summary class="sec-titulo-adm hechos">✅ Ya capturados en la hoja · ${capturados.length}</summary>
+           ${capturados.length ? pintaItems(capturados) : '<div class="nota">Todavía no hay jugadores registrados que estén en la hoja.</div>'}
+         </details>` : '';
+
+    lista.innerHTML = seccionNuevos + seccionCapturados;
   }
 
   function copiarDatosAdm(btn, texto) {
