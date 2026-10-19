@@ -145,6 +145,27 @@ const URL_PARTIDOS = `${PUB}?gid=1362473459&single=true&output=csv`;
 // El torneo comenzó el domingo 20/09/2026 = Fecha 1 = Jornada 1. Cada domingo avanza una fecha.
 const FECHA_INICIO = '20/09/2026';
 
+// ── CORRECCIONES DE CAPTURA ──
+// Partidos que se guardaron en la hoja con equipos equivocados. Para todos los reportes y para los enfrentamientos
+// se toman con los equipos correctos (ID_Equipo). Si ya corriges la hoja, puedes borrar la línea correspondiente.
+const CORRECCIONES_PARTIDOS = {
+  '28': { local: '5', visita: '12' },   // estaba como 5 vs 7 (que ya se había jugado la jornada pasada); era 5 vs 12
+  '70': { local: '6', visita: '7' }     // estaba como 6 vs 12; era 6 vs 7
+};
+function aplicarCorrecciones(lista){
+  const hechas = [];
+  lista.forEach(p => {
+    const c = CORRECCIONES_PARTIDOS[String(p['ID_Partido'] || '').trim()];
+    if (!c) return;
+    const oL = String(p['Equipo_Local']).trim(), oV = String(p['Equipo_Visita']).trim();
+    const pen = String(p['Penales'] || '').trim();
+    if (pen === oL) p['Penales'] = c.local; else if (pen === oV) p['Penales'] = c.visita;   // si hubo penales, el ganador sigue a su equipo
+    p['Equipo_Local'] = c.local; p['Equipo_Visita'] = c.visita;
+    hechas.push(String(p['ID_Partido']).trim());
+  });
+  return hechas;
+}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const p2 = n => String(n).padStart(2, '0');
@@ -201,9 +222,10 @@ async function init(){
   try {
     const [te, tp] = await Promise.all([ fetch(URL_EQUIPOS).then(r => r.text()), fetch(URL_PARTIDOS).then(r => r.text()) ]);
     EQUIPOS = parseCSV(te).filter(e => idDe(e)); PARTIDOS = parseCSV(tp).filter(p => p['Equipo_Local'] && p['Equipo_Visita']);   // incluye pendientes aunque no tengan jornada
+    const corregidos = aplicarCorrecciones(PARTIDOS);
     const ord = [...EQUIPOS].sort((a, b) => a['Nombre'].localeCompare(b['Nombre'], 'es'));
     $('sel-equipo').innerHTML = '<option value="">— Selecciona un equipo —</option>' + ord.map(e => `<option value="${esc(idDe(e))}">${esc(e['Nombre'])}${esBaja(e) ? ' (baja)' : ''}</option>`).join('');
-    msg('Elige un equipo y presiona "Ver reporte".');
+    msg('Elige un equipo y presiona "Ver reporte".' + (corregidos.length ? ` · Se aplicaron las correcciones de captura a los partidos ID ${corregidos.join(' y ')}.` : ''));
   } catch (e){ $('sel-equipo').innerHTML = '<option value="">No se pudieron cargar los datos</option>'; msg('No se pudieron cargar los datos. Revisa tu conexión.', true); }
 }
 function msg(t, err){ $('msg').textContent = t; $('msg').className = err ? 'err' : ''; }
