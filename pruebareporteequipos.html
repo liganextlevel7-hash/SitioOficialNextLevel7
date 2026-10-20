@@ -3,790 +3,1678 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reporte por equipo — Next Level 7</title>
+<title>Armar Jornada - Next Level 7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#142702;color:#eef7e6;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:14px;display:flex;flex-direction:column;align-items:center}
-.nav{width:100%;max-width:960px;margin-bottom:12px}
-.nav a{display:inline-block;padding:8px 18px;background:rgba(0,0,0,.6);border:1px solid #5eb50d;border-radius:12px;color:#fff;text-decoration:none;font-weight:700;font-size:14px}
-.panel{width:100%;max-width:960px;background:rgba(0,0,0,.75);border:1px solid #5eb50d55;border-radius:14px;padding:16px;margin-bottom:16px}
-.panel h2{color:#5eb50d;font-size:17px;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
-.fila{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.campo{flex:1;min-width:180px}
-.campo span{display:block;font-size:11px;color:#9db38c;text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:4px}
-select{width:100%;padding:11px;border-radius:10px;border:1px solid #5eb50d66;background:#071019;color:#fff;font-size:15px}
-.btn{flex:1;min-width:130px;padding:12px;border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;background:rgba(94,181,13,.18);color:#5eb50d;border:1px solid #5eb50d66}
-.btn.pri{background:#5eb50d;color:#0a1a0d}
-#msg{font-size:13px;color:#9db38c;text-align:center;min-height:18px}
-#msg.err{color:#ff6b6b}
-#vista-wrap{width:100%;max-width:960px;overflow:hidden;border-radius:10px;background:#f3f5ef}
-#vista-wrap[hidden]{display:none}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --neon:#5eb50d;--neon-dim:rgba(94,181,13,0.15);
+  --mod:#7c3aed;--mod-dim:rgba(124,58,237,0.15);--mod-border:#a78bfa;
+  --g400:#94a3b8;--g500:#64748b;
+  --dark:#142702;--dark2:#1c3204;--dark3:#2f5606;
+  --w:#fff;--r:12px;--rs:8px;
+  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c3204 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px 16px}
 
-/* ===== DOCUMENTO (PNG / impresión) ===== */
-.rq-doc{background:#fff;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;position:relative}
-.rq-doc *{box-sizing:border-box}
-.rq-head{background:#1d3d05;color:#fff;padding:20px 32px 18px;border-bottom:6px solid #5eb50d;display:flex;justify-content:space-between;align-items:center;gap:20px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.rq-liga{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b9d8a0;font-weight:600}
-.rq-titulo{font-size:28px;font-weight:800;margin-top:6px;line-height:1.15}
-.rq-sub{font-size:14px;color:#d6e6c8;margin-top:4px}
-.rq-der{display:flex;flex-direction:column;align-items:flex-end;gap:8px;text-align:right;font-size:12px;color:#d6e6c8;line-height:1.5}
-.rq-logos{display:flex;gap:10px}
-.rq-logos img{height:54px;width:auto;object-fit:contain}
-.rq-body{padding:22px 32px 6px}
-.rq-equipo{display:flex;align-items:center;gap:18px;margin-bottom:16px}
-.rq-equipo img{width:84px;height:84px;object-fit:contain}
-.rq-equipo h1{font-size:30px;font-weight:800;line-height:1.1;text-transform:uppercase}
-.rq-equipo small{display:block;color:#6b7280;font-size:13px;margin-top:4px}
-.rq-kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
-.rq-kpi{border:1px solid #cfd8c5;border-top:4px solid #5eb50d;border-radius:6px;padding:9px 4px;text-align:center}
-.rq-kpi b{display:block;font-size:26px;font-weight:800;line-height:1.15}
-.rq-kpi span{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.7px;font-weight:600}
-.rq-kpi.v{border-top-color:#2f9e44}.rq-kpi.v b{color:#1f7a35}
-.rq-kpi.a{border-top-color:#e0a800}.rq-kpi.a b{color:#a87500}
-.rq-kpi.r{border-top-color:#d64545}.rq-kpi.r b{color:#c0392b}
-.rq-situacion{border:1px solid #cfd8c5;border-left:6px solid #5eb50d;border-radius:6px;padding:12px 16px;margin-bottom:18px;background:#f9faf6;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.rq-situacion.debe{border-left-color:#d64545;background:#fdf3f3}
-.rq-situacion.adel{border-left-color:#2b6cb0;background:#f1f6fc}
-.rq-situacion .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
-.rq-situacion p{font-size:13.5px;line-height:1.5;color:#374151}
-.rq-situacion p+p{margin-top:3px}
-.rq-pill{display:inline-block;padding:4px 11px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.5px;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.rq-pill.v{background:#e3f4e6;color:#1b6e2e;border:1px solid #a9d9b3}
-.rq-pill.r{background:#fde8e8;color:#b42318;border:1px solid #f5b5b5}
-.rq-pill.a{background:#fff4d6;color:#8a6100;border:1px solid #f0d58a}
-.rq-pill.b{background:#e5effa;color:#1e4e8c;border:1px solid #aac6e8}
-.rq-pill.g{background:#eef0f3;color:#4b5563;border:1px solid #cfd4db}
-.rq-pill.p{background:#f0e9fa;color:#5b3a99;border:1px solid #cdbbe8}
-.rq-tabla{width:100%;border-collapse:collapse;font-size:13px}
-.rq-tabla thead{display:table-header-group}
-.rq-tabla th{background:#e8f1dc;color:#1d3d05;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;padding:8px 5px;border:1px solid #cfd8c5;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.rq-tabla td{padding:7px 5px;border:1px solid #d9e0d0;text-align:center;vertical-align:middle}
-.rq-tabla tr{page-break-inside:avoid;break-inside:avoid}
-.rq-tabla td.n{color:#6b7280;font-size:12px}
-.rq-tabla td.j{font-weight:800;font-size:14px}
-.rq-tabla td small{display:block;color:#6b7280;font-size:11px}
-.rq-tabla td b{display:block}
-.rq-tabla tr.fila-debe td{background:#fdf3f3}
-.rq-tabla tr.fila-desc td{background:#f6f7f9;color:#6b7280}
-.rq-rival{display:flex;align-items:center;gap:8px;text-align:left}
-.rq-rival img{width:30px;height:30px;object-fit:contain;flex-shrink:0}
-.rq-rival span{font-weight:700;text-transform:uppercase;font-size:12.5px;line-height:1.15}
-.rq-marc{font-size:16px;font-weight:800}
-.rq-leyenda{margin:16px 0 0;padding:12px 14px;border:1px solid #cfd8c5;border-radius:6px;font-size:11.5px;color:#4b5563;line-height:1.55;background:#fafbf8}
-.rq-leyenda b{color:#1d3d05}
-.rq-pie{display:flex;justify-content:space-between;gap:20px;margin-top:18px;padding:10px 32px;border-top:1px solid #cfd8c5;font-size:10.5px;color:#6b7280}
-.rq-mx td.cel{font-size:17px;font-weight:800;width:46px;padding:6px 2px}
-.rq-mx td.eq{text-align:left}
-.rq-mx td.eq .rq-rival span{font-size:12px}
-.rq-cal{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 16px;padding:10px 14px;border:1px solid #cfd8c5;border-radius:6px;background:#f9faf6;font-size:13px;color:#374151}
-.rq-cal b{font-size:18px;color:#1d3d05}
-.rq-cal .op{color:#9ca3af;font-weight:800}
-.rq-tit{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;font-weight:800;margin:20px 0 6px}
-.rq-sim{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#374151;margin-top:12px}
-.rq-sim span b{display:inline-block;min-width:22px;text-align:center;font-size:15px}
+#loading-screen{background:var(--dark);border:1px solid rgba(94,181,13,.2);border-radius:20px;padding:48px 32px;width:100%;max-width:400px;margin-top:40px;text-align:center}
+.load-ball{font-size:40px;margin-bottom:14px}
+.load-title{font-size:18px;font-weight:800;color:var(--neon);margin-bottom:6px}
+.load-sub{font-size:12px;color:var(--g400)}
+
+#login-screen{display:none;background:var(--dark);border:1px solid rgba(94,181,13,.2);border-radius:20px;width:100%;max-width:420px;margin-top:20px;overflow:hidden}
+.login-hero{background:linear-gradient(135deg,#142702,#1c3204);padding:28px;text-align:center;border-bottom:1px solid rgba(94,181,13,.15)}
+.login-hero-icon{font-size:38px;margin-bottom:10px}
+.login-hero-title{font-size:20px;font-weight:800;color:var(--neon);margin-bottom:4px;letter-spacing:1px}
+.login-hero-sub{font-size:12px;color:var(--g400)}
+.login-body{padding:24px 28px 28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.field input{width:100%;padding:11px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark2);outline:none}
+.field input:focus{border-color:var(--neon)}
+.btn-enter{width:100%;padding:14px;background:var(--neon);color:#122400;border:none;border-radius:var(--r);font-size:15px;font-weight:800;cursor:pointer}
+.btn-enter:hover{filter:brightness(1.1)}
+.login-msg{font-size:12px;color:var(--g400);text-align:center;margin-top:10px;min-height:18px}
+.login-msg.err{color:#f87171}
+
+#app-screen{display:none;width:100%;max-width:760px;background:var(--dark);border:1px solid rgba(94,181,13,.15);border-radius:20px;overflow:hidden;margin-top:20px}
+.app-header{background:linear-gradient(135deg,#142702,#1c3204);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(94,181,13,.15)}
+.app-header-title{font-size:15px;font-weight:800;color:var(--neon)}
+.app-header-sub{font-size:11px;color:var(--g400);margin-top:1px}
+.btn-logout{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:var(--g400);padding:7px 14px;border-radius:20px;font-size:12px;text-decoration:none;white-space:nowrap}
+.btn-logout:hover{color:var(--w)}
+
+.panel{padding:20px;display:flex;flex-direction:column;gap:22px}
+.mod-section-title{font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.mod-hint{font-size:11px;color:var(--g500);margin-bottom:12px;margin-top:-6px}
+
+.msg-input{flex:1;padding:10px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark);outline:none}
+.msg-input:focus{border-color:var(--neon)}
+
+.vbtn{flex:1;padding:9px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--dark3);background:var(--dark2);color:var(--g500)}
+.vbtn.active{border-color:var(--neon);background:var(--neon-dim);color:var(--neon)}
+
+.mod-match-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark3);border-radius:var(--rs);border:1px solid rgba(255,255,255,.05);margin-bottom:10px}
+.mod-match-row img{width:32px;height:32px;border-radius:50%;object-fit:cover}
+.mod-match-name{flex:1;font-size:13px;font-weight:700;color:var(--w);min-width:0}
+.mod-match-meta{font-size:11px;color:var(--g500)}
+.mod-preview-empty{font-size:13px;color:var(--g500);text-align:center;padding:16px 0;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:var(--r)}
+
+.programar-box{background:var(--dark2);border:1px solid rgba(94,181,13,.25);border-radius:var(--r);padding:16px}
+.programar-box label{display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.programar-hint{font-size:12px;color:var(--neon);background:var(--neon-dim);border:1px solid rgba(94,181,13,.25);border-radius:var(--rs);padding:10px 12px}
+
+.btn-anunciar{width:100%;padding:12px;background:var(--mod);color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer}
+.btn-anunciar:hover{background:#6d28d9}
+.btn-anunciar:disabled{background:var(--dark3);color:var(--g500);cursor:not-allowed}
+
+.cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
+.cartel-poster{position:relative;width:760px;min-height:983px;margin:0 auto;border-radius:10px;overflow:hidden;
+  background-image:url('fondonuevo.png');background-size:cover;background-position:center;
+  font-family:'Arial Black',Arial,sans-serif;padding:300px 40px 0;box-sizing:border-box;}
+.cartel-header{position:absolute;top:16px;left:0;right:0;z-index:2;text-align:center}
+.cartel-h1{font-size:26px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 16px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
+.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center}
+.cartel-pagina-tag{position:absolute;bottom:10px;right:18px;z-index:2;font-size:12px;color:rgba(255,255,255,.4);font-weight:700}
+.cartel-row{display:flex;align-items:center;gap:6px;padding:11px 0}
+.cartel-sep{border:none;border-top:2px dotted rgba(243,201,74,.55);margin:0}
+.cartel-team{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.cartel-team.local{flex-direction:row-reverse;justify-content:flex-start;text-align:right}
+.cartel-team.visita{flex-direction:row;justify-content:flex-start;text-align:left}
+.cartel-crest{width:88px;height:88px;object-fit:contain;flex-shrink:0}
+.cartel-name{font-size:18px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
+.cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:2px}
+.cartel-jv{font-size:12px;color:#5eb50d;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
+.cartel-fecha{font-size:11px;color:#d9d9d9;font-weight:700}
+.cartel-hora{font-size:18px;color:#fff;font-weight:900;white-space:nowrap}
+.cartel-campo{font-size:12px;color:#5eb50d;font-weight:700}
+.cartel-linea{width:24px;height:3px;background:#5eb50d;border-radius:2px;margin:2px 0}
+.btn-descargar-cartel{width:100%;padding:12px;background:#f3c94a;color:#1a1200;border:none;border-radius:var(--r);font-size:14px;font-weight:800;cursor:pointer;margin-top:10px}
+.btn-descargar-cartel:hover{filter:brightness(1.08)}
+
+@media(max-width:580px){
+  .cartel-poster{min-width:760px}
+  body{padding:0;align-items:flex-start}
+  #login-screen,#app-screen{border-radius:0;margin-top:0}
+}
 </style>
 </head>
 <body>
-<div class="nav"><a href="index.html">← Inicio</a></div>
 
-<div class="panel">
-  <h2>📋 Reporte por equipo</h2>
-  <div class="fila">
-    <label class="campo"><span>Tipo de reporte</span>
-      <select id="tipo" onchange="cambiarTipo()">
-        <option value="equipo">Por equipo</option>
-        <option value="domingo">Rol propuesto del próximo domingo</option>
-        <option value="general">Control general (todos los equipos)</option>
-        <option value="propuesta">Propuesta de programación (varias fechas)</option>
-      </select></label>
-    <label class="campo" id="campo-equipo"><span>Equipo</span>
-      <select id="sel-equipo"><option value="">Cargando equipos...</option></select></label>
-    <label class="campo" id="campo-fechas" style="display:none"><span>Fechas a proponer</span>
-      <select id="sel-fechas"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label>
-    <label class="campo" id="campo-doble" style="display:none"><span>Dobles jornadas</span>
-      <select id="sel-doble"><option value="no">No: un partido por domingo</option><option value="si">Sí: solo a equipos que deben</option></select></label>
-  </div>
-  <div class="fila">
-    <button class="btn" onclick="ver()">👁️ Ver reporte</button>
-    <button class="btn pri" onclick="descargar()">📥 Descargar PNG</button>
-    <button class="btn" onclick="imprimir()">🖨️ Imprimir</button>
-  </div>
-  <div id="msg">Cargando datos...</div>
+<div id="loading-screen">
+  <div class="load-ball">⚽</div>
+  <div class="load-title">ARMAR JORNADA</div>
+  <div class="load-sub" id="load-msg">Conectando con Google Sheets...</div>
 </div>
-<div id="vista-wrap" hidden><div id="vista"></div></div>
+
+<div id="login-screen">
+  <div class="login-hero">
+    <div class="login-hero-icon">🛠️</div>
+    <div class="login-hero-title">ARMAR JORNADA</div>
+    <div class="login-hero-sub">Liga Next Level 7 · Panel de administración</div>
+  </div>
+  <div class="login-body">
+    <div class="field">
+      <label>Contraseña de moderador</label>
+      <input type="password" id="mod-password" placeholder="Ingresa la contraseña..." onkeydown="if(event.key==='Enter')entrarPanel()">
+    </div>
+    <button class="btn-enter" onclick="entrarPanel()">Entrar →</button>
+    <div class="login-msg" id="login-msg"></div>
+  </div>
+</div>
+
+<div id="app-screen">
+  <div class="app-header">
+    <div>
+      <div class="app-header-title">🛠️ Armar Jornada</div>
+      <div class="app-header-sub">Liga Next Level 7</div>
+    </div>
+    <a href="partidos.html" class="btn-logout">← Partidos</a>
+  </div>
+
+  <div class="panel">
+
+    <!-- EDITAR / PROGRAMAR PARTIDO -->
+    <div>
+      <div class="mod-section-title" style="color:var(--neon)">🔁 Editar / Programar un partido</div>
+      <div class="mod-hint">Trae el partido por su ID, o elige los dos equipos que se enfrentan, y confirma los nombres antes de guardar — así no se mueve el partido equivocado.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
+        <div>
+          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🗓️ Jornada (opcional)</label>
+          <input type="number" id="armando-jornada" class="msg-input" style="width:100%" min="1" placeholder="Ej. 2" oninput="actualizarSelectsPorJornada()">
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">📆 Fecha (sombrea equipos que ya juegan ese día)</label>
+          <input type="date" id="armando-fecha" class="msg-input" style="width:100%" oninput="actualizarSelectsPorJornada()">
+        </div>
+      </div>
+      <div id="armando-descansa" style="font-size:12px;color:var(--neon);margin-bottom:12px;min-height:16px"></div>
+      <div id="armando-confirmaciones" style="font-size:12px;margin-bottom:12px"></div>
+
+      <div style="margin-bottom:12px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
+        <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🔢 Traer partido por ID (el que sale en el reporte)</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="buscar-id-partido" list="lista-ids-partido" class="msg-input" style="flex:1" inputmode="numeric" autocomplete="off" placeholder="Escribe o elige el ID. Ej. 26" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarPartidoPorId();}" onchange="buscarPartidoPorId()">
+          <button type="button" onclick="buscarPartidoPorId()" style="padding:10px 16px;background:var(--dark);border:1px solid rgba(94,181,13,.35);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Traer →</button>
+        </div>
+        <datalist id="lista-ids-partido"></datalist>
+        <div class="mod-hint" style="margin:6px 0 0">Trae el partido directo para programarlo. Si arriba pones Jornada y Fecha, se usan como sugerencia. Con el mismo ID puedes volver a programar uno ya programado.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div>
+          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo A</label>
+          <select id="buscar-equipo-a" class="msg-input" style="width:100%" onchange="actualizarSelectsPorJornada(); buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo B</label>
+          <select id="buscar-equipo-b" class="msg-input" style="width:100%" onchange="buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
+        </div>
+      </div>
+      <div id="buscar-resultado"></div>
+    </div>
+
+    <!-- ARMAR ROL DEL DOMINGO -->
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
+      <div class="mod-section-title" style="color:var(--neon)">📋 Armar Rol del Domingo (cartel)</div>
+
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="vbtn active" id="vbtn1" onclick="setVuelta(1)">🔜 Vuelta 1</button>
+        <button class="vbtn" id="vbtn2" onclick="setVuelta(2)">🔄 Vuelta 2</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <label style="font-size:12px;color:var(--g400);white-space:nowrap">📆 Fecha:</label>
+        <input type="date" id="rol-fecha" class="msg-input" style="flex:1;padding:8px 12px;font-size:13px">
+      </div>
+
+      <div id="rol-slots" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="addSlot()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(94,181,13,0.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:600;cursor:pointer">+ Agregar horario</button>
+        <button onclick="autoRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(167,139,250,0.3);border-radius:var(--rs);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer">⚡ Auto-proponer rol</button>
+      </div>
+
+      <div id="rol-preview-wrap" style="display:none;margin-top:16px">
+        <div class="mod-section-title">👁️ Vista previa</div>
+        <div id="rol-preview" style="background:var(--dark2);border:1px solid rgba(94,181,13,0.2);border-radius:var(--r);padding:14px"></div>
+
+        <div class="mod-section-title" style="margin-top:16px">🖼️ Cartel de la jornada</div>
+        <div class="cartel-wrap-scroll">
+          <div class="cartel-poster" id="cartel-poster"></div>
+        </div>
+        <div id="cartel-paginas-aviso" style="font-size:11px;color:var(--neon);margin-top:8px;text-align:center"></div>
+
+        <button class="btn-descargar-cartel" onclick="descargarCartelPNG()">📥 Descargar cartel PNG</button>
+      </div>
+    </div>
+
+    <!-- CÉDULA DE JORNADA -->
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
+      <div class="mod-section-title" style="color:var(--neon)">📋 Cédula arbitral (para el árbitro)</div>
+      <div class="mod-hint">Formato oficial de la liga, un encuentro por hoja carta. Trae de la hoja "Jugadores" el N°, nombre, apodo y posición de cada equipo, y deja en blanco G / A / R para que el árbitro anote a mano, más resultado final, observaciones y firmas. Salen primero los encuentros del Campo 1 y luego los del Campo 2 (solo encuentros ya programados). Puedes elegirla por jornada o por fecha, imprimirla o descargarla en PNG.</div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <select id="cedula-tipo" class="msg-input" style="flex:0 0 130px" onchange="cambiarCedulaTipo()"><option value="jornada">Por jornada</option><option value="fecha">Por fecha</option></select>
+        <select id="cedula-jornada" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona jornada —</option></select>
+        <select id="cedula-fecha" class="msg-input" style="flex:1;min-width:140px;display:none"><option value="">— Selecciona fecha —</option></select>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <button onclick="generarCedulaJornada('imprimir')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>
+        <button onclick="generarCedulaJornada('png')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">📥 Generar PNG</button>
+      </div>
+      <div id="cedula-aviso" style="font-size:12px;color:var(--g500);text-align:center;min-height:16px"></div>
+    </div>
+
+    <!-- REPORTE DE CONFIRMACIÓN DE ENCUENTROS -->
+    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px;margin-top:20px">
+      <div class="mod-section-title" style="color:var(--neon)">📑 Reporte de Confirmación de Encuentros</div>
+      <div class="mod-hint">Documento formal con cada encuentro programado y si cada equipo ya confirmó su asistencia (lee las confirmaciones en el momento). Puedes imprimirlo o descargarlo como PNG, por jornada o por fecha.</div>
+      <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <select id="cf-tipo" class="msg-input" style="flex:0 0 130px" onchange="cambiarCfTipo()"><option value="jornada">Por jornada</option><option value="fecha">Por fecha</option></select>
+        <select id="cf-jornada" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona jornada —</option></select>
+        <select id="cf-fecha" class="msg-input" style="flex:1;min-width:140px;display:none"><option value="">— Selecciona fecha —</option></select>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:10px">
+        <button onclick="cfReporte('imprimir')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>
+        <button onclick="cfReporte('png')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">📥 Generar PNG</button>
+      </div>
+      <div id="cf-aviso" style="font-size:12px;color:var(--g500);text-align:center;min-height:16px"></div>
+    </div>
+
+  </div>
+</div>
 
 <script>
-// ═══════════════════════════════════════════════
-//  CONFIGURACIÓN
-// ═══════════════════════════════════════════════
-const PUB = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub';
-const URL_EQUIPOS  = `${PUB}?gid=1894947293&single=true&output=csv`;
-const URL_PARTIDOS = `${PUB}?gid=1362473459&single=true&output=csv`;
-// El torneo comenzó el domingo 20/09/2026 = Fecha 1 = Jornada 1. Cada domingo avanza una fecha.
-const FECHA_INICIO = '20/09/2026';
+// ════════════════════════════════
+//  CONFIG
+// ════════════════════════════════
+const SHEET_ID     = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
+const GID_EQUIPOS  = '1894947293';
+const GID_PARTIDOS = '1362473459';
+const MOD_PASS     = 'nl7admin';
+const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd1NDZg1IY2_y_VGc5xX7b_pmV85PE69c_10Aw58vG8mFPO79K2/exec'; // mismo Apps Script de nextlevelenvivo.html y chat-next-level-7.html
 
-const $ = id => document.getElementById(id);
-const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const p2 = n => String(n).padStart(2, '0');
-const DIA_MS = 86400000;
-const DIAS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-let EQUIPOS = [], PARTIDOS = [];
+// ════════════════════════════════
+//  ESTADO LOCAL
+// ════════════════════════════════
+let S = {
+  teams: {},
+  allMatches: [],  // TODOS los partidos (pendiente/programado/jugado)
+  matches: [],     // solo los pendientes (para el Rol del Domingo)
+  vuelta: 1,
+  matchToProgram: null,
+  players: {},       // jugadores por id de equipo (hoja "Jugadores"), ordenados por número
+  playersError: false
+};
+
+// ════════════════════════════════
+//  GOOGLE SHEETS
+// ════════════════════════════════
+async function fetchCSV(gid){
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`);
+  if(!r.ok) throw new Error('No se pudo leer el Sheet (gid='+gid+'). Asegúrate de que sea público.');
+  return parseCSV(await r.text());
+}
+async function fetchCSVHoja(nombreHoja){
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombreHoja)}`);
+  if(!r.ok) throw new Error('No se pudo leer la hoja "'+nombreHoja+'".');
+  return parseCSV(await r.text());
+}
+function normTxt(t){ return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+function pick(r, keys){ for(const k of keys){ if(r[k]!==undefined && String(r[k]).trim()!=='') return String(r[k]).trim(); } return ''; }
+
+async function cargarJugadores(){
+  S.players = {}; S.playersError = false;
+  try{
+    const filas = await fetchCSVHoja('Jugadores');
+    const porNombre = {};
+    Object.values(S.teams).forEach(t=>{ porNombre[normTxt(t.nombre)] = String(t.id); });
+    filas.forEach(r=>{
+      const nombre = pick(r,['nombre','jugador']);
+      if(!nombre) return;
+      const eqRaw = pick(r,['equipo','id_equipo']);
+      const eqId = S.teams[eqRaw] ? eqRaw : (porNombre[normTxt(eqRaw)] || '');
+      if(!eqId) return;   // equipo dado de baja o no encontrado
+      (S.players[eqId] = S.players[eqId] || []).push({
+        nombre,
+        numero: pick(r,['numero','número','n°','no','num']),
+        posicion: pick(r,['posicion','posición']),
+        apodo: pick(r,['apodo'])
+      });
+    });
+    Object.values(S.players).forEach(l=>l.sort((a,b)=>{
+      const na = parseInt(a.numero,10), nb = parseInt(b.numero,10);
+      return (isNaN(na)?9999:na)-(isNaN(nb)?9999:nb) || a.nombre.localeCompare(b.nombre,'es');
+    }));
+  }catch(e){
+    console.error(e);
+    S.playersError = true;
+  }
+}
 
 function parseCSV(text){
-  const rows = []; let row = [], cur = '', q = false;
-  for (let i = 0; i < text.length; i++){
-    const ch = text[i];
-    if (q){ if (ch === '"'){ if (text[i + 1] === '"'){ cur += '"'; i++; } else q = false; } else cur += ch; }
-    else if (ch === '"') q = true;
-    else if (ch === ','){ row.push(cur); cur = ''; }
-    else if (ch === '\n'){ row.push(cur); rows.push(row); row = []; cur = ''; }
-    else if (ch !== '\r') cur += ch;
+  const lines=text.trim().split('\n');
+  if(lines.length<2)return[];
+  const sep=lines[0].includes('\t')?'\t':',';
+  const headers=csvLine(lines[0],sep).map(h=>h.toLowerCase().trim().replace(/\s+/g,'_'));
+  return lines.slice(1).map(l=>{
+    const vals=csvLine(l,sep);
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=(vals[i]||'').trim().replace(/^"|"$/g,''));
+    return obj;
+  }).filter(r=>Object.values(r).some(v=>v));
+}
+function csvLine(line,sep){
+  const res=[];let cur='';let q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){q=!q}else if(c===sep&&!q){res.push(cur);cur=''}else{cur+=c}
   }
-  if (cur !== '' || row.length){ row.push(cur); rows.push(row); }
-  const [cab, ...resto] = rows;
-  return resto.filter(r => r.some(c => c.trim())).map(r => { const o = {}; cab.forEach((h, i) => o[h.trim()] = (r[i] || '').trim()); return o; });
+  res.push(cur);
+  return res;
 }
-function parseFecha(f){
-  const p = String(f || '').trim().split('/').map(x => parseInt(x, 10));
-  if (p.length !== 3 || p.some(isNaN)) return null;
-  return new Date(p[2], p[1] - 1, p[0], 12);
-}
-const fmt = d => d ? `${p2(d.getDate())}/${p2(d.getMonth() + 1)}/${d.getFullYear()}` : '—';
-const inicio = () => parseFecha(FECHA_INICIO);
-// número de fecha (domingo) al que pertenece una fecha calendario
-const fechaNum = d => d ? Math.floor(Math.round((d - inicio()) / DIA_MS) / 7) + 1 : null;
-const fechaDeJornada = j => new Date(inicio().getTime() + (j - 1) * 7 * DIA_MS);
-function hora12(h){
-  const m = String(h || '').match(/(\d+):(\d+)/); if (!m) return '';
-  let H = parseInt(m[1], 10); const ap = H >= 12 ? 'pm' : 'am'; H = H % 12 || 12; return `${H}:${m[2]} ${ap}`;
-}
-const esBaja = e => (e['Status'] || '').trim().toLowerCase() === 'baja';
-const idDe = e => String(e['ID_Equipo']).trim();
 
-// ═══════════════════════════════════════════════
-//  CARGA
-// ═══════════════════════════════════════════════
+// ════════════════════════════════
+//  INIT
+// ════════════════════════════════
 async function init(){
-  try {
-    const [te, tp] = await Promise.all([ fetch(URL_EQUIPOS).then(r => r.text()), fetch(URL_PARTIDOS).then(r => r.text()) ]);
-    EQUIPOS = parseCSV(te).filter(e => idDe(e)); PARTIDOS = parseCSV(tp).filter(p => p['Equipo_Local'] && p['Equipo_Visita']);   // incluye pendientes aunque no tengan jornada
-    const ord = [...EQUIPOS].sort((a, b) => a['Nombre'].localeCompare(b['Nombre'], 'es'));
-    $('sel-equipo').innerHTML = '<option value="">— Selecciona un equipo —</option>' + ord.map(e => `<option value="${esc(idDe(e))}">${esc(e['Nombre'])}${esBaja(e) ? ' (baja)' : ''}</option>`).join('');
-    msg('Elige un equipo y presiona "Ver reporte".');
-  } catch (e){ $('sel-equipo').innerHTML = '<option value="">No se pudieron cargar los datos</option>'; msg('No se pudieron cargar los datos. Revisa tu conexión.', true); }
-}
-function msg(t, err){ $('msg').textContent = t; $('msg').className = err ? 'err' : ''; }
-function cambiarTipo(){
-  const t = $('tipo').value;
-  $('campo-equipo').style.display = t === 'equipo' ? '' : 'none';
-  $('campo-fechas').style.display = $('campo-doble').style.display = t === 'propuesta' ? '' : 'none';
-}
-
-// ═══════════════════════════════════════════════
-//  ANÁLISIS: jornadas vs fechas
-// ═══════════════════════════════════════════════
-const estadoDe = p => (p['Estado'] || '').trim().toLowerCase();
-
-// Resultado visto desde el equipo idE
-function resultado(p, idE){
-  const local = String(p['Equipo_Local']).trim() === idE;
-  const gl = parseInt(p['Goles_Local'], 10), gv = parseInt(p['Goles_Visita'], 10);
-  const gf = local ? gl : gv, gc = local ? gv : gl;
-  const gp = (p['Ganado_Por'] || '').trim().toLowerCase();
-  const tipo = gp === 'penales' ? 'penales' : gp === 'default' ? 'default' : 'normal';
-  const res = (isNaN(gf) || isNaN(gc)) ? 'e' : gf > gc ? 'g' : gf < gc ? 'p' : 'e';
-  // Si terminó empatado y se definió en penales: sigue siendo EMPATE; los penales son el desempate (ganó / perdió).
-  let pen = null;
-  if (tipo === 'penales' && res === 'e'){ const w = String(p['Penales'] || '').trim(); if (w) pen = (w === idE) ? 'g' : 'p'; }
-  return { gf, gc, tipo, res, pen, rival: local ? String(p['Equipo_Visita']).trim() : String(p['Equipo_Local']).trim() };
-}
-
-function contexto(){
-  const hoy = new Date(); hoy.setHours(12, 0, 0, 0);
-  const jugados = PARTIDOS.filter(p => estadoDe(p) === 'jugado');
-  const J = jugados.length ? Math.max(...jugados.map(p => Number(p['Jornada']))) : 0;   // jornada más avanzada ya jugada en la liga
-  return { hoy, J, fechaHoy: Math.max(0, fechaNum(hoy)) };
-}
-
-const involucra = (p, id) => String(p['Equipo_Local']).trim() === id || String(p['Equipo_Visita']).trim() === id;
-const rivalDe = (p, id) => String(p['Equipo_Local']).trim() === id ? String(p['Equipo_Visita']).trim() : String(p['Equipo_Local']).trim();
-const cancelado = p => estadoDe(p).includes('cancel');
-const activosIds = () => EQUIPOS.filter(e => !esBaja(e)).map(idDe);
-const nombreEq = id => (EQUIPOS.find(e => idDe(e) === id) || {})['Nombre'] || ('Equipo ' + id);
-// Una jornada está "vencida" cuando su domingo ya pasó: desde ese momento todos los equipos activos deben haberla jugado.
-const vencidaJ = j => fechaDeJornada(j) < contexto().hoy;
-const ultimaVencida = () => { let n = 0; while (vencidaJ(n + 1)) n++; return n; };
-
-// ¿El equipo tiene partido válido en la jornada j? (jugado, o programado contra un equipo activo)
-function tienePartidoJ(idT, j, actSet){
-  return PARTIDOS.some(p => Number(p['Jornada']) === j && !cancelado(p) && involucra(p, idT) && (estadoDe(p) === 'jugado' || actSet.has(rivalDe(p, idT))));
-}
-// Solo hay descanso real cuando la liga tiene número impar de equipos activos y uno queda libre.
-function descansoLegitimo(j, idT){
-  const act = activosIds(); if (act.length % 2 === 0) return false;
-  const set = new Set(act), sin = act.filter(t => !tienePartidoJ(t, j, set));
-  return sin.length === 1 && sin[0] === idT;
-}
-
-// ── Clasificación de un partido NO jugado ──
-// Un partido con fecha futura se CONFIRMA (a disputar) desde el jueves anterior a su domingo; antes puede haber cambios en el rol.
-const jueveDe = d => new Date(d.getTime() - ((d.getDay() - 4 + 7) % 7) * DIA_MS);
-const confirmadoFecha = d => !!d && contexto().hoy >= jueveDe(d);
-function claseNoJugado(p){
-  const d = parseFecha(p['Fecha']), { hoy } = contexto();
-  if (!d) return 'sinfecha';
-  if (d < hoy && fmt(d) !== fmt(hoy)) return 'vencido';
-  return confirmadoFecha(d) ? 'adisputar' : 'tentativo';
-}
-
-// Empareja (máximo de parejas) a los equipos que deben la misma jornada, sin repetir rivales.
-function emparejar(ids, ok){
-  let mejor = { pares: [], n: -1 };
-  const rec = (resto, pares) => {
-    if (!resto.length){ if (pares.length > mejor.n) mejor = { pares: pares.map(x => x.slice()), n: pares.length }; return; }
-    if (pares.length + Math.floor(resto.length / 2) <= mejor.n) return;
-    const [x, ...r] = resto;
-    for (let i = 0; i < r.length; i++) if (ok(x, r[i])){ pares.push([x, r[i]]); rec(r.filter((_, k) => k !== i), pares); pares.pop(); }
-    rec(r, pares);
-  };
-  rec(ids, []);
-  const usados = new Set(mejor.pares.flat());
-  return { pares: mejor.pares, solos: ids.filter(i => !usados.has(i)) };
-}
-
-// Por cada jornada vencida: quién la debe sin tener partido, con quién podría jugarla y qué partidos ya existen.
-function crucesPendientes(){
-  const act = activosIds(); if (!act.length) return [];
-  const actSet = new Set(act);
-  const Lv = act.length % 2 === 0 ? act.length - 1 : act.length;
-  const vuelta = j => Math.floor((j - 1) / Lv);
-  const enfrentados = (x, y, j) => PARTIDOS.some(p => !cancelado(p) && Number(p['Jornada']) !== j && !isNaN(Number(p['Jornada'])) &&
-    vuelta(Number(p['Jornada'])) === vuelta(j) && involucra(p, x) && involucra(p, y));
-  const out = [], sugeridos = new Set();
-  const llave = (x, y, j) => vuelta(j) + ':' + [x, y].sort().join('-');
-  for (let j = 1; j <= ultimaVencida(); j++){
-    const delJ = PARTIDOS.filter(p => Number(p['Jornada']) === j && !cancelado(p));
-    const con = new Set();
-    delJ.forEach(p => { const x = String(p['Equipo_Local']).trim(), y = String(p['Equipo_Visita']).trim(); if (estadoDe(p) === 'jugado' || (actSet.has(x) && actSet.has(y))){ con.add(x); con.add(y); } });
-    let sin = act.filter(t => !con.has(t));
-    if (act.length % 2 === 1 && sin.length === 1) sin = [];
-    const programados = delJ.filter(p => estadoDe(p) !== 'jugado' && actSet.has(String(p['Equipo_Local']).trim()) && actSet.has(String(p['Equipo_Visita']).trim()))
-      .map(p => ({ a: String(p['Equipo_Local']).trim(), b: String(p['Equipo_Visita']).trim(), fecha: parseFecha(p['Fecha']), conf: claseNoJugado(p) === 'adisputar', p }));
-    if (!sin.length && !programados.length) continue;
-    sin.sort((x, y) => nombreEq(x).localeCompare(nombreEq(y), 'es'));
-    const ok = (x, y) => !enfrentados(x, y, j) && !sugeridos.has(llave(x, y, j));
-    const { pares, solos } = emparejar(sin, ok);
-    pares.forEach(([x, y]) => sugeridos.add(llave(x, y, j)));
-    const posibles = {}; sin.forEach(x => posibles[x] = sin.filter(y => y !== x && ok(x, y)));
-    out.push({ j, esperada: fechaDeJornada(j), sinPartido: sin, pares, solos, posibles, programados });
-  }
-  return out;
-}
-
-// Una fila por jornada para el equipo
-function analizarEquipo(idE){
-  const { J } = contexto();
-  const actSet = new Set(activosIds());
-  const suyos = PARTIDOS.filter(p => involucra(p, idE) && !cancelado(p));
-  const maxJ = Math.max(J, ultimaVencida(), ...suyos.map(p => Number(p['Jornada'])).filter(n => !isNaN(n)), 0);
-  const filas = [];
-  for (let j = 1; j <= maxJ; j++){
-    const esperada = fechaDeJornada(j), venc = vencidaJ(j);
-    const delJ = suyos.filter(x => Number(x['Jornada']) === j);
-    const p = delJ.find(x => estadoDe(x) === 'jugado') || delJ.find(x => actSet.has(rivalDe(x, idE))) || delJ[0];
-    const fila = { j, esperada, fEsp: j };
-    if (!p){ fila.tipo = !venc ? 'sinasignar' : (descansoLegitimo(j, idE) ? 'descanso' : 'sinpartido'); filas.push(fila); continue; }
-    const d = parseFecha(p['Fecha']);
-    fila.p = p; fila.fecha = d; fila.fReal = fechaNum(d);
-    if (estadoDe(p) === 'jugado'){
-      fila.tipo = 'jugado'; fila.r = resultado(p, idE);
-      fila.control = fila.fReal == null ? 'sinfecha' : j === fila.fReal ? 'tiempo' : j > fila.fReal ? 'adelanto' : 'atrasada';
-    } else {
-      const cl = claseNoJugado(p);
-      fila.rivalBaja = !actSet.has(rivalDe(p, idE));
-      if (cl === 'adisputar' && !fila.rivalBaja){ fila.tipo = 'adisputar'; fila.alCorriente = venc; }
-      else if (cl === 'vencido' || venc){ fila.tipo = 'debe'; fila.tentativo = cl === 'tentativo'; }
-      else fila.tipo = cl === 'tentativo' ? 'tentativo' : 'pendiente';
-    }
-    filas.push(fila);
-  }
-  return filas;
-}
-
-// Partidos reales que le faltan al equipo: "a disputar" (ya confirmados) y "por programar" (el resto).
-function pendientesEquipo(idE){
-  const actSet = new Set(activosIds());
-  return PARTIDOS.filter(p => involucra(p, idE) && estadoDe(p) !== 'jugado' && !cancelado(p)).map(p => {
-    const j = parseInt(p['Jornada'], 10), d = parseFecha(p['Fecha']), cl = claseNoJugado(p), rival = rivalDe(p, idE), baja = !actSet.has(rival);
-    const venc = !isNaN(j) && vencidaJ(j);
-    let tipo, grupo;
-    if (cl === 'adisputar' && !baja){ tipo = 'adisputar'; grupo = 'adisputar'; }
-    else { grupo = 'porprogramar'; tipo = (cl === 'vencido' || venc) ? 'debe' : cl === 'tentativo' ? 'tentativo' : 'pendiente'; }
-    return { p, j: isNaN(j) ? null : j, fecha: d, tipo, grupo, rival, baja, cl };
-  }).sort((x, y) => (x.fecha ? x.fecha.getTime() : 9e15) - (y.fecha ? y.fecha.getTime() : 9e15) || (x.j == null) - (y.j == null) || (x.j || 0) - (y.j || 0));
-}
-
-function resumen(filas){
-  const jug = filas.filter(f => f.tipo === 'jugado');
-  const c = k => jug.filter(f => f.r.res === k).length;
-  const disp = filas.filter(f => f.tipo === 'adisputar').sort((x, y) => x.fecha - y.fecha);
-  return {
-    jugados: jug.length, g: c('g'), e: c('e'), p: c('p'),
-    penG: jug.filter(f => f.r.pen === 'g').length, penP: jug.filter(f => f.r.pen === 'p').length,
-    gf: jug.reduce((t, f) => t + (isNaN(f.r.gf) ? 0 : f.r.gf), 0), gc: jug.reduce((t, f) => t + (isNaN(f.r.gc) ? 0 : f.r.gc), 0),
-    debe: filas.filter(f => f.tipo === 'debe' || f.tipo === 'sinpartido'),
-    progDeuda: disp.filter(f => f.alCorriente),
-    adelanto: jug.filter(f => f.control === 'adelanto'), atrasada: jug.filter(f => f.control === 'atrasada'),
-    descansos: filas.filter(f => f.tipo === 'descanso'), proximo: disp[0]
-  };
-}
-
-// ── Propuesta de programación ──
-// Mejor emparejamiento (más partidos y, a igualdad, las jornadas más atrasadas primero) por programación exacta sobre subconjuntos.
-function mejorEmparejamiento(nodos, edges){
-  const n = nodos.length, idx = {}; nodos.forEach((t, i) => idx[t] = i);
-  if (n > 24) return [];
-  const adj = Array.from({ length: n }, () => []);
-  edges.forEach(e => { const i = idx[e.a], j = idx[e.b]; adj[i].push({ j, e }); adj[j].push({ j: i, e }); });
-  const memo = new Map();
-  const f = mask => {
-    if (!mask) return { n: 0, c: 0, sel: [] };
-    if (memo.has(mask)) return memo.get(mask);
-    const low = mask & -mask, i = 31 - Math.clz32(low);
-    let mejor = f(mask & ~low);
-    adj[i].forEach(({ j, e }) => {
-      if (mask & (1 << j)){
-        const r = f(mask & ~low & ~(1 << j)), cand = { n: r.n + 1, c: r.c + e.c, sel: r.sel.concat([e]) };
-        if (cand.n > mejor.n || (cand.n === mejor.n && cand.c < mejor.c)) mejor = cand;
-      }
+  const msg = document.getElementById('load-msg');
+  try{
+    msg.textContent = 'Cargando equipos...';
+    const eq = await fetchCSV(GID_EQUIPOS);
+    eq.forEach(r=>{
+      const id=r['id_equipo']||r['id'];
+      if(!id) return;
+      if((r['status']||'').trim().toLowerCase()==='baja') return; // equipos de baja no se arman en jornadas
+      S.teams[id]={id, nombre:r['nombre']||'Equipo '+id, logo:r['url']||r['logo']||'', descripcion:r['descripción']||r['descripcion']||''};
     });
-    memo.set(mask, mejor); return mejor;
-  };
-  return f((1 << n) - 1).sel;
-}
 
-// Asigna una jornada a cada partido pendiente de modo que ningún equipo repita jornada (búsqueda con retroceso;
-// respeta la jornada del rol cuando es posible). Si no hay solución completa, asigna las que puede.
-function asignarJornadas(pend, ocup, rango, pref){
-  const usadas = {}; Object.keys(ocup).forEach(t => usadas[t] = new Set(ocup[t]));
-  const opciones = (i, asign) => rango.filter(j => !usadas[pend[i].a].has(j) && !usadas[pend[i].b].has(j));
-  let asign = new Map(), nodos = 0;
-  const rec = () => {
-    if (asign.size === pend.length) return true;
-    if (++nodos > 20000) return false;
-    let mi = -1, mo = null;
-    for (let i = 0; i < pend.length; i++){
-      if (asign.has(i)) continue;
-      const o = opciones(i); if (!o.length) return false;
-      if (!mo || o.length < mo.length){ mi = i; mo = o; if (o.length === 1) break; }
-    }
-    const pr = pref.get(mi), orden = (pr != null && mo.includes(pr)) ? [pr, ...mo.filter(j => j !== pr)] : mo;
-    for (const j of orden){
-      asign.set(mi, j); usadas[pend[mi].a].add(j); usadas[pend[mi].b].add(j);
-      if (rec()) return true;
-      asign.delete(mi); usadas[pend[mi].a].delete(j); usadas[pend[mi].b].delete(j);
-      if (nodos > 20000) return false;
-    }
-    return false;
-  };
-  if (rec()) return asign;
-  // sin solución completa: asignación voluntariosa (la más restringida primero)
-  Object.keys(ocup).forEach(t => usadas[t] = new Set(ocup[t]));
-  asign = new Map();
-  for (;;){
-    let mi = -1, mo = null;
-    for (let i = 0; i < pend.length; i++){ if (asign.has(i)) continue; const o = opciones(i); if (o.length && (!mo || o.length < mo.length)){ mi = i; mo = o; } }
-    if (mi < 0) break;
-    const pr = pref.get(mi), j = (pr != null && mo.includes(pr)) ? pr : mo[0];
-    asign.set(mi, j); usadas[pend[mi].a].add(j); usadas[pend[mi].b].add(j);
+    msg.textContent = 'Cargando partidos...';
+    const pt = await fetchCSV(GID_PARTIDOS);
+    S.allMatches = pt
+      .map(r=>({
+        id:r['id_partido']||r['id']||'',
+        jornada:r['jornada']||'',
+        local:r['equipo_local']||r['local']||'',
+        visita:r['equipo_visita']||r['visita']||'',
+        ll:r['ll']||'', lv:r['lv']||'',
+        vuelta:r['vuelta']||'1',
+        estado:r['estado']||'',
+        fecha:r['fecha']||'',
+        hora:r['hora']||'',
+        cancha:r['cancha']||''
+      }))
+      .filter(m=>m.local&&m.visita);
+    S.matches = S.allMatches.filter(m=>(m.estado||'').toLowerCase()==='pendiente');
+
+    msg.textContent = 'Cargando jugadores...';
+    await cargarJugadores();
+
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('login-screen').style.display='block';
+  }catch(e){
+    console.error(e);
+    msg.textContent = 'Error al cargar datos: '+e.message;
   }
-  return asign;
-}
-
-function planProgramacion(nFechas, doble){
-  const act = activosIds().sort((x, y) => nombreEq(x).localeCompare(nombreEq(y), 'es'));
-  if (act.length < 2) return null;
-  const actSet = new Set(act), { hoy } = contexto();
-  const L = act.length % 2 === 0 ? act.length - 1 : act.length;                 // jornadas por vuelta
-  const num = p => { const t = String(p['Jornada'] || '').trim(); return t === '' ? NaN : Number(t); }, key = (x, y) => [x, y].sort().join('-');   // jornada vacía = sin jornada
-  const validos = PARTIDOS.filter(p => !cancelado(p) && actSet.has(String(p['Equipo_Local']).trim()) && actSet.has(String(p['Equipo_Visita']).trim()));
-  const todos = []; for (let i = 0; i < act.length; i++) for (let k = i + 1; k < act.length; k++) todos.push([act[i], act[k]]);
-
-  // vuelta en curso: la primera donde todavía hay parejas sin jugar
-  let v = 0;
-  for (; v < 4; v++){
-    const lo = v * L + 1, hi = (v + 1) * L;
-    const jug = new Set(validos.filter(p => estadoDe(p) === 'jugado' && num(p) >= lo && num(p) <= hi).map(p => key(String(p['Equipo_Local']).trim(), String(p['Equipo_Visita']).trim())));
-    if (todos.some(([x, y]) => !jug.has(key(x, y)))) break;
-  }
-  const lo = v * L + 1, hi = (v + 1) * L, rango = []; for (let j = lo; j <= hi; j++) rango.push(j);
-  const enV = validos.filter(p => (num(p) >= lo && num(p) <= hi) || isNaN(num(p)));
-  const ocup = {}; act.forEach(t => ocup[t] = new Set());
-  const hecho = new Set(), fijos = [], previo = {};
-  enV.forEach(p => {
-    const x = String(p['Equipo_Local']).trim(), y = String(p['Equipo_Visita']).trim();
-    if (estadoDe(p) === 'jugado'){ hecho.add(key(x, y)); if (!isNaN(num(p))){ ocup[x].add(num(p)); ocup[y].add(num(p)); } }
-    else if (claseNoJugado(p) === 'adisputar'){ hecho.add(key(x, y)); fijos.push(p); if (!isNaN(num(p))){ ocup[x].add(num(p)); ocup[y].add(num(p)); } }
-    else previo[key(x, y)] = { a: x, b: y, j: isNaN(num(p)) ? null : num(p), id: String(p['ID_Partido'] || '').trim() };       // conserva local/visita y la jornada del rol
-  });
-  const missing = t => rango.filter(j => !ocup[t].has(j));
-  const comun = (x, y) => missing(x).filter(j => !ocup[y].has(j));
-  let pend = todos.filter(([x, y]) => !hecho.has(key(x, y))).map(([x, y]) => { const pv = previo[key(x, y)]; return { a: pv ? pv.a : x, b: pv ? pv.b : y, pref: pv ? pv.j : null, id: pv ? pv.id : '' }; });
-
-  // partidos ya confirmados sin jornada: se les asigna la jornada atrasada común
-  const publicados = fijos.map(p => {
-    const x = String(p['Equipo_Local']).trim(), y = String(p['Equipo_Visita']).trim();
-    let j = num(p);
-    if (isNaN(j)){ const cm = comun(x, y); j = cm.length ? Math.min(...cm) : null; if (j != null){ ocup[x].add(j); ocup[y].add(j); } }
-    return { a: x, b: y, j, fecha: parseFecha(p['Fecha']), hora: p['Hora'], cancha: p['Cancha'], id: String(p['ID_Partido'] || '').trim() };
-  }).sort((x, y) => x.fecha - y.fecha);
-
-  // jornada de cada partido pendiente (global, sin que un equipo repita jornada)
-  const pref = new Map(); pend.forEach((e, i) => { if (e.pref != null) pref.set(i, e.pref); });
-  const asign = asignarJornadas(pend, ocup, rango, pref);
-  pend = pend.map((e, i) => ({ a: e.a, b: e.b, id: e.id, j: asign.has(i) ? asign.get(i) : null }));
-
-  // domingos por proponer: los que aún no se publican (antes del jueves)
-  const domingos = [];
-  for (let k = 0; domingos.length < nFechas && k < 60; k++){ const d = fechaDeJornada(k + 1); if (d < hoy || confirmadoFecha(d)) continue; domingos.push(d); }
-  const resultado = [];
-  domingos.forEach(sdom => {
-    const fnum = fechaNum(sdom), cnt = {}; act.forEach(t => cnt[t] = 0);
-    const filasDom = [];
-    const deuda = t => pend.filter(e => (e.a === t || e.b === t) && e.j != null && fechaDeJornada(e.j) < sdom).length;
-    for (let ronda = 1; ronda <= (doble ? 2 : 1); ronda++){
-      const edges = [];
-      pend.forEach((e, i) => {
-        if (e.j == null) return;
-        const ok1 = ronda === 1 ? (cnt[e.a] === 0 && cnt[e.b] === 0) : (cnt[e.a] === 1 && cnt[e.b] === 1 && deuda(e.a) > 0 && deuda(e.b) > 0);
-        if (ok1) edges.push({ a: e.a, b: e.b, c: e.j, i, id: e.id });
-      });
-      const nodos = [...new Set(edges.flatMap(e => [e.a, e.b]))];
-      const sel = mejorEmparejamiento(nodos, edges);
-      sel.forEach(e => {
-        cnt[e.a]++; cnt[e.b]++;
-        const fj = fechaDeJornada(e.c), efecto = fj < sdom ? 'corriente' : (fj.getTime() === sdom.getTime() ? 'tiempo' : 'adelanto');
-        filasDom.push({ ronda, j: e.c, a: e.a, b: e.b, efecto, id: e.id });
-      });
-      const usadas = new Set(sel.map(e => e.i)); pend = pend.filter((_, i) => !usadas.has(i));
-    }
-    filasDom.sort((x, y) => x.ronda - y.ronda || x.j - y.j || nombreEq(x.a).localeCompare(nombreEq(y.a), 'es'));
-    const juegan = new Set(filasDom.flatMap(r => [r.a, r.b]));
-    const conPend = new Set(pend.flatMap(e => [e.a, e.b]));
-    resultado.push({ fecha: sdom, fnum, filas: filasDom,
-      sinPartido: act.filter(t => !juegan.has(t) && conPend.has(t)), terminaron: act.filter(t => !juegan.has(t) && !conPend.has(t)) });
-  });
-  const ultimo = domingos[domingos.length - 1] || hoy;
-  const conflictos = pend.filter(e => e.j == null);
-  const resumenEq = act.map(t => ({ id: t, debeDespues: pend.filter(e => (e.a === t || e.b === t) && e.j != null && fechaDeJornada(e.j) < ultimo).map(e => e.j).sort((x, y) => x - y),
-    restantes: pend.filter(e => e.a === t || e.b === t).length,
-    propuestos: resultado.reduce((n, d) => n + d.filas.filter(r => r.a === t || r.b === t).length, 0), confirmados: publicados.filter(g => g.a === t || g.b === t).length }));
-  return { v, rango, publicados, dias: resultado, conflictos, resumenEq, restantes: pend.length, domingoPublicado: publicados.length ? publicados[0].fecha : null };
-}
-
-const lista = arr => arr.length === 1 ? 'la jornada ' + arr[0] : 'las jornadas ' + arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1];
-
-// ═══════════════════════════════════════════════
-//  DOCUMENTOS
-// ═══════════════════════════════════════════════
-const ahoraTxt = () => { const a = new Date(); return `${p2(a.getDate())}/${p2(a.getMonth() + 1)}/${a.getFullYear()} ${p2(a.getHours())}:${p2(a.getMinutes())}`; };
-function encabezado(titulo, sub){
-  const { hoy, fechaHoy } = contexto();
-  return `<div class="rq-head">
-    <div><div class="rq-liga">Liga Next Level 7 · Torneo Dominical</div><div class="rq-titulo">${esc(titulo)}</div><div class="rq-sub">${sub}</div></div>
-    <div class="rq-der"><div class="rq-logos"><img src="logo-liga.png.png" alt="" onerror="this.style.display='none'"><img src="laregionallstars.png" alt="" onerror="this.style.display='none'"></div>
-      <div>Torneo iniciado el <b>${esc(FECHA_INICIO)}</b><br>Hoy: Fecha ${fechaHoy || '—'} · Emitido ${ahoraTxt()}</div></div></div>`;
-}
-const PILL = {
-  tiempo: ['v', 'EN TIEMPO'], adelanto: ['b', 'ADELANTÓ'], atrasada: ['p', 'PAGÓ ATRASADA'], debe: ['r', 'DEBE'],
-  descanso: ['g', 'DESCANSO'], programado: ['a', 'PROGRAMADO'], pendiente: ['a', 'PENDIENTE'], sinfecha: ['g', 'SIN FECHA'],
-  sinpartido: ['r', 'DEBE'], porprogramar: ['r', 'POR PROGRAMAR'], sinasignar: ['g', 'SIN ASIGNAR'],
-  adisputar: ['b', 'A DISPUTAR'], tentativo: ['g', 'TENTATIVO']
-};
-const RES = { g: ['v', 'GANÓ'], p: ['r', 'PERDIÓ'], e: ['a', 'EMPATÓ'] };
-const TIPO = { normal: 'Normal', default: 'Default', penales: 'Penales' };
-
-function docEquipo(idE){
-  const eq = EQUIPOS.find(e => idDe(e) === idE) || {};
-  const mapa = {}; EQUIPOS.forEach(e => mapa[idDe(e)] = e);
-  const filas = analizarEquipo(idE), r = resumen(filas), { hoy } = contexto();
-  const CR = crucesPendientes();
-  const misCruces = CR.filter(c => c.sinPartido.includes(idE));
-  const rivNombre = f => nombreEq(rivalDe(f.p, idE));
-
-  const textoDeuda = f => {
-    const cab = `<b>Jornada ${f.j}</b> (le correspondía el ${fmt(f.esperada)}): `;
-    if (f.tipo === 'sinpartido'){
-      const c = misCruces.find(x => x.j === f.j), par = c && c.pares.find(x => x.includes(idE));
-      let t = cab + 'no tiene partido asignado en el rol.';
-      if (par) t += ` Podría jugar contra <b>${esc(nombreEq(par.find(x => x !== idE)))}</b>, que también la debe.`;
-      else t += ' Entre los equipos que también la deben no hay un rival disponible que no haya enfrentado.';
-      return t;
-    }
-    if (f.rivalBaja) return cab + `su partido era contra ${esc(rivNombre(f))}, que está dado de baja; necesita nuevo rival.`;
-    if (f.tentativo) return cab + `tiene fecha tentativa el ${fmt(f.fecha)} vs ${esc(rivNombre(f))}; se confirma el jueves anterior.`;
-    if (f.fecha) return cab + `estaba para el ${fmt(f.fecha)} vs ${esc(rivNombre(f))} y no se jugó.`;
-    return cab + `partido vs ${esc(rivNombre(f))} sin fecha asignada.`;
-  };
-
-  let clase = '', chips = '', textos = [];
-  if (r.debe.length){
-    clase = 'debe'; chips += `<span class="rq-pill r">DEBE ${r.debe.length > 1 ? 'JORNADAS' : 'JORNADA'} ${r.debe.map(f => f.j).join(', ')}</span>`;
-    textos.push(`Debe ${lista(r.debe.map(f => f.j))} y ${r.debe.length > 1 ? 'todavía no están programadas' : 'todavía no está programada'}; hay que hablarlo con la liga.`);
-    r.debe.forEach(f => textos.push(textoDeuda(f)));
-  }
-  if (r.progDeuda.length){
-    if (!clase) clase = 'adel';
-    chips += `<span class="rq-pill b">${r.progDeuda.length > 1 ? 'JORNADAS' : 'JORNADA'} ${r.progDeuda.map(f => f.j).join(', ')} A DISPUTAR</span>`;
-    textos.push(r.progDeuda.map(f => `<b>Jornada ${f.j}</b> (le correspondía el ${fmt(f.esperada)}): ya está programada para el ${fmt(f.fecha)} vs ${esc(rivNombre(f))}; al jugarla se pone al corriente.`).join(' '));
-  }
-  if (r.adelanto.length){
-    if (!clase) clase = 'adel';
-    chips += `<span class="rq-pill b">ADELANTÓ ${r.adelanto.length > 1 ? 'JORNADAS' : 'JORNADA'} ${r.adelanto.map(f => f.j).join(', ')}</span>`;
-    textos.push(r.adelanto.map(f => `Jugó la jornada ${f.j} en la fecha ${f.fReal} (${fmt(f.fecha)}), antes de que le correspondiera (${fmt(f.esperada)}).`).join(' '));
-  }
-  if (r.atrasada.length){
-    chips += `<span class="rq-pill p">PAGÓ ATRASADA ${r.atrasada.length > 1 ? 'JORNADAS' : 'JORNADA'} ${r.atrasada.map(f => f.j).join(', ')}</span>`;
-    textos.push(r.atrasada.map(f => `La jornada ${f.j} le correspondía el ${fmt(f.esperada)} y la jugó hasta el ${fmt(f.fecha)} (fecha ${f.fReal}).`).join(' '));
-  }
-  if (!r.debe.length && !r.progDeuda.length && !r.adelanto.length){
-    chips = '<span class="rq-pill v">AL CORRIENTE</span>';
-    textos.push('Ha jugado todas las jornadas que ya le correspondían hasta hoy.');
-  } else if (!r.debe.length && !r.progDeuda.length){
-    chips = '<span class="rq-pill v">SIN ADEUDOS</span>' + chips;
-  }
-  if (r.descansos.length) textos.push(`Descansó en ${lista(r.descansos.map(f => f.j))} (descanso del rol).`);
-  if (r.proximo){
-    const p = r.proximo.p, riv = mapa[rivalDe(p, idE)] || {};
-    textos.push(`<b>Próximo partido:</b> jornada ${r.proximo.j}${r.proximo.fecha ? ' · ' + fmt(r.proximo.fecha) + ' (' + DIAS[r.proximo.fecha.getDay()] + ')' : ''}${hora12(p['Hora']) ? ' · ' + hora12(p['Hora']) : ''}${p['Cancha'] ? ' · ' + esc(p['Cancha']) : ''} vs ${esc(riv['Nombre'] || 'por definir')}.`);
-  }
-
-  const cuerpoFilas = filas.map(f => {
-    const esp = `<b>F${f.fEsp}</b><small>${fmt(f.esperada)}</small>`;
-    if (f.tipo === 'descanso') return `<tr class="fila-desc"><td class="j">J${f.j}</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px">Descanso del rol</td><td><span class="rq-pill g">DESCANSO</span></td></tr>`;
-    if (f.tipo === 'sinpartido') return `<tr class="fila-debe"><td class="j">J${f.j}</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px"><b style="display:inline;color:#b42318">Sin partido asignado en el rol — debe jugar esta jornada</b></td><td><span class="rq-pill r">DEBE</span></td></tr>`;
-    if (f.tipo === 'sinasignar') return `<tr class="fila-desc"><td class="j">J${f.j}</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px">Aún sin partido asignado</td><td><span class="rq-pill g">SIN ASIGNAR</span></td></tr>`;
-    const p = f.p, rid = rivalDe(p, idE), rv = mapa[rid] || {};
-    const rival = `<div class="rq-rival"><img src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + rid)}</span></div>`;
-    const real = f.fecha ? `<b>${fmt(f.fecha)}</b><small>${DIAS[f.fecha.getDay()]} · F${f.fReal}${hora12(p['Hora']) && f.tipo !== 'jugado' ? ' · ' + hora12(p['Hora']) : ''}</small>` : '—';
-    if (f.tipo === 'jugado'){
-      const m = (isNaN(f.r.gf) || isNaN(f.r.gc)) ? '—' : `${f.r.gf} - ${f.r.gc}`;
-      return `<tr><td class="j">J${f.j}</td><td>${esp}</td><td>${real}</td><td>${rival}</td><td class="rq-marc">${m}</td>
-        <td><span class="rq-pill ${RES[f.r.res][0]}">${RES[f.r.res][1]}</span>${f.r.pen ? `<small style="display:block;margin-top:3px;font-weight:700;color:${f.r.pen === 'g' ? '#1b6e2e' : '#b42318'}">${f.r.pen === 'g' ? 'Ganó' : 'Perdió'} en penales</small>` : ''}</td><td>${TIPO[f.r.tipo]}</td>
-        <td><span class="rq-pill ${PILL[f.control][0]}">${PILL[f.control][1]}</span></td></tr>`;
-    }
-    const nota = f.tipo === 'adisputar' && f.alCorriente ? 'Pone al corriente' : f.tentativo ? 'Tentativo' : f.rivalBaja ? 'Rival en baja' : '';
-    return `<tr class="${f.tipo === 'debe' ? 'fila-debe' : ''}"><td class="j">J${f.j}</td><td>${esp}</td><td>${real}</td><td>${rival}</td>
-      <td>—</td><td>—</td><td>—</td><td><span class="rq-pill ${PILL[f.tipo][0]}">${PILL[f.tipo][1]}</span>${nota ? `<small style="display:block;margin-top:3px;color:#8a6100;font-weight:700">${nota}</small>` : ''}</td></tr>`;
-  }).join('');
-
-  const kpis = [
-    ['', r.jugados, 'Jugados'], ['v', r.g, 'Ganados'], ['a', r.e, 'Empatados'], ['r', r.p, 'Perdidos'], ['', r.gf, 'Goles a favor'], ['', r.gc, 'Goles en contra']
-  ].map(([c, v, t]) => `<div class="rq-kpi ${c}"><b>${v}</b><span>${t}</span>${t === 'Empatados' && (r.penG || r.penP) ? `<small style="display:block;font-size:10px;color:#6b7280;margin-top:2px">${r.penG} ganó · ${r.penP} perdió en pen.</small>` : ''}</div>`).join('');
-
-  const pend = pendientesEquipo(idE), aDisp = pend.filter(x => x.grupo === 'adisputar'), porProg = pend.filter(x => x.grupo === 'porprogramar');
-  const total = r.jugados + aDisp.length + porProg.length;
-  const calendario = `<div class="rq-cal"><span><b>${r.jugados}</b> jugados</span><span class="op">+</span><span><b>${aDisp.length}</b> a disputar</span><span class="op">+</span><span><b>${porProg.length}</b> por programar</span><span class="op">=</span><span><b>${total}</b> partidos en total</span></div>`;
-
-  const hdrPend = '<table class="rq-tabla"><thead><tr><th style="width:84px">Jornada</th><th style="width:130px">Fecha y hora</th><th style="width:76px">Campo</th><th>Rival</th><th style="width:130px">Estado</th></tr></thead><tbody>';
-  const filaPend = x => {
-    const rv = mapa[x.rival] || {}, p = x.p;
-    const fh = x.fecha ? `<b>${fmt(x.fecha)}</b><small>${DIAS[x.fecha.getDay()]} · F${fechaNum(x.fecha)}${hora12(p['Hora']) ? ' · ' + hora12(p['Hora']) : ''}</small>` : '<b>Por definir</b>';
-    const k = PILL[x.tipo];
-    const nota = x.baja ? 'Rival en baja' : x.tipo === 'tentativo' ? 'Se confirma el jueves anterior' : (x.tipo === 'debe' && x.fecha && x.cl === 'vencido') ? 'Fecha ya pasada' : '';
-    return `<tr class="${x.tipo === 'debe' ? 'fila-debe' : ''}"><td class="j">${x.j != null ? 'J' + x.j : '—'}${x.j == null ? '<small>sin jornada</small>' : ''}</td><td>${fh}</td><td>${esc(p['Cancha'] || '—')}</td>
-      <td><div class="rq-rival"><img src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + x.rival)}</span></div></td>
-      <td><span class="rq-pill ${k[0]}">${k[1]}</span>${nota ? `<small style="display:block;margin-top:3px;color:#8a6100;font-weight:700">${nota}</small>` : ''}</td></tr>`;
-  };
-  const seccion = (titulo, arr, vacio) => `<div class="rq-tit">${titulo} (${arr.length})</div>` + (arr.length ? hdrPend + arr.map(filaPend).join('') + '</tbody></table>' : `<div style="padding:10px 14px;border:1px solid #a9d9b3;background:#e3f4e6;border-radius:6px;color:#1b6e2e;font-weight:700;font-size:13px">${vacio}</div>`);
-
-  return `<div class="rq-doc" style="width:900px">
-    ${encabezado('Reporte de equipo', `Jornadas, fechas y resultados${eq['Descripción'] ? ' · ' + esc(eq['Descripción']) : ''}`)}
-    <div class="rq-body">
-      <div class="rq-equipo"><img src="${esc(eq['URL'] || '')}" onerror="this.style.opacity='.15'"><div><h1>${esc(eq['Nombre'] || '')}</h1><small>${esBaja(eq) ? 'Equipo dado de baja' : 'Equipo activo'} · ${r.jugados} partido(s) jugado(s)</small></div></div>
-      <div class="rq-kpis">${kpis}</div>
-      ${calendario}
-      <div class="rq-situacion ${clase}"><div class="chips">${chips}</div>${textos.map(t => `<p>${t.replace(/\.\.(?=\s*$)/, '.')}</p>`).join('')}</div>
-      <table class="rq-tabla"><thead><tr><th style="width:42px">Jor.</th><th style="width:96px">Le correspondía</th><th style="width:100px">Se jugó</th><th>Rival</th><th style="width:70px">Marcador</th><th style="width:112px">Resultado</th><th style="width:62px">Tipo</th><th style="width:118px">Control</th></tr></thead><tbody>${cuerpoFilas}</tbody></table>
-      ${seccion('A disputar', aDisp, 'No tiene partidos confirmados por disputar.')}
-      ${seccion('Por programar', porProg, '✔ No tiene partidos por programar.')}
-      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha; la jornada N corresponde a la fecha N. <b>A disputar</b>: partido con fecha que ya se confirmó; se confirma desde el <b>jueves</b> anterior a su domingo (antes puede haber cambios en el rol y cuenta como <b>por programar</b>). <b>En tiempo</b>: jornada = fecha. <b>Adelantó</b>: jugó una jornada mayor a la fecha. <b>Pagó atrasada</b>: jugó una jornada menor a la fecha. <b>Debe</b>: la jornada ya correspondía y todavía no está programada (sin partido, sin fecha, fecha pasada o solo tentativa). <b>Descanso</b>: solo cuando la liga tiene un número impar de equipos. Un partido empatado que se define en penales cuenta como <b>empate</b>; los penales se muestran como desempate. Default = victoria por incomparecencia. Jugados + a disputar + por programar = total de partidos del equipo.</div>
-    </div>
-    <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
-}
-
-function docGeneral(){
-  const activos = EQUIPOS.filter(e => !esBaja(e)).sort((x, y) => x['Nombre'].localeCompare(y['Nombre'], 'es'));
-  const { J } = contexto();
-  const CR = crucesPendientes();
-  const datos = activos.map(e => { const f = analizarEquipo(idDe(e)), pe = pendientesEquipo(idDe(e)); return { e, f, r: resumen(f), disp: pe.filter(x => x.grupo === 'adisputar').length, prog: pe.filter(x => x.grupo === 'porprogramar').length }; });
-  const maxJ = Math.max(J, ultimaVencida(), ...datos.map(d => d.f.length), 1);
-  const SIM = { tiempo: ['✔', '#1f7a35'], adelanto: ['⏩', '#1e4e8c'], atrasada: ['↩', '#5b3a99'], debe: ['✖', '#c0392b'], sinpartido: ['✖', '#c0392b'], descanso: ['–', '#9ca3af'], adisputar: ['○', '#1e4e8c'], tentativo: ['◌', '#9ca3af'], pendiente: ['◌', '#9ca3af'], sinasignar: ['·', '#c4c9d0'], sinfecha: ['?', '#9ca3af'] };
-  const cab = Array.from({ length: maxJ }, (_, i) => `<th>J${i + 1}<small style="display:block;font-size:9px;color:#6b7280;font-weight:500">${p2(fechaDeJornada(i + 1).getDate())}/${p2(fechaDeJornada(i + 1).getMonth() + 1)}</small></th>`).join('');
-  const filas = datos.map(({ e, f, r, disp, prog }) => {
-    const celdas = Array.from({ length: maxJ }, (_, i) => {
-      const x = f.find(y => y.j === i + 1); if (!x) return '<td class="cel" style="color:#d1d5db">·</td>';
-      const k = x.tipo === 'jugado' ? x.control : x.tipo; const [sm, c] = SIM[k] || ['?', '#999'];
-      return `<td class="cel" style="color:${c}">${sm}</td>`;
-    }).join('');
-    const est = r.debe.length ? `<span class="rq-pill r">DEBE ${r.debe.map(x => 'J' + x.j).join(', ')}</span>`
-      : r.progDeuda.length ? `<span class="rq-pill b">A DISPUTAR ${r.progDeuda.map(x => 'J' + x.j).join(', ')}</span>`
-      : r.adelanto.length ? `<span class="rq-pill b">ADELANTADO</span>` : '<span class="rq-pill v">AL CORRIENTE</span>';
-    return `<tr><td class="eq"><div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'])}</span></div></td>${celdas}<td><b>${r.jugados}</b></td><td>${r.g}-${r.e}-${r.p}</td><td><b>${disp}</b></td><td><b>${prog}</b></td><td>${est}</td></tr>`;
-  }).join('');
-  const nDebe = datos.filter(d => d.r.debe.length).length, nProg = datos.filter(d => !d.r.debe.length && d.r.progDeuda.length).length;
-  const nAdel = datos.filter(d => !d.r.debe.length && !d.r.progDeuda.length && d.r.adelanto.length).length, nOk = datos.length - nDebe - nProg - nAdel;
-  const kpis = [['', datos.length, 'Equipos activos'], ['v', nOk, 'Al corriente'], ['', nAdel, 'Adelantados'], ['a', nProg, 'Se ponen al corriente (a disputar)'], ['r', nDebe, 'Con adeudos sin programar']]
-    .map(([c, v, t]) => `<div class="rq-kpi ${c}" style="flex:1"><b>${v}</b><span>${t}</span></div>`).join('');
-  const ancho = Math.max(900, 250 + maxJ * 50 + 450);
-
-  const par = (x, y) => `${esc(nombreEq(x))} <b>vs</b> ${esc(nombreEq(y))}`;
-  const filasC = CR.map(c => {
-    const prog = c.programados.map(g => `${par(g.a, g.b)} <span style="color:#6b7280">· ${g.fecha ? fmt(g.fecha) : 'sin fecha'} (${g.conf ? 'a disputar' : 'por programar'})</span>`).join('<br>') || '—';
-    const sug = c.pares.map(pp => par(pp[0], pp[1])).concat(c.solos.map(id => `<span style="color:#b42318">${esc(nombreEq(id))}: sin rival disponible</span>`)).join('<br>') || '—';
-    return `<tr><td class="j">J${c.j}<small>${fmt(c.esperada)}</small></td><td style="text-align:left;padding-left:12px">${c.sinPartido.map(id => esc(nombreEq(id))).join(', ') || '—'}</td><td style="text-align:left;padding-left:12px">${sug}</td><td style="text-align:left;padding-left:12px">${prog}</td></tr>`;
-  }).join('');
-  const seccionCruces = `<div class="rq-tit" style="margin-top:22px">Jornadas pendientes y cruces sugeridos</div>` +
-    (CR.length ? `<table class="rq-tabla"><thead><tr><th style="width:84px">Jornada</th><th>Equipos que la deben (sin partido)</th><th>Cruce sugerido</th><th>Partidos ya existentes de esa jornada</th></tr></thead><tbody>${filasC}</tbody></table>
-      <div class="rq-leyenda" style="margin-top:10px"><b>Cruces sugeridos:</b> se emparejan equipos que deben la misma jornada, no tienen partido asignado y todavía no se han enfrentado en esta vuelta. Para una programación completa de las siguientes fechas usa el reporte <b>Propuesta de programación</b>.</div>`
-      : '<div style="padding:10px 14px;border:1px solid #a9d9b3;background:#e3f4e6;border-radius:6px;color:#1b6e2e;font-weight:700;font-size:13px">✔ No hay jornadas pendientes por programar.</div>');
-
-  return `<div class="rq-doc" style="width:${ancho}px">
-    ${encabezado('Control de jornadas por equipo', 'Quién va al corriente, quién adelantó y quién debe')}
-    <div class="rq-body">
-      <div style="display:flex;gap:10px;margin-bottom:16px">${kpis}</div>
-      <table class="rq-tabla rq-mx"><thead><tr><th style="text-align:left;padding-left:14px">Equipo</th>${cab}<th style="width:46px">PJ</th><th style="width:66px">G-E-P</th><th style="width:56px">A disp.</th><th style="width:58px">Por prog.</th><th style="width:140px">Situación</th></tr></thead><tbody>${filas}</tbody></table>
-      <div class="rq-sim"><span><b style="color:#1f7a35">✔</b> En tiempo</span><span><b style="color:#1e4e8c">⏩</b> Adelantó</span><span><b style="color:#5b3a99">↩</b> Pagó atrasada</span><span><b style="color:#c0392b">✖</b> Debe (sin programar)</span><span><b style="color:#1e4e8c">○</b> A disputar</span><span><b style="color:#9ca3af">◌</b> Por programar</span><span><b style="color:#9ca3af">–</b> Descanso</span></div>
-      ${seccionCruces}
-      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha; bajo cada jornada aparece el domingo que le corresponde. <b>○ A disputar</b>: partido ya confirmado (se confirma desde el jueves anterior a su domingo). <b>✖ Debe</b>: la jornada ya correspondía y no está programada. <b>◌ Por programar</b>: sin fecha, con fecha tentativa (antes del jueves) o todavía sin confirmar. PJ = jugados; G-E-P = ganados, empatados y perdidos; A disp. = partidos confirmados; Por prog. = partidos por programar. PJ + A disp. + Por prog. = total de partidos. Los equipos dados de baja no se incluyen.</div>
-    </div>
-    <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
-}
-
-const celdaId = id => id ? `<td class="n" style="font-weight:800;color:#1f2933;font-size:13px">${esc(id)}</td>` : `<td class="n" style="color:#a87500;font-size:11px">nuevo<small style="display:block;font-size:10px">no está en la hoja</small></td>`;
-
-function docDomingo(){
-  const P = planProgramacion(1, false);
-  const mapa = {}; EQUIPOS.forEach(e => mapa[idDe(e)] = e);
-  const dia = P && P.dias[0];
-  if (!P || !dia) return `<div class="rq-doc" style="width:900px">${encabezado('Rol propuesto del próximo domingo', 'Sin datos suficientes')}<div class="rq-body"><p>No hay un próximo domingo por proponer.</p></div></div>`;
-  const jug = {}; P.resumenEq.forEach(x => jug[x.id] = { jugados: resumen(analizarEquipo(x.id)).jugados, conf: x.confirmados });
-  const pub = P.domingoPublicado ? fmt(P.domingoPublicado) : null;
-  const eqCel = id => {
-    const e = mapa[id] || {}, q = jug[id] || { jugados: 0, conf: 0 };
-    return `<div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><div><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span><small style="display:block;text-align:left;color:#6b7280;font-size:11px;margin-top:1px">Lleva ${q.jugados} jugados${q.conf && pub ? ' + ' + q.conf + ' el ' + pub.slice(0, 5) : ''}</small></div></div>`;
-  };
-  const efecto = { corriente: ['v', 'PONE AL CORRIENTE'], tiempo: ['g', 'EN TIEMPO'], adelanto: ['b', 'ADELANTA'] };
-  const obs = r => {
-    const esp = fmt(fechaDeJornada(r.j));
-    return r.efecto === 'corriente' ? `Jornada ${r.j} que ambos debían (le correspondía el ${esp}).`
-      : r.efecto === 'tiempo' ? `Jornada ${r.j}: es la que corresponde a esta fecha.`
-      : `Adelanta la jornada ${r.j} (le corresponde el ${esp}).`;
-  };
-  const filas = dia.filas.map((r, i) => `<tr><td class="n">${i + 1}</td>${celdaId(r.id)}<td class="j">J${r.j}</td><td>${eqCel(r.a)}</td><td>${eqCel(r.b)}</td>
-    <td><span class="rq-pill ${efecto[r.efecto][0]}">${efecto[r.efecto][1]}</span><small style="display:block;margin-top:4px;color:#4b5563;line-height:1.3">${obs(r)}</small></td></tr>`).join('');
-  const total = dia.filas.length, esperados = Math.floor(activosIds().length / 2);
-  const sin = dia.sinPartido.length ? `<div style="margin-top:10px;padding:10px 14px;border:1px solid #f5b5b5;background:#fdf3f3;border-radius:6px;font-size:12.5px;color:#b42318"><b>Sin partido ese domingo (no hay rival disponible):</b> ${dia.sinPartido.map(t => esc(nombreEq(t))).join(', ')}.</div>` : '';
-  const aviso = total < esperados ? `<div style="margin-top:10px;padding:10px 14px;border:1px solid #f0d58a;background:#fff8e1;border-radius:6px;font-size:12.5px;color:#6b4e00">Solo se pudieron armar <b>${total}</b> de ${esperados} encuentros posibles con los partidos pendientes que hay.</div>` : '';
-  return `<div class="rq-doc" style="width:900px">
-    ${encabezado('Rol propuesto del próximo domingo', `Domingo ${fmt(dia.fecha)} · Fecha ${dia.fnum} · ${total} encuentros`)}
-    <div class="rq-body">
-      <div class="rq-situacion adel"><p>Propuesta armada con los partidos que cada equipo <b>ya jugó</b>, las jornadas que le faltan y${pub ? ` suponiendo que se juegan los partidos ya publicados del <b>domingo ${pub}</b>` : ' los partidos ya confirmados'}. A cada encuentro se le asigna la jornada más atrasada que ambos equipos todavía no tienen.</p></div>
-      <table class="rq-tabla"><thead><tr><th style="width:36px">No.</th><th style="width:78px">ID partido</th><th style="width:62px">Jornada</th><th>Local</th><th>Visitante</th><th style="width:230px">Observación</th></tr></thead><tbody>${filas}</tbody></table>
-      ${sin}${aviso}
-      <div class="rq-leyenda"><b>Cómo se lee:</b> el torneo comenzó el ${esc(FECHA_INICIO)} (Fecha 1 = Jornada 1) y cada domingo avanza una fecha. <b>Pone al corriente</b>: la jornada ya correspondía antes y ambos equipos todavía la debían. <b>En tiempo</b>: la jornada es la de esta fecha. <b>Adelanta</b>: la jornada corresponde a un domingo posterior. <b>ID partido</b> es el ID_Partido de tu hoja de Partidos (el renglón que habría que actualizar con esa jornada y fecha); “nuevo” significa que ese cruce no existe en la hoja y habría que crearlo. Cada equipo juega un solo partido este domingo. Hora y campo quedan por definir. <b>Es una propuesta</b>: la liga la valida y la programa.</div>
-    </div>
-    <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
-}
-
-function docPropuesta(nFechas, doble){
-  const P = planProgramacion(nFechas, doble);
-  const mapa = {}; EQUIPOS.forEach(e => mapa[idDe(e)] = e);
-  const eqCel = id => { const e = mapa[id] || {}; return `<div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span></div>`; };
-  if (!P) return `<div class="rq-doc" style="width:900px">${encabezado('Propuesta de programación', 'Sin datos suficientes')}<div class="rq-body"><p>No hay equipos activos.</p></div></div>`;
-  const nProp = P.dias.reduce((n, d) => n + d.filas.length, 0);
-  const alCorr = P.resumenEq.filter(x => !x.debeDespues.length).length;
-  const efecto = { corriente: ['v', 'PONE AL CORRIENTE'], tiempo: ['g', 'EN TIEMPO'], adelanto: ['b', 'ADELANTA'] };
-  const sub = P.dias.length ? `Próximas ${P.dias.length} fecha(s) a partir del domingo ${fmt(P.dias[0].fecha)} · jornadas ${P.rango[0]} a ${P.rango[P.rango.length - 1]}` : 'No hay domingos por proponer';
-  const kpis = [['', P.dias.length, 'Fechas propuestas'], ['v', nProp, 'Partidos propuestos'], ['v', alCorr, 'Equipos al corriente al terminar'], ['a', P.restantes, 'Partidos que quedan por programar']]
-    .map(([c, v, t]) => `<div class="rq-kpi ${c}" style="flex:1"><b>${v}</b><span>${t}</span></div>`).join('');
-
-  const publicado = P.publicados.length ? `<div class="rq-tit">Ya publicado · domingo ${fmt(P.domingoPublicado)} (a disputar, se respeta)</div>
-    <table class="rq-tabla"><thead><tr><th style="width:78px">ID partido</th><th style="width:70px">Jornada</th><th>Local</th><th>Visitante</th><th style="width:100px">Hora</th><th style="width:80px">Campo</th></tr></thead><tbody>` +
-    P.publicados.map(g => `${'<tr>'}${celdaId(g.id)}<td class="j">${g.j != null ? 'J' + g.j : '—'}</td><td>${eqCel(g.a)}</td><td>${eqCel(g.b)}</td><td>${esc(hora12(g.hora) || '—')}</td><td>${esc(g.cancha || '—')}</td></tr>`).join('') + '</tbody></table>' : '';
-
-  const dias = P.dias.map(d => {
-    const filas = d.filas.map(r => `<tr>${celdaId(r.id)}<td class="j">J${r.j}${r.ronda === 2 ? '<small>doble jornada</small>' : ''}</td><td>${eqCel(r.a)}</td><td>${eqCel(r.b)}</td>
-      <td><span class="rq-pill ${efecto[r.efecto][0]}">${efecto[r.efecto][1]}</span></td><td>Por definir</td></tr>`).join('');
-    const extra = (d.sinPartido.length ? `<p style="margin-top:6px;font-size:12.5px;color:#b42318"><b>Sin partido ese domingo (no hay rival disponible):</b> ${d.sinPartido.map(t => esc(nombreEq(t))).join(', ')}.</p>` : '')
-      + (d.terminaron.length ? `<p style="margin-top:4px;font-size:12.5px;color:#6b7280"><b>Ya sin partidos pendientes:</b> ${d.terminaron.map(t => esc(nombreEq(t))).join(', ')}.</p>` : '');
-    return `<div class="rq-tit">Domingo ${fmt(d.fecha)} · Fecha ${d.fnum}</div>` + (d.filas.length
-      ? `<table class="rq-tabla"><thead><tr><th style="width:78px">ID partido</th><th style="width:84px">Jornada</th><th>Local</th><th>Visitante</th><th style="width:140px">Efecto</th><th style="width:96px">Hora / campo</th></tr></thead><tbody>${filas}</tbody></table>${extra}`
-      : '<div style="padding:10px 14px;border:1px solid #cfd8c5;border-radius:6px;color:#6b7280;font-size:13px">No hay partidos por proponer para este domingo.</div>');
-  }).join('');
-
-  const resumenFilas = P.resumenEq.map(x => {
-    const r = resumen(analizarEquipo(x.id)), nombre = nombreEq(x.id);
-    return `<tr><td class="eq">${eqCel(x.id)}</td><td>${r.jugados}</td><td>${x.confirmados}</td><td><b>${x.propuestos}</b></td><td>${x.restantes}</td>
-      <td>${x.debeDespues.length ? `<span class="rq-pill r">DEBE ${x.debeDespues.map(j => 'J' + j).join(', ')}</span>` : '<span class="rq-pill v">AL CORRIENTE</span>'}</td></tr>`;
-  }).join('');
-  const conflictos = P.conflictos.length ? `<div class="rq-nota-r" style="margin-top:14px;padding:10px 14px;border:1px solid #f5b5b5;background:#fdf3f3;border-radius:6px;font-size:12.5px;color:#b42318"><b>Revisar manualmente:</b> estas parejas ya no tienen una jornada en común disponible: ${P.conflictos.map(e => esc(nombreEq(e.a)) + ' vs ' + esc(nombreEq(e.b))).join(' · ')}.</div>` : '';
-
-  return `<div class="rq-doc" style="width:900px">
-    ${encabezado('Propuesta de programación', sub)}
-    <div class="rq-body">
-      <div style="display:flex;gap:10px;margin-bottom:6px">${kpis}</div>
-      ${publicado}
-      ${dias}
-      <div class="rq-tit">Resumen por equipo después de la propuesta</div>
-      <table class="rq-tabla"><thead><tr><th style="text-align:left;padding-left:14px">Equipo</th><th style="width:70px">Jugados</th><th style="width:84px">A disputar</th><th style="width:84px">Propuestos</th><th style="width:96px">Quedan por programar</th><th style="width:150px">Situación al terminar</th></tr></thead><tbody>${resumenFilas}</tbody></table>
-      ${conflictos}
-      <div class="rq-leyenda"><b>Cómo se arma la propuesta:</b> se parte de los partidos que cada equipo todavía no ha jugado y de las jornadas que le faltan. Los partidos ya <b>confirmados</b> (desde el jueves anterior a su domingo) se respetan. Cada domingo se buscan los cruces que permiten el <b>mayor número de partidos</b>, y a cada uno se le asigna la <b>jornada más atrasada que ambos equipos todavía no tienen</b>, para que se pongan al corriente primero. ${doble ? 'Se permite una <b>doble jornada</b> el mismo domingo solo a equipos que aún deben jornadas.' : 'Cada equipo juega un solo partido por domingo.'} Hora y campo quedan por definir. <b>Es una propuesta</b>: la liga la valida y la programa.</div>
-    </div>
-    <div class="rq-pie"><span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${ahoraTxt()}</span></div></div>`;
-}
-
-// ═══════════════════════════════════════════════
-//  SALIDAS: vista, PNG e impresión
-// ═══════════════════════════════════════════════
-function construir(){
-  if (!PARTIDOS.length){ msg('Todavía no cargan los datos.', true); return null; }
-  if ($('tipo').value === 'general') return { html: docGeneral(), nombre: 'control_jornadas' };
-  if ($('tipo').value === 'domingo') return { html: docDomingo(), nombre: 'rol_propuesto_domingo' };
-  if ($('tipo').value === 'propuesta') return { html: docPropuesta(parseInt($('sel-fechas').value, 10) || 3, $('sel-doble').value === 'si'), nombre: 'propuesta_programacion' };
-  const id = $('sel-equipo').value; if (!id){ msg('Selecciona un equipo primero.', true); return null; }
-  const eq = EQUIPOS.find(e => idDe(e) === id);
-  return { html: docEquipo(id), nombre: 'reporte_' + (eq['Nombre'] || id).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase() };
-}
-function ver(){
-  const r = construir(); if (!r) return; msg('');
-  const wrap = $('vista-wrap'), v = $('vista'); wrap.hidden = false; v.innerHTML = r.html;
-  const doc = v.firstElementChild, ancho = parseInt(doc.style.width, 10) || 900, k = Math.min(1, wrap.clientWidth / ancho);
-  doc.style.transform = `scale(${k})`; doc.style.transformOrigin = 'top left'; wrap.style.height = (doc.offsetHeight * k) + 'px';
-}
-async function descargar(){
-  const r = construir(); if (!r) return; msg('Generando PNG...');
-  const t = document.createElement('div'); t.style.cssText = 'position:fixed;left:-99999px;top:0'; t.innerHTML = r.html; document.body.appendChild(t);
-  try {
-    const doc = t.firstElementChild;
-    await Promise.all([...doc.querySelectorAll('img')].map(i => i.complete ? 1 : new Promise(x => { i.onload = i.onerror = x; })));
-    await new Promise(x => setTimeout(x, 150));
-    const canvas = await html2canvas(doc, { backgroundColor: '#ffffff', scale: 2, useCORS: true, allowTaint: true, imageTimeout: 20000, logging: false });
-    const a = document.createElement('a'); a.download = r.nombre + '.png'; a.href = canvas.toDataURL('image/png'); a.click(); msg('✅ PNG generado.');
-  } catch (e){ console.error(e); msg('No se pudo generar el PNG.', true); }
-  finally { document.body.removeChild(t); }
-}
-async function imprimir(){
-  const r = construir(); if (!r) return; msg('');
-  const css = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n');
-  const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
-  const d = f.contentWindow.document; d.open();
-  d.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(r.nombre)}</title><style>${css}@page{size:letter;margin:8mm}html,body{background:#fff!important;padding:0;display:block}.rq-doc{width:auto!important}</style></head><body>${r.html}</body></html>`); d.close();
-  await Promise.all([...d.images].map(i => i.complete ? 1 : new Promise(x => { i.onload = i.onerror = x; })));
-  await new Promise(x => setTimeout(x, 200)); f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => { try { f.remove(); } catch (e) {} }, 60000);
 }
 init();
+
+// ════════════════════════════════
+//  LOGIN
+// ════════════════════════════════
+function entrarPanel(){
+  const pass = document.getElementById('mod-password').value;
+  const loginMsg = document.getElementById('login-msg');
+  if(pass !== MOD_PASS){
+    loginMsg.textContent = 'Contraseña incorrecta.';
+    loginMsg.classList.add('err');
+    return;
+  }
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  llenarSelectsEquipos();
+  llenarListaIds();
+  llenarSelectCedula();
+  llenarSelectConfirmacion();
+  initRol();
+}
+
+function llenarSelectsEquipos(){
+  actualizarSelectsPorJornada();
+}
+
+// Convierte el <input type=date> (yyyy-mm-dd) al formato dd/mm/yyyy que usa la hoja
+async function pintarConfirmacionesJornada(){
+  const el = document.getElementById('armando-confirmaciones');
+  if(!el) return;
+  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
+  if(!jornadaTarget){ el.innerHTML=''; return; }
+  const partidosJornada = S.allMatches.filter(m=>{
+    const est=(m.estado||'').toLowerCase();
+    return (est==='programado'||est==='jugado') && String(m.jornada).trim()===jornadaTarget;
+  });
+  if(!partidosJornada.length){ el.innerHTML=''; return; }
+  let conf = {};
+  try{
+    const r = await fetch('https://liga-next-level-7-default-rtdb.firebaseio.com/confirmaciones.json');
+    conf = (await r.json()) || {};
+  }catch(e){ /* si falla, mostramos igual sin confirmaciones */ }
+  const filas = partidosJornada.map(m=>{
+    const c = conf[m.id] || {};
+    const nomL = S.teams[m.local]?.nombre || m.local;
+    const nomV = S.teams[m.visita]?.nombre || m.visita;
+    const okL = c.local ? '✅' : '⏳';
+    const okV = c.visita ? '✅' : '⏳';
+    return `<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;">
+      <span>${esc(nomL)} ${okL} &nbsp;vs&nbsp; ${okV} ${esc(nomV)}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div style="color:var(--neon);font-weight:700;margin-bottom:4px">Confirmaciones — Jornada ${esc(jornadaTarget)}</div>${filas}`;
+}
+
+function fechaInputASheet(v){
+  if(!v) return '';
+  const [y,m,d] = v.split('-');
+  return (y&&m&&d) ? `${d}/${m}/${y}` : '';
+}
+
+// ¿Ya existe un partido con Estado=Jugado entre estos dos equipos?
+function jugaronYa(idA, idB){
+  return S.allMatches.some(m=>{
+    if((m.estado||'').toLowerCase() !== 'jugado') return false;
+    return (String(m.local)===idA && String(m.visita)===idB) || (String(m.local)===idB && String(m.visita)===idA);
+  });
+}
+
+// Repinta Equipo A / Equipo B: deshabilita (no oculta) los equipos que ya tienen partido
+// Programado o Jugado en la "Jornada que estoy armando", y calcula quién descansa esa fecha.
+// Además, en Equipo B deshabilita a los rivales con los que Equipo A ya jugó (Estado=Jugado).
+let confirmDebounce = null;
+function actualizarSelectsPorJornada(){
+  clearTimeout(confirmDebounce);
+  confirmDebounce = setTimeout(pintarConfirmacionesJornada, 350);
+  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
+  const fechaTarget = fechaInputASheet(document.getElementById('armando-fecha')?.value || '');
+
+  const ocupadosJornada = new Set();
+  if(jornadaTarget){
+    S.allMatches.forEach(m=>{
+      const est = (m.estado||'').toLowerCase();
+      if((est==='programado'||est==='jugado') && String(m.jornada).trim()===jornadaTarget){
+        if(m.local) ocupadosJornada.add(String(m.local));
+        if(m.visita) ocupadosJornada.add(String(m.visita));
+      }
+    });
+  }
+
+  // NUEVO: equipos que ya tienen partido (programado/jugado) en la FECHA elegida
+  const ocupadosFecha = new Set();
+  if(fechaTarget){
+    S.allMatches.forEach(m=>{
+      const est = (m.estado||'').toLowerCase();
+      if((est==='programado'||est==='jugado') && fechaNumSheet(m.fecha)===fechaNumSheet(fechaTarget)){
+        if(m.local) ocupadosFecha.add(String(m.local));
+        if(m.visita) ocupadosFecha.add(String(m.visita));
+      }
+    });
+  }
+
+  const ordenados = Object.values(S.teams).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
+  const equipoASel = document.getElementById('buscar-equipo-a')?.value || '';
+
+  function construirOpciones(esSelectB){
+    return '<option value="">— Selecciona —</option>' + ordenados.map(t=>{
+      const idStr = String(t.id);
+      const ocupadoJornada = ocupadosJornada.has(idStr);
+      const ocupadoFecha = ocupadosFecha.has(idStr);
+      const yaJugaron = esSelectB && equipoASel && idStr!==equipoASel && jugaronYa(equipoASel, idStr);
+      const deshabilitado = ocupadoJornada || ocupadoFecha || yaJugaron;
+      let etiqueta = '';
+      if(ocupadoFecha) etiqueta = ' (ya juega esta fecha)';
+      else if(ocupadoJornada) etiqueta = ' (ya tiene partido esta jornada)';
+      else if(yaJugaron) etiqueta = ' (ya jugaron)';
+      return `<option value="${t.id}" ${deshabilitado?'disabled':''}>${esc(t.nombre)}${etiqueta}</option>`;
+    }).join('');
+  }
+
+  const selA = document.getElementById('buscar-equipo-a');
+  const valA = selA.value;
+  selA.innerHTML = construirOpciones(false);
+  if(valA && !ocupadosJornada.has(valA) && !ocupadosFecha.has(valA)) selA.value = valA;
+
+  const selB = document.getElementById('buscar-equipo-b');
+  const valB = selB.value;
+  selB.innerHTML = construirOpciones(true);
+  if(valB && !ocupadosJornada.has(valB) && !ocupadosFecha.has(valB) && !jugaronYa(equipoASel, valB)) selB.value = valB;
+
+  const descansaEl = document.getElementById('armando-descansa');
+  if(!descansaEl) return;
+  if(!fechaTarget){ descansaEl.textContent=''; return; }
+  const juegan = new Set();
+  S.allMatches.forEach(m=>{
+    const est = (m.estado||'').toLowerCase();
+    if((est==='programado'||est==='jugado') && (m.fecha||'').trim()===fechaTarget){
+      if(m.local) juegan.add(String(m.local));
+      if(m.visita) juegan.add(String(m.visita));
+    }
+  });
+  const descansan = Object.values(S.teams).filter(t=>!juegan.has(String(t.id)));
+  if(descansan.length===1){
+    descansaEl.textContent = `🛌 Descansa esta fecha: ${descansan[0].nombre}`;
+  } else if(descansan.length===0){
+    descansaEl.textContent = '';
+  } else {
+    descansaEl.textContent = `Faltan ${descansan.length} equipos por programar esta fecha.`;
+  }
+}
+
+// ════════════════════════════════
+//  EDITAR / PROGRAMAR PARTIDO (por pareja de equipos)
+// ════════════════════════════════
+// Lista de IDs sugeridos (partidos que aún no están Jugado y cuyos dos equipos siguen activos)
+function llenarListaIds(){
+  const dl = document.getElementById('lista-ids-partido');
+  if(!dl) return;
+  const nid = x => { const n = Number(x.id); return isNaN(n) ? 0 : n; };
+  dl.innerHTML = S.allMatches
+    .filter(m => m.id && (m.estado||'').toLowerCase() !== 'jugado' && S.teams[m.local] && S.teams[m.visita])
+    .sort((a,b) => nid(a) - nid(b))
+    .map(m => `<option value="${esc(m.id)}">${esc(tname(m.local))} vs ${esc(tname(m.visita))} · J${esc(m.jornada||'?')} · ${esc(m.estado||'?')}</option>`)
+    .join('');
+}
+
+// Trae un partido por su ID_Partido y abre el mismo formulario de programar/editar
+function buscarPartidoPorId(){
+  const inp = document.getElementById('buscar-id-partido');
+  const cont = document.getElementById('buscar-resultado');
+  const raw = (inp?.value || '').trim();
+  S.matchToProgram = null;
+  if(!raw){ cont.innerHTML = ''; return; }
+  const limpio = raw.replace(/\D/g,'');   // acepta "26", " 26 ", "#26"
+  const m = S.allMatches.find(x => String(x.id).trim() === raw)
+         || (limpio ? S.allMatches.find(x => String(Number(x.id)) === String(Number(limpio))) : null);
+  if(!m){
+    cont.innerHTML = `<div class="mod-preview-empty">No encontré el partido con ID ${esc(raw)}</div>`;
+    return;
+  }
+  if(!S.teams[m.local] || !S.teams[m.visita]){
+    cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} tiene un equipo dado de baja, no se puede programar.</div>`;
+    return;
+  }
+  if((m.estado||'').toLowerCase() === 'jugado'){
+    cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} (${esc(tname(m.local))} vs ${esc(tname(m.visita))}) ya está Jugado, no se puede programar.</div>`;
+    return;
+  }
+  // limpiar los selects de equipos para que no se confundan con el partido traído por ID
+  const a = document.getElementById('buscar-equipo-a'), b = document.getElementById('buscar-equipo-b');
+  if(a) a.value = ''; if(b) b.value = '';
+  abrirFormEditar(m);
+}
+
+function buscarPartidoEntreEquipos(){
+  const a = document.getElementById('buscar-equipo-a').value;
+  const b = document.getElementById('buscar-equipo-b').value;
+  const cont = document.getElementById('buscar-resultado');
+  S.matchToProgram = null;
+  if(!a || !b){ cont.innerHTML=''; return; }
+  if(a === b){ cont.innerHTML = '<div class="mod-preview-empty">Elige dos equipos distintos</div>'; return; }
+
+  const m = S.allMatches.find(x =>
+    (x.estado||'').toLowerCase() !== 'jugado' &&
+    ((x.local===a && x.visita===b) || (x.local===b && x.visita===a))
+  );
+  if(!m){
+    cont.innerHTML = `<div class="mod-preview-empty">No hay partido pendiente ni programado entre ${esc(tname(a))} y ${esc(tname(b))}</div>`;
+    return;
+  }
+  abrirFormEditar(m);
+}
+
+function pad2(n){ return n<10 ? '0'+n : ''+n; }
+function buildHoraSelects(defaultH, defaultM){
+  let hOpts=''; for(let h=0;h<24;h++){ hOpts+=`<option value="${pad2(h)}" ${h===defaultH?'selected':''}>${pad2(h)}</option>`; }
+  let mOpts=''; for(let m=0;m<60;m+=5){ mOpts+=`<option value="${pad2(m)}" ${m===defaultM?'selected':''}>${pad2(m)}</option>`; }
+  return {hOpts,mOpts};
+}
+
+// ── Disponibilidad de jornada / horario / campo ──────────────────────────
+const DURACION_MIN = 60;                       // duración de un partido (para detectar traslapes en el mismo campo)
+const HORAS_BASE   = ['09:00','10:00','11:00','12:00'];
+const CAMPOS_BASE  = ['Campo 1','Campo 2'];
+
+function hhmm(hora){ const p=String(hora||'').split(':'); return pad2(parseInt(p[0],10)||0)+':'+pad2(parseInt(p[1],10)||0); }
+function esAgendado(m){ const e=(m.estado||'').toLowerCase(); return e==='programado'||e==='jugado'; }
+
+function listaCampos(){
+  const set = new Set(CAMPOS_BASE);
+  S.allMatches.forEach(x=>{ const c=(x.cancha||'').trim(); if(c) set.add(c); });
+  return [...set].sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
+}
+
+// Jornadas en las que NINGUNO de los dos equipos tiene ya partido programado/jugado
+function jornadasLibresPara(m){
+  const ids = [String(m.local), String(m.visita)];
+  const ocupadas = new Set();
+  S.allMatches.forEach(x=>{
+    if(x.id===m.id || !esAgendado(x)) return;
+    if(ids.includes(String(x.local)) || ids.includes(String(x.visita))){
+      const j = parseInt(x.jornada,10); if(!isNaN(j)) ocupadas.add(j);
+    }
+  });
+  const n = Object.keys(S.teams).length;
+  const rondas = n%2===0 ? n-1 : n;                       // jornadas por vuelta
+  const maxVuelta = Math.max(1, ...S.allMatches.map(x=>parseInt(x.vuelta,10)||1));
+  const maxData = Math.max(0, ...S.allMatches.map(x=>parseInt(x.jornada,10)||0));
+  const total = Math.max(rondas*maxVuelta, maxData);
+  const libres = [];
+  for(let j=1;j<=total;j++){ if(!ocupadas.has(j)) libres.push(j); }
+  return libres;
+}
+
+// Calendario del torneo: la Jornada 1 es el domingo de inicio y cada jornada avanza 7 días (igual que el reporte del rol del domingo)
+const INICIO_TORNEO = [2026, 9, 20];   // año, mes, día
+function fechaCalendarioJornada(j){
+  const n = parseInt(j,10);
+  if(isNaN(n) || n < 1) return '';
+  const d = new Date(INICIO_TORNEO[0], INICIO_TORNEO[1]-1, INICIO_TORNEO[2] + 7*(n-1));
+  return pad2(d.getDate()) + '/' + pad2(d.getMonth()+1) + '/' + d.getFullYear();
+}
+
+// Fecha sugerida para programar un partido de la jornada j:
+// la de calendario; si ya pasó, o alguno de los dos equipos ya juega ese día, el siguiente domingo libre para ambos.
+// (Así un juego atrasado de la J5 se propone para el siguiente domingo, no para el 18/10 que ya está lleno.)
+function fechaSugerida(m, j){
+  const cal = fechaCalendarioJornada(j);
+  if(!cal || !m) return cal || '';
+  const [d,mo,y] = cal.split('/').map(Number);
+  const dt = new Date(y, mo-1, d);
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  while(dt < hoy) dt.setDate(dt.getDate()+7);
+  const ids = [String(m.local), String(m.visita)];
+  for(let i=0;i<60;i++){
+    const f = pad2(dt.getDate()) + '/' + pad2(dt.getMonth()+1) + '/' + dt.getFullYear();
+    const ocupado = S.allMatches.some(x => x.id!==m.id && esAgendado(x) && fechaNumSheet(x.fecha)===fechaNumSheet(f)
+                                           && (ids.includes(String(x.local)) || ids.includes(String(x.visita))));
+    if(!ocupado) return f;
+    dt.setDate(dt.getDate()+7);
+  }
+  return cal;
+}
+
+function fechaDeJornada(j){
+  const f = S.allMatches.find(x=>String(x.jornada).trim()===String(j) && esAgendado(x) && x.fecha);
+  return f ? f.fecha : '';
+}
+
+function ocupadosDeFecha(fechaSheet, excluirId){
+  return S.allMatches.filter(x=>x.id!==excluirId && esAgendado(x) && fechaNumSheet(x.fecha)===fechaNumSheet(fechaSheet));
+}
+
+// ¿Hay otro partido en ese campo cuyo horario se traslape con "hora"?
+function conflictoCampo(ocupados, campo, hora){
+  const t = minutosDeHora(hora);
+  return ocupados.find(x=> x.hora && (x.cancha||'').trim().toLowerCase()===String(campo).trim().toLowerCase()
+                        && Math.abs(minutosDeHora(x.hora)-t) < DURACION_MIN);
+}
+
+function abrirFormEditar(m){
+  S.matchToProgram = m;
+  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
+  const fechaTarget = document.getElementById('armando-fecha')?.value || '';
+  const [d,mo,y] = (m.fecha||'').split('/');
+  const fechaInput = (y&&mo&&d) ? `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}` : fechaTarget;
+
+  // Jornadas en las que estos dos equipos PUEDEN jugar
+  const libres = jornadasLibresPara(m);
+  const pref = String(m.jornada || jornadaTarget || '');
+  const jSel = libres.map(String).includes(pref) ? pref : (libres[0] ? String(libres[0]) : '');
+  const jOpts = libres.length
+    ? libres.map(j=>{ const f=fechaDeJornada(j); return `<option value="${j}" ${String(j)===jSel?'selected':''}>Jornada ${j}${f?' · '+f:''}</option>`; }).join('')
+    : '<option value="">(sin jornadas libres para estos equipos)</option>';
+
+  const horaParts = (m.hora||'09:00:00').split(':');
+  const {hOpts,mOpts} = buildHoraSelects(parseInt(horaParts[0],10)||9, parseInt(horaParts[1],10)||0);
+  const campoActual = (m.cancha||'').trim();
+  const cOpts = '<option value="">— Campo —</option>' + listaCampos().map(c=>`<option value="${esc(c)}" ${c.toLowerCase()===campoActual.toLowerCase()?'selected':''}>${esc(c)}</option>`).join('');
+
+  document.getElementById('buscar-resultado').innerHTML = `
+    <div class="mod-match-row">
+      <img src="${m.ll||tlogo(m.local)}" onerror="this.style.opacity='.2'">
+      <div>
+        <div class="mod-match-name">${esc(tname(m.local))} vs ${esc(tname(m.visita))}</div>
+        <div class="mod-match-meta">ID interno: ${esc(m.id)} · Estado actual: ${esc(m.estado||'?')}</div>
+      </div>
+      <img src="${m.lv||tlogo(m.visita)}" onerror="this.style.opacity='.2'">
+    </div>
+    <div class="programar-box">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div>
+          <label>Jornada (solo las que estos equipos pueden jugar)</label>
+          <select id="edit-jornada" class="msg-input" style="width:100%" onchange="alCambiarJornadaForm()">${jOpts}</select>
+        </div>
+        <div>
+          <label>Fecha</label>
+          <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}" oninput="refrescarDisponibilidad()">
+          <div id="edit-fecha-hint" style="font-size:11px;color:var(--g400);margin-top:5px"></div>
+        </div>
+        <div>
+          <label>Hora</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <select id="edit-hora-h" class="msg-input" style="flex:1;text-align:center" onchange="refrescarDisponibilidad()">${hOpts}</select>
+            <span style="color:var(--g400);font-weight:700">:</span>
+            <select id="edit-hora-m" class="msg-input" style="flex:1;text-align:center" onchange="refrescarDisponibilidad()">${mOpts}</select>
+          </div>
+        </div>
+        <div>
+          <label>Campo / Cancha</label>
+          <select id="edit-cancha" class="msg-input" style="width:100%" onchange="refrescarDisponibilidad()">${cOpts}</select>
+        </div>
+        <div id="disp-panel"></div>
+      </div>
+      <button class="btn-anunciar" id="btn-guardar-editar" style="margin-top:14px" onclick="guardarEdicionPartido()">✅ Guardar cambios</button>
+    </div>
+  `;
+  alCambiarJornadaForm(true);
+}
+
+// Al elegir jornada: si esa jornada ya tiene fecha (otros partidos), se propone esa misma fecha
+function alCambiarJornadaForm(soloSiVacia){
+  const j = document.getElementById('edit-jornada')?.value;
+  const inp = document.getElementById('edit-fecha');
+  const hint = document.getElementById('edit-fecha-hint');
+  if(j && inp){
+    const fCal = fechaCalendarioJornada(j);        // fecha que le toca por calendario (la del reporte)
+    const fHoja = fechaDeJornada(j);               // fecha de otros partidos ya agendados con esa jornada
+    const fSug = fechaSugerida(S.matchToProgram, j) || fCal;
+    const f = fSug || fHoja;
+    if(f && (!soloSiVacia || !inp.value)){
+      const [d,mo,y] = f.split('/');
+      if(y&&mo&&d) inp.value = `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}`;
+    }
+    if(hint){
+      const otra = fHoja && fCal && fechaNumSheet(fHoja)!==fechaNumSheet(fCal);
+      hint.innerHTML = fCal ? `📆 Por calendario, la Jornada ${esc(j)} es el ${esc(fCal)}.` + ((fSug && fSug!==fCal) ? ` <span style="color:var(--neon)">Se sugiere el ${esc(fSug)}, el siguiente domingo libre para estos equipos.</span>` : '') + (otra ? ` <span style="color:#f87171">⚠️ En la hoja ya hay partidos de la Jornada ${esc(j)} el ${esc(fHoja)}.</span>` : '') : '';
+    }
+  }
+  refrescarDisponibilidad();
+}
+
+// Cuadrícula horario × campo para la fecha elegida: libre / ocupado (y por quién)
+function refrescarDisponibilidad(){
+  const panel = document.getElementById('disp-panel');
+  const m = S.matchToProgram;
+  if(!panel || !m) return;
+  const fecha = fechaInputASheet(document.getElementById('edit-fecha')?.value || '');
+  if(!fecha){ panel.innerHTML = '<div class="mod-hint" style="margin:0">Elige una fecha para ver qué horarios y campos están disponibles.</div>'; return; }
+
+  const ocupados = ocupadosDeFecha(fecha, m.id);
+  const campos = listaCampos();
+  const horas = new Set(HORAS_BASE);
+  ocupados.forEach(x=>{ if(x.hora) horas.add(hhmm(x.hora)); });
+  const hSel = hhmm((document.getElementById('edit-hora-h')?.value||'09')+':'+(document.getElementById('edit-hora-m')?.value||'00'));
+  horas.add(hSel);
+  const cSel = (document.getElementById('edit-cancha')?.value||'').trim();
+
+  // avisos de equipos que ya juegan ese día
+  const ids = [String(m.local), String(m.visita)];
+  const choqueEq = ocupados.filter(x=>ids.includes(String(x.local))||ids.includes(String(x.visita)));
+  const aviso = choqueEq.length
+    ? `<div style="font-size:12px;color:#f87171;margin-bottom:8px">⚠️ ${choqueEq.map(x=>esc(tname(x.local))+' vs '+esc(tname(x.visita))+' ('+esc(hhmm(x.hora))+')').join(' · ')} ya juega(n) esa fecha.</div>` : '';
+
+  const th = campos.map(c=>`<th style="padding:6px 4px;font-size:11px;color:var(--g400)">${esc(c)}</th>`).join('');
+  const filas = [...horas].sort().map(h=>{
+    const celdas = campos.map(c=>{
+      const x = conflictoCampo(ocupados, c, h);
+      const elegido = (h===hSel && c.toLowerCase()===cSel.toLowerCase());
+      if(x) return `<td style="padding:4px"><div style="font-size:10px;line-height:1.2;padding:6px 4px;border-radius:6px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#f87171">✖ ${esc(tname(x.local))} vs ${esc(tname(x.visita))}</div></td>`;
+      return `<td style="padding:4px"><button type="button" onclick="elegirSlot('${h}','${esc(c).replace(/'/g,"\\'")}')" style="width:100%;padding:7px 4px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ${elegido?'var(--neon)':'rgba(94,181,13,.35)'};background:${elegido?'var(--neon)':'var(--neon-dim)'};color:${elegido?'#122400':'var(--neon)'}">${elegido?'✔ Elegido':'Libre'}</button></td>`;
+    }).join('');
+    return `<tr><td style="padding:4px 8px 4px 0;font-size:12px;font-weight:800;color:var(--w);white-space:nowrap">${h}</td>${celdas}</tr>`;
+  }).join('');
+
+  panel.innerHTML = `${aviso}<div style="font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Disponibilidad · ${esc(fecha)}</div>
+    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th></th>${th}</tr></thead><tbody>${filas}</tbody></table></div>`;
+}
+
+function elegirSlot(hora, campo){
+  const [h,mi] = hora.split(':');
+  const hs = document.getElementById('edit-hora-h'), ms = document.getElementById('edit-hora-m'), cs = document.getElementById('edit-cancha');
+  if(hs) hs.value = h;
+  if(ms) ms.value = mi;
+  if(cs){
+    if(![...cs.options].some(o=>o.value===campo)){ cs.add(new Option(campo,campo)); }
+    cs.value = campo;
+  }
+  refrescarDisponibilidad();
+}
+
+async function guardarEdicionPartido(){
+  const m = S.matchToProgram;
+  if(!m) return;
+  const jornada = document.getElementById('edit-jornada').value.trim();
+  const fecha = document.getElementById('edit-fecha').value;
+  const horaH = document.getElementById('edit-hora-h').value;
+  const horaM = document.getElementById('edit-hora-m').value;
+  const hora = (horaH&&horaM) ? `${horaH}:${horaM}:00` : '';
+  const cancha = document.getElementById('edit-cancha').value.trim();
+
+  if(!jornada || !fecha || !hora || !cancha){
+    alert('Completa Jornada, Fecha, Hora y Campo antes de guardar.');
+    return;
+  }
+  const [anioF,mesF,diaF] = fecha.split('-');
+  const fechaSheet = `${diaF}/${mesF}/${anioF}`;
+
+  // Validaciones: campo/horario libre y equipos sin otro partido ese día
+  const ocupadosF = ocupadosDeFecha(fechaSheet, m.id);
+  const choqueCampo = conflictoCampo(ocupadosF, cancha, hora);
+  if(choqueCampo){
+    alert(`Ese horario/campo ya está ocupado: ${tname(choqueCampo.local)} vs ${tname(choqueCampo.visita)} (${hhmm(choqueCampo.hora)}, ${choqueCampo.cancha}).`);
+    return;
+  }
+  const choqueEquipo = ocupadosF.find(x=>[String(m.local),String(m.visita)].includes(String(x.local))||[String(m.local),String(m.visita)].includes(String(x.visita)));
+  if(choqueEquipo){
+    alert(`Uno de estos equipos ya juega esa fecha: ${tname(choqueEquipo.local)} vs ${tname(choqueEquipo.visita)}.`);
+    return;
+  }
+
+  const btn = document.getElementById('btn-guardar-editar');
+  if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
+
+  try{
+    await fetch(SCRIPT_URL,{
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({accion:'programar_partido', idPartido:m.id, jornada, fecha:fechaSheet, hora, cancha})
+    });
+  }catch(e){
+    console.error(e);
+  }
+
+  // Actualización local optimista
+  m.estado='programado'; m.fecha=fechaSheet; m.hora=hora; m.cancha=cancha; m.jornada=jornada;
+  S.matches = S.allMatches.filter(x=>(x.estado||'').toLowerCase()==='pendiente');
+
+  document.getElementById('buscar-resultado').innerHTML = `<div class="programar-hint">✅ Guardado: ${esc(tname(m.local))} vs ${esc(tname(m.visita))} — Jornada ${esc(jornada)}, ${esc(fechaSheet)}, ${esc(horaH)}:${esc(horaM)}, ${esc(cancha)}</div>`;
+  document.getElementById('buscar-equipo-a').value='';
+  document.getElementById('buscar-equipo-b').value='';
+  actualizarSelectsPorJornada();
+  const idInp = document.getElementById('buscar-id-partido');
+  if(idInp){ idInp.value=''; llenarListaIds(); idInp.focus(); }
+}
+
+// ════════════════════════════════
+//  ARMAR ROL DEL DOMINGO (rolSlots)
+// ════════════════════════════════
+function setVuelta(v){
+  S.vuelta=v;
+  document.getElementById('vbtn1').className='vbtn'+(v===1?' active':'');
+  document.getElementById('vbtn2').className='vbtn'+(v===2?' active':'');
+  renderSlots();
+}
+
+const HORARIOS_DEFAULT = ['09:00','09:00','10:00','10:00','11:00','11:00','12:00','12:00'];
+const CAMPOS_DEFAULT = ['Campo 1','Campo 2','Campo 1','Campo 2','Campo 1','Campo 2','Campo 1','Campo 2'];
+let rolSlots = [];
+
+function initRol(){
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const diasHastaDom = dia===0 ? 7 : 7-dia;
+  const dom = new Date(hoy);
+  dom.setDate(hoy.getDate()+diasHastaDom);
+  document.getElementById('rol-fecha').value = dom.toISOString().split('T')[0];
+  rolSlots = [];
+  document.getElementById('rol-slots').innerHTML = '';
+  document.getElementById('rol-preview-wrap').style.display = 'none';
+}
+
+function addSlot(hora, matchId){
+  const vuelta = String(S.vuelta);
+  const pending = S.matches.filter(m => m.vuelta===vuelta);
+  const idx = rolSlots.length;
+  const horaDefault = hora || HORARIOS_DEFAULT[idx] || '09:00';
+
+  const usados = {};
+  rolSlots.forEach(s=>{
+    if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
+    if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
+  });
+
+  const disponibles = pending.filter(m=>{
+    const lUsos = usados[m.local]||0;
+    const vUsos = usados[m.visita]||0;
+    return lUsos < 2 && vUsos < 2;
+  });
+
+  const slot = { hora: horaDefault, matchId: matchId || (disponibles[0]?.id||''), localId:'', visitaId:'', campo:'' };
+  if(slot.matchId){
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(m){ slot.localId=m.local; slot.visitaId=m.visita; }
+  }
+  rolSlots.push(slot);
+  renderSlots();
+}
+
+function removeSlot(idx){
+  rolSlots.splice(idx,1);
+  renderSlots();
+}
+
+function renderSlots(){
+  const vuelta = String(S.vuelta);
+  const pending = S.matches.filter(m=>m.vuelta===vuelta);
+  const container = document.getElementById('rol-slots');
+
+  container.innerHTML = rolSlots.map((slot,idx)=>{
+    const usados = {};
+    rolSlots.forEach((s,i)=>{
+      if(i===idx) return;
+      if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
+      if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
+    });
+
+    const disponibles = pending.filter(m=>{
+      const lUsos = usados[m.local]||0;
+      const vUsos = usados[m.visita]||0;
+      return lUsos<2 && vUsos<2;
+    });
+
+    const options = disponibles.map(m=>
+      `<option value="${m.id}" ${m.id===slot.matchId?'selected':''}>
+        ${esc(tname(m.local))} vs ${esc(tname(m.visita))} (J${esc(m.jornada)})
+      </option>`
+    ).join('');
+
+    const ll = slot.localId ? (S.matches.find(m=>m.id===slot.matchId)?.ll || tlogo(slot.localId)) : '';
+    const lv = slot.visitaId ? (S.matches.find(m=>m.id===slot.matchId)?.lv || tlogo(slot.visitaId)) : '';
+
+    return `<div style="display:flex;align-items:center;gap:8px;background:var(--dark2);border:1px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:10px 12px;flex-wrap:wrap;">
+      <input type="time" value="${slot.hora}" onchange="updateSlotHora(${idx},this.value)" style="padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--neon);font-size:13px;font-weight:700;width:90px;flex-shrink:0">
+      ${ll?`<img src="${ll}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <select onchange="updateSlotMatch(${idx},this.value)" style="flex:1;padding:7px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;min-width:0">
+        <option value="">-- Seleccionar partido --</option>
+        ${options}
+      </select>
+      ${lv?`<img src="${lv}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
+           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
+      <input type="text" value="${slot.campo||''}" onchange="updateSlotCampo(${idx},this.value)" placeholder="Campo (opcional)" style="width:110px;padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;flex-shrink:0">
+      <button onclick="removeSlot(${idx})" style="background:none;border:none;color:#f87171;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 4px">✕</button>
+    </div>`;
+  }).join('');
+
+  updateRolPreview();
+}
+
+function updateSlotHora(idx, hora){ rolSlots[idx].hora = hora; updateRolPreview(); }
+function updateSlotCampo(idx, campo){ rolSlots[idx].campo = campo; updateRolPreview(); }
+function updateSlotMatch(idx, matchId){
+  rolSlots[idx].matchId = matchId;
+  if(matchId){
+    const m = S.matches.find(x=>x.id===matchId);
+    if(m){ rolSlots[idx].localId=m.local; rolSlots[idx].visitaId=m.visita; }
+  } else {
+    rolSlots[idx].localId=''; rolSlots[idx].visitaId='';
+  }
+  renderSlots();
+}
+
+// Busca, entre los partidos pendientes, el mayor número posible de partidos
+// (hasta "limite") donde ningún equipo se repita. A diferencia de un algoritmo
+// "greedy" simple -que recorre la lista una sola vez y, si un equipo ya quedó
+// usado en un partido, pierde la posibilidad de formar una pareja mejor más
+// adelante- esta búsqueda prueba combinaciones (con poda) para no dejar fuera
+// un partido válido solo por el orden en que aparece en la lista.
+function mejorConjuntoDePartidos(pending, limite){
+  let mejor = [];
+
+  function backtrack(desde, actuales, usados){
+    if(actuales.length > mejor.length) mejor = actuales.slice();
+    if(mejor.length >= limite) return;
+    for(let i = desde; i < pending.length; i++){
+      // Poda: si ni agregando todos los partidos restantes se supera lo mejor
+      // encontrado hasta ahora, no vale la pena seguir explorando esta rama.
+      if(actuales.length + (pending.length - i) <= mejor.length) break;
+      const m = pending[i];
+      if(usados.has(m.local) || usados.has(m.visita)) continue;
+      usados.add(m.local); usados.add(m.visita);
+      actuales.push(m);
+      backtrack(i+1, actuales, usados);
+      actuales.pop();
+      usados.delete(m.local); usados.delete(m.visita);
+      if(mejor.length >= limite) return;
+    }
+  }
+
+  backtrack(0, [], new Set());
+  return mejor;
+}
+
+function autoRol(){
+  const vuelta = String(S.vuelta);
+  const pending = [...S.matches.filter(m=>m.vuelta===vuelta)]
+    .sort((a,b) => (Number(a.jornada)||0) - (Number(b.jornada)||0) || (Number(a.id)||0) - (Number(b.id)||0));
+  rolSlots = [];
+
+  const seleccionados = mejorConjuntoDePartidos(pending, 8);
+
+  seleccionados.forEach((m,i)=>{
+    rolSlots.push({
+      hora: HORARIOS_DEFAULT[i]||'09:00',
+      matchId: m.id,
+      localId: m.local,
+      visitaId: m.visita,
+      campo: CAMPOS_DEFAULT[i]||''
+    });
+  });
+
+  renderSlots();
+  document.getElementById('rol-preview-wrap').style.display='block';
+}
+
+function minutosDeHora(hora){
+  if(!hora) return 99999;
+  const partes = hora.split(':');
+  const h = parseInt(partes[0],10) || 0;
+  const m = parseInt(partes[1],10) || 0;
+  return h*60+m;
+}
+function ordenarPorCampoHora(lista){
+  return [...lista].sort((a,b)=>{
+    const ha = minutosDeHora(a.hora);
+    const hb = minutosDeHora(b.hora);
+    if(ha !== hb) return ha - hb;
+    const ca = (a.campo||'').trim();
+    const cb = (b.campo||'').trim();
+    if(!ca) return 1;
+    if(!cb) return -1;
+    return ca.localeCompare(cb, 'es', {numeric:true, sensitivity:'base'});
+  });
+}
+
+function updateRolPreview(){
+  const fecha = document.getElementById('rol-fecha').value;
+  const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) : 'Domingo pendiente';
+  const filled = ordenarPorCampoHora(rolSlots.filter(s=>s.matchId));
+
+  if(!filled.length){
+    document.getElementById('rol-preview-wrap').style.display='none';
+    return;
+  }
+  document.getElementById('rol-preview-wrap').style.display='block';
+
+  let html = `<div style="text-align:center;font-size:13px;font-weight:700;color:var(--neon);margin-bottom:12px;text-transform:capitalize">📅 ${fechaStr}</div>`;
+  filled.forEach(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    const ll = m.ll||tlogo(m.local);
+    const lv = m.lv||tlogo(m.visita);
+    html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
+      <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${esc(slot.hora)}</span>
+      <img src="${ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${esc(tname(m.local))}</span>
+      <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${esc(tname(m.visita))}</span>
+      <img src="${lv}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
+    </div>`;
+  });
+  document.getElementById('rol-preview').innerHTML = html;
+  renderCartelPreview(fechaStr, filled);
+}
+
+// ════════════════════════════════
+//  CARTEL DE JORNADA (PNG descargable)
+// ════════════════════════════════
+const CARTEL_POR_PAGINA = 7;
+
+function calcularEquipoDescansa(filled){
+  const idsJuegan = new Set();
+  filled.forEach(slot=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    if(m.local) idsJuegan.add(String(m.local));
+    if(m.visita) idsJuegan.add(String(m.visita));
+  });
+  const descansan = Object.values(S.teams).filter(t=>!idsJuegan.has(String(t.id)));
+  if(descansan.length === 1){
+    const t = descansan[0];
+    return { nombre:(t.nombre||'').toUpperCase(), descripcion:t.descripcion||'' };
+  }
+  return null;
+}
+
+function pintarCartelPagina(paginaSlots, numPagina, totalPaginas, equipoDescansa){
+  const poster = document.getElementById('cartel-poster');
+  if(!poster) return;
+
+  const T = {crest:88, name:18, jv:15, fecha:14, hora:20, campo:14, padY:11, gap:3};
+
+  let filasHtml = '';
+  paginaSlots.forEach((slot, i)=>{
+    const m = S.matches.find(x=>x.id===slot.matchId);
+    if(!m) return;
+    const ll = m.ll||tlogo(m.local);
+    const lv = m.lv||tlogo(m.visita);
+    const horaFmt = formatHora12(slot.hora);
+    filasHtml += `
+      <div class="cartel-row" style="padding:${T.padY}px 0;">
+        <div class="cartel-team local">
+          <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${ll}" onerror="this.style.opacity='.2'">
+          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.local))}</span>
+        </div>
+        <div class="cartel-center">
+          <span class="cartel-jv" style="font-size:${T.jv}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">Jornada ${esc(m.jornada||'?')}</span>
+          <span class="cartel-fecha" style="font-size:${T.fecha}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(document.getElementById('rol-fecha').value.split('-').reverse().join('/'))}</span>
+          <div class="cartel-linea" style="margin:${T.gap}px 0;"></div>
+          <span class="cartel-hora" style="font-size:${T.hora}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${horaFmt}</span>
+          ${slot.campo?`<span class="cartel-campo" style="font-size:${T.campo}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(slot.campo)}</span>`:''}
+        </div>
+        <div class="cartel-team visita">
+          <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${lv}" onerror="this.style.opacity='.2'">
+          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.visita))}</span>
+        </div>
+      </div>
+      ${i < paginaSlots.length-1 ? '<hr class="cartel-sep">' : ''}
+    `;
+  });
+
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
+    <div style="text-align:center;margin-bottom:14px;display:flex;flex-direction:column;align-items:center;gap:5px;">
+      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:22px;letter-spacing:1px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,.5),0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.nombre)}</div>
+      <div style="font-size:13px;font-weight:700;color:#f3c94a;text-shadow:0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.descripcion)}</div>
+      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:14px;letter-spacing:1px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,.8);">DESCANSA ESTA JORNADA</div>
+    </div>
+  ` : '';
+
+  poster.innerHTML = `
+    <div class="cartel-header">
+      <div class="cartel-h1">Torneo Dominical Libre</div>
+    </div>
+    ${descansaHTML}
+    <div class="cartel-matches">${filasHtml}</div>
+    ${totalPaginas>1?`<div class="cartel-pagina-tag">Página ${numPagina} de ${totalPaginas}</div>`:''}
+  `;
+}
+
+function renderCartelPreview(fechaStr, filled){
+  const poster = document.getElementById('cartel-poster');
+  if(!poster) return;
+  if(!filled.length){ poster.innerHTML=''; return; }
+
+  const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
+  const equipoDescansa = calcularEquipoDescansa(filled);
+  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas, equipoDescansa);
+
+  const aviso = document.getElementById('cartel-paginas-aviso');
+  if(aviso){
+    aviso.textContent = totalPaginas>1
+      ? `📄 Se generarán ${totalPaginas} páginas de PNG al descargar (7 partidos por página). Aquí se muestra la página 1.`
+      : '';
+  }
+}
+
+function formatHora12(hora24){
+  if(!hora24) return '';
+  const [hStr,mStr] = hora24.split(':');
+  let h = parseInt(hStr,10);
+  const m = mStr || '00';
+  const ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12; if(h===0) h = 12;
+  return `${h}:${m} ${ampm}`;
+}
+
+async function esperarImagenes(el){
+  const imgs = el.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img=> new Promise(resolve=>{
+    if(img.complete) resolve(); else { img.onload=resolve; img.onerror=resolve; }
+  })));
+  await new Promise(r=>setTimeout(r,150));
+}
+
+async function descargarCartelPNG(){
+  const poster = document.getElementById('cartel-poster');
+  const filled = ordenarPorCampoHora(rolSlots.filter(s=>s.matchId));
+  if(!poster || !filled.length){
+    alert('Primero arma el Rol del Domingo (Auto-proponer o agregar horarios) para generar el cartel.');
+    return;
+  }
+  const btn = document.querySelector('.btn-descargar-cartel');
+  const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
+  const fecha = document.getElementById('rol-fecha').value || 'jornada';
+  const equipoDescansa = calcularEquipoDescansa(filled);
+
+  if(btn){ btn.disabled=true; btn.textContent='Generando...'; }
+
+  try{
+    for(let p=0; p<totalPaginas; p++){
+      const pagina = filled.slice(p*CARTEL_POR_PAGINA, (p+1)*CARTEL_POR_PAGINA);
+      pintarCartelPagina(pagina, p+1, totalPaginas, equipoDescansa);
+      await esperarImagenes(poster);
+      const canvas = await html2canvas(poster, { backgroundColor: null, scale: 4, useCORS: true });
+      const link = document.createElement('a');
+      link.download = totalPaginas>1 ? `jornada_${fecha}_pagina${p+1}.png` : `jornada_${fecha}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      await new Promise(r=>setTimeout(r,400));
+    }
+  }catch(err){
+    console.error(err);
+    alert('No se pudo generar el PNG. Revisa que las imágenes (escudos y logo) permitan descarga (CORS).');
+  }
+
+  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas, equipoDescansa);
+  if(btn){ btn.disabled=false; btn.textContent='📥 Descargar cartel PNG'; }
+}
+
+// ════════════════════════════════
+//  CÉDULA ARBITRAL (formato oficial de reportes, 1 encuentro por hoja carta, un campo tras otro)
+//  Lee los jugadores de la hoja "Jugadores" (N°, nombre, apodo, posición) y deja G / A / R en blanco para el árbitro.
+// ════════════════════════════════
+const CA_MIN_RENGLONES = 14;   // renglones mínimos por equipo (los sobrantes quedan en blanco para altas de último momento)
+const CA_LEYENDA = 'G = Goles · A = Amarillas · R = Rojas';
+
+function fechaNumSheet(f){ // dd/mm/yyyy -> yyyymmdd (para ordenar)
+  const p = String(f||'').split('/').map(n=>parseInt(n,10));
+  return (p.length===3 && p.every(n=>!isNaN(n))) ? p[2]*10000 + p[1]*100 + p[0] : 0;
+}
+function diaSemanaSheet(f){
+  const p = String(f||'').split('/').map(n=>parseInt(n,10));
+  if(!(p.length===3 && p.every(n=>!isNaN(n)))) return '';
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  return dias[new Date(Date.UTC(p[2], p[1]-1, p[0])).getUTCDay()];
+}
+
+function llenarSelectCedula(){
+  const sel = document.getElementById('cedula-jornada');
+  if(!sel) return;
+  const jornadas = [...new Set(S.allMatches.filter(esAgendado).map(m=>String(m.jornada||'').trim()).filter(Boolean))]
+    .sort((a,b)=>Number(a)-Number(b));
+  sel.innerHTML = '<option value="">— Selecciona jornada —</option>' + jornadas.map(j=>`<option value="${j}">Jornada ${esc(j)}</option>`).join('');
+
+  const selF = document.getElementById('cedula-fecha');
+  if(selF){
+    const fechas = [...new Set(S.allMatches.filter(esAgendado).map(m=>String(m.fecha||'').trim()).filter(Boolean))]
+      .sort((a,b)=>fechaNumSheet(b)-fechaNumSheet(a)); // la más reciente primero
+    selF.innerHTML = '<option value="">— Selecciona fecha —</option>' + fechas.map(f=>{
+      const dia = diaSemanaSheet(f);
+      return `<option value="${esc(f)}">${esc((dia?dia+' ':'')+f)}</option>`;
+    }).join('');
+  }
+}
+
+function cambiarCedulaTipo(){
+  const t = document.getElementById('cedula-tipo').value;
+  document.getElementById('cedula-jornada').style.display = (t==='jornada') ? '' : 'none';
+  document.getElementById('cedula-fecha').style.display   = (t==='fecha')   ? '' : 'none';
+  document.getElementById('cedula-aviso').textContent = '';
+}
+
+function abreviaPosicion(p){
+  const t = String(p||'').trim();
+  if(!t) return '';
+  const n = t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  if(n.startsWith('port')) return 'POR';
+  if(n.startsWith('def'))  return 'DEF';
+  if(n.startsWith('med') || n.startsWith('vol') || n.startsWith('mc')) return 'MED';
+  if(n.startsWith('del') || n.startsWith('ata')) return 'DEL';
+  return t.slice(0,3).toUpperCase();
+}
+
+function caTablaHTML(equipoId, rol, renglones){
+  const jugadores = S.players[String(equipoId)] || [];
+  let filas = '';
+  for(let i=0;i<renglones;i++){
+    const j = jugadores[i];
+    if(j){
+      filas += `<tr><td class="num">${esc(j.numero)}</td><td class="jug"><b>${esc(j.nombre)}</b>${j.apodo ? ` <i>&quot;${esc(j.apodo)}&quot;</i>` : ''}</td><td class="pos">${esc(abreviaPosicion(j.posicion))}</td><td></td><td></td><td></td></tr>`;
+    } else {
+      filas += `<tr><td class="num"></td><td class="jug"></td><td class="pos"></td><td></td><td></td><td></td></tr>`;
+    }
+  }
+  return `<div class="ca-col">
+    <div class="ca-teamhead"><span>${esc(rol)}</span><b>${esc(tname(equipoId))}</b></div>
+    <table class="ca-tabla">
+      <thead><tr><th style="width:11%">N°</th><th>Jugador</th><th style="width:12%">Pos.</th><th style="width:11%">G</th><th style="width:11%">A</th><th style="width:11%">R</th></tr></thead>
+      <tbody>${filas}</tbody>
+    </table>
+    ${jugadores.length ? '' : '<div class="ca-sinjug">Sin jugadores registrados en la hoja — anotar a mano.</div>'}
+  </div>`;
+}
+
+function caHojaHTML(m, idx, total, ctx){
+  const p2 = n => String(n).padStart(2,'0');
+  const ahora = new Date();
+  const emision = `${p2(ahora.getDate())}/${p2(ahora.getMonth()+1)}/${ahora.getFullYear()} ${p2(ahora.getHours())}:${p2(ahora.getMinutes())}`;
+  const sello = `${ahora.getFullYear()}${p2(ahora.getMonth()+1)}${p2(ahora.getDate())}`;
+  const folio = `CA-J${m.jornada||'X'}-P${m.id}-${sello}`;
+  const nL = (S.players[String(m.local)]||[]).length;
+  const nV = (S.players[String(m.visita)]||[]).length;
+  const renglones = Math.max(CA_MIN_RENGLONES, nL, nV);
+  const dia = diaSemanaSheet(m.fecha);
+  const ll = m.ll || tlogo(m.local);
+  const lv = m.lv || tlogo(m.visita);
+  const campo = String(m.cancha||'').trim() || '—';
+
+  return `<div class="cf-doc ca-hoja">
+    <div class="cf-head">
+      <div>
+        <div class="cf-liga">Liga Next Level 7</div>
+        <div class="cf-titulo">Cédula arbitral</div>
+        <div class="cf-sub">Jornada ${esc(m.jornada||'—')} · ${esc(campo)}</div>
+      </div>
+      <div class="cf-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
+    </div>
+    <div class="cf-body">
+      <div class="ca-info">
+        <div class="cf-kpi"><b>${esc(m.jornada||'—')}</b><span>Jornada</span></div>
+        <div class="cf-kpi"><b style="font-size:17px;padding:4px 0">${esc(m.fecha||'—')}</b><span>${esc(dia||'Fecha')}</span></div>
+        <div class="cf-kpi"><b style="font-size:17px;padding:4px 0">${m.hora ? esc(formatHora12(m.hora)) : '—'}</b><span>Hora</span></div>
+        <div class="cf-kpi"><b style="font-size:17px;padding:4px 0">${esc(campo)}</b><span>Campo</span></div>
+      </div>
+      <div class="ca-cruce">
+        <div class="eq"><img src="${ll}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.local))}</b></div>
+        <div class="vs">VS</div>
+        <div class="eq v"><img src="${lv}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.visita))}</b></div>
+      </div>
+      <div class="ca-tablas">
+        ${caTablaHTML(m.local, 'Local', renglones)}
+        ${caTablaHTML(m.visita, 'Visitante', renglones)}
+      </div>
+      <div class="ca-leyenda">${CA_LEYENDA}</div>
+
+      <div class="cf-seccion"><h4>Resultado final</h4>
+        <div class="ca-marcador">
+          <div><span>${esc(tname(m.local))}</span><div class="box"></div></div>
+          <div class="guion">–</div>
+          <div><span>${esc(tname(m.visita))}</span><div class="box"></div></div>
+        </div>
+      </div>
+      <div class="cf-seccion"><h4>Observaciones</h4><div class="cf-obs"></div></div>
+      <div class="cf-firmas ca-firmas">
+        <div class="cf-firma">Árbitro</div><div class="cf-firma">Capitán local</div><div class="cf-firma">Capitán visitante</div><div class="cf-firma">Vo. Bo. Liga</div>
+      </div>
+    </div>
+    <div class="cf-pie"><span>Documento generado desde el panel de administración · Liga Next Level 7</span><span>Hoja ${idx+1} de ${total} · Partido ${esc(m.id)}</span></div>
+  </div>`;
+}
+
+// Un encuentro por hoja. Se agrupa por campo (Campo 1 primero, luego Campo 2...) y dentro de cada campo por hora.
+function cedulaOrdenarPartidos(partidos){
+  return [...partidos].sort((a,b)=>{
+    const ca = String(a.cancha||'').trim() || 'zzz';
+    const cb = String(b.cancha||'').trim() || 'zzz';
+    return ca.localeCompare(cb,'es',{numeric:true,sensitivity:'base'})
+      || fechaNumSheet(a.fecha)-fechaNumSheet(b.fecha)
+      || minutosDeHora(a.hora)-minutosDeHora(b.hora)
+      || Number(a.id)-Number(b.id);
+  });
+}
+
+async function generarCedulaJornada(modo){
+  const tipo = document.getElementById('cedula-tipo').value;
+  const aviso = document.getElementById('cedula-aviso');
+  let partidos, nombreArchivo;
+
+  if(tipo === 'fecha'){
+    const f = document.getElementById('cedula-fecha').value;
+    if(!f){ aviso.textContent = 'Selecciona una fecha primero.'; return; }
+    partidos = S.allMatches.filter(m => esAgendado(m) && String(m.fecha||'').trim() === f);
+    nombreArchivo = 'cedula_fecha_' + f.replace(/\//g,'-');
+  } else {
+    const jornadaSel = document.getElementById('cedula-jornada').value;
+    if(!jornadaSel){ aviso.textContent = 'Selecciona una jornada primero.'; return; }
+    partidos = S.allMatches.filter(m => esAgendado(m) && String(m.jornada||'').trim() === jornadaSel);
+    nombreArchivo = `cedula_jornada${jornadaSel}`;
+  }
+  if(!partidos.length){ aviso.textContent = 'No hay encuentros programados en esa selección.'; return; }
+  partidos = cedulaOrdenarPartidos(partidos);
+  const total = partidos.length;
+  const advertencia = S.playersError ? ' ⚠️ No se pudo leer la hoja "Jugadores": los renglones salen en blanco.' : '';
+
+  try{
+    if(modo === 'imprimir'){
+      aviso.textContent = 'Preparando hojas...';
+      const html = partidos.map((m,i)=>caHojaHTML(m,i,total)).join('');
+      await cfImprimir(html, CA_CSS);
+      aviso.textContent = `✅ ${total} hoja(s) listas para imprimir (también puedes elegir "Guardar como PDF").` + advertencia;
+      return;
+    }
+
+    aviso.textContent = 'Generando PNG...';
+    const temp = document.createElement('div');
+    temp.style.cssText = 'position:fixed;left:-9999px;top:0;';
+    document.body.appendChild(temp);
+    try{
+      for(let i=0;i<total;i++){
+        temp.innerHTML = `<style>${CF_CSS}${CA_CSS}</style>${caHojaHTML(partidos[i], i, total)}`;
+        const hoja = temp.querySelector('.cf-doc');
+        await esperarImagenes(hoja);
+        const canvas = await html2canvas(hoja, { backgroundColor:'#ffffff', scale:3, useCORS:true });
+        const link = document.createElement('a');
+        link.download = total>1 ? `${nombreArchivo}_hoja${i+1}_partido${partidos[i].id}.png` : `${nombreArchivo}_partido${partidos[i].id}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        await new Promise(r=>setTimeout(r,400));
+      }
+    } finally { document.body.removeChild(temp); }
+    aviso.textContent = `✅ Se generaron ${total} hoja(s) PNG.` + advertencia;
+  }catch(err){
+    console.error(err);
+    aviso.textContent = 'No se pudo generar la cédula.';
+  }
+}
+
+// ════════════════════════════════
+//  REPORTE DE CONFIRMACIÓN DE ENCUENTROS (formal, imprimible / PNG)
+// ════════════════════════════════
+const CF_FB = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
+
+const CF_CSS = `
+  .cf-doc{width:850px;min-height:1100px;background:#fff;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;box-sizing:border-box;position:relative;}
+  .cf-doc *{box-sizing:border-box;}
+  .cf-head{background:#1d3d05;color:#fff;padding:22px 34px 18px;border-bottom:6px solid #5eb50d;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cf-liga{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b9d8a0;font-weight:600;}
+  .cf-titulo{font-size:28px;font-weight:800;margin-top:6px;line-height:1.15;}
+  .cf-sub{font-size:15px;color:#d6e6c8;margin-top:4px;}
+  .cf-meta{text-align:right;font-size:12px;color:#d6e6c8;line-height:1.7;white-space:nowrap;}
+  .cf-body{padding:22px 34px 10px;}
+  .cf-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+  .cf-kpi{border:1px solid #cfd8c5;border-top:4px solid #5eb50d;border-radius:6px;padding:9px 6px;text-align:center;}
+  .cf-kpi b{display:block;font-size:26px;font-weight:800;line-height:1.15;}
+  .cf-kpi span{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.7px;font-weight:600;}
+  .cf-kpi.v{border-top-color:#2f9e44;} .cf-kpi.v b{color:#1f7a35;}
+  .cf-kpi.a{border-top-color:#e0a800;} .cf-kpi.a b{color:#a87500;}
+  .cf-kpi.r{border-top-color:#d64545;} .cf-kpi.r b{color:#c0392b;}
+  .cf-tabla{width:100%;border-collapse:collapse;font-size:13px;}
+  .cf-tabla thead{display:table-header-group;}
+  .cf-tabla th{background:#e8f1dc;color:#1d3d05;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;padding:8px 6px;border:1px solid #cfd8c5;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cf-tabla td{padding:8px 6px;border:1px solid #d9e0d0;text-align:center;vertical-align:middle;}
+  .cf-tabla tr{page-break-inside:avoid;break-inside:avoid;}
+  .cf-tabla td.n{color:#6b7280;font-size:12px;}
+  .cf-tabla td.cm{white-space:nowrap;}
+  .cf-tabla td.fh b{display:block;font-size:13px;}
+  .cf-tabla td.fh span{font-size:12px;color:#6b7280;}
+  .cf-eq{display:flex;align-items:center;gap:8px;text-align:left;}
+  .cf-eq img{width:34px;height:34px;object-fit:contain;flex-shrink:0;}
+  .cf-eq div{line-height:1.2;}
+  .cf-eq b{font-size:13px;text-transform:uppercase;display:block;}
+  .cf-ok{color:#1b6e2e;font-weight:800;font-size:11.5px;}
+  .cf-pend{color:#8a6100;font-weight:700;font-size:11.5px;}
+  .cf-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.4px;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cf-pill.v{background:#e3f4e6;color:#1b6e2e;border:1px solid #a9d9b3;}
+  .cf-pill.a{background:#fff4d6;color:#8a6100;border:1px solid #f0d58a;}
+  .cf-pill.r{background:#fde8e8;color:#b42318;border:1px solid #f5b5b5;}
+  .cf-seccion{margin-top:18px;}
+  .cf-seccion h4{margin:0 0 6px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;}
+  .cf-chips span{display:inline-block;margin:0 6px 6px 0;padding:4px 10px;border:1px solid #f0d58a;background:#fff8e1;border-radius:6px;font-size:12px;color:#6b4e00;}
+  .cf-todos{padding:10px 14px;border:1px solid #a9d9b3;background:#e3f4e6;border-radius:6px;color:#1b6e2e;font-weight:700;font-size:13px;}
+  .cf-obs{height:62px;border:1px solid #cfd8c5;border-radius:6px;background:repeating-linear-gradient(transparent,transparent 19px,#d9e0d0 19px,#d9e0d0 20px);}
+  .cf-firmas{display:flex;justify-content:space-around;gap:40px;margin:46px 40px 0;}
+  .cf-firma{flex:1;text-align:center;border-top:1.5px solid #1f2933;padding-top:6px;font-size:12px;color:#444;}
+  .cf-pie{display:flex;justify-content:space-between;gap:20px;margin-top:22px;padding:10px 34px;border-top:1px solid #cfd8c5;font-size:10.5px;color:#6b7280;}
+`;
+
+// Estilos extra de la cédula arbitral (se suman a CF_CSS: mismo encabezado, pie, firmas y paleta verde oficial)
+const CA_CSS = `
+  .ca-info{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+  .ca-cruce{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding:10px 14px;border:1px solid #cfd8c5;border-radius:8px;background:#f4f8ee;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .ca-cruce .eq{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+  .ca-cruce .eq.v{flex-direction:row-reverse;text-align:right;}
+  .ca-cruce img{width:54px;height:54px;object-fit:contain;flex-shrink:0;}
+  .ca-cruce b{font-size:16px;text-transform:uppercase;line-height:1.15;}
+  .ca-cruce .vs{font-size:20px;font-weight:900;color:#5eb50d;}
+  .ca-tablas{display:flex;gap:12px;align-items:flex-start;}
+  .ca-col{flex:1;min-width:0;}
+  .ca-teamhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;background:#1d3d05;color:#fff;padding:6px 10px;border-radius:6px 6px 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .ca-teamhead span{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#b9d8a0;font-weight:700;}
+  .ca-teamhead b{font-size:13px;text-transform:uppercase;text-align:right;}
+  .ca-tabla{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;}
+  .ca-tabla th{background:#e8f1dc;color:#1d3d05;font-size:10px;letter-spacing:.6px;text-transform:uppercase;padding:5px 2px;border:1px solid #b9c4ae;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .ca-tabla td{border:1px solid #b9c4ae;height:26px;padding:1px 4px;text-align:center;vertical-align:middle;overflow:hidden;}
+  .ca-tabla tr{page-break-inside:avoid;break-inside:avoid;}
+  .ca-tabla td.num{font-weight:800;font-size:12px;}
+  .ca-tabla td.jug{text-align:left;line-height:1.1;font-size:10.5px;}
+  .ca-tabla td.jug i{color:#5b6b4d;font-size:10px;}
+  .ca-tabla td.pos{font-size:10px;color:#4b5563;font-weight:700;}
+  .ca-sinjug{font-size:10px;color:#8a6100;margin-top:4px;}
+  .ca-leyenda{margin-top:6px;font-size:10.5px;color:#6b7280;text-align:right;}
+  .ca-marcador{display:flex;align-items:flex-end;justify-content:center;gap:18px;}
+  .ca-marcador > div:not(.guion){display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 1 230px;}
+  .ca-marcador span{font-size:11.5px;font-weight:700;text-transform:uppercase;color:#1d3d05;text-align:center;}
+  .ca-marcador .box{width:86px;height:50px;border:2px solid #1f2933;border-radius:6px;}
+  .ca-marcador .guion{font-size:30px;font-weight:800;padding-bottom:6px;color:#1d3d05;}
+  .ca-firmas{margin:34px 6px 0 !important;gap:22px !important;}
+  .ca-hoja{page-break-after:always;break-after:page;}
+  .ca-hoja:last-child{page-break-after:auto;break-after:auto;}
+`;
+
+function llenarSelectConfirmacion(){
+  const sel = document.getElementById('cf-jornada');
+  if(!sel) return;
+  const jornadas = [...new Set(S.allMatches.map(m=>String(m.jornada||'').trim()).filter(Boolean))]
+    .sort((a,b)=>Number(a)-Number(b));
+  sel.innerHTML = '<option value="">— Selecciona jornada —</option>' + jornadas.map(j=>`<option value="${j}">Jornada ${esc(j)}</option>`).join('');
+  const selF = document.getElementById('cf-fecha');
+  if(selF){
+    const fechas = [...new Set(S.allMatches.map(m=>String(m.fecha||'').trim()).filter(Boolean))]
+      .sort((a,b)=>fechaNumSheet(b)-fechaNumSheet(a));
+    selF.innerHTML = '<option value="">— Selecciona fecha —</option>' + fechas.map(f=>{
+      const dia = diaSemanaSheet(f);
+      return `<option value="${esc(f)}">${esc((dia?dia+' ':'')+f)}</option>`;
+    }).join('');
+  }
+}
+function cambiarCfTipo(){
+  const t = document.getElementById('cf-tipo').value;
+  document.getElementById('cf-jornada').style.display = (t==='jornada') ? '' : 'none';
+  document.getElementById('cf-fecha').style.display   = (t==='fecha')   ? '' : 'none';
+  document.getElementById('cf-aviso').textContent = '';
+}
+
+function cfDocHTML(partidos, conf, tipo, valor){
+  const ahora = new Date();
+  const p2 = n => String(n).padStart(2,'0');
+  const emision = `${p2(ahora.getDate())}/${p2(ahora.getMonth()+1)}/${ahora.getFullYear()} ${p2(ahora.getHours())}:${p2(ahora.getMinutes())}`;
+  const sello = `${ahora.getFullYear()}${p2(ahora.getMonth()+1)}${p2(ahora.getDate())}`;
+  const folio = tipo==='fecha' ? `CE-F${String(valor).replace(/\//g,'')}-${sello}` : `CE-J${valor}-${sello}`;
+  const dia = tipo==='fecha' ? diaSemanaSheet(valor) : '';
+  const sub = tipo==='fecha' ? `Encuentros del ${dia ? dia+' ' : ''}${esc(valor)}` : `Jornada ${esc(valor)}`;
+
+  let completos=0, parciales=0, sin=0;
+  const pendientes = [];
+  const filas = partidos.map((m,i)=>{
+    const c = conf[m.id] || {};
+    const okL = !!c.local, okV = !!c.visita;
+    const n = (okL?1:0)+(okV?1:0);
+    if(n===2) completos++; else if(n===1) parciales++; else sin++;
+    const nomL = tname(m.local), nomV = tname(m.visita);
+    if(!okL) pendientes.push(`${esc(nomL)} <small>(vs ${esc(nomV)})</small>`);
+    if(!okV) pendientes.push(`${esc(nomV)} <small>(vs ${esc(nomL)})</small>`);
+    const pill = n===2 ? '<span class="cf-pill v">COMPLETA</span>' : (n===1 ? '<span class="cf-pill a">PARCIAL</span>' : '<span class="cf-pill r">SIN CONFIRMAR</span>');
+    const jugado = (m.estado||'').toLowerCase()==='jugado' ? '<div style="font-size:10px;color:#6b7280;margin-top:3px">Jugado</div>' : '';
+    const eq = (nombre, logo, ok) => `<div class="cf-eq"><img src="${logo}" onerror="this.style.opacity='.15'"><div><b>${esc(nombre)}</b><span class="${ok?'cf-ok':'cf-pend'}">${ok?'✔ Confirmado':'○ Pendiente'}</span></div></div>`;
+    return `<tr>
+      <td class="n">${i+1}</td>
+      <td>${esc(m.jornada||'')}</td>
+      <td class="fh"><b>${esc(m.fecha||'—')}</b><span>${m.hora ? esc(formatHora12(m.hora)) : '—'}</span></td>
+      <td class="cm">${esc(m.cancha||'—')}</td>
+      <td>${eq(nomL, m.ll || tlogo(m.local), okL)}</td>
+      <td>${eq(nomV, m.lv || tlogo(m.visita), okV)}</td>
+      <td>${pill}${jugado}</td>
+    </tr>`;
+  }).join('');
+
+  const seccionPend = pendientes.length
+    ? `<div class="cf-chips">${pendientes.map(p=>`<span>${p}</span>`).join('')}</div>`
+    : '<div class="cf-todos">✔ Todos los equipos confirmaron su asistencia.</div>';
+
+  return `<div class="cf-doc">
+    <div class="cf-head">
+      <div>
+        <div class="cf-liga">Liga Next Level 7</div>
+        <div class="cf-titulo">Confirmación de encuentros</div>
+        <div class="cf-sub">${sub}</div>
+      </div>
+      <div class="cf-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
+    </div>
+    <div class="cf-body">
+      <div class="cf-kpis">
+        <div class="cf-kpi"><b>${partidos.length}</b><span>Encuentros</span></div>
+        <div class="cf-kpi v"><b>${completos}</b><span>Confirmación completa</span></div>
+        <div class="cf-kpi a"><b>${parciales}</b><span>Confirmación parcial</span></div>
+        <div class="cf-kpi r"><b>${sin}</b><span>Sin confirmar</span></div>
+        <div class="cf-kpi ${pendientes.length?'a':'v'}"><b>${pendientes.length}</b><span>Equipos pendientes</span></div>
+      </div>
+      <table class="cf-tabla">
+        <thead><tr><th style="width:30px">No.</th><th style="width:44px">Jor.</th><th style="width:96px">Fecha y hora</th><th style="width:78px">Campo</th><th>Equipo local</th><th>Equipo visitante</th><th style="width:112px">Situación</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+      <div class="cf-seccion"><h4>Equipos pendientes de confirmar asistencia</h4>${seccionPend}</div>
+      <div class="cf-seccion"><h4>Observaciones</h4><div class="cf-obs"></div></div>
+      <div class="cf-firmas"><div class="cf-firma">Administrador de la liga</div><div class="cf-firma">Vo. Bo.</div></div>
+    </div>
+    <div class="cf-pie"><span>Documento generado desde el panel de administración · Liga Next Level 7</span><span>Confirmaciones leídas el ${emision}</span></div>
+  </div>`;
+}
+
+async function cfImprimir(html, extraCss=''){
+  const f = document.createElement('iframe');
+  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+  document.body.appendChild(f);
+  const d = f.contentWindow.document;
+  d.open();
+  d.write(`<!doctype html><html><head><meta charset="utf-8"><title>Confirmación de encuentros</title><style>@page{size:letter;margin:10mm}html,body{margin:0;background:#fff}${CF_CSS}${extraCss}.cf-doc{width:auto!important;min-height:0!important}</style></head><body>${html}</body></html>`);
+  d.close();
+  await Promise.all([...d.images].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; })));
+  await new Promise(r => setTimeout(r, 200));
+  f.contentWindow.focus();
+  f.contentWindow.print();
+  setTimeout(() => { try{ f.remove(); }catch(e){} }, 60000);
+}
+
+async function cfReporte(modo){
+  const tipo = document.getElementById('cf-tipo').value;
+  const aviso = document.getElementById('cf-aviso');
+  const valor = document.getElementById(tipo==='fecha' ? 'cf-fecha' : 'cf-jornada').value;
+  if(!valor){ aviso.textContent = tipo==='fecha' ? 'Selecciona una fecha primero.' : 'Selecciona una jornada primero.'; return; }
+
+  let partidos = S.allMatches.filter(m=>{
+    const est = (m.estado||'').toLowerCase();
+    if(!(est==='programado' || est==='jugado')) return false;
+    return tipo==='fecha' ? String(m.fecha||'').trim()===valor : String(m.jornada||'').trim()===valor;
+  });
+  if(!partidos.length){ aviso.textContent = 'No hay encuentros programados en esa selección.'; return; }
+  partidos.sort((a,b)=> fechaNumSheet(a.fecha)-fechaNumSheet(b.fecha) || minutosDeHora(a.hora)-minutosDeHora(b.hora)
+    || String(a.cancha||'').localeCompare(String(b.cancha||''),'es',{numeric:true}) || Number(a.id)-Number(b.id));
+
+  aviso.textContent = 'Leyendo confirmaciones...';
+  let conf;
+  try{
+    const r = await fetch(CF_FB + '/confirmaciones.json');
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    conf = (await r.json()) || {};
+  }catch(e){
+    aviso.textContent = 'No se pudieron leer las confirmaciones; no genero el reporte para no mostrar datos incorrectos. Revisa tu conexión.';
+    return;
+  }
+
+  const html = cfDocHTML(partidos, conf, tipo, valor);
+  try{
+    if(modo==='imprimir'){
+      aviso.textContent = 'Abriendo impresión...';
+      await cfImprimir(html);
+      aviso.textContent = '✅ Listo para imprimir (también puedes elegir "Guardar como PDF").';
+    } else {
+      aviso.textContent = 'Generando PNG...';
+      const temp = document.createElement('div');
+      temp.style.cssText = 'position:fixed;left:-9999px;top:0;';
+      temp.innerHTML = `<style>${CF_CSS}</style>${html}`;
+      document.body.appendChild(temp);
+      try{
+        const doc = temp.querySelector('.cf-doc');
+        await esperarImagenes(doc);
+        const canvas = await html2canvas(doc, { backgroundColor:'#ffffff', scale:2, useCORS:true });
+        const link = document.createElement('a');
+        link.download = tipo==='fecha' ? `confirmacion_fecha_${valor.replace(/\//g,'-')}.png` : `confirmacion_jornada${valor}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } finally { document.body.removeChild(temp); }
+      aviso.textContent = `✅ PNG generado — ${partidos.length} encuentro(s).`;
+    }
+  }catch(err){
+    console.error(err);
+    aviso.textContent = 'No se pudo generar el reporte.';
+  }
+}
+
+// ════════════════════════════════
+//  HELPERS
+// ════════════════════════════════
+function tname(id){ return (S.teams[id]||{}).nombre||'Equipo '+id; }
+function tlogo(id){ return (S.teams[id]||{}).logo||''; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 </script>
 </body>
 </html>
