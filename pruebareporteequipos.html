@@ -1290,7 +1290,8 @@ function clTablaHTML(equipoId, rol, renglones, rowH){
   for(let i=0;i<renglones;i++){
     const j = jugadores[i];
     if(j){
-      filas += `<tr><td class="num">${esc(j.numero)}</td><td class="jug"><b>${esc(j.nombre)}</b>${j.apodo ? ` <i>&quot;${esc(j.apodo)}&quot;</i>` : ''}</td><td class="pos">${esc(abreviaPosicion(j.posicion))}</td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
+      const largo = (String(j.nombre||'') + String(j.apodo||'')).length > 30 ? ' largo' : '';
+      filas += `<tr><td class="num">${esc(j.numero)}</td><td class="jug${largo}"><b>${esc(j.nombre)}</b>${j.apodo ? ` <i>&quot;${esc(j.apodo)}&quot;</i>` : ''}</td><td class="pos">${esc(abreviaPosicion(j.posicion))}</td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
     } else {
       filas += `<tr><td class="num"></td><td class="jug"></td><td class="pos"></td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
     }
@@ -1306,35 +1307,46 @@ function clTablaHTML(equipoId, rol, renglones, rowH){
   </div>`;
 }
 
-function clCardHTML(m, renglones, rowH){
+function clCardHTML(m, renglones, rowH, idx, total, emision, sello){
   const dia = diaSemanaSheet(m.fecha);
   const ll = m.ll || tlogo(m.local);
   const lv = m.lv || tlogo(m.visita);
   const campo = String(m.cancha||'').trim() || '—';
+  const folio = `CA-J${m.jornada||'X'}-P${m.id}-${sello}`;
   return `<div class="cl-card">
-    <div class="cl-cruce">
-      <div class="eq"><img src="${ll}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.local))}</b></div>
-      <div class="vs">VS</div>
-      <div class="eq v"><img src="${lv}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.visita))}</b></div>
+    <div class="cl-head">
+      <div>
+        <div class="cl-liga">Liga Next Level 7 · Torneo Dominical</div>
+        <div class="cl-titulo">Cédula arbitral <span>· Jornada ${esc(m.jornada||'—')} · ${esc(campo)}</span></div>
+      </div>
+      <div class="cl-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
     </div>
-    <div class="cl-info">
-      <span>Jornada ${esc(m.jornada||'—')}</span>
-      <span>${esc(m.fecha||'—')}${dia ? ' · ' + esc(dia) : ''}</span>
-      <span>${m.hora ? esc(formatHora12(m.hora)) : '—'}</span>
-      <span>${esc(campo)}</span>
-      <span>ID ${esc(m.id)}</span>
+    <div class="cl-cuerpo">
+      <div class="cl-cruce">
+        <div class="eq"><img src="${ll}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.local))}</b></div>
+        <div class="vs">VS</div>
+        <div class="eq v"><img src="${lv}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.visita))}</b></div>
+      </div>
+      <div class="cl-info">
+        <span>Jornada ${esc(m.jornada||'—')}</span>
+        <span>${esc(m.fecha||'—')}${dia ? ' · ' + esc(dia) : ''}</span>
+        <span>${m.hora ? esc(formatHora12(m.hora)) : '—'}</span>
+        <span>${esc(campo)}</span>
+        <span>ID ${esc(m.id)}</span>
+      </div>
+      <div class="cl-tablas">
+        ${clTablaHTML(m.local, 'Local', renglones, rowH)}
+        ${clTablaHTML(m.visita, 'Visitante', renglones, rowH)}
+      </div>
+      <div class="cl-marcador">
+        <div><span>${esc(tname(m.local))}</span><div class="box"></div></div>
+        <div class="guion">–</div>
+        <div><span>${esc(tname(m.visita))}</span><div class="box"></div></div>
+      </div>
+      <div class="cl-obs-t">Observaciones</div><div class="cl-obs"></div>
+      <div class="cl-firmas"><div class="cl-firma">Árbitro</div><div class="cl-firma">Capitán local</div><div class="cl-firma">Capitán visitante</div></div>
     </div>
-    <div class="cl-tablas">
-      ${clTablaHTML(m.local, 'Local', renglones, rowH)}
-      ${clTablaHTML(m.visita, 'Visitante', renglones, rowH)}
-    </div>
-    <div class="cl-marcador">
-      <div><span>${esc(tname(m.local))}</span><div class="box"></div></div>
-      <div class="guion">–</div>
-      <div><span>${esc(tname(m.visita))}</span><div class="box"></div></div>
-    </div>
-    <div class="cl-obs-t">Observaciones</div><div class="cl-obs"></div>
-    <div class="cl-firmas"><div class="cl-firma">Árbitro</div><div class="cl-firma">Capitán local</div><div class="cl-firma">Capitán visitante</div></div>
+    <div class="cl-pie"><span>${CA_LEYENDA}</span><span>Hoja ${idx+1} de ${total} · Partido ${esc(m.id)}</span></div>
   </div>`;
 }
 
@@ -1346,22 +1358,12 @@ function caHojaDobleHTML(par, idx, total){
   const tamanos = par.flatMap(m => [(S.players[String(m.local)]||[]).length, (S.players[String(m.visita)]||[]).length]);
   const renglones = Math.max(CA_MIN_RENGLONES, ...tamanos);           // ambos encuentros usan el mismo número de renglones
   const rowH = Math.max(17, Math.min(30, Math.floor(CL_AREA_FILAS / renglones)));
-  const jornadas = [...new Set(par.map(m => m.jornada || '—'))].join(' / ');
-  const campos = [...new Set(par.map(m => String(m.cancha||'').trim() || '—'))].join(' / ');
-  const folio = `CA-J${par[0].jornada||'X'}-P${par.map(m=>m.id).join('-')}-${sello}`;
+  // Cada encuentro lleva su propio encabezado verde y su propio pie (se pueden separar por partido)
   return `<div class="cl-hoja">
-    <div class="cl-head">
-      <div>
-        <div class="cl-liga">Liga Next Level 7 · Torneo Dominical</div>
-        <div class="cl-titulo">Cédula arbitral <span>· Jornada ${esc(jornadas)} · ${esc(campos)}</span></div>
-      </div>
-      <div class="cl-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
-    </div>
     <div class="cl-cards">
-      ${par.map(m => clCardHTML(m, renglones, rowH)).join('')}
+      ${par.map(m => clCardHTML(m, renglones, rowH, idx, total, emision, sello)).join('')}
       ${par.length < 2 ? '<div class="cl-card vacia"></div>' : ''}
     </div>
-    <div class="cl-pie"><span>${CA_LEYENDA}</span><span>Documento generado desde el panel de administración · Hoja ${idx+1} de ${total} · Partido${par.length>1?'s':''} ${par.map(m=>esc(m.id)).join(' y ')}</span></div>
   </div>`;
 }
 
@@ -1494,14 +1496,15 @@ const CA_CSS = `
   .cl-hoja{width:1000px;height:760px;box-sizing:border-box;background:#fff;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;position:relative;overflow:hidden;display:flex;flex-direction:column;margin:0 auto;page-break-after:always;break-after:page;}
   .cl-hoja:last-child{page-break-after:auto;break-after:auto;}
   .cl-hoja *{box-sizing:border-box;}
-  .cl-head{background:#1d3d05;color:#fff;border-bottom:5px solid #5eb50d;padding:8px 18px;display:flex;justify-content:space-between;align-items:center;gap:16px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cl-liga{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#b9d8a0;font-weight:600;}
-  .cl-titulo{font-size:19px;font-weight:800;line-height:1.15;margin-top:2px;}
-  .cl-titulo span{font-size:13px;font-weight:600;color:#d6e6c8;}
-  .cl-meta{text-align:right;font-size:10.5px;color:#d6e6c8;line-height:1.5;white-space:nowrap;}
-  .cl-cards{flex:1;display:flex;gap:14px;padding:10px 14px 0;min-height:0;}
-  .cl-card{flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid #cfd8c5;border-radius:8px;padding:8px 9px;}
+  .cl-cards{flex:1;display:flex;gap:14px;padding:8px 14px;min-height:0;}
+  .cl-card{flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid #cfd8c5;border-radius:8px;overflow:hidden;}
   .cl-card.vacia{border:none;}
+  .cl-head{background:#1d3d05;color:#fff;border-bottom:5px solid #5eb50d;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cl-liga{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:#b9d8a0;font-weight:600;}
+  .cl-titulo{font-size:16px;font-weight:800;line-height:1.15;margin-top:2px;}
+  .cl-titulo span{font-size:11.5px;font-weight:600;color:#d6e6c8;}
+  .cl-meta{text-align:right;font-size:9px;color:#d6e6c8;line-height:1.45;white-space:nowrap;}
+  .cl-cuerpo{flex:1;display:flex;flex-direction:column;padding:8px 9px 6px;min-height:0;}
   .cl-cruce{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f4f8ee;border:1px solid #cfd8c5;border-radius:6px;padding:5px 9px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .cl-cruce .eq{display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
   .cl-cruce .eq.v{flex-direction:row-reverse;text-align:right;}
@@ -1535,7 +1538,9 @@ const CA_CSS = `
   .cl-obs{border:1px solid #b9c4ae;border-radius:5px;height:28px;margin-top:2px;}
   .cl-firmas{display:flex;gap:10px;margin-top:12px;}
   .cl-firma{flex:1;text-align:center;border-top:1.4px solid #1f2933;padding-top:3px;font-size:9px;color:#444;}
-  .cl-pie{display:flex;justify-content:space-between;gap:16px;padding:5px 18px;border-top:1px solid #cfd8c5;font-size:9px;color:#6b7280;margin-top:6px;}
+  .cl-pie{display:flex;justify-content:space-between;gap:8px;padding:4px 10px;border-top:1px solid #cfd8c5;font-size:8px;color:#6b7280;white-space:nowrap;}
+  .cl-tabla td.jug.largo{font-size:8px;line-height:1;}
+  .cl-tabla td.jug.largo i{font-size:7.5px;}
 `;
 
 function llenarSelectConfirmacion(){
