@@ -213,7 +213,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
     <!-- CÉDULA DE JORNADA -->
     <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
       <div class="mod-section-title" style="color:var(--neon)">📋 Cédula arbitral (para el árbitro)</div>
-      <div class="mod-hint">Formato oficial de la liga, un encuentro por hoja carta. Trae de la hoja "Jugadores" el N°, nombre, apodo y posición de cada equipo, y deja en blanco G / A / R para que el árbitro anote a mano, más resultado final, observaciones y firmas. Salen primero los encuentros del Campo 1 y luego los del Campo 2 (solo encuentros ya programados). Puedes elegirla por jornada o por fecha, imprimirla o descargarla en PNG.</div>
+      <div class="mod-hint">Formato oficial de la liga, en hoja carta horizontal con dos encuentros por hoja (los dos del mismo campo). Trae de la hoja "Jugadores" el N°, nombre, apodo y posición de cada equipo, y incluye una casilla Asistió para marcar y deja en blanco G / A / R para que el árbitro anote a mano, más resultado final, observaciones y firmas. Salen primero los encuentros del Campo 1 y luego los del Campo 2 (solo encuentros ya programados). Puedes elegirla por jornada o por fecha, imprimirla o descargarla en PNG.</div>
       <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
         <select id="cedula-tipo" class="msg-input" style="flex:0 0 130px" onchange="cambiarCedulaTipo()"><option value="jornada">Por jornada</option><option value="fecha">Por fecha</option></select>
         <select id="cedula-jornada" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona jornada —</option></select>
@@ -1233,7 +1233,8 @@ async function descargarCartelPNG(){
 //  Lee los jugadores de la hoja "Jugadores" (N°, nombre, apodo, posición) y deja G / A / R en blanco para el árbitro.
 // ════════════════════════════════
 const CA_MIN_RENGLONES = 14;   // renglones mínimos por equipo (los sobrantes quedan en blanco para altas de último momento)
-const CA_LEYENDA = 'G = Goles · A = Amarillas · R = Rojas';
+const CA_LEYENDA = 'Asistió = marcar ✔ · G = Goles · A = Amarillas · R = Rojas';
+const CL_AREA_FILAS = 417;   // alto (px) disponible para los renglones de jugadores en la hoja horizontal
 
 function fechaNumSheet(f){ // dd/mm/yyyy -> yyyymmdd (para ordenar)
   const p = String(f||'').split('/').map(n=>parseInt(n,10));
@@ -1282,85 +1283,89 @@ function abreviaPosicion(p){
   return t.slice(0,3).toUpperCase();
 }
 
-function caTablaHTML(equipoId, rol, renglones){
+// ── Cédula horizontal: DOS encuentros por hoja carta (uno junto al otro), con casilla "Asistió" ──
+function clTablaHTML(equipoId, rol, renglones, rowH){
   const jugadores = S.players[String(equipoId)] || [];
   let filas = '';
   for(let i=0;i<renglones;i++){
     const j = jugadores[i];
     if(j){
-      filas += `<tr><td class="num">${esc(j.numero)}</td><td class="jug"><b>${esc(j.nombre)}</b>${j.apodo ? ` <i>&quot;${esc(j.apodo)}&quot;</i>` : ''}</td><td class="pos">${esc(abreviaPosicion(j.posicion))}</td><td></td><td></td><td></td></tr>`;
+      filas += `<tr><td class="num">${esc(j.numero)}</td><td class="jug"><b>${esc(j.nombre)}</b>${j.apodo ? ` <i>&quot;${esc(j.apodo)}&quot;</i>` : ''}</td><td class="pos">${esc(abreviaPosicion(j.posicion))}</td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
     } else {
-      filas += `<tr><td class="num"></td><td class="jug"></td><td class="pos"></td><td></td><td></td><td></td></tr>`;
+      filas += `<tr><td class="num"></td><td class="jug"></td><td class="pos"></td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
     }
   }
-  return `<div class="ca-col">
-    <div class="ca-teamhead"><span>${esc(rol)}</span><b>${esc(tname(equipoId))}</b></div>
-    <table class="ca-tabla">
-      <thead><tr><th style="width:11%">N°</th><th>Jugador</th><th style="width:12%">Pos.</th><th style="width:11%">G</th><th style="width:11%">A</th><th style="width:11%">R</th></tr></thead>
+  return `<div class="cl-col">
+    <div class="cl-teamhead"><span>${esc(rol)}</span><b>${esc(tname(equipoId))}</b></div>
+    <table class="cl-tabla" style="--rowh:${rowH}px">
+      <colgroup><col style="width:8%"><col><col style="width:10%"><col style="width:18%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup>
+      <thead><tr><th>N°</th><th>Jugador</th><th>Pos.</th><th>Asistió</th><th>G</th><th class="a">A</th><th class="r">R</th></tr></thead>
       <tbody>${filas}</tbody>
     </table>
-    ${jugadores.length ? '' : '<div class="ca-sinjug">Sin jugadores registrados en la hoja — anotar a mano.</div>'}
+    ${jugadores.length ? '' : '<div class="cl-sinjug">Sin jugadores registrados en la hoja — anotar a mano.</div>'}
   </div>`;
 }
 
-function caHojaHTML(m, idx, total, ctx){
-  const p2 = n => String(n).padStart(2,'0');
-  const ahora = new Date();
-  const emision = `${p2(ahora.getDate())}/${p2(ahora.getMonth()+1)}/${ahora.getFullYear()} ${p2(ahora.getHours())}:${p2(ahora.getMinutes())}`;
-  const sello = `${ahora.getFullYear()}${p2(ahora.getMonth()+1)}${p2(ahora.getDate())}`;
-  const folio = `CA-J${m.jornada||'X'}-P${m.id}-${sello}`;
-  const nL = (S.players[String(m.local)]||[]).length;
-  const nV = (S.players[String(m.visita)]||[]).length;
-  const renglones = Math.max(CA_MIN_RENGLONES, nL, nV);
+function clCardHTML(m, renglones, rowH){
   const dia = diaSemanaSheet(m.fecha);
   const ll = m.ll || tlogo(m.local);
   const lv = m.lv || tlogo(m.visita);
   const campo = String(m.cancha||'').trim() || '—';
-
-  return `<div class="cf-doc ca-hoja">
-    <div class="cf-head">
-      <div>
-        <div class="cf-liga">Liga Next Level 7</div>
-        <div class="cf-titulo">Cédula arbitral</div>
-        <div class="cf-sub">Jornada ${esc(m.jornada||'—')} · ${esc(campo)}</div>
-      </div>
-      <div class="cf-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
+  return `<div class="cl-card">
+    <div class="cl-cruce">
+      <div class="eq"><img src="${ll}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.local))}</b></div>
+      <div class="vs">VS</div>
+      <div class="eq v"><img src="${lv}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.visita))}</b></div>
     </div>
-    <div class="cf-body">
-      <div class="ca-info">
-        <div class="cf-kpi"><b>${esc(m.jornada||'—')}</b><span>Jornada</span></div>
-        <div class="cf-kpi"><b style="font-size:17px;padding:4px 0">${esc(m.fecha||'—')}</b><span>${esc(dia||'Fecha')}</span></div>
-        <div class="cf-kpi"><b style="font-size:17px;padding:4px 0">${m.hora ? esc(formatHora12(m.hora)) : '—'}</b><span>Hora</span></div>
-        <div class="cf-kpi"><b style="font-size:17px;padding:4px 0">${esc(campo)}</b><span>Campo</span></div>
-      </div>
-      <div class="ca-cruce">
-        <div class="eq"><img src="${ll}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.local))}</b></div>
-        <div class="vs">VS</div>
-        <div class="eq v"><img src="${lv}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.visita))}</b></div>
-      </div>
-      <div class="ca-tablas">
-        ${caTablaHTML(m.local, 'Local', renglones)}
-        ${caTablaHTML(m.visita, 'Visitante', renglones)}
-      </div>
-      <div class="ca-leyenda">${CA_LEYENDA}</div>
-
-      <div class="cf-seccion"><h4>Resultado final</h4>
-        <div class="ca-marcador">
-          <div><span>${esc(tname(m.local))}</span><div class="box"></div></div>
-          <div class="guion">–</div>
-          <div><span>${esc(tname(m.visita))}</span><div class="box"></div></div>
-        </div>
-      </div>
-      <div class="cf-seccion"><h4>Observaciones</h4><div class="cf-obs"></div></div>
-      <div class="cf-firmas ca-firmas">
-        <div class="cf-firma">Árbitro</div><div class="cf-firma">Capitán local</div><div class="cf-firma">Capitán visitante</div><div class="cf-firma">Vo. Bo. Liga</div>
-      </div>
+    <div class="cl-info">
+      <span>Jornada ${esc(m.jornada||'—')}</span>
+      <span>${esc(m.fecha||'—')}${dia ? ' · ' + esc(dia) : ''}</span>
+      <span>${m.hora ? esc(formatHora12(m.hora)) : '—'}</span>
+      <span>${esc(campo)}</span>
+      <span>ID ${esc(m.id)}</span>
     </div>
-    <div class="cf-pie"><span>Documento generado desde el panel de administración · Liga Next Level 7</span><span>Hoja ${idx+1} de ${total} · Partido ${esc(m.id)}</span></div>
+    <div class="cl-tablas">
+      ${clTablaHTML(m.local, 'Local', renglones, rowH)}
+      ${clTablaHTML(m.visita, 'Visitante', renglones, rowH)}
+    </div>
+    <div class="cl-marcador">
+      <div><span>${esc(tname(m.local))}</span><div class="box"></div></div>
+      <div class="guion">–</div>
+      <div><span>${esc(tname(m.visita))}</span><div class="box"></div></div>
+    </div>
+    <div class="cl-obs-t">Observaciones</div><div class="cl-obs"></div>
+    <div class="cl-firmas"><div class="cl-firma">Árbitro</div><div class="cl-firma">Capitán local</div><div class="cl-firma">Capitán visitante</div></div>
   </div>`;
 }
 
-// Un encuentro por hoja. Se agrupa por campo (Campo 1 primero, luego Campo 2...) y dentro de cada campo por hora.
+function caHojaDobleHTML(par, idx, total){
+  const p2 = n => String(n).padStart(2,'0');
+  const ahora = new Date();
+  const emision = `${p2(ahora.getDate())}/${p2(ahora.getMonth()+1)}/${ahora.getFullYear()} ${p2(ahora.getHours())}:${p2(ahora.getMinutes())}`;
+  const sello = `${ahora.getFullYear()}${p2(ahora.getMonth()+1)}${p2(ahora.getDate())}`;
+  const tamanos = par.flatMap(m => [(S.players[String(m.local)]||[]).length, (S.players[String(m.visita)]||[]).length]);
+  const renglones = Math.max(CA_MIN_RENGLONES, ...tamanos);           // ambos encuentros usan el mismo número de renglones
+  const rowH = Math.max(17, Math.min(30, Math.floor(CL_AREA_FILAS / renglones)));
+  const jornadas = [...new Set(par.map(m => m.jornada || '—'))].join(' / ');
+  const campos = [...new Set(par.map(m => String(m.cancha||'').trim() || '—'))].join(' / ');
+  const folio = `CA-J${par[0].jornada||'X'}-P${par.map(m=>m.id).join('-')}-${sello}`;
+  return `<div class="cl-hoja">
+    <div class="cl-head">
+      <div>
+        <div class="cl-liga">Liga Next Level 7 · Torneo Dominical</div>
+        <div class="cl-titulo">Cédula arbitral <span>· Jornada ${esc(jornadas)} · ${esc(campos)}</span></div>
+      </div>
+      <div class="cl-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
+    </div>
+    <div class="cl-cards">
+      ${par.map(m => clCardHTML(m, renglones, rowH)).join('')}
+      ${par.length < 2 ? '<div class="cl-card vacia"></div>' : ''}
+    </div>
+    <div class="cl-pie"><span>${CA_LEYENDA}</span><span>Documento generado desde el panel de administración · Hoja ${idx+1} de ${total} · Partido${par.length>1?'s':''} ${par.map(m=>esc(m.id)).join(' y ')}</span></div>
+  </div>`;
+}
+
+// Dos encuentros por hoja (horizontal). Se agrupa por campo (Campo 1 primero, luego Campo 2...) y dentro de cada campo por hora; las parejas nunca mezclan campos.
 function cedulaOrdenarPartidos(partidos){
   return [...partidos].sort((a,b)=>{
     const ca = String(a.cancha||'').trim() || 'zzz';
@@ -1390,15 +1395,21 @@ async function generarCedulaJornada(modo){
   }
   if(!partidos.length){ aviso.textContent = 'No hay encuentros programados en esa selección.'; return; }
   partidos = cedulaOrdenarPartidos(partidos);
-  const total = partidos.length;
+  const totalPartidos = partidos.length;
+  // se arman parejas dentro de cada campo (así un árbitro/campo no se mezcla con otro)
+  const porCampo = {};
+  partidos.forEach(m => { const c = String(m.cancha||'').trim() || '—'; (porCampo[c] = porCampo[c] || []).push(m); });
+  const pares = [];
+  Object.keys(porCampo).forEach(c => { for(let i=0;i<porCampo[c].length;i+=2) pares.push(porCampo[c].slice(i,i+2)); });
+  const total = pares.length;
   const advertencia = S.playersError ? ' ⚠️ No se pudo leer la hoja "Jugadores": los renglones salen en blanco.' : '';
 
   try{
     if(modo === 'imprimir'){
       aviso.textContent = 'Preparando hojas...';
-      const html = partidos.map((m,i)=>caHojaHTML(m,i,total)).join('');
+      const html = pares.map((par,i)=>caHojaDobleHTML(par,i,total)).join('');
       await cfImprimir(html, CA_CSS);
-      aviso.textContent = `✅ ${total} hoja(s) listas para imprimir (también puedes elegir "Guardar como PDF").` + advertencia;
+      aviso.textContent = `✅ ${total} hoja(s) horizontales con ${totalPartidos} encuentro(s), listas para imprimir (también puedes elegir "Guardar como PDF").` + advertencia;
       return;
     }
 
@@ -1408,18 +1419,19 @@ async function generarCedulaJornada(modo){
     document.body.appendChild(temp);
     try{
       for(let i=0;i<total;i++){
-        temp.innerHTML = `<style>${CF_CSS}${CA_CSS}</style>${caHojaHTML(partidos[i], i, total)}`;
-        const hoja = temp.querySelector('.cf-doc');
+        temp.innerHTML = `<style>${CF_CSS}${CA_CSS}</style>${caHojaDobleHTML(pares[i], i, total)}`;
+        const hoja = temp.querySelector('.cl-hoja');
         await esperarImagenes(hoja);
         const canvas = await html2canvas(hoja, { backgroundColor:'#ffffff', scale:3, useCORS:true });
         const link = document.createElement('a');
-        link.download = total>1 ? `${nombreArchivo}_hoja${i+1}_partido${partidos[i].id}.png` : `${nombreArchivo}_partido${partidos[i].id}.png`;
+        const idsPar = pares[i].map(m=>m.id).join('-');
+        link.download = total>1 ? `${nombreArchivo}_hoja${i+1}_partidos${idsPar}.png` : `${nombreArchivo}_partidos${idsPar}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
         await new Promise(r=>setTimeout(r,400));
       }
     } finally { document.body.removeChild(temp); }
-    aviso.textContent = `✅ Se generaron ${total} hoja(s) PNG.` + advertencia;
+    aviso.textContent = `✅ Se generaron ${total} hoja(s) PNG con ${totalPartidos} encuentro(s).` + advertencia;
   }catch(err){
     console.error(err);
     aviso.textContent = 'No se pudo generar la cédula.';
@@ -1478,36 +1490,52 @@ const CF_CSS = `
 
 // Estilos extra de la cédula arbitral (se suman a CF_CSS: mismo encabezado, pie, firmas y paleta verde oficial)
 const CA_CSS = `
-  .ca-info{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-  .ca-cruce{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding:10px 14px;border:1px solid #cfd8c5;border-radius:8px;background:#f4f8ee;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .ca-cruce .eq{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
-  .ca-cruce .eq.v{flex-direction:row-reverse;text-align:right;}
-  .ca-cruce img{width:54px;height:54px;object-fit:contain;flex-shrink:0;}
-  .ca-cruce b{font-size:16px;text-transform:uppercase;line-height:1.15;}
-  .ca-cruce .vs{font-size:20px;font-weight:900;color:#5eb50d;}
-  .ca-tablas{display:flex;gap:12px;align-items:flex-start;}
-  .ca-col{flex:1;min-width:0;}
-  .ca-teamhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;background:#1d3d05;color:#fff;padding:6px 10px;border-radius:6px 6px 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .ca-teamhead span{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#b9d8a0;font-weight:700;}
-  .ca-teamhead b{font-size:13px;text-transform:uppercase;text-align:right;}
-  .ca-tabla{width:100%;border-collapse:collapse;table-layout:fixed;font-size:11px;}
-  .ca-tabla th{background:#e8f1dc;color:#1d3d05;font-size:10px;letter-spacing:.6px;text-transform:uppercase;padding:5px 2px;border:1px solid #b9c4ae;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .ca-tabla td{border:1px solid #b9c4ae;height:26px;padding:1px 4px;text-align:center;vertical-align:middle;overflow:hidden;}
-  .ca-tabla tr{page-break-inside:avoid;break-inside:avoid;}
-  .ca-tabla td.num{font-weight:800;font-size:12px;}
-  .ca-tabla td.jug{text-align:left;line-height:1.1;font-size:10.5px;}
-  .ca-tabla td.jug i{color:#5b6b4d;font-size:10px;}
-  .ca-tabla td.pos{font-size:10px;color:#4b5563;font-weight:700;}
-  .ca-sinjug{font-size:10px;color:#8a6100;margin-top:4px;}
-  .ca-leyenda{margin-top:6px;font-size:10.5px;color:#6b7280;text-align:right;}
-  .ca-marcador{display:flex;align-items:flex-end;justify-content:center;gap:18px;}
-  .ca-marcador > div:not(.guion){display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 1 230px;}
-  .ca-marcador span{font-size:11.5px;font-weight:700;text-transform:uppercase;color:#1d3d05;text-align:center;}
-  .ca-marcador .box{width:86px;height:50px;border:2px solid #1f2933;border-radius:6px;}
-  .ca-marcador .guion{font-size:30px;font-weight:800;padding-bottom:6px;color:#1d3d05;}
-  .ca-firmas{margin:34px 6px 0 !important;gap:22px !important;}
-  .ca-hoja{page-break-after:always;break-after:page;}
-  .ca-hoja:last-child{page-break-after:auto;break-after:auto;}
+  @page{size:letter landscape;margin:5mm}
+  .cl-hoja{width:1000px;height:760px;box-sizing:border-box;background:#fff;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;position:relative;overflow:hidden;display:flex;flex-direction:column;margin:0 auto;page-break-after:always;break-after:page;}
+  .cl-hoja:last-child{page-break-after:auto;break-after:auto;}
+  .cl-hoja *{box-sizing:border-box;}
+  .cl-head{background:#1d3d05;color:#fff;border-bottom:5px solid #5eb50d;padding:8px 18px;display:flex;justify-content:space-between;align-items:center;gap:16px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cl-liga{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:#b9d8a0;font-weight:600;}
+  .cl-titulo{font-size:19px;font-weight:800;line-height:1.15;margin-top:2px;}
+  .cl-titulo span{font-size:13px;font-weight:600;color:#d6e6c8;}
+  .cl-meta{text-align:right;font-size:10.5px;color:#d6e6c8;line-height:1.5;white-space:nowrap;}
+  .cl-cards{flex:1;display:flex;gap:14px;padding:10px 14px 0;min-height:0;}
+  .cl-card{flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid #cfd8c5;border-radius:8px;padding:8px 9px;}
+  .cl-card.vacia{border:none;}
+  .cl-cruce{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f4f8ee;border:1px solid #cfd8c5;border-radius:6px;padding:5px 9px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cl-cruce .eq{display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
+  .cl-cruce .eq.v{flex-direction:row-reverse;text-align:right;}
+  .cl-cruce img{width:34px;height:34px;object-fit:contain;flex-shrink:0;}
+  .cl-cruce b{font-size:12.5px;text-transform:uppercase;line-height:1.1;}
+  .cl-cruce .vs{font-size:14px;font-weight:900;color:#5eb50d;}
+  .cl-info{display:flex;justify-content:space-between;gap:4px;margin:6px 0;}
+  .cl-info span{background:#e8f1dc;color:#1d3d05;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cl-tablas{display:flex;gap:7px;align-items:flex-start;}
+  .cl-col{flex:1;min-width:0;}
+  .cl-teamhead{display:flex;justify-content:space-between;align-items:baseline;gap:4px;background:#1d3d05;color:#fff;padding:4px 7px;border-radius:5px 5px 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cl-teamhead span{font-size:8.5px;letter-spacing:1.2px;text-transform:uppercase;color:#b9d8a0;font-weight:700;}
+  .cl-teamhead b{font-size:11px;text-transform:uppercase;text-align:right;line-height:1.1;}
+  .cl-tabla{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9.5px;}
+  .cl-tabla th{background:#e8f1dc;color:#1d3d05;font-size:8px;letter-spacing:0;white-space:nowrap;text-transform:uppercase;padding:3px 1px;border:1px solid #b9c4ae;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cl-tabla th.a{background:#fff4d6;color:#8a6100;} .cl-tabla th.r{background:#fde8e8;color:#b42318;}
+  .cl-tabla td{border:1px solid #b9c4ae;padding:0 3px;text-align:center;vertical-align:middle;overflow:hidden;height:var(--rowh,22px);}
+  .cl-tabla tr{page-break-inside:avoid;break-inside:avoid;}
+  .cl-tabla td.num{font-weight:800;font-size:10.5px;}
+  .cl-tabla td.jug{text-align:left;line-height:1.05;font-size:9px;}
+  .cl-tabla td.jug i{color:#5b6b4d;font-size:8.5px;}
+  .cl-tabla td.pos{font-size:8.5px;color:#4b5563;font-weight:700;}
+  .chk{display:inline-block;width:13px;height:13px;border:1.6px solid #1f2933;border-radius:2px;background:#fff;vertical-align:middle;}
+  .cl-sinjug{font-size:9px;color:#8a6100;margin-top:3px;}
+  .cl-marcador{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-top:auto;padding-top:6px;}
+  .cl-marcador > div:not(.guion){display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 1 150px;}
+  .cl-marcador span{font-size:9px;font-weight:700;text-transform:uppercase;color:#1d3d05;text-align:center;line-height:1.1;}
+  .cl-marcador .box{width:62px;height:32px;border:2px solid #1f2933;border-radius:5px;}
+  .cl-marcador .guion{font-size:22px;font-weight:800;color:#1d3d05;padding-bottom:3px;}
+  .cl-obs-t{font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;font-weight:800;margin-top:6px;}
+  .cl-obs{border:1px solid #b9c4ae;border-radius:5px;height:28px;margin-top:2px;}
+  .cl-firmas{display:flex;gap:10px;margin-top:12px;}
+  .cl-firma{flex:1;text-align:center;border-top:1.4px solid #1f2933;padding-top:3px;font-size:9px;color:#444;}
+  .cl-pie{display:flex;justify-content:space-between;gap:16px;padding:5px 18px;border-top:1px solid #cfd8c5;font-size:9px;color:#6b7280;margin-top:6px;}
 `;
 
 function llenarSelectConfirmacion(){
