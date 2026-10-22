@@ -127,6 +127,7 @@ async function cargarFechasYEquipos() {
     todasParticipaciones = parseCSV(await resPart.text());
     todosEventos         = parseCSV(await resEv.text());
 
+    DESCANSOS = calcularDescansos();
     poblarSelectores();
     document.getElementById('statusMsg').textContent = 'Selecciona filtro y presiona Cargar Datos';
   } catch(e) {
@@ -317,7 +318,7 @@ function renderStack(filtrados) {
   const eqMap = {};
   todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
   const cont = document.getElementById('stackContainer');
-  cont.innerHTML = '';
+  cont.innerHTML = bannerDescansoHTML(filtrados);
   filtrados.forEach((p, idx) => {
     const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
     const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
@@ -395,6 +396,201 @@ function bloqueConfirmarLado(idPartido, lado, idEquipo, nombre, confirmado) {
   </div>`;
 }
 
+// ===== DESCANSOS (17 equipos: cada jornada descansa un equipo) =====
+// Descansos fijados a mano: { numeroJornada: ['Nombre del equipo' (o ID_Equipo)', ...] }
+// Galácticos (equipo nuevo) descansó en la jornada 1.
+const DESCANSOS_MANUALES = { 1: ['Galacticos'] };
+
+// Una jornada solo se usa para detectar descansos "naturales" si ya tiene al menos
+// este número de partidos capturados (con 17 equipos una jornada completa tiene 8).
+// Así una jornada a medio capturar no hace que "descansen" todos los demás.
+const MIN_PARTIDOS_PARA_DETECTAR = 6;
+
+let DESCANSOS = {};        // jornada -> { jornada, equipos:[{id,nombre,descripcion}], fechas:[], jugada, sugerido, vuelta }
+let DESCANSOS_AVISOS = []; // avisos para que revises la hoja
+
+function normTxt(t) { return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase(); }
+function claveVuelta(v) { return String(v || '').trim() === '2' ? '2' : '1'; }
+
+function buscarEquipoPorRef(ref) {
+  const r = String(ref).trim();
+  const porId = todosEquipos.find(e => String(e['ID_Equipo']).trim() === r);
+  if (porId) return porId;
+  const n = normTxt(r);
+  return todosEquipos.find(e => normTxt(e['Nombre']) === n)
+      || todosEquipos.find(e => normTxt(e['Nombre']).includes(n))
+      || null;
+}
+
+// Regla: cada equipo descansa UNA vez por vuelta.
+//  1) Se respetan los descansos manuales (DESCANSOS_MANUALES).
+//  2) Descanso "natural" = la primera jornada de la vuelta en la que el equipo no tiene partido en la hoja.
+//  3) Los equipos que aún no tienen descanso se SUGIEREN en las jornadas (1..N equipos) que siguen libres.
+function calcularDescansos() {
+  const avisos = [];
+  const activos = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo');
+  const info = e => ({
+    id: String(e['ID_Equipo']).trim(),
+    nombre: (e['Nombre'] || '').toUpperCase(),
+    descripcion: e['Descripción'] || e['Descripcion'] || ''
+  });
+
+  const porJ = {};
+  todosPartidos.forEach(p => {
+    const j = Number(p['Jornada']); if (!j) return;
+    if (!porJ[j]) porJ[j] = { ids: new Set(), fechas: [], vuelta: claveVuelta(p['Vuelta']), jugado: false, n: 0, incompleta: false, filasIncompletas: [] };
+    const o = porJ[j];
+    o.n++;
+    const l = String(p['Equipo_Local'] || '').trim(), v = String(p['Equipo_Visita'] || '').trim();
+    if (!l || !v) { o.incompleta = true; o.filasIncompletas.push(p['ID_Partido']); }
+    if (l) o.ids.add(l);
+    if (v) o.ids.add(v);
+    const f = (p['Fecha'] || '').trim();
+    if (f && !o.fechas.includes(f)) o.fechas.push(f);
+    if ((p['Estado'] || '').trim() === 'Jugado') o.jugado = true;
+  });
+
+  const res = {};
+  const asegurar = j => {
+    if (!res[j]) res[j] = {
+      jornada: j, equipos: [], sugerido: false,
+      fechas: porJ[j] ? porJ[j].fechas : [],
+      jugada: porJ[j] ? porJ[j].jugado : false,
+      vuelta: porJ[j] ? porJ[j].vuelta : '1'
+    };
+    return res[j];
+  };
+  const yaDescanso = {}; // "idEquipo|vuelta" -> true
+
+  // 1) manuales
+  Object.keys(DESCANSOS_MANUALES).forEach(jStr => {
+    const j = Number(jStr);
+    DESCANSOS_MANUALES[jStr].forEach(ref => {
+      const eq = buscarEquipoPorRef(ref);
+      if (!eq) { avisos.push(`No encontré el equipo "${ref}" en la hoja Equipos (descanso manual de la jornada ${j}).`); return; }
+      const inf = info(eq);
+      if (porJ[j] && porJ[j].ids.has(inf.id)) {
+        avisos.push(`${inf.nombre} aparece con partido en la jornada ${j}, por eso no se marcó el descanso manual. Revisa la hoja Partidos.`);
+        return;
+      }
+      const d = asegurar(j);
+      d.equipos.push(inf);
+      yaDescanso[inf.id + '|' + d.vuelta] = true;
+    });
+  });
+
+  // 2) naturales (primera ausencia de cada equipo por vuelta)
+  Object.keys(porJ).map(Number).sort((a, b) => a - b).forEach(j => {
+    if (porJ[j].incompleta || porJ[j].n < MIN_PARTIDOS_PARA_DETECTAR) return;
+    activos.forEach(e => {
+      const inf = info(e);
+      if (porJ[j].ids.has(inf.id)) return;
+      const k = inf.id + '|' + porJ[j].vuelta;
+      if (yaDescanso[k]) return;
+      asegurar(j).equipos.push(inf);
+      yaDescanso[k] = true;
+    });
+  });
+
+  // avisos por filas sin Equipo_Local o Equipo_Visita
+  const filasInc = [];
+  Object.keys(porJ).forEach(j => porJ[j].filasIncompletas.forEach(id => filasInc.push(id)));
+  if (filasInc.length) {
+    avisos.push(`Hay ${filasInc.length} partido(s) sin Equipo_Local o Equipo_Visita (ID ${filasInc[0]} a ${filasInc[filasInc.length - 1]}). Esas jornadas no se usan para detectar descansos; completa el equipo que falta (¿Galácticos?).`);
+  }
+
+  // avisos por jornadas con varios descansos
+  Object.keys(res).map(Number).sort((a, b) => a - b).forEach(j => {
+    if (res[j].equipos.length > 1) {
+      avisos.push(`Jornada ${j}: descansan ${res[j].equipos.length} equipos (${res[j].equipos.map(e => e.nombre).join(', ')}). Si debería descansar solo uno, revisa que no falten partidos por capturar.`);
+    }
+  });
+
+  // 3) sugerencias para los que aún no descansan (vuelta 1)
+  const total = activos.length;
+  const libres = [];
+  for (let j = 1; j <= total; j++) if (!res[j] || !res[j].equipos.length) libres.push(j);
+  activos.map(info).filter(i => !yaDescanso[i.id + '|1']).forEach(inf => {
+    const idx = libres.findIndex(j => !(porJ[j] && porJ[j].ids.has(inf.id)));
+    if (idx === -1) return;
+    const d = asegurar(libres.splice(idx, 1)[0]);
+    d.equipos.push(inf);
+    d.sugerido = true;
+  });
+
+  DESCANSOS_AVISOS = avisos;
+  return res;
+}
+
+function equipoDescansaEn(idEquipo, jornada) {
+  const d = DESCANSOS[Number(jornada)];
+  return !!d && !d.sugerido && d.equipos.some(e => e.id === String(idEquipo).trim());
+}
+
+// Equipos que descansan (reales, no sugeridos) en la jornada, o null si ninguno
+function descansoParaReporte(jornadaNum) {
+  const d = DESCANSOS[Number(jornadaNum)];
+  return (d && !d.sugerido && d.equipos.length) ? d.equipos : null;
+}
+
+function descansoBloqueHTML(equipos) {
+  const varios = equipos.length > 1;
+  const filas = equipos.map(eq => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:${varios ? 20 : 22}px;letter-spacing:2px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,0.5),0 1px 3px rgba(0,0,0,0.8);">${eq.nombre}</div>
+        ${eq.descripcion ? `<div style="font-family:'Roboto',Arial,sans-serif;font-size:13px;font-weight:700;color:#d5a610;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${eq.descripcion}</div>` : ''}
+      </div>`).join('');
+  return `
+    <div style="text-align:center;margin-top:14px;margin-bottom:6px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+      ${filas}
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${varios ? 'DESCANSAN ESTA JORNADA' : 'DESCANSA ESTA JORNADA'}</div>
+    </div>`;
+}
+
+// Aviso arriba de las tarjetas cuando se filtra por jornada
+function bannerDescansoHTML(filtrados) {
+  const tipo = document.getElementById('filterTipo');
+  if (!tipo || tipo.value !== 'jornada' || !filtrados.length) return '';
+  const eqs = descansoParaReporte(filtrados[0]['Jornada']);
+  if (!eqs) return '';
+  return `<div style="text-align:center;margin-bottom:16px;padding:10px 14px;background:rgba(0,0,0,0.6);border:1px solid #d5a610;border-radius:12px;color:#ddc530;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">😴 ${eqs.length > 1 ? 'Descansan' : 'Descansa'} esta jornada: ${eqs.map(e => e.nombre).join(' · ')}</div>`;
+}
+
+// Calendario completo de descansos (botón "Ver calendario de descansos")
+function mostrarDescansos() {
+  const st = document.getElementById('statusMsg');
+  if (!todosEquipos.length || !todosPartidos.length) { st.textContent = '⚠️ Aún no cargan los datos de la hoja, intenta en un momento'; return; }
+  DESCANSOS = calcularDescansos();
+  const colores = { 'DESCANSÓ': '#9aa89a', 'DESCANSARÁ': '#ddc530', 'SUGERIDO': '#29a6ff' };
+  const listados = new Set();
+  let filas = '';
+  Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
+    const d = DESCANSOS[j];
+    d.equipos.forEach(eq => {
+      listados.add(eq.id);
+      const estado = d.sugerido ? 'SUGERIDO' : (d.jugada ? 'DESCANSÓ' : 'DESCANSARÁ');
+      const fecha = d.fechas.length ? d.fechas.join(' / ') : 'Por definir';
+      filas += `<div style="display:grid;grid-template-columns:70px 1fr 110px 100px;gap:8px;align-items:center;padding:9px 4px;border-bottom:1px dotted rgba(94,181,13,0.3);font-size:13px;">
+        <span style="color:#5eb50d;font-weight:700;">Jornada ${j}</span>
+        <span style="color:#fff;font-weight:700;text-transform:uppercase;">${eq.nombre}</span>
+        <span style="color:#ddd;">${fecha}</span>
+        <span style="color:${colores[estado]};font-weight:700;font-size:11px;letter-spacing:1px;text-align:right;">${estado}</span>
+      </div>`;
+    });
+  });
+  const sin = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo' && !listados.has(String(e['ID_Equipo']).trim()));
+  const sinHTML = sin.length ? `<div style="margin-top:12px;color:#ff8a8a;font-size:13px;">Sin descanso asignado: ${sin.map(e => (e['Nombre'] || '').toUpperCase()).join(', ')}</div>` : '';
+  const avisosHTML = DESCANSOS_AVISOS.length
+    ? `<div style="margin-top:12px;padding:10px 12px;border:1px solid #d5a610;border-radius:10px;color:#ddc530;font-size:12px;line-height:1.5;">⚠️ ${DESCANSOS_AVISOS.join('<br>⚠️ ')}</div>` : '';
+  document.getElementById('stackContainer').innerHTML = `
+    <div class="editor-panel" style="max-width:700px;">
+      <h3>😴 Calendario de descansos</h3>
+      ${filas || '<div class="empty-msg">No hay descansos para mostrar</div>'}
+      ${sinHTML}${avisosHTML}
+    </div>`;
+  st.textContent = '✅ Calendario de descansos (los SUGERIDOS son propuesta, no están en la hoja)';
+}
+
 // ===== DESCARGAR PNG (paginado: 4 partidos por página) =====
 const REPORTE_POR_PAGINA = 7;
 
@@ -455,7 +651,7 @@ function calcularEquiposAtrasados(jornadaActual, partidosDia) {
           programadas.add(Number(p['Jornada']));
         }
       });
-      const debe = jornadasLigaArr.filter(jn => !jugadas.has(jn) && !programadas.has(jn));
+      const debe = jornadasLigaArr.filter(jn => !jugadas.has(jn) && !programadas.has(jn) && !equipoDescansaEn(idE, jn));
       if (debe.length) atrasados.push({ nombre: (e['Nombre']||'').toUpperCase(), jornadas: debe });
     });
   return atrasados;
@@ -502,13 +698,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
   const subtituloHTML = opciones.subtitulo
     ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
     : '';
-  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
-    <div style="text-align:center;margin-top:14px;margin-bottom:6px;display:flex;flex-direction:column;align-items:center;gap:5px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,0.5),0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.nombre}</div>
-      <div style="font-family:'Roboto',Arial,sans-serif;font-size:13px;font-weight:700;color:#d5a610;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.descripcion}</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,0.8);">DESCANSA ESTA JORNADA</div>
-    </div>
-  ` : '';
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
   content.innerHTML = `
     <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
@@ -621,24 +811,7 @@ async function downloadPNG() {
   let equiposAtrasados = [];
   if (tipoFiltro === 'jornada') {
     const jornadaNum = String(firstP?.Jornada || '').trim();
-    const idsJuegan = new Set();
-    todosPartidos
-      .filter(p => String(p['Jornada']).trim() === jornadaNum)
-      .forEach(p => {
-        if (p['Equipo_Local']) idsJuegan.add(String(p['Equipo_Local']).trim());
-        if (p['Equipo_Visita']) idsJuegan.add(String(p['Equipo_Visita']).trim());
-      });
-    const equiposDescansan = todosEquipos.filter(e =>
-      !idsJuegan.has(String(e['ID_Equipo']).trim()) &&
-      (e['Status'] || '').trim().toLowerCase() === 'activo'
-    );
-    if (equiposDescansan.length === 1) {
-      const eq = equiposDescansan[0];
-      equipoDescansa = {
-        nombre: (eq['Nombre'] || '').toUpperCase(),
-        descripcion: eq['Descripción'] || eq['Descripcion'] || ''
-      };
-    }
+    equipoDescansa = descansoParaReporte(jornadaNum);
     equiposAtrasados = calcularEquiposAtrasados(jornadaNum);
   } else if (tipoFiltro === 'fecha') {
     equiposAtrasados = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
@@ -716,13 +889,7 @@ function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jorna
   const subtituloHTML = opciones.subtitulo
     ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
     : '';
-  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
-    <div style="text-align:center;margin-top:14px;margin-bottom:6px;display:flex;flex-direction:column;align-items:center;gap:5px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,0.5),0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.nombre}</div>
-      <div style="font-family:'Roboto',Arial,sans-serif;font-size:13px;font-weight:700;color:#d5a610;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.descripcion}</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,0.8);">DESCANSA ESTA JORNADA</div>
-    </div>
-  ` : '';
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
   content.innerHTML = `
     <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
@@ -820,24 +987,7 @@ async function downloadPNGv2() {
   let equiposAtrasadosV2 = [];
   if (tipoFiltro === 'jornada') {
     const jornadaNum = String(firstP?.Jornada || '').trim();
-    const idsJuegan = new Set();
-    todosPartidos
-      .filter(p => String(p['Jornada']).trim() === jornadaNum)
-      .forEach(p => {
-        if (p['Equipo_Local']) idsJuegan.add(String(p['Equipo_Local']).trim());
-        if (p['Equipo_Visita']) idsJuegan.add(String(p['Equipo_Visita']).trim());
-      });
-    const equiposDescansan = todosEquipos.filter(e =>
-      !idsJuegan.has(String(e['ID_Equipo']).trim()) &&
-      (e['Status'] || '').trim().toLowerCase() === 'activo'
-    );
-    if (equiposDescansan.length === 1) {
-      const eq = equiposDescansan[0];
-      equipoDescansa = {
-        nombre: (eq['Nombre'] || '').toUpperCase(),
-        descripcion: eq['Descripción'] || eq['Descripcion'] || ''
-      };
-    }
+    equipoDescansa = descansoParaReporte(jornadaNum);
     equiposAtrasadosV2 = calcularEquiposAtrasados(jornadaNum);
   } else if (tipoFiltro === 'fecha') {
     equiposAtrasadosV2 = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
@@ -924,13 +1074,7 @@ function construirPaginaReporteV3(paginaPartidos, numPagina, totalPaginas, jorna
   const subtituloHTML = opciones.subtitulo
     ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
     : '';
-  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
-    <div style="text-align:center;margin-top:14px;margin-bottom:6px;display:flex;flex-direction:column;align-items:center;gap:5px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,0.5),0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.nombre}</div>
-      <div style="font-family:'Roboto',Arial,sans-serif;font-size:13px;font-weight:700;color:#d5a610;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${equipoDescansa.descripcion}</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,0.8);">DESCANSA ESTA JORNADA</div>
-    </div>
-  ` : '';
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
   content.innerHTML = `
     <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
       <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
@@ -1015,21 +1159,7 @@ async function downloadPNGv3() {
   let equiposAtrasadosV3 = [];
   if (tipoFiltro === 'jornada') {
     const jornadaNum = String(firstP?.Jornada || '').trim();
-    const idsJuegan = new Set();
-    todosPartidos
-      .filter(p => String(p['Jornada']).trim() === jornadaNum)
-      .forEach(p => {
-        if (p['Equipo_Local']) idsJuegan.add(String(p['Equipo_Local']).trim());
-        if (p['Equipo_Visita']) idsJuegan.add(String(p['Equipo_Visita']).trim());
-      });
-    const equiposDescansan = todosEquipos.filter(e =>
-      !idsJuegan.has(String(e['ID_Equipo']).trim()) &&
-      (e['Status'] || '').trim().toLowerCase() === 'activo'
-    );
-    if (equiposDescansan.length === 1) {
-      const eq = equiposDescansan[0];
-      equipoDescansa = { nombre: (eq['Nombre'] || '').toUpperCase(), descripcion: eq['Descripción'] || eq['Descripcion'] || '' };
-    }
+    equipoDescansa = descansoParaReporte(jornadaNum);
     equiposAtrasadosV3 = calcularEquiposAtrasados(jornadaNum);
   } else if (tipoFiltro === 'fecha') {
     equiposAtrasadosV3 = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
