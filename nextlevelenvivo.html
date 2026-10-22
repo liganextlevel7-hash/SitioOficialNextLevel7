@@ -31,6 +31,13 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 .pinfo{flex:1;}
 .pinfo strong{font-size:13px;color:var(--text);display:block;}
 .pinfo small{font-size:11px;color:var(--text2);}
+.filtros-p{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.filtros-p .fcol{min-width:0;}
+.filtros-p .fcol.ancho{grid-column:1 / -1;}
+.filtros-p label{display:block;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;}
+.filtros-p .psel{font-size:13px;padding:8px;color:var(--text);}
+.resumen-p{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;color:var(--text2);margin-bottom:8px;}
+.resumen-p button{background:none;border:1px solid var(--border);color:var(--verde2);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;}
 .pbadge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:#1e3a20;color:#5dba6a;white-space:nowrap;}
 .scoreboard{display:grid;grid-template-columns:1fr 100px 1fr;gap:10px;align-items:center;margin-bottom:12px;}
 .team-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;}
@@ -172,6 +179,12 @@ var db = firebase.database();
   <div id="tab-partidos">
     <div class="section">
       <h3>Partidos programados — toca para transmitir</h3>
+      <div class="filtros-p">
+        <div class="fcol ancho"><label>📅 Fecha</label><select id="f-fecha" class="psel" onchange="aplicarFiltrosPartidos()"></select></div>
+        <div class="fcol"><label>🔢 Jornada</label><select id="f-jornada" class="psel" onchange="aplicarFiltrosPartidos()"></select></div>
+        <div class="fcol"><label>🏟️ Campo</label><select id="f-campo" class="psel" onchange="aplicarFiltrosPartidos()"></select></div>
+      </div>
+      <div class="resumen-p"><span id="resumen-filtros"></span><button onclick="quitarFiltrosPartidos()">Ver todos</button></div>
       <div id="lista-partidos"><div class="loading">⏳ Cargando partidos...</div></div>
     </div>
   </div>
@@ -344,6 +357,8 @@ function elegirCancha(n){
   document.getElementById('cancha-screen').style.display='none';
   document.getElementById('main-app').style.display='block';
   document.getElementById('cancha-badge').textContent = n;
+  FILTRO.campo = String(n);   // la lista abre mostrando solo los partidos de ese campo
+  FILTRO.listo = false;       // y vuelve a calcular la fecha más cercana
 
   // Al cambiar de cancha, reiniciamos lo que dependía de la anterior
   liveState = null;
@@ -439,21 +454,106 @@ function otraCanchaPath(){
   return canchaActual === 1 ? 'transmision/cancha2' : 'transmision/cancha1';
 }
 
+// ════════════════════════════════
+//  FILTROS DE LA LISTA DE PARTIDOS (fecha · jornada · campo)
+// ════════════════════════════════
+var FILTRO = { fecha:'', jornada:'', campo:'', listo:false };
+var _otroIdCache = null;
+
+function fechaNumP(f){ var m = String(f||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); return m ? (+m[3])*10000 + (+m[2])*100 + (+m[1]) : 0; }
+function canchaNumP(p){ var m = String(p.Cancha || p.cancha || '').match(/\d+/); return m ? m[0] : ''; }
+function horaMinP(h){ var m = String(h||'').match(/(\d+):(\d+)/); return m ? (+m[1])*60 + (+m[2]) : 99999; }
+function hora12P(h){ var m = String(h||'').match(/(\d+):(\d+)/); if(!m) return '--:--'; var hh = +m[1], ap = hh >= 12 ? 'pm' : 'am'; hh = hh % 12 || 12; return hh + ':' + m[2] + ' ' + ap; }
+function fechaTxtP(n){ var y = Math.floor(n/10000), mo = Math.floor(n/100)%100, d = n%100; return (d<10?'0':'')+d+'/'+(mo<10?'0':'')+mo+'/'+y; }
+function diaSemP(n){ var y = Math.floor(n/10000), mo = Math.floor(n/100)%100, d = n%100; return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(y, mo-1, d).getDay()]; }
+
+// Arma las listas de fecha / jornada / campo con lo que hay programado, y deja una fecha por defecto
+function prepararFiltros(){
+  var fechas = {}, jornadas = {}, campos = {};
+  DB.partidos.forEach(function(p){
+    var fn = fechaNumP(p.Fecha || p.fecha); if(fn) fechas[fn] = (fechas[fn]||0) + 1;
+    var j = String(p.Jornada || p.jornada || '').trim(); if(j) jornadas[j] = (jornadas[j]||0) + 1;
+    var c = canchaNumP(p); if(c) campos[c] = (campos[c]||0) + 1;
+  });
+  var fechasOrd = Object.keys(fechas).map(Number).sort(function(x,y){return x-y;});
+  var jornadasOrd = Object.keys(jornadas).sort(function(x,y){return (+x)-(+y);});
+  var camposOrd = Object.keys(campos).sort();
+
+  if(!FILTRO.listo){
+    // fecha por defecto: la más cercana de hoy en adelante (si ya pasaron todas, se muestran todas)
+    var hoy = new Date(), hoyN = hoy.getFullYear()*10000 + (hoy.getMonth()+1)*100 + hoy.getDate();
+    var prox = fechasOrd.filter(function(f){ return f >= hoyN; })[0];
+    FILTRO.fecha = prox ? String(prox) : '';
+    FILTRO.jornada = '';
+    FILTRO.listo = true;
+  }
+  if(FILTRO.fecha && !fechas[FILTRO.fecha]) FILTRO.fecha = '';
+  if(FILTRO.jornada && !jornadas[FILTRO.jornada]) FILTRO.jornada = '';
+  if(FILTRO.campo && !campos[FILTRO.campo]) FILTRO.campo = '';
+
+  var selF = document.getElementById('f-fecha'), selJ = document.getElementById('f-jornada'), selC = document.getElementById('f-campo');
+  selF.innerHTML = '<option value="">Todas las fechas</option>' + fechasOrd.map(function(f){
+    return '<option value="'+f+'">'+fechaTxtP(f)+' · '+diaSemP(f)+' ('+fechas[f]+')</option>'; }).join('');
+  selJ.innerHTML = '<option value="">Todas las jornadas</option>' + jornadasOrd.map(function(j){
+    return '<option value="'+j+'">Jornada '+j+' ('+jornadas[j]+')</option>'; }).join('');
+  selC.innerHTML = '<option value="">Todos los campos</option>' + camposOrd.map(function(c){
+    return '<option value="'+c+'">Campo '+c+' ('+campos[c]+')</option>'; }).join('');
+  selF.value = FILTRO.fecha; selJ.value = FILTRO.jornada; selC.value = FILTRO.campo;
+}
+
+function aplicarFiltrosPartidos(){
+  FILTRO.fecha = document.getElementById('f-fecha').value;
+  FILTRO.jornada = document.getElementById('f-jornada').value;
+  FILTRO.campo = document.getElementById('f-campo').value;
+  pintarListaPartidos(_otroIdCache);
+}
+
+function quitarFiltrosPartidos(){
+  FILTRO.fecha = ''; FILTRO.jornada = ''; FILTRO.campo = '';
+  document.getElementById('f-fecha').value = ''; document.getElementById('f-jornada').value = ''; document.getElementById('f-campo').value = '';
+  pintarListaPartidos(_otroIdCache);
+}
+
 function renderPartidosTab(){
+  prepararFiltros();
   db.ref(otraCanchaPath()).once('value').then(snap => {
     var otro = snap.val();
     var otroIdEnVivo = (otro && otro.activo) ? otro.idPartidoReal : null;
+    _otroIdCache = otroIdEnVivo;
     pintarListaPartidos(otroIdEnVivo);
-  }).catch(function(){ pintarListaPartidos(null); });
+  }).catch(function(){ _otroIdCache = null; pintarListaPartidos(null); });
 }
 
 function pintarListaPartidos(otroIdEnVivo){
-  var html = '';
+  var cont = document.getElementById('lista-partidos');
+  var resumen = document.getElementById('resumen-filtros');
   if(!DB.partidos.length){
-    document.getElementById('lista-partidos').innerHTML = '<div class="loading">No hay partidos programados hoy</div>';
+    cont.innerHTML = '<div class="loading">No hay partidos programados</div>';
+    if(resumen) resumen.textContent = '';
     return;
   }
-  DB.partidos.forEach((p, idx) => {
+  // se conserva el índice original (idx) porque seleccionarPartido(idx) lo usa para encontrar el partido
+  var lista = [];
+  DB.partidos.forEach(function(p, idx){
+    if(FILTRO.fecha && String(fechaNumP(p.Fecha || p.fecha)) !== FILTRO.fecha) return;
+    if(FILTRO.jornada && String(p.Jornada || p.jornada || '').trim() !== FILTRO.jornada) return;
+    if(FILTRO.campo && canchaNumP(p) !== FILTRO.campo) return;
+    lista.push({p:p, idx:idx});
+  });
+  lista.sort(function(a,b){
+    return (fechaNumP(a.p.Fecha||a.p.fecha) - fechaNumP(b.p.Fecha||b.p.fecha))
+        || (horaMinP(a.p.Hora||a.p.hora) - horaMinP(b.p.Hora||b.p.hora))
+        || String(canchaNumP(a.p)).localeCompare(String(canchaNumP(b.p)))
+        || (a.idx - b.idx);
+  });
+  if(resumen) resumen.textContent = 'Mostrando ' + lista.length + ' de ' + DB.partidos.length + ' programados';
+  if(!lista.length){
+    cont.innerHTML = '<div class="loading">No hay partidos con esos filtros.<br>Cambia la fecha, la jornada o el campo, o toca «Ver todos».</div>';
+    return;
+  }
+  var html = '';
+  lista.forEach(function(it){
+    var p = it.p, idx = it.idx;
     var idL = p.Equipo_Local || p.equipo_local;
     var idV = p.Equipo_Visita || p.equipo_visita;
     var idReal = p.ID_Partido || p.id_partido || '';
@@ -463,13 +563,16 @@ function pintarListaPartidos(otroIdEnVivo){
     var badgeHtml = enVivoOtraCancha
       ? '<span class="pbadge" style="background:#5a2020;color:#ef9090">🔴 En vivo (otra cancha)</span>'
       : '<span class="pbadge">Transmitir</span>';
+    var fn = fechaNumP(p.Fecha || p.fecha), cn = canchaNumP(p);
+    var detalle = 'Jornada ' + (p.Jornada || p.jornada || '-') + ' · ' + (fn ? fechaTxtP(fn).slice(0,5) + ' ' + diaSemP(fn) : 'sin fecha')
+                + ' · ' + hora12P(p.Hora || p.hora) + (cn ? ' · Campo ' + cn : '');
     html += `<div class="partido-item" onclick="seleccionarPartido(${idx})">
       <img class="plogo" src="${el.logo}" onerror="this.style.opacity=0">
-      <div class="pinfo"><strong>${el.nombre} vs ${ev.nombre}</strong><small>Jornada: ${p.Jornada || p.jornada || '-'} | Hora: ${p.Hora || p.hora || '--:--'}</small></div>
+      <div class="pinfo"><strong>${el.nombre} vs ${ev.nombre}</strong><small>${detalle}</small></div>
       ${badgeHtml}
     </div>`;
   });
-  document.getElementById('lista-partidos').innerHTML = html;
+  cont.innerHTML = html;
 }
 
 function seleccionarPartido(idx){
