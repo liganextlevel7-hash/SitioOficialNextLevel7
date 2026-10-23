@@ -401,6 +401,12 @@ function bloqueConfirmarLado(idPartido, lado, idEquipo, nombre, confirmado) {
 // Galácticos (equipo nuevo) descansó en la jornada 1.
 const DESCANSOS_MANUALES = { 1: ['Galacticos'] };
 
+// Jornadas que no se jugaron pero SE TOMAN COMO JUGADAS (cuentan en jornadas, no son descanso ni deuda).
+// Deportivo Azul no jugó la J1: se toma como si hubiera jugado contra Puebla 450.
+const JORNADAS_VIRTUALES = { 1: [{ equipo: 'Deportivo Azul', vs: 'Puebla 450' }] };
+let VIRTUALES = {};       // "idEquipo|jornada" -> true
+let VIRTUALES_INFO = [];  // [{ id, nombre, jornada, vs }] para el recordatorio del reporte
+
 // Una jornada solo se usa para detectar descansos "naturales" si ya tiene al menos
 // este número de partidos capturados (con 17 equipos una jornada completa tiene 8).
 // Así una jornada a medio capturar no hace que "descansen" todos los demás.
@@ -450,6 +456,21 @@ function calcularDescansos() {
     const f = (p['Fecha'] || '').trim();
     if (f && !o.fechas.includes(f)) o.fechas.push(f);
     if ((p['Estado'] || '').trim() === 'Jugado') o.jugado = true;
+  });
+
+  // jornadas que se toman como jugadas aunque no haya partido
+  VIRTUALES = {}; VIRTUALES_INFO = [];
+  Object.keys(JORNADAS_VIRTUALES).forEach(jStr => {
+    const j = Number(jStr);
+    JORNADAS_VIRTUALES[jStr].forEach(entrada => {
+      const ref = typeof entrada === 'string' ? entrada : entrada.equipo;
+      const eq = buscarEquipoPorRef(ref);
+      if (!eq) return;
+      const id = String(eq['ID_Equipo']).trim();
+      VIRTUALES[id + '|' + j] = true;
+      VIRTUALES_INFO.push({ id, nombre: eq['Nombre'] || ref, jornada: j, vs: typeof entrada === 'string' ? '' : (entrada.vs || '') });
+      if (porJ[j]) porJ[j].ids.add(id);
+    });
   });
 
   const res = {};
@@ -539,6 +560,10 @@ function calcularDescansos() {
   return res;
 }
 
+function jornadaTomadaComoJugada(idEquipo, jornada) {
+  return !!VIRTUALES[String(idEquipo).trim() + '|' + Number(jornada)];
+}
+
 function equipoDescansaEn(idEquipo, jornada) {
   const d = DESCANSOS[Number(jornada)];
   return !!d && !d.sugerido && d.equipos.some(e => e.id === String(idEquipo).trim());
@@ -608,103 +633,184 @@ function mostrarDescansos() {
   st.textContent = '✅ Calendario de descansos (los SUGERIDOS son propuesta, no están en la hoja)';
 }
 
-// ===== REPORTE PNG: ¿QUIÉN NO JUGÓ? + DESCANSO POR EQUIPO (formato oficial) =====
-function fechasTxt(fechas) { return (fechas && fechas.length) ? fechas.join(' · ') : 'Por definir'; }
+// ===== REPORTE PNG DE DESCANSOS (mismo formato que el "Rol propuesto del domingo") =====
+// Archivos de los dos logos del encabezado (Next Level 7 y La Región All Stars).
+// Si no cargan, el encabezado se ve sin logos. Pon aquí los nombres reales de tus imágenes.
+const LOGOS_ENCABEZADO = ['logo_nextlevel.png', 'logo_laregion.png'];
 
-function chipDescansoHTML(texto, color) {
-  return `<div style="flex-shrink:0;font-size:12px;font-weight:800;letter-spacing:1px;color:${color};border:1.5px solid ${color};border-radius:14px;padding:4px 11px;text-transform:uppercase;background:rgba(0,0,0,0.45);text-shadow:0 1px 3px rgba(0,0,0,0.9);white-space:nowrap;">${texto}</div>`;
+function fechasTxt(fechas) {
+  if (!fechas || !fechas.length) return 'Por definir';
+  if (fechas.length > 2) return fechas[0] + ' al ' + fechas[fechas.length - 1];
+  return fechas.join(' · ');
 }
 
-function htmlPaginaDescansos(numPagina, totalPaginas) {
+function chipRolHTML(texto, tipo) {
+  const est = {
+    verde: 'background:#e6f6e3;border:2px solid #5eb50d;color:#1b6e1b;',
+    rojo: 'background:#fdeeee;border:2px solid #e57373;color:#b71c1c;',
+    gris: 'background:#eeeeee;border:2px solid #c4c4c4;color:#555555;',
+    ambar: 'background:#fff4d6;border:2px solid #e0a82e;color:#8a5a00;',
+    azul: 'background:#e8f0fe;border:2px solid #4a7fd0;color:#1f4f9c;'
+  }[tipo];
+  return `<div style="display:inline-block;${est}border-radius:999px;padding:3px 13px;font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">${texto}</div>`;
+}
+
+function htmlReporteDescansos() {
   const eqMap = {};
   todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
-  const logo = (id, px) => `<img src="${(eqMap[id] && eqMap[id]['URL']) || ''}" style="width:${px}px;height:${px}px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">`;
-  const sep = `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`;
-  const nota = t => `<div style="margin-top:16px;padding:12px 14px;background:rgba(0,0,0,0.6);border:1px solid rgba(213,166,16,0.5);border-radius:12px;font-size:13px;line-height:1.45;font-weight:700;color:#ffffff;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.95);">${t}</div>`;
 
-  let cuerpo = '';
-  let subtitulo = '';
+  // partidos jugados por equipo (la jornada tomada como jugada también cuenta)
+  const jugados = {};
+  todosPartidos.forEach(p => {
+    if ((p['Estado'] || '').trim() !== 'Jugado') return;
+    [p['Equipo_Local'], p['Equipo_Visita']].forEach(id => { id = String(id || '').trim(); if (id) jugados[id] = (jugados[id] || 0) + 1; });
+  });
+  Object.keys(VIRTUALES).forEach(k => { const id = k.split('|')[0]; jugados[id] = (jugados[id] || 0) + 1; });
 
-  if (numPagina === 1) {
-    subtitulo = 'QUIÉN NO JUGÓ CADA JORNADA';
-    cuerpo = AUSENCIAS.map((a, i) => {
-      const lineas = a.ausentes.map(x => `
-        <div style="display:flex;align-items:center;gap:10px;padding:5px 0;">
-          ${logo(x.id, 38)}
-          <div style="flex:1;min-width:0;font-size:15px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${x.nombre}</div>
-          ${x.descanso
-            ? chipDescansoHTML('😴 Sí · cuenta como descanso', '#5eb50d')
-            : chipDescansoHTML('⚠️ No · ' + (x.descansoEn ? 'ya descansó J' + x.descansoEn : 'partido pendiente'), '#ff6666')}
-        </div>`).join('') || `<div style="font-size:14px;color:#f5f5f0;font-weight:700;">Jugaron todos los equipos</div>`;
-      return `
-        <div style="padding:14px 4px 12px;">
-          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:#5eb50d;text-shadow:0 0 14px rgba(94,181,13,0.5),0 2px 4px rgba(0,0,0,0.7);">JORNADA ${a.jornada}</div>
-            <div style="font-size:13px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fechasTxt(a.fechas)}</div>
-          </div>
-          ${lineas}
-        </div>
-        ${i < AUSENCIAS.length - 1 ? sep : ''}`;
-    }).join('');
-    if (JORNADAS_SIN_CAPTURAR.length) {
-      const ini = JORNADAS_SIN_CAPTURAR[0], fin = JORNADAS_SIN_CAPTURAR[JORNADAS_SIN_CAPTURAR.length - 1];
-      cuerpo += nota(`🕒 Jornada${ini !== fin ? 's ' + ini + ' a ' + fin : ' ' + ini}: partidos aún sin capturar completos, todavía no se puede saber quién no juega.`);
-    }
-    cuerpo += nota('📌 Nota: un equipo que no jugó una jornada se toma como descanso solo la primera vez (cada equipo descansa una vez). Si vuelve a quedar sin partido en otra jornada, ese partido se considera pendiente.');
-  } else {
-    subtitulo = 'DESCANSO DE CADA EQUIPO';
-    const filas = [];
-    Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
-      const d = DESCANSOS[j];
-      d.equipos.forEach(eq => filas.push({ j, d, eq }));
+  // fechas del torneo
+  const todasFechas = todosPartidos.map(p => (p['Fecha'] || '').trim()).filter(Boolean).sort((a, b) => parseFecha(a) - parseFecha(b));
+  const inicio = todasFechas[0] || '';
+  const hoy = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const emitido = `${pad(hoy.getDate())}/${pad(hoy.getMonth() + 1)}/${hoy.getFullYear()} ${pad(hoy.getHours())}:${pad(hoy.getMinutes())}`;
+  const diasDesdeInicio = inicio ? Math.floor((hoy.getTime() - parseFecha(inicio)) / 86400000) : 0;
+  const fechaHoyNum = inicio ? Math.max(1, Math.floor(diasDesdeInicio / 7) + 1) : 1;
+
+  const nActivos = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo').length;
+
+  const celdaEquipo = (id, nombre) => {
+    const e = eqMap[id] || {};
+    const url = e['URL'] || '';
+    const escudo = url
+      ? `<img src="${url}" style="width:40px;height:40px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">`
+      : `<div style="width:40px;height:40px;flex-shrink:0;border-radius:50%;background:#e3e8dc;border:2px solid #c9d2bf;display:flex;align-items:center;justify-content:center;font-weight:900;color:#5a6b4a;font-size:20px;">${(nombre || '?').charAt(0)}</div>`;
+    return `<div style="display:flex;align-items:center;gap:12px;text-align:left;">
+      ${escudo}
+      <div><div style="font-size:17px;font-weight:800;color:#1f2a1a;text-transform:uppercase;line-height:1.1;">${nombre}</div>
+      <div style="font-size:13px;color:#6b7280;">Lleva ${jugados[id] || 0} jugado${(jugados[id] || 0) === 1 ? '' : 's'}</div></div>
+    </div>`;
+  };
+
+  const TH = 'background:#e6efdc;color:#1b3a06;font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:11px 6px;border:2px solid #d5dccb;';
+  const TD = 'background:#ffffff;border:2px solid #d5dccb;padding:7px 8px;text-align:center;vertical-align:middle;';
+  const tabla = (cabeceras, filas) => `
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      <thead><tr>${cabeceras.map(c => `<th style="${TH}width:${c[1]};">${c[0]}</th>`).join('')}</tr></thead>
+      <tbody>${filas.join('')}</tbody>
+    </table>`;
+  const subtitulo = t => `<div style="margin:30px 0 12px;font-size:24px;font-weight:900;color:#1b3a06;letter-spacing:1px;">${t}</div>`;
+
+  // ---------- Tabla 1: quién no jugó cada jornada ----------
+  let n1 = 0;
+  const filas1 = [];
+  AUSENCIAS.forEach(a => {
+    a.ausentes.forEach(x => {
+      n1++;
+      const obs = x.descanso
+        ? `${chipRolHTML('Descanso', 'verde')}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">No tuvo partido: es su descanso.</div>`
+        : `${chipRolHTML('Ya descansó J' + x.descansoEn, 'rojo')}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">Partido pendiente de esta jornada.</div>`;
+      filas1.push(`<tr>
+        <td style="${TD}font-weight:800;color:#6b7280;">${n1}</td>
+        <td style="${TD}font-size:20px;font-weight:900;color:#1f2a1a;">J${a.jornada}</td>
+        <td style="${TD}font-size:13px;color:#374151;line-height:1.3;">${fechasTxt(a.fechas).replace(' · ', '<br>')}</td>
+        <td style="${TD}">${celdaEquipo(x.id, x.nombre)}</td>
+        <td style="${TD}">${obs}</td>
+      </tr>`);
     });
-    cuerpo = filas.map((f, i) => {
-      const chip = f.d.sugerido ? chipDescansoHTML('Propuesta', '#29a6ff')
-        : (f.d.jugada ? chipDescansoHTML('Descansó', '#5eb50d') : chipDescansoHTML('Descansará', '#ffd83d'));
-      return `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 4px;">
-          ${logo(f.eq.id, 52)}
-          <div style="flex:1;min-width:0;font-size:16px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${f.eq.nombre}</div>
-          <div style="text-align:center;min-width:120px;">
-            <div style="font-size:11px;color:#5eb50d;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">Jornada ${f.j}</div>
-            <div style="font-size:13px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${f.d.sugerido ? 'Por definir' : fechasTxt(f.d.fechas)}</div>
-          </div>
-          ${chip}
-        </div>
-        ${i < filas.length - 1 ? sep : ''}`;
-    }).join('');
-    cuerpo += nota('📌 Propuesta = descanso sugerido, todavía no está capturado en la hoja de partidos. Cada equipo descansa una vez por vuelta.');
+  });
+  const tabla1 = tabla([['No.', '7%'], ['Jornada', '14%'], ['Fecha', '16%'], ['Equipo', '30%'], ['Observación', '33%']], filas1);
+
+  // ---------- Tabla 2: descanso de cada equipo ----------
+  const lista = [];
+  Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
+    DESCANSOS[j].equipos.forEach(eq => lista.push({ j, d: DESCANSOS[j], eq }));
+  });
+  const filas2 = lista.map((f, i) => {
+    let chip, texto;
+    if (f.d.sugerido) {
+      chip = chipRolHTML('Propuesta', 'azul');
+      texto = 'Sugerido; aún no está en la hoja.';
+    } else if (f.d.jugada) {
+      chip = chipRolHTML('Descansó', 'gris');
+      texto = 'No tuvo partido: ya descansó.';
+    } else {
+      chip = chipRolHTML('Descansará', 'ambar');
+      texto = 'Sin partido en esa fecha: descansará.';
+    }
+    return `<tr>
+      <td style="${TD}font-weight:800;color:#6b7280;">${i + 1}</td>
+      <td style="${TD}">${celdaEquipo(f.eq.id, f.eq.nombre)}</td>
+      <td style="${TD}font-size:20px;font-weight:900;color:#1f2a1a;">J${f.j}</td>
+      <td style="${TD}font-size:13px;color:#374151;line-height:1.3;">${f.d.sugerido ? 'Por definir' : fechasTxt(f.d.fechas).replace(' · ', '<br>')}</td>
+      <td style="${TD}">${chip}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">${texto}</div></td>
+    </tr>`;
+  });
+  const tabla2 = tabla([['No.', '7%'], ['Equipo', '30%'], ['Jornada', '14%'], ['Fecha', '16%'], ['Observación', '33%']], filas2);
+
+  // ---------- recordatorio (amarillo), aviso (azul), pendientes (rojo), cómo se lee ----------
+  const recordatorios = [];
+  Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
+    DESCANSOS[j].equipos.forEach(eq => {
+      if (!DESCANSOS[j].sugerido && j === 1) recordatorios.push(`<b>${eq.nombre}</b> descansó en la <b>Jornada 1</b>.`);
+    });
+  });
+  VIRTUALES_INFO.forEach(v => {
+    recordatorios.push(`<b>${(v.nombre || '').toUpperCase()}</b> <b>no jugó la Jornada ${v.jornada}</b>, pero se toma como si hubiera jugado${v.vs ? ' contra ' + v.vs : ''} (cuenta en jornadas y estadísticas; no es descanso).`);
+  });
+  const recordatorioHTML = recordatorios.length
+    ? `<div style="background:#fff3d4;border-bottom:3px solid #e0a82e;padding:18px 62px;font-size:20px;line-height:1.55;color:#7a5200;">📌 <b>Recordatorio:</b> ${recordatorios.join(' ')}</div>` : '';
+
+  const pendientes = [];
+  if (JORNADAS_SIN_CAPTURAR.length) {
+    const ini = JORNADAS_SIN_CAPTURAR[0], fin = JORNADAS_SIN_CAPTURAR[JORNADAS_SIN_CAPTURAR.length - 1];
+    pendientes.push(`<b>Jornada${ini !== fin ? 's ' + ini + ' a ' + fin : ' ' + ini}:</b> los partidos aún no están capturados completos, todavía no se puede saber quién no juega.`);
   }
+  const listados = new Set(lista.map(f => f.eq.id));
+  const sinDescanso = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo' && !listados.has(String(e['ID_Equipo']).trim()));
+  if (sinDescanso.length) pendientes.push(`<b>Sin descanso asignado:</b> ${sinDescanso.map(e => e['Nombre']).join(', ')}.`);
+  const pendientesHTML = pendientes.length
+    ? `<div style="margin-top:26px;background:#fdeeee;border:2px solid #f0a8a8;border-radius:14px;padding:16px 26px;font-size:19px;line-height:1.5;color:#b71c1c;">${pendientes.join('<br>')}</div>` : '';
 
-  const titulo = `DESCANSOS${totalPaginas > 1 ? ' · Página ' + numPagina + '/' + totalPaginas : ''}`;
   return `
-    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${titulo}</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${subtitulo}</div>
+  <div style="font-family:'Noto Sans','Segoe UI',Roboto,Arial,sans-serif;color:#1f2a1a;background:#ffffff;">
+    <div style="background:#1d3d06;color:#ffffff;padding:40px 62px 30px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;letter-spacing:4px;font-weight:700;color:#9fd16b;">LIGA NEXT LEVEL 7 · TORNEO DOMINICAL</div>
+        <div style="font-size:42px;font-weight:900;margin-top:10px;line-height:1.1;white-space:nowrap;">Reporte de descansos</div>
+        <div style="font-size:22px;color:#d9e8c8;margin-top:8px;">${nActivos} equipos · descansa un equipo por jornada</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;white-space:nowrap;margin-left:20px;">
+        <div style="display:flex;gap:14px;justify-content:flex-end;min-height:90px;">
+          ${LOGOS_ENCABEZADO.map(u => `<img src="${u}" style="height:90px;width:auto;object-fit:contain;" onerror="this.style.display='none'">`).join('')}
+        </div>
+        <div style="font-size:17px;color:#d9e8c8;margin-top:10px;">Torneo iniciado el <b style="color:#fff;">${inicio}</b></div>
+        <div style="font-size:17px;color:#d9e8c8;margin-top:2px;">Hoy: Fecha ${fechaHoyNum}</div>
+        <div style="font-size:17px;color:#d9e8c8;margin-top:2px;">Emitido ${emitido}</div>
+      </div>
     </div>
-    <div style="margin-top:10px;">${cuerpo}</div>`;
-}
+    <div style="height:8px;background:#5eb50d;"></div>
+    ${recordatorioHTML}
+    <div style="padding:34px 62px 20px;">
+      <div style="background:#eef3fc;border:2px solid #d3deef;border-left:8px solid #2f6db5;border-radius:12px;padding:20px 30px;font-size:20px;line-height:1.55;color:#33415c;">
+        Cada equipo descansa <b>una vez</b>. Si un equipo no jugó una jornada, se toma como descanso la primera vez; si vuelve a quedar sin partido, ese partido se considera <b>pendiente</b>. Los descansos marcados como <b>Propuesta</b> son sugeridos y todavía no están en la hoja de partidos.
+      </div>
 
-function construirPaginaDescansos(numPagina, totalPaginas) {
-  const inner = document.createElement('div');
-  inner.style.cssText = `
-    position:relative;
-    width:700px;
-    min-height:900px;
-    background-image:url('fondonuevo.png');
-    background-size:cover;
-    background-position:center;
-    padding:28px 24px 32px;
-    box-sizing:border-box;
-  `;
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;';
-  inner.appendChild(overlay);
-  const content = document.createElement('div');
-  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
-  content.innerHTML = htmlPaginaDescansos(numPagina, totalPaginas);
-  inner.appendChild(content);
-  return inner;
+      ${subtitulo('Quién no jugó cada jornada')}
+      ${tabla1}
+
+      ${subtitulo('Descanso de cada equipo')}
+      ${tabla2}
+
+      ${pendientesHTML}
+
+      <div style="margin-top:26px;background:#f7f7f4;border:2px solid #dadad2;border-radius:14px;padding:20px 28px;font-size:18px;line-height:1.6;color:#374151;">
+        <b>Cómo se lee:</b> <b style="color:#1b6e1b;">Descanso</b>: el equipo no tuvo partido en esa jornada y se toma como su descanso. <b style="color:#b71c1c;">Ya descansó</b>: ya tuvo su descanso en otra jornada, así que ese partido sigue pendiente. <b style="color:#555;">Descansó</b>: la jornada ya se jugó. <b style="color:#8a5a00;">Descansará</b>: está programado en una jornada que aún no se juega. <b style="color:#1f4f9c;">Propuesta</b>: descanso sugerido, aún sin capturar. Cada equipo descansa una vez por vuelta.
+      </div>
+    </div>
+    <div style="border-top:2px solid #dadad2;padding:20px 62px 26px;display:flex;justify-content:space-between;font-size:17px;color:#6b7280;">
+      <span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${emitido}</span>
+    </div>
+  </div>`;
 }
 
 async function downloadPNGDescansos() {
@@ -712,31 +818,26 @@ async function downloadPNGDescansos() {
   const btn = document.getElementById('dlBtnDesc');
   btn.textContent = '⏳ Generando...';
   btn.disabled = true;
-  DESCANSOS = calcularDescansos();
-  const totalPaginas = 2;
   try {
-    for (let p = 1; p <= totalPaginas; p++) {
-      const temp = document.createElement('div');
-      temp.style.position = 'fixed';
-      temp.style.left = '-9999px';
-      temp.style.top = '0';
-      temp.appendChild(construirPaginaDescansos(p, totalPaginas));
-      document.body.appendChild(temp);
-      await esperarImagenesReporte(temp);
-      const canvas = await html2canvas(temp, {
-        useCORS: true, allowTaint: true, scale: 3,
-        backgroundColor: '#142702', imageTimeout: 20000, logging: false
-      });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `descansos_nextlevel7_pagina${p}.png`;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a); URL.revokeObjectURL(url);
-      document.body.removeChild(temp);
-      await new Promise(r => setTimeout(r, 400));
-    }
+    DESCANSOS = calcularDescansos();
+    const temp = document.createElement('div');
+    temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:868px;background:#ffffff;';
+    temp.innerHTML = htmlReporteDescansos();
+    document.body.appendChild(temp);
+    await esperarImagenesReporte(temp);
+    const escala = Math.min(2, Math.floor(100 * Math.sqrt(14000000 / (868 * Math.max(temp.offsetHeight, 1)))) / 100);
+    const canvas = await html2canvas(temp, {
+      useCORS: true, allowTaint: true, scale: escala,
+      backgroundColor: '#ffffff', imageTimeout: 20000, logging: false
+    });
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'descansos_nextlevel7.png';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    document.body.removeChild(temp);
   } catch (e) {
     alert('❌ Error: ' + e.message);
   }
@@ -804,7 +905,7 @@ function calcularEquiposAtrasados(jornadaActual, partidosDia) {
           programadas.add(Number(p['Jornada']));
         }
       });
-      const debe = jornadasLigaArr.filter(jn => !jugadas.has(jn) && !programadas.has(jn) && !equipoDescansaEn(idE, jn));
+      const debe = jornadasLigaArr.filter(jn => !jugadas.has(jn) && !programadas.has(jn) && !equipoDescansaEn(idE, jn) && !jornadaTomadaComoJugada(idE, jn));
       if (debe.length) atrasados.push({ nombre: (e['Nombre']||'').toUpperCase(), jornadas: debe });
     });
   return atrasados;
