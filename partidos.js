@@ -612,11 +612,11 @@ function mostrarDescansos() {
       listados.add(eq.id);
       const estado = d.sugerido ? 'SUGERIDO' : (d.jugada ? 'DESCANSÓ' : 'DESCANSARÁ');
       const fecha = d.fechas.length ? d.fechas.join(' / ') : 'Por definir';
-      filas += `<div style="display:grid;grid-template-columns:70px 1fr 110px 100px;gap:8px;align-items:center;padding:9px 4px;border-bottom:1px dotted rgba(94,181,13,0.3);font-size:13px;">
-        <span style="color:#5eb50d;font-weight:700;">Jornada ${j}</span>
-        <span style="color:#fff;font-weight:700;text-transform:uppercase;">${eq.nombre}</span>
-        <span style="color:#ddd;">${fecha}</span>
-        <span style="color:${colores[estado]};font-weight:700;font-size:11px;letter-spacing:1px;text-align:right;">${estado}</span>
+      filas += `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:3px 10px;padding:9px 4px;border-bottom:1px dotted rgba(94,181,13,0.3);font-size:13px;">
+        <span style="color:#5eb50d;font-weight:700;min-width:74px;">Jornada ${j}</span>
+        <span style="color:#fff;font-weight:700;text-transform:uppercase;flex:1;min-width:130px;">${eq.nombre}</span>
+        <span style="color:#ddd;font-size:12px;">${fecha}</span>
+        <span style="color:${colores[estado]};font-weight:700;font-size:11px;letter-spacing:1px;margin-left:auto;">${estado}</span>
       </div>`;
     });
   });
@@ -635,8 +635,8 @@ function mostrarDescansos() {
 
 // ===== REPORTE PNG DE DESCANSOS (mismo formato que el "Rol propuesto del domingo") =====
 // Archivos de los dos logos del encabezado (Next Level 7 y La Región All Stars).
-// Si no cargan, el encabezado se ve sin logos. Pon aquí los nombres reales de tus imágenes.
-const LOGOS_ENCABEZADO = ['logo_nextlevel.png', 'logo_laregion.png'];
+// Son los mismos logos que usa la página de reportes. Si no cargan, el encabezado se ve sin logos.
+const LOGOS_ENCABEZADO = ['logo-liga.png.png', 'laregionallstars.png'];
 
 function fechasTxt(fechas) {
   if (!fechas || !fechas.length) return 'Por definir';
