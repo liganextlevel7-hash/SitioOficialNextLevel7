@@ -408,6 +408,8 @@ const MIN_PARTIDOS_PARA_DETECTAR = 6;
 
 let DESCANSOS = {};        // jornada -> { jornada, equipos:[{id,nombre,descripcion}], fechas:[], jugada, sugerido, vuelta }
 let DESCANSOS_AVISOS = []; // avisos para que revises la hoja
+let AUSENCIAS = [];             // por jornada cerrada: equipos que no jugaron y si cuenta como descanso
+let JORNADAS_SIN_CAPTURAR = []; // jornadas con partidos incompletos (no se puede saber quién no juega)
 
 function normTxt(t) { return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase(); }
 function claveVuelta(v) { return String(v || '').trim() === '2' ? '2' : '1'; }
@@ -454,7 +456,7 @@ function calcularDescansos() {
   const asegurar = j => {
     if (!res[j]) res[j] = {
       jornada: j, equipos: [], sugerido: false,
-      fechas: porJ[j] ? porJ[j].fechas : [],
+      fechas: porJ[j] ? porJ[j].fechas.slice().sort((a, b) => parseFecha(a) - parseFecha(b)) : [],
       jugada: porJ[j] ? porJ[j].jugado : false,
       vuelta: porJ[j] ? porJ[j].vuelta : '1'
     };
@@ -505,6 +507,21 @@ function calcularDescansos() {
       avisos.push(`Jornada ${j}: descansan ${res[j].equipos.length} equipos (${res[j].equipos.map(e => e.nombre).join(', ')}). Si debería descansar solo uno, revisa que no falten partidos por capturar.`);
     }
   });
+
+  // ausencias por jornada (para el reporte "quién no jugó")
+  const restReal = {};
+  Object.keys(res).forEach(j => res[j].equipos.forEach(e => { restReal[e.id] = Number(j); }));
+  const jornadasOrden = Object.keys(porJ).map(Number).sort((a, b) => a - b);
+  const detectable = j => !porJ[j].incompleta && porJ[j].n >= MIN_PARTIDOS_PARA_DETECTAR;
+  AUSENCIAS = jornadasOrden.filter(detectable).map(j => ({
+    jornada: j,
+    fechas: porJ[j].fechas.slice().sort((a, b) => parseFecha(a) - parseFecha(b)),
+    ausentes: activos.filter(e => !porJ[j].ids.has(String(e['ID_Equipo']).trim())).map(e => {
+      const inf = info(e);
+      return Object.assign({}, inf, { descanso: restReal[inf.id] === j, descansoEn: restReal[inf.id] || null });
+    }).sort((a, b) => (b.descanso ? 1 : 0) - (a.descanso ? 1 : 0))
+  }));
+  JORNADAS_SIN_CAPTURAR = jornadasOrden.filter(j => !detectable(j));
 
   // 3) sugerencias para los que aún no descansan (vuelta 1)
   const total = activos.length;
@@ -589,6 +606,142 @@ function mostrarDescansos() {
       ${sinHTML}${avisosHTML}
     </div>`;
   st.textContent = '✅ Calendario de descansos (los SUGERIDOS son propuesta, no están en la hoja)';
+}
+
+// ===== REPORTE PNG: ¿QUIÉN NO JUGÓ? + DESCANSO POR EQUIPO (formato oficial) =====
+function fechasTxt(fechas) { return (fechas && fechas.length) ? fechas.join(' · ') : 'Por definir'; }
+
+function chipDescansoHTML(texto, color) {
+  return `<div style="flex-shrink:0;font-size:12px;font-weight:800;letter-spacing:1px;color:${color};border:1.5px solid ${color};border-radius:14px;padding:4px 11px;text-transform:uppercase;background:rgba(0,0,0,0.45);text-shadow:0 1px 3px rgba(0,0,0,0.9);white-space:nowrap;">${texto}</div>`;
+}
+
+function htmlPaginaDescansos(numPagina, totalPaginas) {
+  const eqMap = {};
+  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
+  const logo = (id, px) => `<img src="${(eqMap[id] && eqMap[id]['URL']) || ''}" style="width:${px}px;height:${px}px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">`;
+  const sep = `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`;
+  const nota = t => `<div style="margin-top:16px;padding:12px 14px;background:rgba(0,0,0,0.6);border:1px solid rgba(213,166,16,0.5);border-radius:12px;font-size:13px;line-height:1.45;font-weight:700;color:#ffffff;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.95);">${t}</div>`;
+
+  let cuerpo = '';
+  let subtitulo = '';
+
+  if (numPagina === 1) {
+    subtitulo = 'QUIÉN NO JUGÓ CADA JORNADA';
+    cuerpo = AUSENCIAS.map((a, i) => {
+      const lineas = a.ausentes.map(x => `
+        <div style="display:flex;align-items:center;gap:10px;padding:5px 0;">
+          ${logo(x.id, 38)}
+          <div style="flex:1;min-width:0;font-size:15px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${x.nombre}</div>
+          ${x.descanso
+            ? chipDescansoHTML('😴 Sí · cuenta como descanso', '#5eb50d')
+            : chipDescansoHTML('⚠️ No · ' + (x.descansoEn ? 'ya descansó J' + x.descansoEn : 'partido pendiente'), '#ff6666')}
+        </div>`).join('') || `<div style="font-size:14px;color:#f5f5f0;font-weight:700;">Jugaron todos los equipos</div>`;
+      return `
+        <div style="padding:14px 4px 12px;">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:#5eb50d;text-shadow:0 0 14px rgba(94,181,13,0.5),0 2px 4px rgba(0,0,0,0.7);">JORNADA ${a.jornada}</div>
+            <div style="font-size:13px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fechasTxt(a.fechas)}</div>
+          </div>
+          ${lineas}
+        </div>
+        ${i < AUSENCIAS.length - 1 ? sep : ''}`;
+    }).join('');
+    if (JORNADAS_SIN_CAPTURAR.length) {
+      const ini = JORNADAS_SIN_CAPTURAR[0], fin = JORNADAS_SIN_CAPTURAR[JORNADAS_SIN_CAPTURAR.length - 1];
+      cuerpo += nota(`🕒 Jornada${ini !== fin ? 's ' + ini + ' a ' + fin : ' ' + ini}: partidos aún sin capturar completos, todavía no se puede saber quién no juega.`);
+    }
+    cuerpo += nota('📌 Nota: un equipo que no jugó una jornada se toma como descanso solo la primera vez (cada equipo descansa una vez). Si vuelve a quedar sin partido en otra jornada, ese partido se considera pendiente.');
+  } else {
+    subtitulo = 'DESCANSO DE CADA EQUIPO';
+    const filas = [];
+    Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
+      const d = DESCANSOS[j];
+      d.equipos.forEach(eq => filas.push({ j, d, eq }));
+    });
+    cuerpo = filas.map((f, i) => {
+      const chip = f.d.sugerido ? chipDescansoHTML('Propuesta', '#29a6ff')
+        : (f.d.jugada ? chipDescansoHTML('Descansó', '#5eb50d') : chipDescansoHTML('Descansará', '#ffd83d'));
+      return `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 4px;">
+          ${logo(f.eq.id, 52)}
+          <div style="flex:1;min-width:0;font-size:16px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${f.eq.nombre}</div>
+          <div style="text-align:center;min-width:120px;">
+            <div style="font-size:11px;color:#5eb50d;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">Jornada ${f.j}</div>
+            <div style="font-size:13px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${f.d.sugerido ? 'Por definir' : fechasTxt(f.d.fechas)}</div>
+          </div>
+          ${chip}
+        </div>
+        ${i < filas.length - 1 ? sep : ''}`;
+    }).join('');
+    cuerpo += nota('📌 Propuesta = descanso sugerido, todavía no está capturado en la hoja de partidos. Cada equipo descansa una vez por vuelta.');
+  }
+
+  const titulo = `DESCANSOS${totalPaginas > 1 ? ' · Página ' + numPagina + '/' + totalPaginas : ''}`;
+  return `
+    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${titulo}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${subtitulo}</div>
+    </div>
+    <div style="margin-top:10px;">${cuerpo}</div>`;
+}
+
+function construirPaginaDescansos(numPagina, totalPaginas) {
+  const inner = document.createElement('div');
+  inner.style.cssText = `
+    position:relative;
+    width:700px;
+    min-height:900px;
+    background-image:url('fondonuevo.png');
+    background-size:cover;
+    background-position:center;
+    padding:28px 24px 32px;
+    box-sizing:border-box;
+  `;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;';
+  inner.appendChild(overlay);
+  const content = document.createElement('div');
+  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
+  content.innerHTML = htmlPaginaDescansos(numPagina, totalPaginas);
+  inner.appendChild(content);
+  return inner;
+}
+
+async function downloadPNGDescansos() {
+  if (!todosEquipos.length || !todosPartidos.length) { alert('Aún no cargan los datos de la hoja, intenta en un momento.'); return; }
+  const btn = document.getElementById('dlBtnDesc');
+  btn.textContent = '⏳ Generando...';
+  btn.disabled = true;
+  DESCANSOS = calcularDescansos();
+  const totalPaginas = 2;
+  try {
+    for (let p = 1; p <= totalPaginas; p++) {
+      const temp = document.createElement('div');
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      temp.style.top = '0';
+      temp.appendChild(construirPaginaDescansos(p, totalPaginas));
+      document.body.appendChild(temp);
+      await esperarImagenesReporte(temp);
+      const canvas = await html2canvas(temp, {
+        useCORS: true, allowTaint: true, scale: 3,
+        backgroundColor: '#142702', imageTimeout: 20000, logging: false
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `descansos_nextlevel7_pagina${p}.png`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      document.body.removeChild(temp);
+      await new Promise(r => setTimeout(r, 400));
+    }
+  } catch (e) {
+    alert('❌ Error: ' + e.message);
+  }
+  btn.textContent = '⬇ Descargar reporte de descansos (PNG)';
+  btn.disabled = false;
 }
 
 // ===== DESCARGAR PNG (paginado: 4 partidos por página) =====
