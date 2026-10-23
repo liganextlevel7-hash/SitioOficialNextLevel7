@@ -95,6 +95,13 @@ body.auth #login-reporte{display:none}
 #login-reporte .err{color:#ff6b6b;font-size:13px;min-height:18px;margin-top:8px}
 td.idp{font-weight:700;font-size:12px;color:#374151}
 td.n{font-weight:800;font-size:13px;color:#1d3d05}
+
+/* ===== Panel: imágenes de partidos y descansos ===== */
+#statusMsg{font-size:13px;color:#9db38c;text-align:center;min-height:18px;margin-top:4px}
+#stackContainer{margin-top:10px}
+#stackContainer .editor-panel{background:rgba(0,0,0,.35);border:1px solid #5eb50d44;border-radius:12px;padding:12px}
+#stackContainer .editor-panel h3{color:#5eb50d;font-size:15px;letter-spacing:1px;margin:0 0 8px;text-transform:uppercase}
+#stackContainer .empty-msg{text-align:center;color:rgba(255,255,255,.4);font-size:13px;padding:14px}
 </style>
 </head>
 <body>
@@ -132,6 +139,37 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
     <button class="btn" onclick="imprimir()">🖨️ Imprimir</button>
   </div>
   <div id="msg">Cargando datos...</div>
+</div>
+<div class="panel" id="panel-imagenes">
+  <h2>🖼️ Imágenes de partidos y descansos</h2>
+  <div class="fila">
+    <label class="campo"><span>Filtrar por</span>
+      <select id="filterTipo" onchange="cambiarFiltro()">
+        <option value="jornada">Por jornada</option>
+        <option value="fecha">Por fecha</option>
+        <option value="equipo">Por equipo</option>
+      </select></label>
+    <label class="campo" id="groupJornada"><span>Jornada</span>
+      <select id="filterJornada"><option value="">— Selecciona —</option></select></label>
+    <label class="campo" id="groupFecha" style="display:none"><span>Fecha</span>
+      <select id="filterFecha"><option value="">Cargando...</option></select></label>
+    <label class="campo" id="groupEquipo" style="display:none"><span>Equipo</span>
+      <select id="filterEquipo"><option value="">Cargando...</option></select></label>
+  </div>
+  <div class="fila">
+    <button class="btn" onclick="cargarDatos()">🔄 Cargar datos</button>
+  </div>
+  <div class="fila">
+    <button class="btn pri" id="dlBtn" onclick="downloadPNG()">⬇ Descargar Lista como PNG</button>
+    <button class="btn" id="dlBtnV2" onclick="downloadPNGv2()">⬇ Descargar (escudos chicos)</button>
+    <button class="btn" id="dlBtnV3" onclick="downloadPNGv3()">⬇ Descargar (escudos 3d)</button>
+  </div>
+  <div class="fila">
+    <button class="btn" onclick="mostrarDescansos()">😴 Ver calendario de descansos</button>
+    <button class="btn pri" id="dlBtnDesc" onclick="downloadPNGDescansos()">⬇ Descargar reporte de descansos (PNG)</button>
+  </div>
+  <div id="statusMsg">Cargando datos...</div>
+  <div id="stackContainer"></div>
 </div>
 <div id="vista-wrap" hidden><div id="vista"></div></div>
 
@@ -1032,5 +1070,6 @@ if (sessionStorage.getItem('nl7_reporte_ok') === '1') document.body.classList.ad
 
 init();
 </script>
+<script src="reportes_imagenes.js"></script>
 </body>
 </html>
