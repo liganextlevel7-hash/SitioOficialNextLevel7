@@ -380,10 +380,11 @@ function mostrarDescansos() {
   st.textContent = '✅ Calendario de descansos (los SUGERIDOS son propuesta, no están en la hoja)';
 }
 
-// ===== REPORTE PNG DE DESCANSOS (mismo formato que el "Rol propuesto del domingo") =====
-// Archivos de los dos logos del encabezado (Next Level 7 y La Región All Stars).
-// Son los mismos logos que usa la página de reportes. Si no cargan, el encabezado se ve sin logos.
-const LOGOS_ENCABEZADO = ['logo-liga.png.png', 'laregionallstars.png'];
+// ===== REPORTE PNG DE DESCANSOS · TAMAÑO CARTA (8.5 x 11 in) =====
+// Cada página mide 816 x 1056 px (carta vertical a 96 dpi) y se exporta a ~240 dpi.
+// Mismo formato del "Rol propuesto del domingo": encabezado verde, recordatorio amarillo, tablas y leyenda.
+const LOGOS_ENCABEZADO = ['logo-liga.png.png', 'laregionallstars.png'];  // mismos logos de la página de reportes
+const CARTA_ANCHO = 816, CARTA_ALTO = 1056, CARTA_ESCALA = 2.5;
 
 function fechasTxt(fechas) {
   if (!fechas || !fechas.length) return 'Por definir';
@@ -391,22 +392,18 @@ function fechasTxt(fechas) {
   return fechas.join(' · ');
 }
 
-function chipRolHTML(texto, tipo) {
+function pillCarta(texto, tipo) {
   const est = {
-    verde: 'background:#e6f6e3;border:2px solid #5eb50d;color:#1b6e1b;',
-    rojo: 'background:#fdeeee;border:2px solid #e57373;color:#b71c1c;',
-    gris: 'background:#eeeeee;border:2px solid #c4c4c4;color:#555555;',
-    ambar: 'background:#fff4d6;border:2px solid #e0a82e;color:#8a5a00;',
-    azul: 'background:#e8f0fe;border:2px solid #4a7fd0;color:#1f4f9c;'
+    gris: 'background:#eeeeee;border:1.5px solid #c4c4c4;color:#555555;',
+    ambar: 'background:#fff4d6;border:1.5px solid #e0a82e;color:#8a5a00;',
+    azul: 'background:#e8f0fe;border:1.5px solid #4a7fd0;color:#1f4f9c;'
   }[tipo];
-  return `<div style="display:inline-block;${est}border-radius:999px;padding:3px 13px;font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">${texto}</div>`;
+  return `<span style="display:inline-block;${est}border-radius:999px;padding:2px 10px;font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap;">${texto}</span>`;
 }
 
-function htmlReporteDescansos() {
+function datosReporteDescansos() {
   const eqMap = {};
   todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
-
-  // partidos jugados por equipo (la jornada tomada como jugada también cuenta)
   const jugados = {};
   todosPartidos.forEach(p => {
     if ((p['Estado'] || '').trim() !== 'Jugado') return;
@@ -414,150 +411,165 @@ function htmlReporteDescansos() {
   });
   Object.keys(VIRTUALES).forEach(k => { const id = k.split('|')[0]; jugados[id] = (jugados[id] || 0) + 1; });
 
-  // fechas del torneo
-  const todasFechas = todosPartidos.map(p => (p['Fecha'] || '').trim()).filter(Boolean).sort((a, b) => parseFecha(a) - parseFecha(b));
-  const inicio = todasFechas[0] || '';
+  const fechas = todosPartidos.map(p => (p['Fecha'] || '').trim()).filter(Boolean).sort((a, b) => parseFecha(a) - parseFecha(b));
+  const inicio = fechas[0] || '';
   const hoy = new Date();
   const pad = n => String(n).padStart(2, '0');
   const emitido = `${pad(hoy.getDate())}/${pad(hoy.getMonth() + 1)}/${hoy.getFullYear()} ${pad(hoy.getHours())}:${pad(hoy.getMinutes())}`;
-  const diasDesdeInicio = inicio ? Math.floor((hoy.getTime() - parseFecha(inicio)) / 86400000) : 0;
-  const fechaHoyNum = inicio ? Math.max(1, Math.floor(diasDesdeInicio / 7) + 1) : 1;
-
-  const nActivos = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo').length;
-
-  const celdaEquipo = (id, nombre) => {
-    const e = eqMap[id] || {};
-    const url = e['URL'] || '';
-    const escudo = url
-      ? `<img src="${url}" style="width:40px;height:40px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">`
-      : `<div style="width:40px;height:40px;flex-shrink:0;border-radius:50%;background:#e3e8dc;border:2px solid #c9d2bf;display:flex;align-items:center;justify-content:center;font-weight:900;color:#5a6b4a;font-size:20px;">${(nombre || '?').charAt(0)}</div>`;
-    return `<div style="display:flex;align-items:center;gap:12px;text-align:left;">
-      ${escudo}
-      <div><div style="font-size:17px;font-weight:800;color:#1f2a1a;text-transform:uppercase;line-height:1.1;">${nombre}</div>
-      <div style="font-size:13px;color:#6b7280;">Lleva ${jugados[id] || 0} jugado${(jugados[id] || 0) === 1 ? '' : 's'}</div></div>
-    </div>`;
+  const dias = inicio ? Math.floor((hoy.getTime() - parseFecha(inicio)) / 86400000) : 0;
+  return {
+    eqMap, jugados, inicio, emitido,
+    fechaHoyNum: inicio ? Math.max(1, Math.floor(dias / 7) + 1) : 1,
+    nActivos: todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo').length
   };
+}
 
-  const TH = 'background:#e6efdc;color:#1b3a06;font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:11px 6px;border:2px solid #d5dccb;';
-  const TD = 'background:#ffffff;border:2px solid #d5dccb;padding:7px 8px;text-align:center;vertical-align:middle;';
-  const tabla = (cabeceras, filas) => `
-    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
-      <thead><tr>${cabeceras.map(c => `<th style="${TH}width:${c[1]};">${c[0]}</th>`).join('')}</tr></thead>
-      <tbody>${filas.join('')}</tbody>
-    </table>`;
-  const subtitulo = t => `<div style="margin:30px 0 12px;font-size:24px;font-weight:900;color:#1b3a06;letter-spacing:1px;">${t}</div>`;
+function escudoCarta(d, id, nombre, px) {
+  const e = d.eqMap[id] || {};
+  const url = e['URL'] || '';
+  if (url) return `<img src="${url}" style="width:${px}px;height:${px}px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">`;
+  return `<div style="width:${px}px;height:${px}px;flex-shrink:0;border-radius:50%;background:#e3e8dc;border:1.5px solid #c9d2bf;display:flex;align-items:center;justify-content:center;font-weight:900;color:#5a6b4a;font-size:${Math.round(px * 0.5)}px;">${(nombre || '?').charAt(0)}</div>`;
+}
 
-  // ---------- Tabla 1: quién no jugó cada jornada ----------
-  let n1 = 0;
-  const filas1 = [];
-  AUSENCIAS.forEach(a => {
-    a.ausentes.forEach(x => {
-      n1++;
-      const obs = x.descanso
-        ? `${chipRolHTML('Descanso', 'verde')}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">No tuvo partido: es su descanso.</div>`
-        : `${chipRolHTML('Ya descansó J' + x.descansoEn, 'rojo')}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">Partido pendiente de esta jornada.</div>`;
-      filas1.push(`<tr>
-        <td style="${TD}font-weight:800;color:#6b7280;">${n1}</td>
-        <td style="${TD}font-size:20px;font-weight:900;color:#1f2a1a;">J${a.jornada}</td>
-        <td style="${TD}font-size:13px;color:#374151;line-height:1.3;">${fechasTxt(a.fechas).replace(' · ', '<br>')}</td>
-        <td style="${TD}">${celdaEquipo(x.id, x.nombre)}</td>
-        <td style="${TD}">${obs}</td>
-      </tr>`);
-    });
-  });
-  const tabla1 = tabla([['No.', '7%'], ['Jornada', '14%'], ['Fecha', '16%'], ['Equipo', '30%'], ['Observación', '33%']], filas1);
+function encabezadoCarta(d, pagina, total) {
+  const primera = pagina === 1;
+  return `
+    <div style="background:#1d3d06;color:#fff;padding:${primera ? 24 : 16}px 36px ${primera ? 18 : 12}px;display:flex;justify-content:space-between;align-items:center;gap:16px;">
+      <div style="min-width:0;">
+        <div style="font-size:10px;letter-spacing:3px;font-weight:700;color:#9fd16b;">LIGA NEXT LEVEL 7 · TORNEO DOMINICAL</div>
+        <div style="font-size:${primera ? 28 : 22}px;font-weight:800;margin-top:5px;line-height:1.1;">Reporte de descansos${primera ? '' : ' <span style="font-weight:600;color:#cfe3b9;">· continuación</span>'}</div>
+        ${primera ? `<div style="font-size:13px;color:#d9e8c8;margin-top:4px;">${d.nActivos} equipos · descansa un equipo por jornada</div>` : ''}
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        ${primera ? `<div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:6px;">${LOGOS_ENCABEZADO.map(u => `<img src="${u}" style="height:52px;width:auto;object-fit:contain;" onerror="this.style.display='none'">`).join('')}</div>` : ''}
+        <div style="font-size:11px;color:#d9e8c8;line-height:1.45;">Torneo iniciado el <b style="color:#fff;">${d.inicio}</b><br>Hoy: Fecha ${d.fechaHoyNum} · Emitido ${d.emitido}</div>
+      </div>
+    </div>
+    <div style="height:5px;background:#5eb50d;"></div>`;
+}
 
-  // ---------- Tabla 2: descanso de cada equipo ----------
+function recordatorioCarta() {
+  const t = [];
+  const j1 = DESCANSOS[1];
+  if (j1 && !j1.sugerido) j1.equipos.forEach(eq => t.push(`<b>${eq.nombre}</b> descansó en la <b>Jornada 1</b>.`));
+  VIRTUALES_INFO.forEach(v => t.push(`<b>${(v.nombre || '').toUpperCase()}</b> <b>no jugó la Jornada ${v.jornada}</b>, pero se toma como si hubiera jugado${v.vs ? ' contra ' + v.vs : ''} (cuenta en jornadas y estadísticas; no es descanso).`));
+  if (!t.length) return '';
+  return `<div style="background:#fff3d4;border-bottom:2px solid #e0a82e;padding:9px 36px;font-size:11.5px;line-height:1.45;color:#7a5200;">📌 <b>Recordatorio:</b> ${t.join(' ')}</div>`;
+}
+
+const CELDA_TH = 'background:#e6efdc;color:#1b3a06;font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;padding:7px 4px;border:1px solid #d5dccb;';
+const CELDA_TD = 'background:#fff;border:1px solid #d5dccb;padding:4px 6px;vertical-align:middle;';
+
+function tituloSeccionCarta(t) {
+  return `<div style="margin:14px 0 6px;font-size:14px;font-weight:900;color:#1b3a06;letter-spacing:.5px;text-transform:uppercase;">${t}</div>`;
+}
+
+function tablaDescansoEquipoCarta(d, filas, desde) {
+  const trs = filas.map((f, i) => {
+    let pill, nota;
+    if (f.d.sugerido) { pill = pillCarta('Propuesta', 'azul'); nota = 'Sugerido; falta capturar'; }
+    else if (f.d.jugada) { pill = pillCarta('Descansó', 'gris'); nota = 'No tuvo partido'; }
+    else { pill = pillCarta('Descansará', 'ambar'); nota = 'Sin partido esa fecha'; }
+    const lleva = d.jugados[f.eq.id] || 0;
+    return `<tr>
+      <td style="${CELDA_TD}text-align:center;color:#6b7280;font-weight:700;font-size:11px;">${desde + i + 1}</td>
+      <td style="${CELDA_TD}"><div style="display:flex;align-items:center;gap:8px;">${escudoCarta(d, f.eq.id, f.eq.nombre, 24)}
+        <div><div style="font-size:12px;font-weight:800;color:#1f2a1a;text-transform:uppercase;line-height:1.1;">${f.eq.nombre}</div>
+        <div style="font-size:9.5px;color:#6b7280;">Lleva ${lleva} jugado${lleva === 1 ? '' : 's'}</div></div></div></td>
+      <td style="${CELDA_TD}text-align:center;font-size:15px;font-weight:900;color:#1f2a1a;">J${f.j}</td>
+      <td style="${CELDA_TD}text-align:center;font-size:11px;color:#374151;line-height:1.25;">${f.d.sugerido ? 'Por definir' : fechasTxt(f.d.fechas).replace(' · ', '<br>').replace(' al ', '<br>al ')}</td>
+      <td style="${CELDA_TD}"><div style="display:flex;align-items:center;gap:7px;">${pill}<span style="font-size:10.5px;color:#4b5563;">${nota}</span></div></td>
+    </tr>`;
+  }).join('');
+  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+    <thead><tr>
+      <th style="${CELDA_TH}width:7%;">No.</th><th style="${CELDA_TH}width:31%;">Equipo</th><th style="${CELDA_TH}width:10%;">Jornada</th>
+      <th style="${CELDA_TH}width:17%;">Fecha</th><th style="${CELDA_TH}width:35%;">Estado</th>
+    </tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+function tablaAusenciasCarta(d, items) {
+  const trs = items.map(a => {
+    const chips = a.ausentes.map(x => {
+      const e = d.eqMap[x.id] || {};
+      const base = 'display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 11px 3px 5px;margin:2px 4px 2px 0;';
+      return x.descanso
+        ? `<span style="${base}background:#e6f6e3;border:1.5px solid #5eb50d;">${escudoCarta(d, x.id, x.nombre, 20)}<span style="font-size:11px;font-weight:800;color:#1b6e1b;text-transform:uppercase;">😴 ${x.nombre}</span></span>`
+        : `<span style="${base}background:#fdeeee;border:1.5px solid #e57373;">${escudoCarta(d, x.id, x.nombre, 20)}<span style="font-size:11px;font-weight:800;color:#b71c1c;text-transform:uppercase;">${x.nombre}</span><span style="font-size:10px;color:#b71c1c;">· ya descansó J${x.descansoEn}</span></span>`;
+    }).join('') || '<span style="font-size:11px;color:#4b5563;">Jugaron todos los equipos.</span>';
+    return `<tr>
+      <td style="${CELDA_TD}text-align:center;font-size:16px;font-weight:900;color:#1f2a1a;">J${a.jornada}</td>
+      <td style="${CELDA_TD}text-align:center;font-size:11px;color:#374151;line-height:1.3;">${fechasTxt(a.fechas).replace(' · ', '<br>').replace(' al ', '<br>al ')}</td>
+      <td style="${CELDA_TD}padding:6px 8px;">${chips}</td>
+    </tr>`;
+  }).join('');
+  return `<table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+    <thead><tr>
+      <th style="${CELDA_TH}width:10%;">Jornada</th><th style="${CELDA_TH}width:17%;">Fecha</th>
+      <th style="${CELDA_TH}width:73%;">Equipos que no jugaron · <span style="color:#1b6e1b;">verde = descanso</span> · <span style="color:#b71c1c;">rojo = partido pendiente</span></th>
+    </tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+function cajaCarta(estilo, html) {
+  return `<div style="margin-top:12px;border-radius:10px;padding:10px 16px;font-size:11.5px;line-height:1.5;${estilo}">${html}</div>`;
+}
+
+// Devuelve el HTML de cada página tamaño carta
+function paginasDescansosHTML() {
+  const d = datosReporteDescansos();
   const lista = [];
   Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
     DESCANSOS[j].equipos.forEach(eq => lista.push({ j, d: DESCANSOS[j], eq }));
   });
-  const filas2 = lista.map((f, i) => {
-    let chip, texto;
-    if (f.d.sugerido) {
-      chip = chipRolHTML('Propuesta', 'azul');
-      texto = 'Sugerido; aún no está en la hoja.';
-    } else if (f.d.jugada) {
-      chip = chipRolHTML('Descansó', 'gris');
-      texto = 'No tuvo partido: ya descansó.';
+
+  // páginas de "Descanso de cada equipo": 18 filas en la primera, 26 en las siguientes
+  const bloques = [];
+  const CAP1 = 18, CAPN = 26;
+  bloques.push({ tipo: 'equipos', filas: lista.slice(0, CAP1), desde: 0 });
+  for (let i = CAP1; i < lista.length; i += CAPN) bloques.push({ tipo: 'equipos', filas: lista.slice(i, i + CAPN), desde: i });
+
+  // páginas de "Quién no jugó cada jornada": 8 jornadas por página
+  const CAPA = 8;
+  for (let i = 0; i < AUSENCIAS.length; i += CAPA) bloques.push({ tipo: 'ausencias', items: AUSENCIAS.slice(i, i + CAPA), primera: i === 0, ultima: i + CAPA >= AUSENCIAS.length });
+  if (!AUSENCIAS.length) bloques.push({ tipo: 'ausencias', items: [], primera: true, ultima: true });
+
+  const total = bloques.length;
+  const leyenda = cajaCarta('background:#f7f7f4;border:1px solid #dadad2;color:#374151;',
+    `<b>Cómo se lee:</b> <b style="color:#555;">Descansó</b>: la jornada ya se jugó y el equipo no tuvo partido. <b style="color:#8a5a00;">Descansará</b>: está en una jornada que aún no se juega. <b style="color:#1f4f9c;">Propuesta</b>: descanso sugerido, todavía sin capturar en la hoja. Cada equipo descansa <b>una vez</b> por vuelta; si vuelve a quedar sin partido, ese partido se considera pendiente.`);
+
+  return bloques.map((b, idx) => {
+    const pag = idx + 1;
+    let cuerpo = '';
+    if (b.tipo === 'equipos') {
+      cuerpo = (idx === 0 ? '' : '') + tituloSeccionCarta(idx === 0 ? 'Descanso de cada equipo' : 'Descanso de cada equipo (continuación)') + tablaDescansoEquipoCarta(d, b.filas, b.desde);
+      if (idx === bloques.filter(x => x.tipo === 'equipos').length - 1) cuerpo += leyenda;
     } else {
-      chip = chipRolHTML('Descansará', 'ambar');
-      texto = 'Sin partido en esa fecha: descansará.';
+      if (b.primera) {
+        cuerpo += cajaCarta('background:#eef3fc;border:1px solid #d3deef;border-left:6px solid #2f6db5;color:#33415c;margin-top:14px;',
+          'Si un equipo no jugó una jornada, se toma como <b>descanso</b> la primera vez. Si vuelve a quedar sin partido, ese partido se considera <b>pendiente</b> y aparece en rojo.');
+      }
+      cuerpo += tituloSeccionCarta('Quién no jugó cada jornada') + tablaAusenciasCarta(d, b.items);
+      if (b.ultima) {
+        const pend = [];
+        if (JORNADAS_SIN_CAPTURAR.length) {
+          const ini = JORNADAS_SIN_CAPTURAR[0], fin = JORNADAS_SIN_CAPTURAR[JORNADAS_SIN_CAPTURAR.length - 1];
+          pend.push(`<b>Jornada${ini !== fin ? 's ' + ini + ' a ' + fin : ' ' + ini}:</b> los partidos aún no están capturados completos, todavía no se puede saber quién no juega.`);
+        }
+        const listados = new Set(lista.map(f => f.eq.id));
+        const sin = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo' && !listados.has(String(e['ID_Equipo']).trim()));
+        if (sin.length) pend.push(`<b>Sin descanso asignado:</b> ${sin.map(e => e['Nombre']).join(', ')}.`);
+        if (pend.length) cuerpo += cajaCarta('background:#fdeeee;border:1px solid #f0a8a8;color:#b71c1c;', pend.join('<br>'));
+      }
     }
-    return `<tr>
-      <td style="${TD}font-weight:800;color:#6b7280;">${i + 1}</td>
-      <td style="${TD}">${celdaEquipo(f.eq.id, f.eq.nombre)}</td>
-      <td style="${TD}font-size:20px;font-weight:900;color:#1f2a1a;">J${f.j}</td>
-      <td style="${TD}font-size:13px;color:#374151;line-height:1.3;">${f.d.sugerido ? 'Por definir' : fechasTxt(f.d.fechas).replace(' · ', '<br>')}</td>
-      <td style="${TD}">${chip}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">${texto}</div></td>
-    </tr>`;
+    return `<div style="width:${CARTA_ANCHO}px;height:${CARTA_ALTO}px;position:relative;overflow:hidden;background:#fff;color:#1f2a1a;font-family:'Noto Sans','Segoe UI',Roboto,Arial,sans-serif;">
+      ${encabezadoCarta(d, pag, total)}
+      ${pag === 1 ? recordatorioCarta() : ''}
+      <div data-contenido style="padding:0 36px;">${cuerpo}</div>
+      <div style="position:absolute;left:0;right:0;bottom:0;border-top:1px solid #dadad2;padding:9px 36px;display:flex;justify-content:space-between;font-size:10px;color:#6b7280;background:#fff;">
+        <span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${d.emitido} · Página ${pag} de ${total}</span>
+      </div>
+    </div>`;
   });
-  const tabla2 = tabla([['No.', '7%'], ['Equipo', '30%'], ['Jornada', '14%'], ['Fecha', '16%'], ['Observación', '33%']], filas2);
-
-  // ---------- recordatorio (amarillo), aviso (azul), pendientes (rojo), cómo se lee ----------
-  const recordatorios = [];
-  Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
-    DESCANSOS[j].equipos.forEach(eq => {
-      if (!DESCANSOS[j].sugerido && j === 1) recordatorios.push(`<b>${eq.nombre}</b> descansó en la <b>Jornada 1</b>.`);
-    });
-  });
-  VIRTUALES_INFO.forEach(v => {
-    recordatorios.push(`<b>${(v.nombre || '').toUpperCase()}</b> <b>no jugó la Jornada ${v.jornada}</b>, pero se toma como si hubiera jugado${v.vs ? ' contra ' + v.vs : ''} (cuenta en jornadas y estadísticas; no es descanso).`);
-  });
-  const recordatorioHTML = recordatorios.length
-    ? `<div style="background:#fff3d4;border-bottom:3px solid #e0a82e;padding:18px 62px;font-size:20px;line-height:1.55;color:#7a5200;">📌 <b>Recordatorio:</b> ${recordatorios.join(' ')}</div>` : '';
-
-  const pendientes = [];
-  if (JORNADAS_SIN_CAPTURAR.length) {
-    const ini = JORNADAS_SIN_CAPTURAR[0], fin = JORNADAS_SIN_CAPTURAR[JORNADAS_SIN_CAPTURAR.length - 1];
-    pendientes.push(`<b>Jornada${ini !== fin ? 's ' + ini + ' a ' + fin : ' ' + ini}:</b> los partidos aún no están capturados completos, todavía no se puede saber quién no juega.`);
-  }
-  const listados = new Set(lista.map(f => f.eq.id));
-  const sinDescanso = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo' && !listados.has(String(e['ID_Equipo']).trim()));
-  if (sinDescanso.length) pendientes.push(`<b>Sin descanso asignado:</b> ${sinDescanso.map(e => e['Nombre']).join(', ')}.`);
-  const pendientesHTML = pendientes.length
-    ? `<div style="margin-top:26px;background:#fdeeee;border:2px solid #f0a8a8;border-radius:14px;padding:16px 26px;font-size:19px;line-height:1.5;color:#b71c1c;">${pendientes.join('<br>')}</div>` : '';
-
-  return `
-  <div style="font-family:'Noto Sans','Segoe UI',Roboto,Arial,sans-serif;color:#1f2a1a;background:#ffffff;">
-    <div style="background:#1d3d06;color:#ffffff;padding:40px 62px 30px;display:flex;justify-content:space-between;align-items:flex-start;">
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:15px;letter-spacing:4px;font-weight:700;color:#9fd16b;">LIGA NEXT LEVEL 7 · TORNEO DOMINICAL</div>
-        <div style="font-size:42px;font-weight:900;margin-top:10px;line-height:1.1;white-space:nowrap;">Reporte de descansos</div>
-        <div style="font-size:22px;color:#d9e8c8;margin-top:8px;">${nActivos} equipos · descansa un equipo por jornada</div>
-      </div>
-      <div style="text-align:right;flex-shrink:0;white-space:nowrap;margin-left:20px;">
-        <div style="display:flex;gap:14px;justify-content:flex-end;min-height:90px;">
-          ${LOGOS_ENCABEZADO.map(u => `<img src="${u}" style="height:90px;width:auto;object-fit:contain;" onerror="this.style.display='none'">`).join('')}
-        </div>
-        <div style="font-size:17px;color:#d9e8c8;margin-top:10px;">Torneo iniciado el <b style="color:#fff;">${inicio}</b></div>
-        <div style="font-size:17px;color:#d9e8c8;margin-top:2px;">Hoy: Fecha ${fechaHoyNum}</div>
-        <div style="font-size:17px;color:#d9e8c8;margin-top:2px;">Emitido ${emitido}</div>
-      </div>
-    </div>
-    <div style="height:8px;background:#5eb50d;"></div>
-    ${recordatorioHTML}
-    <div style="padding:34px 62px 20px;">
-      <div style="background:#eef3fc;border:2px solid #d3deef;border-left:8px solid #2f6db5;border-radius:12px;padding:20px 30px;font-size:20px;line-height:1.55;color:#33415c;">
-        Cada equipo descansa <b>una vez</b>. Si un equipo no jugó una jornada, se toma como descanso la primera vez; si vuelve a quedar sin partido, ese partido se considera <b>pendiente</b>. Los descansos marcados como <b>Propuesta</b> son sugeridos y todavía no están en la hoja de partidos.
-      </div>
-
-      ${subtitulo('Quién no jugó cada jornada')}
-      ${tabla1}
-
-      ${subtitulo('Descanso de cada equipo')}
-      ${tabla2}
-
-      ${pendientesHTML}
-
-      <div style="margin-top:26px;background:#f7f7f4;border:2px solid #dadad2;border-radius:14px;padding:20px 28px;font-size:18px;line-height:1.6;color:#374151;">
-        <b>Cómo se lee:</b> <b style="color:#1b6e1b;">Descanso</b>: el equipo no tuvo partido en esa jornada y se toma como su descanso. <b style="color:#b71c1c;">Ya descansó</b>: ya tuvo su descanso en otra jornada, así que ese partido sigue pendiente. <b style="color:#555;">Descansó</b>: la jornada ya se jugó. <b style="color:#8a5a00;">Descansará</b>: está programado en una jornada que aún no se juega. <b style="color:#1f4f9c;">Propuesta</b>: descanso sugerido, aún sin capturar. Cada equipo descansa una vez por vuelta.
-      </div>
-    </div>
-    <div style="border-top:2px solid #dadad2;padding:20px 62px 26px;display:flex;justify-content:space-between;font-size:17px;color:#6b7280;">
-      <span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${emitido}</span>
-    </div>
-  </div>`;
 }
 
 async function downloadPNGDescansos() {
@@ -567,24 +579,28 @@ async function downloadPNGDescansos() {
   btn.disabled = true;
   try {
     DESCANSOS = calcularDescansos();
-    const temp = document.createElement('div');
-    temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:868px;background:#ffffff;';
-    temp.innerHTML = htmlReporteDescansos();
-    document.body.appendChild(temp);
-    await esperarImagenesReporte(temp);
-    const escala = Math.min(2, Math.floor(100 * Math.sqrt(14000000 / (868 * Math.max(temp.offsetHeight, 1)))) / 100);
-    const canvas = await html2canvas(temp, {
-      useCORS: true, allowTaint: true, scale: escala,
-      backgroundColor: '#ffffff', imageTimeout: 20000, logging: false
-    });
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'descansos_nextlevel7.png';
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a); URL.revokeObjectURL(url);
-    document.body.removeChild(temp);
+    const paginas = paginasDescansosHTML();
+    for (let i = 0; i < paginas.length; i++) {
+      const temp = document.createElement('div');
+      temp.style.cssText = `position:fixed;left:-99999px;top:0;width:${CARTA_ANCHO}px;height:${CARTA_ALTO}px;background:#fff;`;
+      temp.innerHTML = paginas[i];
+      document.body.appendChild(temp);
+      await esperarImagenesReporte(temp);
+      const canvas = await html2canvas(temp.firstElementChild, {
+        useCORS: true, allowTaint: true, scale: CARTA_ESCALA,
+        width: CARTA_ANCHO, height: CARTA_ALTO, windowWidth: CARTA_ANCHO,
+        backgroundColor: '#ffffff', imageTimeout: 20000, logging: false
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `descansos_nextlevel7_carta_pagina${i + 1}.png`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      document.body.removeChild(temp);
+      await new Promise(r => setTimeout(r, 400));
+    }
   } catch (e) {
     alert('❌ Error: ' + e.message);
   }
