@@ -1,0 +1,1220 @@
+// ===== Reportes de partidos (PNG oficial) y descansos =====
+// Generado a partir de partidos.js para usarse en reporte_por_equipo.html.
+// Va encerrado en una función para no chocar con el código de esa página.
+(function () {
+const CSV_PARTIDOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv';
+const CSV_EQUIPOS  = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv';
+let todosPartidos = [], todosEquipos = [], ultimosFiltrados = [];
+
+function cambiarFiltro() {
+  const tipo = document.getElementById('filterTipo').value;
+  document.getElementById('groupJornada').style.display = tipo === 'jornada' ? '' : 'none';
+  document.getElementById('groupFecha').style.display = tipo === 'fecha' ? '' : 'none';
+  document.getElementById('groupEquipo').style.display = tipo === 'equipo' ? '' : 'none';
+  document.getElementById('statusMsg').textContent = 'Selecciona una opción y presiona Cargar datos';
+  document.getElementById('stackContainer').innerHTML = '';
+}
+
+async function cargarFechasYEquipos() {
+  const st = document.getElementById('statusMsg');
+  try {
+    const [resP, resE] = await Promise.all([fetch(CSV_PARTIDOS), fetch(CSV_EQUIPOS)]);
+    todosPartidos = parseCSV(await resP.text());
+    todosEquipos  = parseCSV(await resE.text());
+    DESCANSOS = calcularDescansos();
+    poblarSelectores();
+    st.textContent = 'Selecciona un filtro y presiona Cargar datos';
+  } catch (e) {
+    st.textContent = '❌ Error al cargar los datos: ' + e.message;
+  }
+}
+
+async function cargarDatos() {
+  const tipo = document.getElementById('filterTipo').value;
+  const statusEl = document.getElementById('statusMsg');
+  statusEl.textContent = '⏳ Cargando datos...';
+  try {
+    const base = todosPartidos;
+    let filtrados = [];
+    if (tipo === 'jornada') {
+      const jornada = document.getElementById('filterJornada').value;
+      if (!jornada) { statusEl.textContent = '⚠️ Selecciona una jornada'; return; }
+      filtrados = base.filter(p => p['Jornada'] && String(p['Jornada']).trim() === String(jornada));
+      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para Jornada ${jornada}`; return; }
+      filtrados.sort((a,b) => Number(a.Jornada) - Number(b.Jornada) || Number(a.ID_Partido) - Number(b.ID_Partido));
+    } else if (tipo === 'fecha') {
+      const fecha = document.getElementById('filterFecha').value;
+      if (!fecha) { statusEl.textContent = '⚠️ Selecciona una fecha'; return; }
+      filtrados = base.filter(p => p['Fecha'] && p['Fecha'].trim() === fecha);
+      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para el ${fecha}`; return; }
+      filtrados.sort((a,b) => parseFecha(b.Fecha) - parseFecha(a.Fecha));
+    } else if (tipo === 'equipo') {
+      const equipoSel = document.getElementById('filterEquipo').value.trim().toUpperCase();
+      if (!equipoSel) { statusEl.textContent = '⚠️ Selecciona un equipo'; return; }
+      filtrados = base.filter(p => {
+        const eqLocal  = (todosEquipos.find(e => String(e.ID_Equipo) === String(p.Equipo_Local))?.Nombre || '').toUpperCase();
+        const eqVisita = (todosEquipos.find(e => String(e.ID_Equipo) === String(p.Equipo_Visita))?.Nombre || '').toUpperCase();
+        return eqLocal === equipoSel || eqVisita === equipoSel;
+      });
+      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para ${equipoSel}`; return; }
+      filtrados.sort((a,b) => {
+        const ja = a.Jornada ? Number(a.Jornada) : 999;
+        const jb = b.Jornada ? Number(b.Jornada) : 999;
+        return ja - jb;
+      });
+    } else {
+      statusEl.textContent = '⚠️ Selecciona un tipo de filtro'; return;
+    }
+    ultimosFiltrados = filtrados;
+    renderResumen(filtrados);
+    statusEl.textContent = `✅ ${filtrados.length} partido(s) cargado(s). Ya puedes descargar las imágenes.`;
+  } catch (e) {
+    statusEl.textContent = '❌ Error: ' + e.message;
+  }
+}
+
+// Lista compacta de lo que se va a descargar (ocupa poco espacio en el celular)
+function renderResumen(filtrados) {
+  const nombre = id => ((todosEquipos.find(e => String(e.ID_Equipo) === String(id)) || {}).Nombre || ('Equipo ' + id));
+  const filas = filtrados.map(p => {
+    const jugado = (p['Estado'] || '').trim() === 'Jugado';
+    const marcador = jugado ? `${p['Goles_Local'] || 0} - ${p['Goles_Visita'] || 0}` : 'vs';
+    return `<div style="display:flex;gap:8px;align-items:baseline;padding:6px 2px;border-bottom:1px dotted rgba(94,181,13,0.3);font-size:13px;">
+      <span style="color:#5eb50d;font-weight:800;min-width:34px;">${p['Jornada'] ? 'J' + p['Jornada'] : '—'}</span>
+      <span style="color:#9db38c;min-width:78px;">${p['Fecha'] || 'Sin fecha'}</span>
+      <span style="flex:1;color:#fff;font-weight:700;">${nombre(p['Equipo_Local'])} <span style="color:#ddc530;">${marcador}</span> ${nombre(p['Equipo_Visita'])}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('stackContainer').innerHTML = bannerDescansoHTML(filtrados) + `<div class="editor-panel">${filas}</div>`;
+}
+
+function parseCSV(text) {
+  const lines = text.replace(/\r/g, '').trim().split('\n');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).filter(line => line.trim() !== '').map(line => {
+    const vals = []; let cur = '', inQ = false;
+    for (let ch of line) {
+      if (ch === '"') inQ = !inQ;
+      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    vals.push(cur.trim());
+    const obj = {};
+    headers.forEach((h,i) => obj[h] = (vals[i]||'').replace(/^"|"$/g,'').trim());
+    return obj;
+  });
+}
+
+function formatHora(t) {
+  if (!t) return '';
+  const parts = t.split(':');
+  let h = parseInt(parts[0]);
+  const m = parts[1] || '00';
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${m} ${ampm}`;
+}
+
+function poblarSelectores() {
+  // Todos los partidos sin filtrar por vuelta
+  const base = todosPartidos;
+
+  const jornadas = [...new Set(base.filter(p => p['Jornada']).map(p => Number(p['Jornada'])))].sort((a,b)=>a-b);
+  const selJornada = document.getElementById('filterJornada');
+  selJornada.innerHTML = '<option value="">— Selecciona —</option>';
+  jornadas.forEach(j => selJornada.innerHTML += `<option value="${j}">Jornada ${j}</option>`);
+
+  const fechas = [...new Set(base.filter(p => p['Fecha'] && p['Fecha'].trim() !== '').map(p => p['Fecha'].trim()))];
+  const selFecha = document.getElementById('filterFecha');
+  selFecha.innerHTML = '<option value="">— Selecciona una fecha —</option>';
+  fechas.forEach(f => selFecha.innerHTML += `<option value="${f}">${f}</option>`);
+
+  const equiposSet = new Set();
+  todosEquipos.forEach(e => { if (e['Nombre']) equiposSet.add(e['Nombre'].toUpperCase()); });
+  const selEquipo = document.getElementById('filterEquipo');
+  selEquipo.innerHTML = '<option value="">— Selecciona un equipo —</option>';
+  Array.from(equiposSet).sort().forEach(eq => selEquipo.innerHTML += `<option value="${eq}">${eq}</option>`);
+}
+
+function parseFecha(f) {
+  if (!f) return 0;
+  const parts = f.split('/');
+  if (parts.length !== 3) return 0;
+  return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime();
+}
+
+// ===== DESCANSOS (17 equipos: cada jornada descansa un equipo) =====
+// Descansos fijados a mano: { numeroJornada: ['Nombre del equipo' (o ID_Equipo)', ...] }
+// Galácticos (equipo nuevo) descansó en la jornada 1.
+const DESCANSOS_MANUALES = { 1: ['Galacticos'] };
+
+// Jornadas que no se jugaron pero SE TOMAN COMO JUGADAS (cuentan en jornadas, no son descanso ni deuda).
+// Deportivo Azul no jugó la J1: se toma como si hubiera jugado contra Puebla 450.
+const JORNADAS_VIRTUALES = { 1: [{ equipo: 'Deportivo Azul', vs: 'Puebla 450' }] };
+let VIRTUALES = {};       // "idEquipo|jornada" -> true
+let VIRTUALES_INFO = [];  // [{ id, nombre, jornada, vs }] para el recordatorio del reporte
+
+// Una jornada solo se usa para detectar descansos "naturales" si ya tiene al menos
+// este número de partidos capturados (con 17 equipos una jornada completa tiene 8).
+// Así una jornada a medio capturar no hace que "descansen" todos los demás.
+const MIN_PARTIDOS_PARA_DETECTAR = 6;
+
+let DESCANSOS = {};        // jornada -> { jornada, equipos:[{id,nombre,descripcion}], fechas:[], jugada, sugerido, vuelta }
+let DESCANSOS_AVISOS = []; // avisos para que revises la hoja
+let AUSENCIAS = [];             // por jornada cerrada: equipos que no jugaron y si cuenta como descanso
+let JORNADAS_SIN_CAPTURAR = []; // jornadas con partidos incompletos (no se puede saber quién no juega)
+
+function normTxt(t) { return String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toUpperCase(); }
+function claveVuelta(v) { return String(v || '').trim() === '2' ? '2' : '1'; }
+
+function buscarEquipoPorRef(ref) {
+  const r = String(ref).trim();
+  const porId = todosEquipos.find(e => String(e['ID_Equipo']).trim() === r);
+  if (porId) return porId;
+  const n = normTxt(r);
+  return todosEquipos.find(e => normTxt(e['Nombre']) === n)
+      || todosEquipos.find(e => normTxt(e['Nombre']).includes(n))
+      || null;
+}
+
+// Regla: cada equipo descansa UNA vez por vuelta.
+//  1) Se respetan los descansos manuales (DESCANSOS_MANUALES).
+//  2) Descanso "natural" = la primera jornada de la vuelta en la que el equipo no tiene partido en la hoja.
+//  3) Los equipos que aún no tienen descanso se SUGIEREN en las jornadas (1..N equipos) que siguen libres.
+function calcularDescansos() {
+  const avisos = [];
+  const activos = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo');
+  const info = e => ({
+    id: String(e['ID_Equipo']).trim(),
+    nombre: (e['Nombre'] || '').toUpperCase(),
+    descripcion: e['Descripción'] || e['Descripcion'] || ''
+  });
+
+  const porJ = {};
+  todosPartidos.forEach(p => {
+    const j = Number(p['Jornada']); if (!j) return;
+    if (!porJ[j]) porJ[j] = { ids: new Set(), fechas: [], vuelta: claveVuelta(p['Vuelta']), jugado: false, n: 0, incompleta: false, filasIncompletas: [] };
+    const o = porJ[j];
+    o.n++;
+    const l = String(p['Equipo_Local'] || '').trim(), v = String(p['Equipo_Visita'] || '').trim();
+    if (!l || !v) { o.incompleta = true; o.filasIncompletas.push(p['ID_Partido']); }
+    if (l) o.ids.add(l);
+    if (v) o.ids.add(v);
+    const f = (p['Fecha'] || '').trim();
+    if (f && !o.fechas.includes(f)) o.fechas.push(f);
+    if ((p['Estado'] || '').trim() === 'Jugado') o.jugado = true;
+  });
+
+  // jornadas que se toman como jugadas aunque no haya partido
+  VIRTUALES = {}; VIRTUALES_INFO = [];
+  Object.keys(JORNADAS_VIRTUALES).forEach(jStr => {
+    const j = Number(jStr);
+    JORNADAS_VIRTUALES[jStr].forEach(entrada => {
+      const ref = typeof entrada === 'string' ? entrada : entrada.equipo;
+      const eq = buscarEquipoPorRef(ref);
+      if (!eq) return;
+      const id = String(eq['ID_Equipo']).trim();
+      VIRTUALES[id + '|' + j] = true;
+      VIRTUALES_INFO.push({ id, nombre: eq['Nombre'] || ref, jornada: j, vs: typeof entrada === 'string' ? '' : (entrada.vs || '') });
+      if (porJ[j]) porJ[j].ids.add(id);
+    });
+  });
+
+  const res = {};
+  const asegurar = j => {
+    if (!res[j]) res[j] = {
+      jornada: j, equipos: [], sugerido: false,
+      fechas: porJ[j] ? porJ[j].fechas.slice().sort((a, b) => parseFecha(a) - parseFecha(b)) : [],
+      jugada: porJ[j] ? porJ[j].jugado : false,
+      vuelta: porJ[j] ? porJ[j].vuelta : '1'
+    };
+    return res[j];
+  };
+  const yaDescanso = {}; // "idEquipo|vuelta" -> true
+
+  // 1) manuales
+  Object.keys(DESCANSOS_MANUALES).forEach(jStr => {
+    const j = Number(jStr);
+    DESCANSOS_MANUALES[jStr].forEach(ref => {
+      const eq = buscarEquipoPorRef(ref);
+      if (!eq) { avisos.push(`No encontré el equipo "${ref}" en la hoja Equipos (descanso manual de la jornada ${j}).`); return; }
+      const inf = info(eq);
+      if (porJ[j] && porJ[j].ids.has(inf.id)) {
+        avisos.push(`${inf.nombre} aparece con partido en la jornada ${j}, por eso no se marcó el descanso manual. Revisa la hoja Partidos.`);
+        return;
+      }
+      const d = asegurar(j);
+      d.equipos.push(inf);
+      yaDescanso[inf.id + '|' + d.vuelta] = true;
+    });
+  });
+
+  // 2) naturales (primera ausencia de cada equipo por vuelta)
+  Object.keys(porJ).map(Number).sort((a, b) => a - b).forEach(j => {
+    if (porJ[j].incompleta || porJ[j].n < MIN_PARTIDOS_PARA_DETECTAR) return;
+    activos.forEach(e => {
+      const inf = info(e);
+      if (porJ[j].ids.has(inf.id)) return;
+      const k = inf.id + '|' + porJ[j].vuelta;
+      if (yaDescanso[k]) return;
+      asegurar(j).equipos.push(inf);
+      yaDescanso[k] = true;
+    });
+  });
+
+  // avisos por filas sin Equipo_Local o Equipo_Visita
+  const filasInc = [];
+  Object.keys(porJ).forEach(j => porJ[j].filasIncompletas.forEach(id => filasInc.push(id)));
+  if (filasInc.length) {
+    avisos.push(`Hay ${filasInc.length} partido(s) sin Equipo_Local o Equipo_Visita (ID ${filasInc[0]} a ${filasInc[filasInc.length - 1]}). Esas jornadas no se usan para detectar descansos; completa el equipo que falta (¿Galácticos?).`);
+  }
+
+  // avisos por jornadas con varios descansos
+  Object.keys(res).map(Number).sort((a, b) => a - b).forEach(j => {
+    if (res[j].equipos.length > 1) {
+      avisos.push(`Jornada ${j}: descansan ${res[j].equipos.length} equipos (${res[j].equipos.map(e => e.nombre).join(', ')}). Si debería descansar solo uno, revisa que no falten partidos por capturar.`);
+    }
+  });
+
+  // ausencias por jornada (para el reporte "quién no jugó")
+  const restReal = {};
+  Object.keys(res).forEach(j => res[j].equipos.forEach(e => { restReal[e.id] = Number(j); }));
+  const jornadasOrden = Object.keys(porJ).map(Number).sort((a, b) => a - b);
+  const detectable = j => !porJ[j].incompleta && porJ[j].n >= MIN_PARTIDOS_PARA_DETECTAR;
+  AUSENCIAS = jornadasOrden.filter(detectable).map(j => ({
+    jornada: j,
+    fechas: porJ[j].fechas.slice().sort((a, b) => parseFecha(a) - parseFecha(b)),
+    ausentes: activos.filter(e => !porJ[j].ids.has(String(e['ID_Equipo']).trim())).map(e => {
+      const inf = info(e);
+      return Object.assign({}, inf, { descanso: restReal[inf.id] === j, descansoEn: restReal[inf.id] || null });
+    }).sort((a, b) => (b.descanso ? 1 : 0) - (a.descanso ? 1 : 0))
+  }));
+  JORNADAS_SIN_CAPTURAR = jornadasOrden.filter(j => !detectable(j));
+
+  // 3) sugerencias para los que aún no descansan (vuelta 1)
+  const total = activos.length;
+  const libres = [];
+  for (let j = 1; j <= total; j++) if (!res[j] || !res[j].equipos.length) libres.push(j);
+  activos.map(info).filter(i => !yaDescanso[i.id + '|1']).forEach(inf => {
+    const idx = libres.findIndex(j => !(porJ[j] && porJ[j].ids.has(inf.id)));
+    if (idx === -1) return;
+    const d = asegurar(libres.splice(idx, 1)[0]);
+    d.equipos.push(inf);
+    d.sugerido = true;
+  });
+
+  DESCANSOS_AVISOS = avisos;
+  return res;
+}
+
+function jornadaTomadaComoJugada(idEquipo, jornada) {
+  return !!VIRTUALES[String(idEquipo).trim() + '|' + Number(jornada)];
+}
+
+function equipoDescansaEn(idEquipo, jornada) {
+  const d = DESCANSOS[Number(jornada)];
+  return !!d && !d.sugerido && d.equipos.some(e => e.id === String(idEquipo).trim());
+}
+
+// Equipos que descansan (reales, no sugeridos) en la jornada, o null si ninguno
+function descansoParaReporte(jornadaNum) {
+  const d = DESCANSOS[Number(jornadaNum)];
+  return (d && !d.sugerido && d.equipos.length) ? d.equipos : null;
+}
+
+function descansoBloqueHTML(equipos) {
+  const varios = equipos.length > 1;
+  const filas = equipos.map(eq => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:${varios ? 20 : 22}px;letter-spacing:2px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,0.5),0 1px 3px rgba(0,0,0,0.8);">${eq.nombre}</div>
+        ${eq.descripcion ? `<div style="font-family:'Roboto',Arial,sans-serif;font-size:13px;font-weight:700;color:#d5a610;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${eq.descripcion}</div>` : ''}
+      </div>`).join('');
+  return `
+    <div style="text-align:center;margin-top:14px;margin-bottom:6px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+      ${filas}
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${varios ? 'DESCANSAN ESTA JORNADA' : 'DESCANSA ESTA JORNADA'}</div>
+    </div>`;
+}
+
+// Aviso arriba de las tarjetas cuando se filtra por jornada
+function bannerDescansoHTML(filtrados) {
+  const tipo = document.getElementById('filterTipo');
+  if (!tipo || tipo.value !== 'jornada' || !filtrados.length) return '';
+  const eqs = descansoParaReporte(filtrados[0]['Jornada']);
+  if (!eqs) return '';
+  return `<div style="text-align:center;margin-bottom:16px;padding:10px 14px;background:rgba(0,0,0,0.6);border:1px solid #d5a610;border-radius:12px;color:#ddc530;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">😴 ${eqs.length > 1 ? 'Descansan' : 'Descansa'} esta jornada: ${eqs.map(e => e.nombre).join(' · ')}</div>`;
+}
+
+// Calendario completo de descansos (botón "Ver calendario de descansos")
+function mostrarDescansos() {
+  const st = document.getElementById('statusMsg');
+  if (!todosEquipos.length || !todosPartidos.length) { st.textContent = '⚠️ Aún no cargan los datos de la hoja, intenta en un momento'; return; }
+  DESCANSOS = calcularDescansos();
+  const colores = { 'DESCANSÓ': '#9aa89a', 'DESCANSARÁ': '#ddc530', 'SUGERIDO': '#29a6ff' };
+  const listados = new Set();
+  let filas = '';
+  Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
+    const d = DESCANSOS[j];
+    d.equipos.forEach(eq => {
+      listados.add(eq.id);
+      const estado = d.sugerido ? 'SUGERIDO' : (d.jugada ? 'DESCANSÓ' : 'DESCANSARÁ');
+      const fecha = d.fechas.length ? d.fechas.join(' / ') : 'Por definir';
+      filas += `<div style="display:flex;flex-wrap:wrap;align-items:center;gap:3px 10px;padding:9px 4px;border-bottom:1px dotted rgba(94,181,13,0.3);font-size:13px;">
+        <span style="color:#5eb50d;font-weight:700;min-width:74px;">Jornada ${j}</span>
+        <span style="color:#fff;font-weight:700;text-transform:uppercase;flex:1;min-width:130px;">${eq.nombre}</span>
+        <span style="color:#ddd;font-size:12px;">${fecha}</span>
+        <span style="color:${colores[estado]};font-weight:700;font-size:11px;letter-spacing:1px;margin-left:auto;">${estado}</span>
+      </div>`;
+    });
+  });
+  const sin = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo' && !listados.has(String(e['ID_Equipo']).trim()));
+  const sinHTML = sin.length ? `<div style="margin-top:12px;color:#ff8a8a;font-size:13px;">Sin descanso asignado: ${sin.map(e => (e['Nombre'] || '').toUpperCase()).join(', ')}</div>` : '';
+  const avisosHTML = DESCANSOS_AVISOS.length
+    ? `<div style="margin-top:12px;padding:10px 12px;border:1px solid #d5a610;border-radius:10px;color:#ddc530;font-size:12px;line-height:1.5;">⚠️ ${DESCANSOS_AVISOS.join('<br>⚠️ ')}</div>` : '';
+  document.getElementById('stackContainer').innerHTML = `
+    <div class="editor-panel" style="max-width:700px;">
+      <h3>😴 Calendario de descansos</h3>
+      ${filas || '<div class="empty-msg">No hay descansos para mostrar</div>'}
+      ${sinHTML}${avisosHTML}
+    </div>`;
+  st.textContent = '✅ Calendario de descansos (los SUGERIDOS son propuesta, no están en la hoja)';
+}
+
+// ===== REPORTE PNG DE DESCANSOS (mismo formato que el "Rol propuesto del domingo") =====
+// Archivos de los dos logos del encabezado (Next Level 7 y La Región All Stars).
+// Son los mismos logos que usa la página de reportes. Si no cargan, el encabezado se ve sin logos.
+const LOGOS_ENCABEZADO = ['logo-liga.png.png', 'laregionallstars.png'];
+
+function fechasTxt(fechas) {
+  if (!fechas || !fechas.length) return 'Por definir';
+  if (fechas.length > 2) return fechas[0] + ' al ' + fechas[fechas.length - 1];
+  return fechas.join(' · ');
+}
+
+function chipRolHTML(texto, tipo) {
+  const est = {
+    verde: 'background:#e6f6e3;border:2px solid #5eb50d;color:#1b6e1b;',
+    rojo: 'background:#fdeeee;border:2px solid #e57373;color:#b71c1c;',
+    gris: 'background:#eeeeee;border:2px solid #c4c4c4;color:#555555;',
+    ambar: 'background:#fff4d6;border:2px solid #e0a82e;color:#8a5a00;',
+    azul: 'background:#e8f0fe;border:2px solid #4a7fd0;color:#1f4f9c;'
+  }[tipo];
+  return `<div style="display:inline-block;${est}border-radius:999px;padding:3px 13px;font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;">${texto}</div>`;
+}
+
+function htmlReporteDescansos() {
+  const eqMap = {};
+  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
+
+  // partidos jugados por equipo (la jornada tomada como jugada también cuenta)
+  const jugados = {};
+  todosPartidos.forEach(p => {
+    if ((p['Estado'] || '').trim() !== 'Jugado') return;
+    [p['Equipo_Local'], p['Equipo_Visita']].forEach(id => { id = String(id || '').trim(); if (id) jugados[id] = (jugados[id] || 0) + 1; });
+  });
+  Object.keys(VIRTUALES).forEach(k => { const id = k.split('|')[0]; jugados[id] = (jugados[id] || 0) + 1; });
+
+  // fechas del torneo
+  const todasFechas = todosPartidos.map(p => (p['Fecha'] || '').trim()).filter(Boolean).sort((a, b) => parseFecha(a) - parseFecha(b));
+  const inicio = todasFechas[0] || '';
+  const hoy = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const emitido = `${pad(hoy.getDate())}/${pad(hoy.getMonth() + 1)}/${hoy.getFullYear()} ${pad(hoy.getHours())}:${pad(hoy.getMinutes())}`;
+  const diasDesdeInicio = inicio ? Math.floor((hoy.getTime() - parseFecha(inicio)) / 86400000) : 0;
+  const fechaHoyNum = inicio ? Math.max(1, Math.floor(diasDesdeInicio / 7) + 1) : 1;
+
+  const nActivos = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo').length;
+
+  const celdaEquipo = (id, nombre) => {
+    const e = eqMap[id] || {};
+    const url = e['URL'] || '';
+    const escudo = url
+      ? `<img src="${url}" style="width:40px;height:40px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">`
+      : `<div style="width:40px;height:40px;flex-shrink:0;border-radius:50%;background:#e3e8dc;border:2px solid #c9d2bf;display:flex;align-items:center;justify-content:center;font-weight:900;color:#5a6b4a;font-size:20px;">${(nombre || '?').charAt(0)}</div>`;
+    return `<div style="display:flex;align-items:center;gap:12px;text-align:left;">
+      ${escudo}
+      <div><div style="font-size:17px;font-weight:800;color:#1f2a1a;text-transform:uppercase;line-height:1.1;">${nombre}</div>
+      <div style="font-size:13px;color:#6b7280;">Lleva ${jugados[id] || 0} jugado${(jugados[id] || 0) === 1 ? '' : 's'}</div></div>
+    </div>`;
+  };
+
+  const TH = 'background:#e6efdc;color:#1b3a06;font-size:16px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:11px 6px;border:2px solid #d5dccb;';
+  const TD = 'background:#ffffff;border:2px solid #d5dccb;padding:7px 8px;text-align:center;vertical-align:middle;';
+  const tabla = (cabeceras, filas) => `
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
+      <thead><tr>${cabeceras.map(c => `<th style="${TH}width:${c[1]};">${c[0]}</th>`).join('')}</tr></thead>
+      <tbody>${filas.join('')}</tbody>
+    </table>`;
+  const subtitulo = t => `<div style="margin:30px 0 12px;font-size:24px;font-weight:900;color:#1b3a06;letter-spacing:1px;">${t}</div>`;
+
+  // ---------- Tabla 1: quién no jugó cada jornada ----------
+  let n1 = 0;
+  const filas1 = [];
+  AUSENCIAS.forEach(a => {
+    a.ausentes.forEach(x => {
+      n1++;
+      const obs = x.descanso
+        ? `${chipRolHTML('Descanso', 'verde')}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">No tuvo partido: es su descanso.</div>`
+        : `${chipRolHTML('Ya descansó J' + x.descansoEn, 'rojo')}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">Partido pendiente de esta jornada.</div>`;
+      filas1.push(`<tr>
+        <td style="${TD}font-weight:800;color:#6b7280;">${n1}</td>
+        <td style="${TD}font-size:20px;font-weight:900;color:#1f2a1a;">J${a.jornada}</td>
+        <td style="${TD}font-size:13px;color:#374151;line-height:1.3;">${fechasTxt(a.fechas).replace(' · ', '<br>')}</td>
+        <td style="${TD}">${celdaEquipo(x.id, x.nombre)}</td>
+        <td style="${TD}">${obs}</td>
+      </tr>`);
+    });
+  });
+  const tabla1 = tabla([['No.', '7%'], ['Jornada', '14%'], ['Fecha', '16%'], ['Equipo', '30%'], ['Observación', '33%']], filas1);
+
+  // ---------- Tabla 2: descanso de cada equipo ----------
+  const lista = [];
+  Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
+    DESCANSOS[j].equipos.forEach(eq => lista.push({ j, d: DESCANSOS[j], eq }));
+  });
+  const filas2 = lista.map((f, i) => {
+    let chip, texto;
+    if (f.d.sugerido) {
+      chip = chipRolHTML('Propuesta', 'azul');
+      texto = 'Sugerido; aún no está en la hoja.';
+    } else if (f.d.jugada) {
+      chip = chipRolHTML('Descansó', 'gris');
+      texto = 'No tuvo partido: ya descansó.';
+    } else {
+      chip = chipRolHTML('Descansará', 'ambar');
+      texto = 'Sin partido en esa fecha: descansará.';
+    }
+    return `<tr>
+      <td style="${TD}font-weight:800;color:#6b7280;">${i + 1}</td>
+      <td style="${TD}">${celdaEquipo(f.eq.id, f.eq.nombre)}</td>
+      <td style="${TD}font-size:20px;font-weight:900;color:#1f2a1a;">J${f.j}</td>
+      <td style="${TD}font-size:13px;color:#374151;line-height:1.3;">${f.d.sugerido ? 'Por definir' : fechasTxt(f.d.fechas).replace(' · ', '<br>')}</td>
+      <td style="${TD}">${chip}<div style="font-size:13px;color:#4b5563;margin-top:4px;line-height:1.25;">${texto}</div></td>
+    </tr>`;
+  });
+  const tabla2 = tabla([['No.', '7%'], ['Equipo', '30%'], ['Jornada', '14%'], ['Fecha', '16%'], ['Observación', '33%']], filas2);
+
+  // ---------- recordatorio (amarillo), aviso (azul), pendientes (rojo), cómo se lee ----------
+  const recordatorios = [];
+  Object.keys(DESCANSOS).map(Number).sort((a, b) => a - b).forEach(j => {
+    DESCANSOS[j].equipos.forEach(eq => {
+      if (!DESCANSOS[j].sugerido && j === 1) recordatorios.push(`<b>${eq.nombre}</b> descansó en la <b>Jornada 1</b>.`);
+    });
+  });
+  VIRTUALES_INFO.forEach(v => {
+    recordatorios.push(`<b>${(v.nombre || '').toUpperCase()}</b> <b>no jugó la Jornada ${v.jornada}</b>, pero se toma como si hubiera jugado${v.vs ? ' contra ' + v.vs : ''} (cuenta en jornadas y estadísticas; no es descanso).`);
+  });
+  const recordatorioHTML = recordatorios.length
+    ? `<div style="background:#fff3d4;border-bottom:3px solid #e0a82e;padding:18px 62px;font-size:20px;line-height:1.55;color:#7a5200;">📌 <b>Recordatorio:</b> ${recordatorios.join(' ')}</div>` : '';
+
+  const pendientes = [];
+  if (JORNADAS_SIN_CAPTURAR.length) {
+    const ini = JORNADAS_SIN_CAPTURAR[0], fin = JORNADAS_SIN_CAPTURAR[JORNADAS_SIN_CAPTURAR.length - 1];
+    pendientes.push(`<b>Jornada${ini !== fin ? 's ' + ini + ' a ' + fin : ' ' + ini}:</b> los partidos aún no están capturados completos, todavía no se puede saber quién no juega.`);
+  }
+  const listados = new Set(lista.map(f => f.eq.id));
+  const sinDescanso = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo' && !listados.has(String(e['ID_Equipo']).trim()));
+  if (sinDescanso.length) pendientes.push(`<b>Sin descanso asignado:</b> ${sinDescanso.map(e => e['Nombre']).join(', ')}.`);
+  const pendientesHTML = pendientes.length
+    ? `<div style="margin-top:26px;background:#fdeeee;border:2px solid #f0a8a8;border-radius:14px;padding:16px 26px;font-size:19px;line-height:1.5;color:#b71c1c;">${pendientes.join('<br>')}</div>` : '';
+
+  return `
+  <div style="font-family:'Noto Sans','Segoe UI',Roboto,Arial,sans-serif;color:#1f2a1a;background:#ffffff;">
+    <div style="background:#1d3d06;color:#ffffff;padding:40px 62px 30px;display:flex;justify-content:space-between;align-items:flex-start;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:15px;letter-spacing:4px;font-weight:700;color:#9fd16b;">LIGA NEXT LEVEL 7 · TORNEO DOMINICAL</div>
+        <div style="font-size:42px;font-weight:900;margin-top:10px;line-height:1.1;white-space:nowrap;">Reporte de descansos</div>
+        <div style="font-size:22px;color:#d9e8c8;margin-top:8px;">${nActivos} equipos · descansa un equipo por jornada</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;white-space:nowrap;margin-left:20px;">
+        <div style="display:flex;gap:14px;justify-content:flex-end;min-height:90px;">
+          ${LOGOS_ENCABEZADO.map(u => `<img src="${u}" style="height:90px;width:auto;object-fit:contain;" onerror="this.style.display='none'">`).join('')}
+        </div>
+        <div style="font-size:17px;color:#d9e8c8;margin-top:10px;">Torneo iniciado el <b style="color:#fff;">${inicio}</b></div>
+        <div style="font-size:17px;color:#d9e8c8;margin-top:2px;">Hoy: Fecha ${fechaHoyNum}</div>
+        <div style="font-size:17px;color:#d9e8c8;margin-top:2px;">Emitido ${emitido}</div>
+      </div>
+    </div>
+    <div style="height:8px;background:#5eb50d;"></div>
+    ${recordatorioHTML}
+    <div style="padding:34px 62px 20px;">
+      <div style="background:#eef3fc;border:2px solid #d3deef;border-left:8px solid #2f6db5;border-radius:12px;padding:20px 30px;font-size:20px;line-height:1.55;color:#33415c;">
+        Cada equipo descansa <b>una vez</b>. Si un equipo no jugó una jornada, se toma como descanso la primera vez; si vuelve a quedar sin partido, ese partido se considera <b>pendiente</b>. Los descansos marcados como <b>Propuesta</b> son sugeridos y todavía no están en la hoja de partidos.
+      </div>
+
+      ${subtitulo('Quién no jugó cada jornada')}
+      ${tabla1}
+
+      ${subtitulo('Descanso de cada equipo')}
+      ${tabla2}
+
+      ${pendientesHTML}
+
+      <div style="margin-top:26px;background:#f7f7f4;border:2px solid #dadad2;border-radius:14px;padding:20px 28px;font-size:18px;line-height:1.6;color:#374151;">
+        <b>Cómo se lee:</b> <b style="color:#1b6e1b;">Descanso</b>: el equipo no tuvo partido en esa jornada y se toma como su descanso. <b style="color:#b71c1c;">Ya descansó</b>: ya tuvo su descanso en otra jornada, así que ese partido sigue pendiente. <b style="color:#555;">Descansó</b>: la jornada ya se jugó. <b style="color:#8a5a00;">Descansará</b>: está programado en una jornada que aún no se juega. <b style="color:#1f4f9c;">Propuesta</b>: descanso sugerido, aún sin capturar. Cada equipo descansa una vez por vuelta.
+      </div>
+    </div>
+    <div style="border-top:2px solid #dadad2;padding:20px 62px 26px;display:flex;justify-content:space-between;font-size:17px;color:#6b7280;">
+      <span>Reporte generado desde los datos de partidos · Liga Next Level 7</span><span>${emitido}</span>
+    </div>
+  </div>`;
+}
+
+async function downloadPNGDescansos() {
+  if (!todosEquipos.length || !todosPartidos.length) { alert('Aún no cargan los datos de la hoja, intenta en un momento.'); return; }
+  const btn = document.getElementById('dlBtnDesc');
+  btn.textContent = '⏳ Generando...';
+  btn.disabled = true;
+  try {
+    DESCANSOS = calcularDescansos();
+    const temp = document.createElement('div');
+    temp.style.cssText = 'position:fixed;left:-9999px;top:0;width:868px;background:#ffffff;';
+    temp.innerHTML = htmlReporteDescansos();
+    document.body.appendChild(temp);
+    await esperarImagenesReporte(temp);
+    const escala = Math.min(2, Math.floor(100 * Math.sqrt(14000000 / (868 * Math.max(temp.offsetHeight, 1)))) / 100);
+    const canvas = await html2canvas(temp, {
+      useCORS: true, allowTaint: true, scale: escala,
+      backgroundColor: '#ffffff', imageTimeout: 20000, logging: false
+    });
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'descansos_nextlevel7.png';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    document.body.removeChild(temp);
+  } catch (e) {
+    alert('❌ Error: ' + e.message);
+  }
+  btn.textContent = '⬇ Descargar reporte de descansos (PNG)';
+  btn.disabled = false;
+}
+
+// ===== DESCARGAR PNG (paginado: 4 partidos por página) =====
+const REPORTE_POR_PAGINA = 7;
+
+async function esperarImagenesReporte(el) {
+  const imgs = el.querySelectorAll('img');
+  await Promise.all(Array.from(imgs).map(img => new Promise(resolve => {
+    if (img.complete) resolve(); else { img.onload = resolve; img.onerror = resolve; }
+  })));
+  await new Promise(r => setTimeout(r, 200));
+}
+
+
+function bloqueEquiposAtrasadosHTML(equiposAtrasados) {
+  if (!equiposAtrasados || !equiposAtrasados.length) return '';
+  const filas = equiposAtrasados.map(e =>
+    `<div style="font-size:13px;color:#f5f5f0;text-align:center;line-height:1.5;">
+      <strong style="color:#ff8a8a;">${e.nombre}</strong> — debe jornada${e.jornadas.length>1?'s':''} ${e.jornadas.join(', ')}
+    </div>`
+  ).join('');
+  return `
+    <div style="margin-top:16px;padding:14px 16px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,68,68,0.45);border-radius:12px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:#ff6666;text-align:center;margin-bottom:8px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">⚠️ EQUIPOS CON JORNADAS PENDIENTES</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">${filas}</div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.35);font-size:14px;line-height:1.45;font-weight:700;color:#ffffff;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,0.95);">
+        📌 Nota: la jornada de cada partido se aplica según los rivales que se enfrentan en esa fecha, y cada equipo juega la jornada que le toca según los partidos que lleva. Si un equipo adelantó partidos (por ejemplo, jugó dos el domingo pasado), puede jugar una jornada más avanzada que otros equipos aunque todavía deba una jornada anterior.
+      </div>
+    </div>`;
+}
+
+function calcularEquiposAtrasados(jornadaActual, partidosDia) {
+  const n = Number(jornadaActual) || 0;
+  if (n <= 1) return [];
+  const jornadasLiga = new Set();
+  todosPartidos.forEach(p => {
+    const jn = Number(p['Jornada']);
+    if ((p['Estado']||'').trim() === 'Jugado' && jn && jn < n) jornadasLiga.add(jn);
+  });
+  const jornadasLigaArr = [...jornadasLiga].sort((a,b)=>a-b);
+  if (!jornadasLigaArr.length) return [];
+
+  const atrasados = [];
+  todosEquipos
+    .filter(e => (e['Status']||'').trim().toLowerCase() === 'activo')
+    .forEach(e => {
+      const idE = String(e['ID_Equipo']).trim();
+      const jugadas = new Set();
+      todosPartidos.forEach(p => {
+        if ((p['Estado']||'').trim() === 'Jugado' &&
+            (String(p['Equipo_Local']).trim() === idE || String(p['Equipo_Visita']).trim() === idE)) {
+          jugadas.add(Number(p['Jornada']));
+        }
+      });
+      // En modo "por fecha": si el equipo ya tiene programada esa jornada en los
+      // partidos del día, no se cuenta como pendiente (la está pagando ese día).
+      const programadas = new Set();
+      (partidosDia || []).forEach(p => {
+        if (String(p['Equipo_Local']).trim() === idE || String(p['Equipo_Visita']).trim() === idE) {
+          programadas.add(Number(p['Jornada']));
+        }
+      });
+      const debe = jornadasLigaArr.filter(jn => !jugadas.has(jn) && !programadas.has(jn) && !equipoDescansaEn(idE, jn) && !jornadaTomadaComoJugada(idE, jn));
+      if (debe.length) atrasados.push({ nombre: (e['Nombre']||'').toUpperCase(), jornadas: debe });
+    });
+  return atrasados;
+}
+
+// Encabezado para el modo "por fecha": "JUEGOS DEL DOMINGO" + la fecha debajo.
+function encabezadoPorFecha(fechaStr, partidos) {
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const pf = (fechaStr || '').split('/').map(n => parseInt(n, 10));
+  const dia = pf.length === 3 && pf.every(n => !isNaN(n)) ? dias[new Date(Date.UTC(pf[2], pf[1]-1, pf[0])).getUTCDay()] : '';
+  const jornadas = partidos.map(p => Number(p['Jornada'])).filter(n => n);
+  return {
+    titulo: dia ? `Juegos del ${dia}` : 'Juegos del día',
+    subtitulo: fechaStr || '',
+    jornadaRef: jornadas.length ? Math.max(...jornadas) : 0
+  };
+}
+
+function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados, opciones) {
+  const eqMap = {};
+  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
+
+  const inner = document.createElement('div');
+  inner.style.cssText = `
+    position:relative;
+    width:700px;
+    min-height:900px;
+    background-image:url('fondonuevo.png');
+    background-size:cover;
+    background-position:center;
+    padding:28px 24px 32px;
+    box-sizing:border-box;
+  `;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;`;
+  inner.appendChild(overlay);
+
+  const content = document.createElement('div');
+  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
+
+  opciones = opciones || {};
+  const paginaTxt = (totalPaginas > 1 && !opciones.ocultarPagina) ? ` · Página ${numPagina}/${totalPaginas}` : '';
+  const subtituloHTML = opciones.subtitulo
+    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
+    : '';
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
+  content.innerHTML = `
+    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
+      ${subtituloHTML}
+    </div>
+    ${descansaHTML}
+    <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
+    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) : ''}
+  `;
+
+  const filasWrap = content.querySelector('#reporte-filas');
+  paginaPartidos.forEach((p, i) => {
+    const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
+    const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
+    const nomL = (eqL['Nombre'] || `Equipo ${p['Equipo_Local']}`).toUpperCase();
+    const nomV = (eqV['Nombre'] || `Equipo ${p['Equipo_Visita']}`).toUpperCase();
+    const urlL = eqL['URL'] || '';
+    const urlV = eqV['URL'] || '';
+    const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : null;
+    const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
+    const estado = (p['Estado'] || '').trim();
+    const fecha = p['Fecha'] || '';
+    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}${p['Vuelta'] ? ' · Vuelta ' + (p['Vuelta']==='2'?'2':'1') : ''}` : '';
+    const hora = p['Hora'] ? formatHora(p['Hora']) : '';
+    const cancha = p['Cancha'] || '';
+    const jugado = estado === 'Jugado' && gL !== null && gV !== null;
+    const centerHTML = jugado
+      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#ddc530;text-shadow:0 0 10px rgba(94,181,13,0.5);letter-spacing:2px;line-height:1;">${gL} - ${gV}</div>`
+      : `<div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:rgba(255,255,255,0.5);letter-spacing:2px;">VS</div>`;
+
+    const sep = i < paginaPartidos.length - 1
+      ? `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`
+      : '';
+
+    const fila = document.createElement('div');
+    fila.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;padding:16px 4px;">
+        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:1;min-width:0;">
+          <div style="width:173px;flex-shrink:0;font-size:15px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">${nomL}</div>
+          <img src="${urlL}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
+        </div>
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:3px;">
+          ${jornadaFila ? `<div style="font-size:10px;color:#5eb50d;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">${jornadaFila}</div>` : ''}
+          ${fecha ? `<div style="font-size:13px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
+          <div style="width:18px;height:2px;background:#5eb50d;border-radius:2px;margin:2px auto;"></div>
+          ${centerHTML}
+          ${hora ? `<div style="font-size:14px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}</div>` : ''}
+          ${cancha ? `<div style="font-size:11px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${cancha}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;flex:1;min-width:0;">
+          <img src="${urlV}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
+          <div style="width:173px;flex-shrink:0;font-size:15px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;">${nomV}</div>
+        </div>
+      </div>
+      ${sep}
+    `;
+    filasWrap.appendChild(fila);
+  });
+
+  inner.appendChild(content);
+  return inner;
+}
+
+// Ordena por Horario primero (comparación numérica real, ya que la hora en la
+// hoja viene como texto "9:00:00" / "10:00:00" y comparada como texto salía mal)
+// y dentro de la misma hora, por Campo (Campo 1, Campo 2, ...).
+function minutosDeHora(hora) {
+  if (!hora) return 99999;
+  const partes = hora.split(':');
+  const h = parseInt(partes[0],10) || 0;
+  const m = parseInt(partes[1],10) || 0;
+  return h*60+m;
+}
+function ordenarPorCampoHora(lista) {
+  return [...lista].sort((a,b) => {
+    const ha = minutosDeHora(a['Hora']);
+    const hb = minutosDeHora(b['Hora']);
+    if (ha !== hb) return ha - hb;
+    const ca = (a['Cancha']||'').trim();
+    const cb = (b['Cancha']||'').trim();
+    if (!ca) return 1;
+    if (!cb) return -1;
+    return ca.localeCompare(cb, 'es', {numeric:true, sensitivity:'base'});
+  });
+}
+
+async function downloadPNG() {
+  if (!ultimosFiltrados.length) { alert('Primero carga los datos de los partidos.'); return; }
+  const btn = document.getElementById('dlBtn');
+  btn.textContent = '⏳ Generando...';
+  btn.disabled = true;
+
+  const tipoFiltro = document.getElementById('filterTipo').value;
+  const partidosOrdenados = tipoFiltro === 'equipo'
+    ? [...ultimosFiltrados]
+    : ordenarPorCampoHora(ultimosFiltrados);
+  const firstP = partidosOrdenados[0];
+  let jornadaTitulo;
+  if (tipoFiltro === 'equipo') {
+    const equipoNombre = document.getElementById('filterEquipo').value.trim();
+    jornadaTitulo = equipoNombre ? equipoNombre.toUpperCase() : 'Calendario del Equipo';
+  } else if (tipoFiltro === 'fecha') {
+    jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
+  } else {
+    jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+  }
+  const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
+
+  let equipoDescansa = null;
+  let equiposAtrasados = [];
+  if (tipoFiltro === 'jornada') {
+    const jornadaNum = String(firstP?.Jornada || '').trim();
+    equipoDescansa = descansoParaReporte(jornadaNum);
+    equiposAtrasados = calcularEquiposAtrasados(jornadaNum);
+  } else if (tipoFiltro === 'fecha') {
+    equiposAtrasados = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
+  }
+  const opcionesPng = tipoFiltro === 'fecha'
+    ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
+    : {};
+
+  const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
+
+  try {
+    for (let p = 0; p < totalPaginas; p++) {
+      const pagina = partidosOrdenados.slice(p*REPORTE_POR_PAGINA, (p+1)*REPORTE_POR_PAGINA);
+      const temp = document.createElement('div');
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      temp.style.top = '0';
+
+      const inner = construirPaginaReporte(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados, opcionesPng);
+      temp.appendChild(inner);
+      document.body.appendChild(temp);
+
+      await esperarImagenesReporte(temp);
+
+      const canvas = await html2canvas(temp, {
+        useCORS: true, allowTaint: true, scale: 4,
+        backgroundColor: '#142702', imageTimeout: 20000, logging: false
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = totalPaginas > 1 ? `partidos_nextlevel7_pagina${p+1}.png` : `partidos_nextlevel7.png`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+
+      document.body.removeChild(temp);
+      await new Promise(r => setTimeout(r, 400));
+    }
+  } catch(e) {
+    alert('❌ Error: ' + e.message);
+  }
+
+  btn.textContent = '⬇ Descargar Lista como PNG';
+  btn.disabled = false;
+}
+
+
+// ===== VARIANTE 2: escudo/nombre más chicos, usando el color de playera (Color_Playera) =====
+function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados, opciones) {
+  const eqMap = {};
+  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
+
+  const inner = document.createElement('div');
+  inner.style.cssText = `
+    position:relative;
+    width:700px;
+    min-height:900px;
+    background-image:url('fondonuevo.png');
+    background-size:cover;
+    background-position:center;
+    padding:28px 24px 32px;
+    box-sizing:border-box;
+  `;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;`;
+  inner.appendChild(overlay);
+
+  const content = document.createElement('div');
+  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
+
+  opciones = opciones || {};
+  const paginaTxt = (totalPaginas > 1 && !opciones.ocultarPagina) ? ` · Página ${numPagina}/${totalPaginas}` : '';
+  const subtituloHTML = opciones.subtitulo
+    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
+    : '';
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
+  content.innerHTML = `
+    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
+      ${subtituloHTML}
+    </div>
+    ${descansaHTML}
+    <div id="reporte-filas-v2" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
+    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) : ''}
+  `;
+
+  const filasWrap = content.querySelector('#reporte-filas-v2');
+  paginaPartidos.forEach((p, i) => {
+    const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
+    const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
+    const nomL = (eqL['Nombre'] || `Equipo ${p['Equipo_Local']}`).toUpperCase();
+    const nomV = (eqV['Nombre'] || `Equipo ${p['Equipo_Visita']}`).toUpperCase();
+    // Color_Playera (columna G de Equipos); si un equipo aún no la tiene cargada, usamos su escudo (URL) de respaldo
+    const colorL = eqL['Color_Playera'] || '';
+    const colorV = eqV['Color_Playera'] || '';
+    const urlL = eqL['URL'] || '';
+    const urlV = eqV['URL'] || '';
+    const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : null;
+    const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
+    const estado = (p['Estado'] || '').trim();
+    const fecha = p['Fecha'] || '';
+    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}${p['Vuelta'] ? ' · Vuelta ' + (p['Vuelta']==='2'?'2':'1') : ''}` : '';
+    const hora = p['Hora'] ? formatHora(p['Hora']) : '';
+    const cancha = p['Cancha'] || '';
+    const jugado = estado === 'Jugado' && gL !== null && gV !== null;
+    const centerHTML = jugado
+      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#ddc530;text-shadow:0 0 10px rgba(94,181,13,0.5);letter-spacing:2px;line-height:1;">${gL} - ${gV}</div>`
+      : `<div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:rgba(255,255,255,0.5);letter-spacing:2px;">VS</div>`;
+
+    const sep = i < paginaPartidos.length - 1
+      ? `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`
+      : '';
+
+    const equipoBloque = (nombre, urlEscudo, align) => `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0;">
+        <img src="${urlEscudo}" style="width:56px;height:56px;object-fit:contain;" onerror="this.style.opacity='0.2';">
+        <div style="max-width:140px;font-size:13px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${align};">${nombre}</div>
+      </div>`;
+
+    const playeraBloque = (colorImg) => colorImg
+      ? `<div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="${colorImg}" style="width:76px;height:76px;object-fit:contain;" onerror="this.parentElement.style.display='none';"></div>`
+      : '';
+
+    const fila = document.createElement('div');
+    fila.innerHTML = `
+      <div style="display:flex;align-items:center;gap:5px;padding:8px 4px;">
+        ${equipoBloque(nomL, urlL, 'center')}
+        ${playeraBloque(colorL)}
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:74px;text-align:center;gap:1px;">
+          ${jornadaFila ? `<div style="font-size:10px;color:#5eb50d;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">${jornadaFila}</div>` : ''}
+          ${fecha ? `<div style="font-size:13px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
+          <div style="width:14px;height:2px;background:#5eb50d;border-radius:2px;margin:2px auto;"></div>
+          ${centerHTML}
+          ${hora ? `<div style="font-size:14px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}</div>` : ''}
+          ${cancha ? `<div style="font-size:11px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${cancha}</div>` : ''}
+        </div>
+        ${playeraBloque(colorV)}
+        ${equipoBloque(nomV, urlV, 'center')}
+      </div>
+      ${sep}
+    `;
+    filasWrap.appendChild(fila);
+  });
+
+  inner.appendChild(content);
+  return inner;
+}
+
+async function downloadPNGv2() {
+  if (!ultimosFiltrados.length) { alert('Primero carga los datos de los partidos.'); return; }
+  const btn = document.getElementById('dlBtnV2');
+  if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
+
+  const tipoFiltro = document.getElementById('filterTipo').value;
+  const partidosOrdenados = tipoFiltro === 'equipo'
+    ? [...ultimosFiltrados]
+    : ordenarPorCampoHora(ultimosFiltrados);
+  const firstP = partidosOrdenados[0];
+  let jornadaTitulo;
+  if (tipoFiltro === 'equipo') {
+    const equipoNombre = document.getElementById('filterEquipo').value.trim();
+    jornadaTitulo = equipoNombre ? equipoNombre.toUpperCase() : 'Calendario del Equipo';
+  } else if (tipoFiltro === 'fecha') {
+    jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
+  } else {
+    jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+  }
+  const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
+
+  let equipoDescansa = null;
+  let equiposAtrasadosV2 = [];
+  if (tipoFiltro === 'jornada') {
+    const jornadaNum = String(firstP?.Jornada || '').trim();
+    equipoDescansa = descansoParaReporte(jornadaNum);
+    equiposAtrasadosV2 = calcularEquiposAtrasados(jornadaNum);
+  } else if (tipoFiltro === 'fecha') {
+    equiposAtrasadosV2 = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
+  }
+  const opcionesPng = tipoFiltro === 'fecha'
+    ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
+    : {};
+
+  const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
+
+  try {
+    for (let p = 0; p < totalPaginas; p++) {
+      const pagina = partidosOrdenados.slice(p*REPORTE_POR_PAGINA, (p+1)*REPORTE_POR_PAGINA);
+      const temp = document.createElement('div');
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      temp.style.top = '0';
+
+      const inner = construirPaginaReporteV2(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasadosV2, opcionesPng);
+      temp.appendChild(inner);
+      document.body.appendChild(temp);
+
+      await esperarImagenesReporte(temp);
+
+      const canvas = await html2canvas(temp, {
+        useCORS: true, allowTaint: true, scale: 4,
+        backgroundColor: '#142702', imageTimeout: 20000, logging: false
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = totalPaginas > 1 ? `partidos_nextlevel7_colores_pagina${p+1}.png` : `partidos_nextlevel7_colores.png`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+
+      document.body.removeChild(temp);
+      await new Promise(r => setTimeout(r, 400));
+    }
+  } catch(e) {
+    alert('❌ Error: ' + e.message);
+  }
+
+  if (btn) { btn.textContent = '⬇ Descargar (escudos chicos)'; btn.disabled = false; }
+}
+
+// ===== VARIANTE 3: "escudos 3d" =====
+// Sin nombres de equipo, escudos grandes, fecha/jornada/hora en letra grande y 4 partidos por hoja
+// (9 y 10 en la primera hoja; 11 y 12 en la segunda). Usa los escudos de las columnas
+// logo_local (cuando el equipo juega de local) y logo_visitante (cuando juega de visitante).
+const REPORTE_POR_PAGINA_V3 = 4;
+
+// Busca una columna de la hoja Equipos sin importar mayúsculas, guiones bajos o espacios (logo_local, Logo_Local, Logo Local...)
+function colEquipo(eq, nombre) {
+  const norm = t => String(t || '').toLowerCase().replace(/[\s_\-]/g, '');
+  const k = Object.keys(eq || {}).find(c => norm(c) === norm(nombre));
+  return k ? String(eq[k] || '').trim() : '';
+}
+
+function construirPaginaReporteV3(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, equipoDescansa, equiposAtrasados, opciones) {
+  const eqMap = {};
+  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
+
+  const inner = document.createElement('div');
+  inner.style.cssText = `
+    position:relative;
+    width:700px;
+    min-height:900px;
+    background-image:url('fondonuevo.png');
+    background-size:cover;
+    background-position:center;
+    padding:28px 24px 32px;
+    box-sizing:border-box;
+  `;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;`;
+  inner.appendChild(overlay);
+
+  const content = document.createElement('div');
+  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
+
+  opciones = opciones || {};
+  const paginaTxt = (totalPaginas > 1 && !opciones.ocultarPagina) ? ` · Página ${numPagina}/${totalPaginas}` : '';
+  const subtituloHTML = opciones.subtitulo
+    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
+    : '';
+  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
+  content.innerHTML = `
+    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
+      ${subtituloHTML}
+    </div>
+    ${descansaHTML}
+    <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
+    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) : ''}
+  `;
+
+  const filasWrap = content.querySelector('#reporte-filas');
+  paginaPartidos.forEach((p, i) => {
+    const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
+    const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
+    // escudo según juegue de local o de visitante (si falta, se usa el escudo normal)
+    const urlL = colEquipo(eqL, 'logo_local') || eqL['URL'] || '';
+    const urlV = colEquipo(eqV, 'logo_visitante') || eqV['URL'] || '';
+    const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : null;
+    const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
+    const estado = (p['Estado'] || '').trim();
+    const fecha = p['Fecha'] || '';
+    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}${p['Vuelta'] ? ' · Vuelta ' + (p['Vuelta']==='2'?'2':'1') : ''}` : '';
+    const hora = p['Hora'] ? formatHora(p['Hora']) : '';
+    const cancha = p['Cancha'] || '';
+    const jugado = estado === 'Jugado' && gL !== null && gV !== null;
+    const centerHTML = jugado
+      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:50px;color:#ddc530;text-shadow:0 0 12px rgba(94,181,13,0.5),0 2px 4px rgba(0,0,0,0.8);letter-spacing:3px;line-height:1;">${gL} - ${gV}</div>`
+      : `<div style="font-family:'Bebas Neue',sans-serif;font-size:34px;color:rgba(255,255,255,0.6);letter-spacing:3px;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.8);">VS</div>`;
+
+    const sep = i < paginaPartidos.length - 1
+      ? `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`
+      : '';
+
+    const fila = document.createElement('div');
+    fila.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:14px 0;">
+        <div style="width:190px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <img src="${urlL}" style="width:182px;height:182px;object-fit:contain;" onerror="this.style.opacity='0.2'">
+        </div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;">
+          ${jornadaFila ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:27px;color:#5eb50d;letter-spacing:2px;line-height:1.05;text-transform:uppercase;text-shadow:0 2px 4px rgba(0,0,0,0.9);">${jornadaFila}</div>` : ''}
+          ${fecha ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#f5f5f0;letter-spacing:1.5px;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
+          <div style="width:26px;height:3px;background:#5eb50d;border-radius:2px;margin:1px auto;"></div>
+          ${centerHTML}
+          ${hora ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:#ffd83d;letter-spacing:2px;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.9);">${hora}</div>` : ''}
+          ${cancha ? `<div style="font-size:16px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 2px 4px rgba(0,0,0,0.9);">${cancha}</div>` : ''}
+        </div>
+        <div style="width:190px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <img src="${urlV}" style="width:182px;height:182px;object-fit:contain;" onerror="this.style.opacity='0.2'">
+        </div>
+      </div>
+      ${sep}
+    `;
+    filasWrap.appendChild(fila);
+  });
+
+  inner.appendChild(content);
+  return inner;
+}
+
+async function downloadPNGv3() {
+  if (!ultimosFiltrados.length) { alert('Primero carga los datos de los partidos.'); return; }
+  const btn = document.getElementById('dlBtnV3');
+  if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
+
+  const tipoFiltro = document.getElementById('filterTipo').value;
+  const partidosOrdenados = tipoFiltro === 'equipo'
+    ? [...ultimosFiltrados]
+    : ordenarPorCampoHora(ultimosFiltrados);     // 9:00, 10:00, 11:00, 12:00 (y por campo dentro de la misma hora)
+  const firstP = partidosOrdenados[0];
+  let jornadaTitulo;
+  if (tipoFiltro === 'equipo') {
+    const equipoNombre = document.getElementById('filterEquipo').value.trim();
+    jornadaTitulo = equipoNombre ? equipoNombre.toUpperCase() : 'Calendario del Equipo';
+  } else if (tipoFiltro === 'fecha') {
+    jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
+  } else {
+    jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+  }
+
+  let equipoDescansa = null;
+  let equiposAtrasadosV3 = [];
+  if (tipoFiltro === 'jornada') {
+    const jornadaNum = String(firstP?.Jornada || '').trim();
+    equipoDescansa = descansoParaReporte(jornadaNum);
+    equiposAtrasadosV3 = calcularEquiposAtrasados(jornadaNum);
+  } else if (tipoFiltro === 'fecha') {
+    equiposAtrasadosV3 = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
+  }
+  const opcionesPng = tipoFiltro === 'fecha'
+    ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
+    : {};
+
+  const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA_V3);
+
+  try {
+    for (let p = 0; p < totalPaginas; p++) {
+      const pagina = partidosOrdenados.slice(p*REPORTE_POR_PAGINA_V3, (p+1)*REPORTE_POR_PAGINA_V3);
+      const temp = document.createElement('div');
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      temp.style.top = '0';
+
+      const inner = construirPaginaReporteV3(pagina, p+1, totalPaginas, jornadaTitulo, equipoDescansa, equiposAtrasadosV3, opcionesPng);
+      temp.appendChild(inner);
+      document.body.appendChild(temp);
+
+      await esperarImagenesReporte(temp);
+
+      const canvas = await html2canvas(temp, {
+        useCORS: true, allowTaint: true, scale: 4,
+        backgroundColor: '#142702', imageTimeout: 20000, logging: false
+      });
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = totalPaginas > 1 ? `escudos_3d_pagina${p+1}.png` : `escudos_3d.png`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+
+      document.body.removeChild(temp);
+      await new Promise(r => setTimeout(r, 400));
+    }
+  } catch(e) {
+    alert('❌ Error: ' + e.message);
+  }
+
+  if (btn) { btn.textContent = '⬇ Descargar (escudos 3d)'; btn.disabled = false; }
+}
+
+  // Funciones que usan los botones de la página
+  window.cambiarFiltro = cambiarFiltro;
+  window.cargarDatos = cargarDatos;
+  window.downloadPNG = downloadPNG;
+  window.downloadPNGv2 = downloadPNGv2;
+  window.downloadPNGv3 = downloadPNGv3;
+  window.mostrarDescansos = mostrarDescansos;
+  window.downloadPNGDescansos = downloadPNGDescansos;
+
+  cargarFechasYEquipos();
+})();
