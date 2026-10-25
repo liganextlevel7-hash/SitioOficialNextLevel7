@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Partidos 3D · Liga Next Level 7</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--lime:#5eb50d;--gold:#ddc530;--ink:#04100a;--panel:rgba(4,16,10,.86);--line:rgba(94,181,13,.38)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--ink);color:#f3f5ee;font-family:Roboto,Arial,sans-serif;overflow:hidden}
+canvas{display:block;position:fixed;inset:0;touch-action:none}
+h1,h2,b.n{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;margin:0}
+#top{position:fixed;left:16px;top:calc(10px + env(safe-area-inset-top,0px));pointer-events:none;text-shadow:0 2px 8px #000}
+#top h1{font-size:30px;letter-spacing:3px;color:var(--lime);line-height:1}
+#top p{margin:2px 0 0;font-size:12px;color:#cfe3b9}
+#fechas{position:fixed;left:16px;right:16px;top:calc(62px + env(safe-area-inset-top,0px));display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+#fechas button{flex:none;background:var(--panel);color:#f3f5ee;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font:700 13px Roboto,Arial;cursor:pointer}
+#fechas button small{display:block;font-weight:400;font-size:10px;color:#9db38c}
+#fechas button.on{background:var(--lime);color:#04100a}#fechas button.on small{color:#10300a}
+#fechas button.pen{border-color:var(--gold)}
+.panel{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(6px)}
+#lado{left:16px;top:calc(112px + env(safe-area-inset-top,0px));bottom:16px;width:310px;display:flex;flex-direction:column;overflow:hidden}
+#tabs{display:flex;border-bottom:1px solid var(--line)}
+#tabs button{flex:1;background:none;border:0;color:#9db38c;padding:11px 2px;font:700 12px Roboto,Arial;cursor:pointer;border-bottom:3px solid transparent}
+#tabs button.on{color:var(--gold);border-color:var(--gold)}
+#cont{flex:1;overflow-y:auto;padding:6px 8px 10px}
+.fila{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px;font-size:13px;cursor:pointer}
+.fila:hover{background:rgba(94,181,13,.14)}
+.fila img{width:24px;height:24px;object-fit:contain;flex:none}
+.fila .m{flex:1;min-width:0;line-height:1.25}.fila .m small{display:block;color:#9db38c;font-size:11px}
+.sc{font-family:'Bebas Neue';font-size:20px;color:var(--gold);min-width:48px;text-align:center}
+.chip{font-size:10px;font-weight:700;border-radius:999px;padding:2px 8px;border:1px solid;white-space:nowrap}
+.c1{color:#9db38c;border-color:#9db38c}.c2{color:var(--gold);border-color:var(--gold)}.c3{color:#6fb4ff;border-color:#6fb4ff}.c4{color:var(--lime);border-color:var(--lime)}
+.tit{font-family:'Bebas Neue';font-size:17px;letter-spacing:1.5px;color:var(--lime);margin:10px 6px 2px}
+#card{right:16px;top:calc(112px + env(safe-area-inset-top,0px));width:330px;padding:16px;display:none;max-height:calc(100% - 130px);overflow-y:auto}
+body.sel #card{display:block}
+#card .cab{display:flex;gap:12px;align-items:center}#card .cab img{width:70px;height:70px;object-fit:contain}
+#card h2{font-size:28px;letter-spacing:1.5px;line-height:1}
+#card .ds{font-size:12px;color:var(--gold)}
+#x{position:absolute;right:8px;top:6px;background:none;border:0;color:#cfe3b9;font-size:24px;cursor:pointer;padding:6px}
+.desc{margin:10px 0;padding:8px 10px;border-radius:10px;background:rgba(94,181,13,.14);font-size:13px;line-height:1.4}
+#btnL{display:none}
+#msg{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:'Bebas Neue';font-size:28px;letter-spacing:3px;color:var(--lime);z-index:5;text-align:center;padding:20px}
+@media(max-width:760px){
+ #top h1{font-size:24px}
+ #lado{left:8px;right:8px;top:auto;bottom:8px;width:auto;height:46vh;display:none}
+ body.ab #lado{display:flex}body.sel #lado{display:none}
+ #card{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:60vh}
+ #btnL{display:block;position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));background:var(--panel);color:var(--gold);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font:700 14px Roboto,Arial}
+ body.sel #btnL{display:none}
+}
+</style>
+</head>
+<body>
+<div id="msg">Cargando los partidos…</div>
+<div id="top"><h1>Partidos Next Level 7</h1><p>Elige un domingo · toca a un jugador para ver los partidos de su equipo</p></div>
+<div id="fechas"></div>
+<button id="btnL">Partidos</button>
+<aside id="lado" class="panel"><div id="tabs"></div><div id="cont"></div></aside>
+<aside id="card" class="panel"></aside>
+<script>
+const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?single=true&output=csv&gid=';
+const GID_EQ='1894947293',GID_PA='1362473459';
+/* Reglas de descanso: Galácticos descansó en la jornada 1; Deportivo Azul no jugó la J1 pero se toma como jugada (no es descanso). */
+const DESCANSO_MANUAL={1:['18']},JORNADA_VIRTUAL={1:['17']},MIN_PARTIDOS=6;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function csv(t){const r=[];let f='',row=[],q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';if(row.length>1||row[0])r.push(row);row=[]}else f+=c}if(f||row.length){row.push(f);r.push(row)}const h=r.shift().map(x=>x.trim());return r.map(a=>Object.fromEntries(h.map((k,i)=>[k,(a[i]||'').trim()])))}
+const tf=s=>{const p=(s||'').split('/');return p.length==3?new Date(+p[2],+p[1]-1,+p[0]).getTime():0};
+const hora=h=>h?h.replace(/:00$/,''):'';
+let teams=[],P=[],T={},R={},fechas=[],cur=null,tab='dom';
+
+/* ---------- descansos por equipo ---------- */
+function calcDescansos(){
+  const porJ={};
+  P.forEach(p=>{const j=+p.Jornada;if(!j)return;const o=porJ[j]||(porJ[j]={ids:new Set(),f:new Set(),n:0,inc:false,jug:false});
+    o.n++;if(!p.Equipo_Local||!p.Equipo_Visita)o.inc=true;[p.Equipo_Local,p.Equipo_Visita].forEach(x=>x&&o.ids.add(x));
+    if(p.Fecha)o.f.add(p.Fecha);if(p.Estado=='Jugado')o.jug=true});
+  Object.keys(JORNADA_VIRTUAL).forEach(j=>porJ[j]&&JORNADA_VIRTUAL[j].forEach(id=>porJ[j].ids.add(id)));
+  R={};const ya={},fj=j=>porJ[j]?[...porJ[j].f].sort((a,b)=>tf(a)-tf(b)):[];
+  const poner=(id,j,sug)=>{ya[id]=1;R[id]={j:+j,sug,jug:!sug&&porJ[j]&&porJ[j].jug,fechas:fj(j)}};
+  Object.keys(DESCANSO_MANUAL).forEach(j=>DESCANSO_MANUAL[j].forEach(id=>poner(id,j,false)));
+  Object.keys(porJ).map(Number).sort((a,b)=>a-b).forEach(j=>{const o=porJ[j];if(o.inc||o.n<MIN_PARTIDOS)return;
+    teams.forEach(t=>{if(!o.ids.has(t.id)&&!ya[t.id])poner(t.id,j,false)})});
+  const libres=[];for(let j=1;j<=teams.length;j++)if(!Object.values(R).some(r=>r.j==j))libres.push(j);
+  teams.filter(t=>!ya[t.id]).forEach(t=>{const k=libres.findIndex(j=>!(porJ[j]&&porJ[j].ids.has(t.id)));if(k>=0)poner(t.id,libres.splice(k,1)[0],true)});
+}
+const estR=r=>!r?'Sin asignar':r.sug?'Propuesta':r.jug?'Descansó':'Descansará';
+const txtR=r=>r?`J${r.j}${r.fechas.length?' · '+r.fechas.join(' y '):' · por definir'}`:'';
+
+/* ---------- escena ---------- */
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x06130a);scene.fog=new THREE.Fog(0x06130a,80,200);
+const camera=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,.5,400);
+scene.add(new THREE.HemisphereLight(0xbfe8c0,0x0a1d10,.9));
+const sun=new THREE.DirectionalLight(0xfff4d6,.95);sun.position.set(-25,55,25);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+Object.assign(sun.shadow.camera,{left:-45,right:45,top:35,bottom:-35,near:10,far:130});scene.add(sun);
+const PW=74,PH=48.6;
+(function(){
+  const c=document.createElement('canvas');c.width=1400;c.height=920;const x=c.getContext('2d');
+  for(let i=0;i<14;i++){x.fillStyle=i%2?'#2a7a2d':'#348a3a';x.fillRect(i*100,0,100,920)}
+  x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#fff';x.lineWidth=5;const m=40;
+  x.strokeRect(m,m,1320,840);x.beginPath();x.moveTo(700,m);x.lineTo(700,880);x.stroke();x.beginPath();x.arc(700,460,95,0,7);x.stroke();
+  [[m,1],[1360,-1]].forEach(([px,s])=>{x.strokeRect(s>0?px:px-230,250,230,420);x.strokeRect(s>0?px:px-95,360,95,200)});
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;
+  const f=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),new THREE.MeshStandardMaterial({map:t,roughness:.95}));f.rotation.x=-Math.PI/2;f.receiveShadow=true;scene.add(f);
+  const s=new THREE.Mesh(new THREE.CircleGeometry(230,48),new THREE.MeshStandardMaterial({color:0x08170d,roughness:1}));s.rotation.x=-Math.PI/2;s.position.y=-.05;scene.add(s);
+  [-1,1].forEach(d=>{const g=new THREE.Group(),m=new THREE.MeshStandardMaterial({color:0xffffff});
+    [[.3,3.8,.3,0,1.9,-4.2],[.3,3.8,.3,0,1.9,4.2],[.3,.3,8.7,0,3.8,0]].forEach(a=>{const b=new THREE.Mesh(new THREE.BoxGeometry(a[0],a[1],a[2]),m);b.position.set(a[3],a[4],a[5]);g.add(b)});
+    g.position.x=d*(PW/2-1.6);scene.add(g)});
+  const k=document.createElement('canvas');k.width=512;k.height=96;const y=k.getContext('2d');y.fillStyle='#0b1a10';y.fillRect(0,0,512,96);
+  const cols=['#5eb50d','#ddc530','#f3f5ee','#2f6db5','#c0392b','#8fa584'];for(let i=0;i<900;i++){y.fillStyle=cols[i%6];y.globalAlpha=.55+Math.random()*.4;y.fillRect(Math.random()*512,Math.random()*96,3,4)}
+  const ct=new THREE.CanvasTexture(k);ct.encoding=THREE.sRGBEncoding;
+  const grada=(w,px,pz,r)=>{const g=new THREE.Group();for(let i=0;i<3;i++){const ms=Array(6).fill(0).map((_,n)=>n==4?new THREE.MeshBasicMaterial({map:ct}):new THREE.MeshStandardMaterial({color:0x0e1f14}));
+    const b=new THREE.Mesh(new THREE.BoxGeometry(w,1.8,2.4),ms);b.position.set(0,.9+i*1.8,i*2.4);g.add(b)}g.position.set(px,0,pz);g.rotation.y=r;scene.add(g)};
+  grada(78,0,-PH/2-3.5,0);grada(78,0,PH/2+9,Math.PI);grada(52,-PW/2-4.5,0,Math.PI/2);grada(52,PW/2+4.5,0,-Math.PI/2);
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{const g=new THREE.Group(),p=new THREE.Mesh(new THREE.CylinderGeometry(.3,.45,16),new THREE.MeshStandardMaterial({color:0x333c36}));p.position.y=8;g.add(p);
+    const l=new THREE.Mesh(new THREE.BoxGeometry(5,1.6,.5),new THREE.MeshBasicMaterial({color:0xfff2c0}));l.position.y=16.4;l.lookAt(0,10,0);g.add(l);g.position.set(a*(PW/2+9),0,b*(PH/2+12));scene.add(g)});
+  /* banca para los equipos sin partido */
+  const ban=new THREE.Mesh(new THREE.BoxGeometry(60,.6,1.4),new THREE.MeshStandardMaterial({color:0x5a3b1c}));ban.position.set(0,.5,PH/2+3.4);scene.add(ban);
+})();
+
+/* ---------- jugadores ---------- */
+const loader=new THREE.TextureLoader();loader.setCrossOrigin('anonymous');
+const fb=(txt,col)=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle=col;x.beginPath();x.arc(64,64,58,0,7);x.fill();x.strokeStyle='#fff';x.lineWidth=6;x.stroke();
+  x.fillStyle='#fff';x.font='bold 64px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,64,68);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t};
+const cargar=(u,f)=>new Promise(ok=>{if(!u)return ok(f());loader.load(u,t=>{t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>ok(f()))});
+function prom(tex,def){try{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(tex.image,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,n=0;
+  for(let i=0;i<d.length;i+=4)if(d[i+3]>200){r+=d[i];g+=d[i+1];b+=d[i+2];n++}return n>8?new THREE.Color(r/n/255,g/n/255,b/n/255):def}catch(e){return def}}
+const cache={};
+function textura(t,i){return cache[t.id]||(cache[t.id]=(async()=>{const def=new THREE.Color().setHSL((i*.137)%1,.55,.42);
+  const [esc,pla]=await Promise.all([cargar(t.URL,()=>fb((t.Nombre||'?').charAt(0),'#'+def.getHexString())),cargar(t.Color_Playera,()=>null)]);
+  return {esc,pla,col:pla?prom(pla,def):def}})())}
+function texto(lineas,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+  lineas.forEach(([t,tam,col,y])=>{x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,y);x.fillStyle=col;x.fillText(t,w/2,y)});
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
+const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a];
+async function jugador(t,i){
+  const {esc,pla,col}=await textura(t,i),g=new THREE.Group(),mat=(c,r=.7)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),piel=mat(pieles[i%4]);
+  const ext=(r,h,m,x,y)=>{const p=new THREE.Group();p.position.set(x,y,0);const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,h,10),m);b.position.y=-h/2;b.castShadow=true;p.add(b);g.add(p);return p};
+  const j={g,t,fase:Math.random()*9,pI:ext(.2,1,mat(0xf3f5ee),-.28,1.05),pD:ext(.2,1,mat(0xf3f5ee),.28,1.05),bI:ext(.15,.9,piel,-.68,1.95),bD:ext(.15,.9,piel,.68,1.95)};
+  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(col));to.position.y=1.5;to.castShadow=true;g.add(to);
+  const sh=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(col.clone().multiplyScalar(.55)));sh.position.y=.95;g.add(sh);
+  if(pla)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;g.add(p)});
+  j.cab=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),piel);j.cab.position.y=2.4;j.cab.castShadow=true;g.add(j.cab);
+  const pe=new THREE.Mesh(new THREE.SphereGeometry(.44,18,10,0,7,0,1.2),mat(0x1a1410));pe.position.y=2.42;g.add(pe);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:esc,transparent:true,depthTest:false}));sp.scale.set(1.7,1.7,1);sp.position.y=3.9;sp.renderOrder=2;g.add(sp);
+  const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,5,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.5;hit.userData.j=j;g.add(hit);j.hit=hit;
+  return j;
+}
+
+/* ---------- el domingo elegido en la cancha ---------- */
+const grupo=new THREE.Group();scene.add(grupo);let anim=[],hits=[],gen=0;
+function limpiar(){while(grupo.children.length)grupo.remove(grupo.children[0]);anim=[];hits=[]}
+async function dibujar(f){
+  const mi=++gen;cur=f;limpiar();
+  document.querySelectorAll('#fechas button').forEach(b=>b.classList.toggle('on',b.dataset.f==f));
+  const ms=P.filter(p=>p.Fecha==f).sort((a,b)=>(a.Hora||'').localeCompare(b.Hora||'')||(a.Cancha||'').localeCompare(b.Cancha||''));
+  const cols=4,filas=Math.ceil(ms.length/cols),juegan=new Set();
+  for(let i=0;i<ms.length;i++){
+    const p=ms[i],tl=T[p.Equipo_Local],tv=T[p.Equipo_Visita];if(!tl||!tv)continue;
+    const cx=(i%cols-(Math.min(cols,ms.length)-1)/2)*17,cz=(Math.floor(i/cols)-(filas-1)/2)*15-3;
+    const [a,b]=await Promise.all([jugador(tl,teams.indexOf(tl)),jugador(tv,teams.indexOf(tv))]);if(mi!=gen)return;
+    juegan.add(tl.id);juegan.add(tv.id);
+    const jug=p.Estado=='Jugado'&&p.Goles_Local!==''&&p.Goles_Visita!=='',gl=+p.Goles_Local,gv=+p.Goles_Visita;
+    a.g.position.set(cx-3.3,0,cz);a.g.rotation.y=Math.PI/2;b.g.position.set(cx+3.3,0,cz);b.g.rotation.y=-Math.PI/2;
+    a.res=jug?(gl>gv?1:gl<gv?0:.5):null;b.res=jug?(gv>gl?1:gv<gl?0:.5):null;
+    [a,b].forEach(j=>{grupo.add(j.g);hits.push(j.hit);anim.push(j)});
+    const col=jug?'#ddc530':'#5eb50d';
+    const pl=texto([[jug?`${gl} - ${gv}`:'VS',jug?92:80,col,52],[jug?'Jugado':(hora(p.Hora)+(p.Cancha?' · '+p.Cancha:'')),34,'#f3f5ee',118]],512,150);
+    pl.scale.set(6.6,1.93,1);pl.position.set(cx,6,cz);grupo.add(pl);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(6.4,6.7,48),new THREE.MeshBasicMaterial({color:jug?0xddc530:0x5eb50d,transparent:true,opacity:.7,side:THREE.DoubleSide}));
+    ring.rotation.x=-Math.PI/2;ring.position.set(cx,.06,cz);grupo.add(ring);
+  }
+  const banca=teams.filter(t=>!juegan.has(t.id));
+  for(let k=0;k<banca.length;k++){
+    const t=banca[k],j=await jugador(t,teams.indexOf(t));if(mi!=gen)return;
+    const r=R[t.id],hoy=r&&r.fechas.includes(f);
+    j.g.position.set((k-(banca.length-1)/2)*Math.min(7,50/banca.length),.55,PH/2+3.1);j.g.rotation.y=Math.PI;j.sentado=true;
+    j.pI.rotation.x=-1.45;j.pD.rotation.x=-1.45;
+    const z=texto([['Zzz',90,'#9db38c',48],[hoy?'Descansa hoy':'Sin partido',44,hoy?'#ddc530':'#f3f5ee',118]],384,150);z.scale.set(4.6,1.8,1);z.position.set(0,5.9,0);j.g.add(z);
+    grupo.add(j.g);hits.push(j.hit);anim.push(j);
+  }
+  if(!sel)objetivo.set(0,0,5);
+}
+
+/* ---------- cámara y controles ---------- */
+const cam={th:.25,ph:1.0,d:70,o:new THREE.Vector3(0,0,5)},meta={th:.25,ph:1.0,d:70},objetivo=new THREE.Vector3(0,0,5);
+const ptr=new Map();let mov=0,pinch=0,sel=null,idle=0;const cv=renderer.domElement;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});mov=0;idle=0;if(ptr.size==2){const[a,b]=[...ptr.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y)}});
+cv.addEventListener('pointermove',e=>{const p=ptr.get(e.pointerId);if(!p)return;idle=0;
+  if(ptr.size==2){p.x=e.clientX;p.y=e.clientY;const[a,b]=[...ptr.values()],n=Math.hypot(a.x-b.x,a.y-b.y);meta.d=Math.min(110,Math.max(9,meta.d*pinch/n));pinch=n;mov=99;return}
+  const dx=e.clientX-p.x,dy=e.clientY-p.y;mov+=Math.abs(dx)+Math.abs(dy);p.x=e.clientX;p.y=e.clientY;meta.th-=dx*.006;meta.ph=Math.min(1.45,Math.max(.25,meta.ph-dy*.005))});
+cv.addEventListener('pointerup',e=>{ptr.delete(e.pointerId);if(mov<8&&!ptr.size)tocar(e.clientX,e.clientY)});
+cv.addEventListener('pointercancel',e=>ptr.delete(e.pointerId));
+cv.addEventListener('wheel',e=>{e.preventDefault();meta.d=Math.min(110,Math.max(9,meta.d*(1+e.deltaY*.001)))},{passive:false});
+const ray=new THREE.Raycaster();
+function tocar(x,y){ray.setFromCamera(new THREE.Vector2(x/innerWidth*2-1,-(y/innerHeight)*2+1),camera);const h=ray.intersectObjects(hits)[0];elegir(h?h.object.userData.j.t:null)}
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
+
+/* ---------- interfaz ---------- */
+const fila=(p,conFecha)=>{const tl=T[p.Equipo_Local],tv=T[p.Equipo_Visita],jug=p.Estado=='Jugado'&&p.Goles_Local!=='';
+  return `<div class="fila" data-f="${esc(p.Fecha)}"><img src="${esc(tl&&tl.URL)}" alt=""><div class="m">${esc(tl?tl.Nombre:'?')}<small>vs ${esc(tv?tv.Nombre:'Por definir')}${conFecha&&p.Fecha?' · '+esc(p.Fecha):''}${!jug&&p.Hora?' · '+esc(hora(p.Hora)):''}</small></div>
+  <span class="sc">${jug?esc(p.Goles_Local)+' - '+esc(p.Goles_Visita):'vs'}</span><span class="chip ${jug?'c1':p.Estado=='Programado'?'c2':'c3'}">${jug?'Jugado':p.Estado=='Programado'?'Programado':'Pendiente'}</span></div>`};
+function panel(){
+  const jug=P.filter(p=>p.Estado=='Jugado').sort((a,b)=>tf(b.Fecha)-tf(a.Fecha)),prog=P.filter(p=>p.Estado=='Programado').sort((a,b)=>tf(a.Fecha)-tf(b.Fecha)),sin=P.filter(p=>p.Estado=='Pendiente'&&!p.Fecha);
+  let h='';
+  if(tab=='dom'){const ms=P.filter(p=>p.Fecha==cur),jg=new Set(ms.flatMap(p=>[p.Equipo_Local,p.Equipo_Visita])),b=teams.filter(t=>!jg.has(t.id));
+    h=`<div class="tit">${esc(cur||'')} · ${ms.length} partidos</div>`+ms.map(p=>fila(p,0)).join('')+`<div class="tit">Sin partido este domingo</div>`+(b.map(t=>`<div class="fila" data-t="${t.id}"><img src="${esc(t.URL)}" alt=""><div class="m">${esc(t.Nombre)}<small>${R[t.id]&&R[t.id].fechas.includes(cur)?'Descansa hoy':estR(R[t.id])+' '+txtR(R[t.id])}</small></div></div>`).join('')||'<div class="fila">Juegan todos</div>')}
+  else if(tab=='jug')h=`<div class="tit">${jug.length} partidos jugados</div>`+jug.map(p=>fila(p,1)).join('');
+  else if(tab=='pen')h=`<div class="tit">Programados (${prog.length})</div>`+prog.map(p=>fila(p,1)).join('')+`<div class="tit">Por programar (${sin.length})</div>`+sin.map(p=>fila(p,0)).join('');
+  else h=`<div class="tit">Día de descanso de cada equipo</div>`+[...teams].sort((a,b)=>(R[a.id]?R[a.id].j:99)-(R[b.id]?R[b.id].j:99)).map(t=>{const r=R[t.id];
+    return `<div class="fila" data-t="${t.id}"><img src="${esc(t.URL)}" alt=""><div class="m">${esc(t.Nombre)}<small>${esc(txtR(r)||'Sin asignar')}</small></div><span class="chip ${!r?'c3':r.sug?'c3':r.jug?'c1':'c2'}">${estR(r)}</span></div>`}).join('');
+  $('cont').innerHTML=h;
+  $('cont').querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{const f=e.dataset.f;if(f&&f!=cur)dibujar(f).then(panel);else if(f)panel()});
+  $('cont').querySelectorAll('[data-t]').forEach(e=>e.onclick=()=>{elegir(T[e.dataset.t]);document.body.classList.remove('ab')});
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));
+}
+function elegir(t){
+  sel=t;document.body.classList.toggle('sel',!!t);
+  if(!t){meta.d=Math.max(meta.d,60);objetivo.set(0,0,5);return}
+  meta.d=22;meta.ph=Math.min(meta.ph,1.15);
+  const j=anim.find(x=>x.t===t);if(j)objetivo.copy(j.g.position);
+  const mios=P.filter(p=>p.Equipo_Local==t.id||p.Equipo_Visita==t.id),rival=p=>T[p.Equipo_Local==t.id?p.Equipo_Visita:p.Equipo_Local];
+  const jug=mios.filter(p=>p.Estado=='Jugado'&&p.Goles_Local!=='').sort((a,b)=>tf(a.Fecha)-tf(b.Fecha)),prog=mios.filter(p=>p.Estado=='Programado').sort((a,b)=>tf(a.Fecha)-tf(b.Fecha)),
+    sin=mios.filter(p=>p.Estado=='Pendiente'),r=R[t.id];
+  const res=p=>{const l=p.Equipo_Local==t.id,a=+(l?p.Goles_Local:p.Goles_Visita),b=+(l?p.Goles_Visita:p.Goles_Local);return a>b?'c4':a<b?'c3':'c2'};
+  const li=(p,x)=>`<div class="fila" data-f="${esc(p.Fecha)}" style="cursor:pointer"><img src="${esc(rival(p)&&rival(p).URL)}" alt=""><div class="m">${esc(rival(p)?rival(p).Nombre:'Por definir')}<small>${esc(p.Fecha||'Sin fecha')}${p.Hora&&!x?' · '+esc(hora(p.Hora)):''} · J${esc(p.Jornada||'?')}</small></div>${x?`<span class="sc">${esc(p.Goles_Local)} - ${esc(p.Goles_Visita)}</span><span class="chip ${res(p)}">${res(p)=='c4'?'G':res(p)=='c3'?'P':'E'}</span>`:''}</div>`;
+  $('card').innerHTML=`<button id="x" aria-label="Cerrar">×</button><div class="cab"><img src="${esc(t.URL)}" alt=""><div><h2>${esc(t.Nombre)}</h2><div class="ds">${esc(t.Descripción||'')}</div></div></div>
+  <div class="desc">😴 <b>Descanso:</b> ${esc(estR(r))}${r?' · '+esc(txtR(r)):''}</div>
+  <div class="tit">Ya jugó (${jug.length})</div>${jug.map(p=>li(p,1)).join('')||'<div class="fila">Aún no juega</div>'}
+  <div class="tit">Programados (${prog.length})</div>${prog.map(p=>li(p,0)).join('')||'<div class="fila">Ninguno</div>'}
+  <div class="tit">Le faltan por programar (${sin.length})</div>${sin.map(p=>`<div class="fila"><img src="${esc(rival(p)&&rival(p).URL)}" alt=""><div class="m">${esc(rival(p)?rival(p).Nombre:'Por definir')}<small>J${esc(p.Jornada||'?')} sin fecha</small></div></div>`).join('')||'<div class="fila">Ninguno</div>'}`;
+  $('x').onclick=()=>elegir(null);
+  $('card').querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{if(e.dataset.f&&e.dataset.f!=cur){sel=null;dibujar(e.dataset.f).then(()=>{elegir(t);panel()})}});
+}
+$('btnL').onclick=()=>document.body.classList.toggle('ab');
+
+/* ---------- animación ---------- */
+const reloj=new THREE.Clock(),reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function animar(){
+  requestAnimationFrame(animar);const dt=Math.min(reloj.getDelta(),.05),t=reloj.elapsedTime;
+  anim.forEach(j=>{j.fase+=dt*2.4;const s=Math.sin(j.fase);
+    if(j.sentado){j.cab.position.y=2.4+Math.sin(t*1.2+j.fase)*.04;return}
+    j.pI.rotation.x=s*.18;j.pD.rotation.x=-s*.18;j.cab.position.y=2.4+Math.abs(Math.cos(j.fase))*.06;
+    if(j.res===1){j.bI.rotation.z=2.6+s*.3;j.bD.rotation.z=-2.6-s*.3;j.g.position.y=Math.abs(Math.sin(j.fase*1.5))*.5}
+    else if(j.res===0){j.cab.rotation.x=.45;j.bI.rotation.x=.1;j.bD.rotation.x=.1}
+    else{j.bI.rotation.x=-s*.2;j.bD.rotation.x=s*.2}});
+  if(sel){const j=anim.find(x=>x.t===sel);if(j)objetivo.set(j.g.position.x,0,j.g.position.z)}
+  idle+=dt;if(!sel&&!reduce&&idle>4&&!ptr.size)meta.th+=dt*.05;
+  const k=Math.min(1,dt*4);cam.th+=(meta.th-cam.th)*k;cam.ph+=(meta.ph-cam.ph)*k;cam.d+=(meta.d-cam.d)*k;cam.o.lerp(objetivo,k);
+  camera.position.set(cam.o.x+cam.d*Math.sin(cam.ph)*Math.sin(cam.th),cam.d*Math.cos(cam.ph)+1.5,cam.o.z+cam.d*Math.sin(cam.ph)*Math.cos(cam.th));
+  camera.lookAt(cam.o.x,sel?2:0,cam.o.z);renderer.render(scene,camera);
+}
+
+/* ---------- arranque ---------- */
+(async()=>{
+  try{
+    const [te,tp]=await Promise.all([fetch(SHEET+GID_EQ).then(r=>r.text()),fetch(SHEET+GID_PA).then(r=>r.text())]);
+    teams=csv(te).filter(e=>(e.Status||'').toLowerCase()=='activo').map(e=>({...e,id:e.ID_Equipo}));teams.forEach(t=>T[t.id]=t);
+    P=csv(tp);calcDescansos();
+    fechas=[...new Set(P.map(p=>p.Fecha).filter(Boolean))].sort((a,b)=>tf(a)-tf(b));
+    $('fechas').innerHTML=fechas.map(f=>{const ms=P.filter(p=>p.Fecha==f),pen=ms.some(p=>p.Estado!='Jugado');return `<button data-f="${f}" class="${pen?'pen':''}">${f.slice(0,5)}<small>${ms.length} · ${pen?'pendientes':'jugados'}</small></button>`}).join('');
+    document.querySelectorAll('#fechas button').forEach(b=>b.onclick=()=>dibujar(b.dataset.f).then(panel));
+    $('tabs').innerHTML=[['dom','Domingo'],['jug','Jugados'],['pen','Pendientes'],['des','Descansos']].map(([k,n])=>`<button data-k="${k}">${n}</button>`).join('');
+    document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.k;panel()});
+    const hoy=new Date().setHours(0,0,0,0),prox=fechas.find(f=>tf(f)>=hoy)||fechas[fechas.length-1];
+    await dibujar(prox);panel();$('msg').remove();animar();
+    document.querySelector(`#fechas button[data-f="${prox}"]`).scrollIntoView({inline:'center',block:'nearest'});
+  }catch(e){$('msg').textContent='No se pudo cargar la hoja: '+e.message}
+})();
+</script>
+</body>
+</html>
