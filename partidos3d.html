@@ -51,12 +51,27 @@ body.sel #card{display:block}
  #btnL{display:block;position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));background:var(--panel);color:var(--gold);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font:700 14px Roboto,Arial}
  body.sel #btnL{display:none}
 }
+#marc,#simbar,#gol{display:none}
+body.sim #fechas,body.sim #lado,body.sim #card,body.sim #btnL,body.sim #top{display:none!important}
+body.sim #marc{display:flex;position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));align-items:center;gap:14px;padding:8px 18px;max-width:calc(100% - 16px)}
+#marc img{width:38px;height:38px;object-fit:contain}
+#marc .eq{display:flex;align-items:center;gap:8px;font-family:'Bebas Neue',Impact,sans-serif;font-size:20px;letter-spacing:1px}
+#marc .mid{text-align:center;min-width:84px}#marc .mid b{display:block;font-size:40px;color:var(--gold);line-height:1;font-weight:400}#marc small{font-size:11px;color:#9db38c}
+body.sim #simbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));gap:8px}
+#simbar button{background:var(--panel);color:#f3f5ee;border:1px solid var(--line);border-radius:999px;padding:10px 18px;font:700 13px Roboto,Arial;cursor:pointer}
+body.sim #gol.on{display:block;position:fixed;left:50%;top:34%;transform:translate(-50%,-50%);font-family:'Bebas Neue',Impact,sans-serif;font-size:clamp(44px,11vw,96px);letter-spacing:3px;color:var(--gold);text-align:center;line-height:1;text-shadow:0 4px 18px #000;pointer-events:none;animation:pop .45s ease-out}
+#gol small{display:block;font-size:.4em;color:#f3f5ee;letter-spacing:2px;margin-top:6px}
+@keyframes pop{from{transform:translate(-50%,-50%) scale(.4);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+@media(max-width:520px){#marc .eq b{display:none}#marc{gap:10px}}
 </style>
 </head>
 <body>
 <div id="msg">Cargando los partidos…</div>
-<div id="top"><h1>Partidos Next Level 7</h1><p>Elige un domingo · toca a un jugador para ver los partidos de su equipo</p></div>
+<div id="top"><h1>Partidos Next Level 7</h1><p>Elige un domingo · toca a un jugador para ver su equipo · doble clic a un partido para verlo jugar</p></div>
 <div id="fechas"></div>
+<div id="marc" class="panel"><div class="eq"><img id="mL" alt=""><b id="nL"></b></div><div class="mid"><b id="mS">0 - 0</b><small id="mT">Min 0'</small></div><div class="eq"><b id="nV"></b><img id="mV" alt=""></div></div>
+<div id="gol"></div>
+<div id="simbar"><button id="sV">← Volver</button><button id="sR">↻ Repetir</button><button id="sX">×1</button></div>
 <button id="btnL">Partidos</button>
 <aside id="lado" class="panel"><div id="tabs"></div><div id="cont"></div></aside>
 <aside id="card" class="panel"></aside>
@@ -138,13 +153,13 @@ function texto(lineas,w,h){const c=document.createElement('canvas');c.width=w;c.
   lineas.forEach(([t,tam,col,y])=>{x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,y);x.fillStyle=col;x.fillText(t,w/2,y)});
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
 const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a];
-async function jugador(t,i){
+async function jugador(t,i,gk){
   const {esc,pla,col}=await textura(t,i),g=new THREE.Group(),mat=(c,r=.7)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),piel=mat(pieles[i%4]);
   const ext=(r,h,m,x,y)=>{const p=new THREE.Group();p.position.set(x,y,0);const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,h,10),m);b.position.y=-h/2;b.castShadow=true;p.add(b);g.add(p);return p};
   const j={g,t,fase:Math.random()*9,pI:ext(.2,1,mat(0xf3f5ee),-.28,1.05),pD:ext(.2,1,mat(0xf3f5ee),.28,1.05),bI:ext(.15,.9,piel,-.68,1.95),bD:ext(.15,.9,piel,.68,1.95)};
-  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(col));to.position.y=1.5;to.castShadow=true;g.add(to);
+  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(gk||col));to.position.y=1.5;to.castShadow=true;g.add(to);
   const sh=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(col.clone().multiplyScalar(.55)));sh.position.y=.95;g.add(sh);
-  if(pla)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;g.add(p)});
+  if(pla&&!gk)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;g.add(p)});
   j.cab=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),piel);j.cab.position.y=2.4;j.cab.castShadow=true;g.add(j.cab);
   const pe=new THREE.Mesh(new THREE.SphereGeometry(.44,18,10,0,7,0,1.2),mat(0x1a1410));pe.position.y=2.42;g.add(pe);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:esc,transparent:true,depthTest:false}));sp.scale.set(1.7,1.7,1);sp.position.y=3.9;sp.renderOrder=2;g.add(sp);
@@ -169,6 +184,7 @@ async function dibujar(f){
     a.g.position.set(cx-3.3,0,cz);a.g.rotation.y=Math.PI/2;b.g.position.set(cx+3.3,0,cz);b.g.rotation.y=-Math.PI/2;
     a.res=jug?(gl>gv?1:gl<gv?0:.5):null;b.res=jug?(gv>gl?1:gv<gl?0:.5):null;
     [a,b].forEach(j=>{grupo.add(j.g);hits.push(j.hit);anim.push(j)});
+    a.p=b.p=p;const mh=new THREE.Mesh(new THREE.CylinderGeometry(6.5,6.5,8,16),new THREE.MeshBasicMaterial({visible:false}));mh.position.set(cx,4,cz);mh.userData.p=p;grupo.add(mh);hits.push(mh);
     const col=jug?'#ddc530':'#5eb50d';
     const pl=texto([[jug?`${gl} - ${gv}`:'VS',jug?92:80,col,52],[jug?'Jugado':(hora(p.Hora)+(p.Cancha?' · '+p.Cancha:'')),34,'#f3f5ee',118]],512,150);
     pl.scale.set(6.6,1.93,1);pl.position.set(cx,6,cz);grupo.add(pl);
@@ -198,12 +214,13 @@ cv.addEventListener('pointerup',e=>{ptr.delete(e.pointerId);if(mov<8&&!ptr.size)
 cv.addEventListener('pointercancel',e=>ptr.delete(e.pointerId));
 cv.addEventListener('wheel',e=>{e.preventDefault();meta.d=Math.min(110,Math.max(9,meta.d*(1+e.deltaY*.001)))},{passive:false});
 const ray=new THREE.Raycaster();
-function tocar(x,y){ray.setFromCamera(new THREE.Vector2(x/innerWidth*2-1,-(y/innerHeight)*2+1),camera);const h=ray.intersectObjects(hits)[0];elegir(h?h.object.userData.j.t:null)}
+function tocar(x,y){ray.setFromCamera(new THREE.Vector2(x/innerWidth*2-1,-(y/innerHeight)*2+1),camera);const hs=ray.intersectObjects(hits),pj=hs.find(h=>h.object.userData.j),pm=hs.find(h=>h.object.userData.p||(h.object.userData.j&&h.object.userData.j.p)),mp=pm&&(pm.object.userData.p||pm.object.userData.j.p);
+  if(mp&&dbl('p'+mp.ID_Partido))return jugarPartido(mp.ID_Partido);elegir(pj?pj.object.userData.j.t:null)}
 addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
 
 /* ---------- interfaz ---------- */
 const fila=(p,conFecha)=>{const tl=T[p.Equipo_Local],tv=T[p.Equipo_Visita],jug=p.Estado=='Jugado'&&p.Goles_Local!=='';
-  return `<div class="fila" data-f="${esc(p.Fecha)}"><img src="${esc(tl&&tl.URL)}" alt=""><div class="m">${esc(tl?tl.Nombre:'?')}<small>vs ${esc(tv?tv.Nombre:'Por definir')}${conFecha&&p.Fecha?' · '+esc(p.Fecha):''}${!jug&&p.Hora?' · '+esc(hora(p.Hora)):''}</small></div>
+  return `<div class="fila" data-f="${esc(p.Fecha)}" data-p="${esc(p.ID_Partido)}"><img src="${esc(tl&&tl.URL)}" alt=""><div class="m">${esc(tl?tl.Nombre:'?')}<small>vs ${esc(tv?tv.Nombre:'Por definir')}${conFecha&&p.Fecha?' · '+esc(p.Fecha):''}${!jug&&p.Hora?' · '+esc(hora(p.Hora)):''}</small></div>
   <span class="sc">${jug?esc(p.Goles_Local)+' - '+esc(p.Goles_Visita):'vs'}</span><span class="chip ${jug?'c1':p.Estado=='Programado'?'c2':'c3'}">${jug?'Jugado':p.Estado=='Programado'?'Programado':'Pendiente'}</span></div>`};
 function panel(){
   const jug=P.filter(p=>p.Estado=='Jugado').sort((a,b)=>tf(b.Fecha)-tf(a.Fecha)),prog=P.filter(p=>p.Estado=='Programado').sort((a,b)=>tf(a.Fecha)-tf(b.Fecha)),sin=P.filter(p=>p.Estado=='Pendiente'&&!p.Fecha);
@@ -215,7 +232,7 @@ function panel(){
   else h=`<div class="tit">Día de descanso de cada equipo</div>`+[...teams].sort((a,b)=>(R[a.id]?R[a.id].j:99)-(R[b.id]?R[b.id].j:99)).map(t=>{const r=R[t.id];
     return `<div class="fila" data-t="${t.id}"><img src="${esc(t.URL)}" alt=""><div class="m">${esc(t.Nombre)}<small>${esc(txtR(r)||'Sin asignar')}</small></div><span class="chip ${!r?'c3':r.sug?'c3':r.jug?'c1':'c2'}">${estR(r)}</span></div>`}).join('');
   $('cont').innerHTML=h;
-  $('cont').querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{const f=e.dataset.f;if(f&&f!=cur)dibujar(f).then(panel);else if(f)panel()});
+  $('cont').querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{if(e.dataset.p&&dbl('p'+e.dataset.p))return jugarPartido(e.dataset.p);const f=e.dataset.f;if(f&&f!=cur)dibujar(f).then(panel);else if(f)panel()});
   $('cont').querySelectorAll('[data-t]').forEach(e=>e.onclick=()=>{elegir(T[e.dataset.t]);document.body.classList.remove('ab')});
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));
 }
@@ -228,21 +245,114 @@ function elegir(t){
   const jug=mios.filter(p=>p.Estado=='Jugado'&&p.Goles_Local!=='').sort((a,b)=>tf(a.Fecha)-tf(b.Fecha)),prog=mios.filter(p=>p.Estado=='Programado').sort((a,b)=>tf(a.Fecha)-tf(b.Fecha)),
     sin=mios.filter(p=>p.Estado=='Pendiente'),r=R[t.id];
   const res=p=>{const l=p.Equipo_Local==t.id,a=+(l?p.Goles_Local:p.Goles_Visita),b=+(l?p.Goles_Visita:p.Goles_Local);return a>b?'c4':a<b?'c3':'c2'};
-  const li=(p,x)=>`<div class="fila" data-f="${esc(p.Fecha)}" style="cursor:pointer"><img src="${esc(rival(p)&&rival(p).URL)}" alt=""><div class="m">${esc(rival(p)?rival(p).Nombre:'Por definir')}<small>${esc(p.Fecha||'Sin fecha')}${p.Hora&&!x?' · '+esc(hora(p.Hora)):''} · J${esc(p.Jornada||'?')}</small></div>${x?`<span class="sc">${esc(p.Goles_Local)} - ${esc(p.Goles_Visita)}</span><span class="chip ${res(p)}">${res(p)=='c4'?'G':res(p)=='c3'?'P':'E'}</span>`:''}</div>`;
+  const li=(p,x)=>`<div class="fila" data-f="${esc(p.Fecha)}" data-p="${esc(p.ID_Partido)}" style="cursor:pointer"><img src="${esc(rival(p)&&rival(p).URL)}" alt=""><div class="m">${esc(rival(p)?rival(p).Nombre:'Por definir')}<small>${esc(p.Fecha||'Sin fecha')}${p.Hora&&!x?' · '+esc(hora(p.Hora)):''} · J${esc(p.Jornada||'?')}</small></div>${x?`<span class="sc">${esc(p.Goles_Local)} - ${esc(p.Goles_Visita)}</span><span class="chip ${res(p)}">${res(p)=='c4'?'G':res(p)=='c3'?'P':'E'}</span>`:''}</div>`;
   $('card').innerHTML=`<button id="x" aria-label="Cerrar">×</button><div class="cab"><img src="${esc(t.URL)}" alt=""><div><h2>${esc(t.Nombre)}</h2><div class="ds">${esc(t.Descripción||'')}</div></div></div>
   <div class="desc">😴 <b>Descanso:</b> ${esc(estR(r))}${r?' · '+esc(txtR(r)):''}</div>
   <div class="tit">Ya jugó (${jug.length})</div>${jug.map(p=>li(p,1)).join('')||'<div class="fila">Aún no juega</div>'}
   <div class="tit">Programados (${prog.length})</div>${prog.map(p=>li(p,0)).join('')||'<div class="fila">Ninguno</div>'}
   <div class="tit">Le faltan por programar (${sin.length})</div>${sin.map(p=>`<div class="fila"><img src="${esc(rival(p)&&rival(p).URL)}" alt=""><div class="m">${esc(rival(p)?rival(p).Nombre:'Por definir')}<small>J${esc(p.Jornada||'?')} sin fecha</small></div></div>`).join('')||'<div class="fila">Ninguno</div>'}`;
   $('x').onclick=()=>elegir(null);
-  $('card').querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{if(e.dataset.f&&e.dataset.f!=cur){sel=null;dibujar(e.dataset.f).then(()=>{elegir(t);panel()})}});
+  $('card').querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{if(e.dataset.p&&dbl('p'+e.dataset.p))return jugarPartido(e.dataset.p);if(e.dataset.f&&e.dataset.f!=cur){sel=null;dibujar(e.dataset.f).then(()=>{elegir(t);panel()})}});
 }
 $('btnL').onclick=()=>document.body.classList.toggle('ab');
+
+/* ---------- partido en vivo: doble clic / doble toque a un encuentro ---------- */
+let SIM=null,simSp=1,lastTap={k:'',t:0};
+const dbl=k=>{const n=performance.now(),r=lastTap.k===k&&n-lastTap.t<450;lastTap={k,t:r?0:n};return r};
+const sg=new THREE.Group();scene.add(sg);
+const balon=new THREE.Mesh(new THREE.SphereGeometry(.5,16,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5}));balon.castShadow=true;balon.visible=false;scene.add(balon);
+(function(){const c=document.createElement('canvas');c.width=128;c.height=64;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,128,64);x.fillStyle='#111';[[20,20],[64,12],[108,22],[40,48],[88,50]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,9,0,7);x.fill()});balon.material.map=new THREE.CanvasTexture(c)})();
+const FORM=[[-33,0],[-24,-8],[-24,8],[-14,-12],[-14,0],[-14,12],[-6,0]],GKC=[0xe8a317,0x2fb8e0];
+const mkRnd=s=>()=>(s=s*16807%2147483647)/2147483647;
+function aviso(h,ms){const b=$('gol');b.innerHTML=h;b.classList.remove('on');void b.offsetWidth;b.classList.add('on');clearTimeout(aviso.t);if(ms)aviso.t=setTimeout(()=>b.classList.remove('on'),ms)}
+async function jugarPartido(id){
+  const p=P.find(x=>x.ID_Partido==id),tl=p&&T[p.Equipo_Local],tv=p&&T[p.Equipo_Visita];
+  if(!tl||!tv||SIM)return;
+  SIM={busy:true};elegir(null);document.body.classList.add('sim');grupo.visible=false;
+  const mk=async(t,e)=>{const dir=e?-1:1,pj=[];
+    for(let k=0;k<7;k++){const j=await jugador(t,k+e,k?0:GKC[e]);j.e=e;j.i=k;j.dir=dir;j.bx=FORM[k][0]*dir;j.bz=FORM[k][1]*dir+(e?2.5:-2.5);
+      j.g.position.set(j.bx,0,j.bz);j.g.rotation.y=dir*Math.PI/2;j.cel=0;sg.add(j.g);pj.push(j)}
+    return{e,dir,t,pj}};
+  const eq=[await mk(tl,0),await mk(tv,1)];
+  if(!SIM)return;
+  const jug=p.Estado=='Jugado'&&p.Goles_Local!==''&&p.Goles_Visita!=='',gl=jug?+p.Goles_Local:0,gv=jug?+p.Goles_Visita:0,rnd=mkRnd(+p.ID_Partido*7919+13),pl=[];
+  for(let i=0;i<gl;i++)pl.push({e:0,r:'gol'});for(let i=0;i<gv;i++)pl.push({e:1,r:'gol'});
+  const ex=jug?Math.max(4,Math.round((gl+gv)*.8)):10;
+  for(let i=0;i<ex;i++)pl.push({e:rnd()<.5?0:1,r:['atajada','fuera','robo'][Math.floor(rnd()*3)]});
+  for(let i=pl.length-1;i>0;i--){const k=Math.floor(rnd()*(i+1));[pl[i],pl[k]]=[pl[k],pl[i]]}
+  Object.assign(SIM,{busy:false,run:true,p,eq,pl,idx:0,sc:[0,0],rnd,seg:null,q:[],hold:null,atk:0,pausa:1.2,fin:false,m:0,centro:false,tl,tv});
+  balon.visible=true;balon.position.set(0,.5,0);
+  $('mL').src=tl.URL||'';$('mV').src=tv.URL||'';$('nL').textContent=tl.Nombre;$('nV').textContent=tv.Nombre;
+  meta.d=62;meta.ph=.9;objetivo.set(0,0,0);
+  aviso(jug?'¡Inicia el partido!':'Aún sin resultado<br><small>Demostración sin goles</small>',2200);
+}
+function salirPartido(){if(!SIM)return;SIM.run=false;SIM=null;while(sg.children.length)sg.remove(sg.children[0]);balon.visible=false;grupo.visible=true;
+  document.body.classList.remove('sim');$('gol').classList.remove('on');objetivo.set(0,0,5);meta.d=70;meta.ph=1}
+function nuevaJugada(){
+  const S=SIM,q=S.pl[S.idx];if(!q)return final();
+  S.idx++;S.atk=q.e;const E=S.eq[q.e],O=S.eq[1-q.e],d=E.dir,r=S.rnd;
+  if(S.centro){balon.position.set(0,.5,0);S.centro=false}
+  const mids=[3,4,5].sort(()=>r()-.5),same=S.hold&&S.hold.e==q.e,st=same?S.hold:E.pj[Math.floor(r()*3)];
+  const ch=[st,E.pj[mids[0]],E.pj[mids[1]],E.pj[6]].filter((j,i,a)=>a.indexOf(j)==i);S.hold=null;
+  const seg=(to,dur,arc,fin,ini)=>S.q.push({to,dur,arc,fin,ini});
+  ch.forEach((j,i)=>{if(!i&&same)return;const dist=Math.hypot(balon.position.x-j.g.position.x,balon.position.z-j.g.position.z);
+    seg(j,i?.7+r()*.3:.5+dist/35,1.2+r(),null)});
+  const sh=ch[ch.length-1],gk=O.pj[0];
+  if(q.r=='gol'){const z=(r()<.5?-1:1)*(1.2+r()*2.6),y=.6+r()*2.4;
+    seg({x:d*36.3,y,z},.75,.4,()=>gol(q.e),()=>{gk.dv={t:0,s:Math.sign(z)}})}
+  else if(q.r=='atajada'){seg(gk,.75,.3,()=>{S.hold=gk;S.q.push({to:null,dur:.9})},()=>{gk.dv={t:0,s:Math.sign(sh.g.position.z-gk.g.position.z)||1}})}
+  else if(q.r=='fuera'){seg({x:d*39,y:r()<.5?5:1,z:(r()<.5?-1:1)*(6+r()*3)},.8,.5,()=>{S.pausa=.7})}
+  else{const it=O.pj[3+Math.floor(r()*3)];seg(it,.7,1,()=>{S.hold=it})}
+}
+function gol(e){const S=SIM;S.sc[e]++;S.hold=null;S.pausa=3;S.centro=true;
+  S.eq[e].pj.forEach((j,i)=>{if(i)j.cel=2.6});S.eq[1-e].pj.forEach(j=>j.cel=0);
+  aviso('¡GOOOL!<br><small>'+esc(S.eq[e].t.Nombre)+'</small>',2400)}
+function final(){const S=SIM,[a,b]=S.sc;let w=a>b?0:b>a?1:-1,n='';
+  if(w<0&&S.p.Ganado_Por=='Penales'&&S.p.Penales){w=S.p.Penales==S.p.Equipo_Local?0:1;n='<br><small>Gana en penales: '+esc(S.eq[w].t.Nombre)+'</small>'}
+  S.fin=true;S.hold=null;S.m=60;
+  S.eq.forEach(E=>E.pj.forEach(j=>{if(E.e==w)j.cel=1e9;else if(w>=0)j.lose=true}));
+  aviso('FINAL '+a+' - '+b+(w>=0&&!n?'<br><small>Gana '+esc(S.eq[w].t.Nombre)+'</small>':n||'<br><small>Empate</small>'))}
+function simStep(dt){
+  const S=SIM;dt*=simSp;
+  if(!S.fin){
+    if(S.seg){const g=S.seg;g.t+=dt;const k=Math.min(1,g.t/g.dur);
+      if(g.to){const e=g.to.g?g.to.g.position:g.to,y1=g.to.g?.5:g.to.y;
+        balon.position.set(g.f.x+(e.x-g.f.x)*k,g.f.y+(y1-g.f.y)*k+Math.sin(k*Math.PI)*g.arc,g.f.z+(e.z-g.f.z)*k);balon.rotation.x+=dt*9}
+      else if(S.hold){const h=S.hold.g.position;balon.position.set(h.x,1.3,h.z)}
+      if(k>=1){S.seg=null;g.fin&&g.fin()}}
+    else if(S.q.length){S.seg=S.q.shift();S.seg.t=0;S.seg.f=balon.position.clone();S.seg.ini&&S.seg.ini()}
+    else if(S.pausa>0)S.pausa-=dt;else nuevaJugada();
+  }
+  S.m+=((S.fin?60:S.idx/S.pl.length*60)-S.m)*Math.min(1,dt*1.2);
+  const all=S.eq[0].pj.concat(S.eq[1].pj),bp=balon.position;
+  all.forEach(j=>{const g=j.g,p=g.position;
+    if(j.dv){j.dv.t+=dt;const t=j.dv.t,a=Math.min(1,t/.3)*(t>1.3?Math.max(0,1-(t-1.3)/.4):1);
+      g.rotation.z=j.dv.s*j.dir*1.25*a;if(t<.4)p.z=Math.max(-5.5,Math.min(5.5,p.z+j.dv.s*dt*7));if(t>1.7){j.dv=null;g.rotation.z=0}return}
+    if(j.cel>0){j.cel-=dt;j.fase+=dt*8;const s=Math.sin(j.fase);j.bI.rotation.z=2.6+s*.3;j.bD.rotation.z=-2.6-s*.3;g.position.y=Math.abs(Math.sin(j.fase*.75))*.5;return}
+    g.position.y=0;j.bI.rotation.z=0;j.bD.rotation.z=0;
+    let tx,tz;
+    if(!j.i){tx=j.bx;tz=Math.max(-3.5,Math.min(3.5,bp.z*.35))}
+    else{tx=j.bx+j.dir*(S.atk==j.e&&!S.fin?9:-3);tx+=(bp.x-tx)*.22;tz=j.bz+(bp.z-j.bz)*.3}
+    if(S.fin)[tx,tz]=[p.x,p.z];
+    const dx=tx-p.x,dz=tz-p.z,dist=Math.hypot(dx,dz),v=dist>.4?Math.min(dist*2.5,j.i?8.5:3):0;
+    if(v>0){p.x+=dx/dist*v*dt;p.z+=dz/dist*v*dt}
+    all.forEach(o=>{if(o!==j){const a=p.x-o.g.position.x,b=p.z-o.g.position.z,l=Math.hypot(a,b);if(l<2&&l>.01){p.x+=a/l*(2-l)*dt*4;p.z+=b/l*(2-l)*dt*4}}});
+    p.x=Math.max(-36,Math.min(36,p.x));p.z=Math.max(-23,Math.min(23,p.z));
+    const ang=j.i?(v>.5?Math.atan2(dx,dz):Math.atan2(bp.x-p.x,bp.z-p.z)):j.dir*Math.PI/2;let da=ang-g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));g.rotation.y+=da*Math.min(1,dt*8);
+    j.fase+=dt*(2+v*1.1);const sw=Math.sin(j.fase*1.6)*(v>.5?.75:.08);
+    j.pI.rotation.x=sw;j.pD.rotation.x=-sw;j.bI.rotation.x=-sw*.8;j.bD.rotation.x=sw*.8;
+    j.cab.position.y=2.4+Math.abs(Math.cos(j.fase))*.08;j.cab.rotation.x=j.lose?.45:0});
+  $('mS').textContent=S.sc[0]+' - '+S.sc[1];$('mT').textContent=S.fin?'FINAL':"Min "+Math.round(S.m)+"'";
+}
+$('sV').onclick=salirPartido;
+$('sR').onclick=()=>{if(!SIM||!SIM.run)return;const id=SIM.p.ID_Partido;salirPartido();jugarPartido(id)};
+$('sX').onclick=()=>{simSp=simSp==1?2:simSp==2?4:1;$('sX').textContent='×'+simSp};
 
 /* ---------- animación ---------- */
 const reloj=new THREE.Clock(),reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 function animar(){
   requestAnimationFrame(animar);const dt=Math.min(reloj.getDelta(),.05),t=reloj.elapsedTime;
+  if(SIM&&SIM.run)simStep(dt);
   anim.forEach(j=>{j.fase+=dt*2.4;const s=Math.sin(j.fase);
     if(j.sentado){j.cab.position.y=2.4+Math.sin(t*1.2+j.fase)*.04;return}
     j.pI.rotation.x=s*.18;j.pD.rotation.x=-s*.18;j.cab.position.y=2.4+Math.abs(Math.cos(j.fase))*.06;
