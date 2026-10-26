@@ -68,16 +68,19 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function csv(t){const r=[];let f='',row=[],q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';if(row.length>1||row[0])r.push(row);row=[]}else f+=c}if(f||row.length){row.push(f);r.push(row)}const h=r.shift().map(x=>x.trim());return r.map(a=>Object.fromEntries(h.map((k,i)=>[k,(a[i]||'').trim()])))}
 let T={},PA={},S={},TOP=[],KEE=[];
+const tf=d=>{const p=(d||'').split('/');return p.length==3?new Date(+p[2],+p[1]-1,+p[0]).getTime():0};
 
 /* ---------- estadísticas y selección de los 5 mejores ---------- */
 function calcular(ju,pr,ev,pa){
   pa.forEach(p=>PA[p.ID_Partido]=p);
-  ju.forEach(j=>{const t=T[j.Equipo];if(!t||(t.Status||'').toLowerCase()!='activo')return;S[j.ID_Jugador]={j,t,g:0,am:0,ro:0,pj:new Set(),gp:{},hat:0,conc:0,cm:new Set(),cs:0,tir:0,ok:0,porte:/portero/i.test(j.Posicion||'')}});
-  pr.forEach(x=>{const s=S[x.Jugador];if(!s)return;s.pj.add(x.Partido);
-    const p=PA[x.Partido];if(s.porte&&p&&p.Estado=='Jugado'&&p.Goles_Local!==''&&!s.cm.has(x.Partido)&&(p.Equipo_Local==s.j.Equipo||p.Equipo_Visita==s.j.Equipo)){
-      const c=+(p.Equipo_Local==s.j.Equipo?p.Goles_Visita:p.Goles_Local)||0;s.cm.add(x.Partido);s.conc+=c;if(!c)s.cs++}});
+  ju.forEach(j=>{const t=T[j.Equipo];if(!t||(t.Status||'').toLowerCase()!='activo')return;S[j.ID_Jugador]={j,t,g:0,am:0,ro:0,pj:new Set(),gp:{},hat:0,conc:0,cm:new Set(),det:[],cs:0,tir:0,ok:0,porte:/portero/i.test(j.Posicion||'')}});
+  /* Los IDs de partido de Participaciones/Eventos no son confiables; se ubica el partido por EQUIPO + FECHA */
+  const JM={};pa.forEach(p=>{if(p.Estado=='Jugado'&&p.Goles_Local!==''&&p.Goles_Visita!=='')[p.Equipo_Local,p.Equipo_Visita].forEach(e=>JM[e+'|'+p.Fecha]=p)});
+  pr.forEach(x=>{const s=S[x.Jugador],p=s&&JM[x.Equipo+'|'+x.Fecha];if(!p)return;s.pj.add(p.ID_Partido);
+    if(s.porte&&!s.cm.has(p.ID_Partido)){const loc=p.Equipo_Local==x.Equipo,c=+(loc?p.Goles_Visita:p.Goles_Local)||0;
+      s.cm.add(p.ID_Partido);s.conc+=c;if(!c)s.cs++;s.det.push({p,c,rv:loc?p.Equipo_Visita:p.Equipo_Local})}});
   ev.forEach(e=>{const s=S[e.Jugador];if(!s)return;const k=(e.Tipo_Evento||'').toLowerCase();
-    if(k=='gol'){s.g++;s.gp[e.Partido]=(s.gp[e.Partido]||0)+1;s.pj.add(e.Partido)}else if(k=='amarilla')s.am++;else if(k=='roja')s.ro++});
+    if(k=='gol'){s.g++;s.gp[e.Partido]=(s.gp[e.Partido]||0)+1}else if(k=='amarilla')s.am++;else if(k=='roja')s.ro++});
   const all=Object.values(S);all.forEach(s=>{s.n=s.pj.size;Object.values(s.gp).forEach(n=>{if(n>=3)s.hat++})});
   TOP=all.filter(s=>s.g>0&&!s.porte).sort((a,b)=>b.g-a.g||a.n-b.n).slice(0,5);
   const kp=all.filter(s=>s.porte),con=kp.filter(s=>s.cm.size).sort((a,b)=>a.conc/a.cm.size-b.conc/b.cm.size||b.cm.size-a.cm.size);
@@ -122,25 +125,24 @@ const SPOT=new THREE.Vector3(0,.5,-1);bola.position.copy(SPOT);
 const loader=new THREE.TextureLoader();loader.setCrossOrigin('anonymous');
 const cacheT={},tex=u=>cacheT[u]||(cacheT[u]=new Promise(ok=>{if(!u)return ok(null);loader.load(u,t=>{t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>ok(null))}));
 function prom(t,def){try{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(t.image,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,n=0;for(let i=0;i<d.length;i+=4)if(d[i+3]>200){r+=d[i];g+=d[i+1];b+=d[i+2];n++}return n>8?new THREE.Color(r/n/255,g/n/255,b/n/255):def}catch(e){return def}}
-function texto(t,tam,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,h/2);x.fillStyle='#fff';x.fillText(t,w/2,h/2);
+function texto(t,tam,w,h,col){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,h/2);x.fillStyle=col||'#fff';x.fillText(t,w/2,h/2);
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
 const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a],KC=[0xe8a317,0x2fb8e0,0x7ac143,0xd9534f,0x9b59b6];
 const corto=s=>s.j.Apodo||s.j.Nombre.split(' ').slice(0,2).join(' ');
 async function figura(s,i,gk){
-  const def=new THREE.Color().setHSL((i*.137)%1,.55,.42),pla=await tex(s.t.Color_Playera),col=gk?new THREE.Color(KC[i%5]):(pla?prom(pla,def):def);
+  const def=new THREE.Color().setHSL((i*.137)%1,.55,.42),pla=await tex(s.t.Color_Playera),col=pla?prom(pla,def):def;
   const g=new THREE.Group(),cu=new THREE.Group();g.add(cu);const mat=(c,r=.7)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),piel=mat(pieles[(s.j.ID_Jugador.length+i)%4]);
   const ext=(r,h,m,x,y)=>{const p=new THREE.Group();p.position.set(x,y,0);const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,h,10),m);b.position.y=-h/2;b.castShadow=true;p.add(b);cu.add(p);return p};
-  const f={g,cu,s,gk,fase:Math.random()*9,mode:'idle',pI:ext(.2,1,mat(0xf3f5ee),-.28,1.05),pD:ext(.2,1,mat(0xf3f5ee),.28,1.05),bI:ext(.15,.9,piel,-.68,1.95),bD:ext(.15,.9,piel,.68,1.95)};
+  const f={g,cu,s,gk,fase:Math.random()*9,mode:'idle',ry:0,pI:ext(.2,1,mat(0xf3f5ee),-.28,1.05),pD:ext(.2,1,mat(0xf3f5ee),.28,1.05),bI:ext(.15,.9,piel,-.68,1.95),bD:ext(.15,.9,piel,.68,1.95)};
   const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(col));to.position.y=1.5;to.castShadow=true;cu.add(to);
   const sh=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(col.clone().multiplyScalar(.55)));sh.position.y=.95;cu.add(sh);
-  if(pla&&!gk)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;cu.add(p)});
+  if(pla)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;cu.add(p)});
   if(gk)[-.68,.68].forEach(x=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),mat(0xf3f5ee));m.position.set(x,1.05,0);(x<0?f.bI:f.bD).add(m);m.position.set(0,-.95,0)});
-  f.cab=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),piel);f.cab.position.y=2.4;f.cab.castShadow=true;cu.add(f.cab);
-  const pe=new THREE.Mesh(new THREE.SphereGeometry(.44,18,10,0,7,0,1.2),mat(0x1a1410));pe.position.y=2.42;cu.add(pe);
-  const ft=(await tex(s.j.Foto))||(await tex(s.t.URL));f.foto=new THREE.Group();
-  const aro=new THREE.Mesh(new THREE.CircleGeometry(1.32,40),new THREE.MeshBasicMaterial({color:gk?0x2fb8e0:0xddc530}));aro.position.z=-.02;f.foto.add(aro);
-  f.foto.add(new THREE.Mesh(new THREE.CircleGeometry(1.18,40),new THREE.MeshBasicMaterial(ft?{map:ft}:{color:0x10281a})));g.add(f.foto);
-  const nm=texto(corto(s).slice(0,16),50,512,96);nm.scale.set(4.4,.83,1);nm.position.y=6.1;g.add(nm);
+  const ft=await tex(s.j.Foto);
+  f.cab=new THREE.Mesh(new THREE.SphereGeometry(.58,20,16),piel);f.cab.position.y=2.55;f.cab.castShadow=true;cu.add(f.cab);
+  if(ft){const c=new THREE.Mesh(new THREE.CircleGeometry(.46,32),new THREE.MeshBasicMaterial({map:ft}));c.position.set(0,0,.38);f.cab.add(c)}
+  else f.cab.add(new THREE.Mesh(new THREE.SphereGeometry(.6,18,10,0,7,0,1.2),mat(0x1a1410)));
+  const nm=texto(corto(s).slice(0,16),50,512,96,gk?'#7fe3ff':'#ffe27a');nm.scale.set(4.4,.83,1);nm.position.y=4.1;g.add(nm);
   const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,6,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=3;hit.userData.f=f;g.add(hit);f.hit=hit;
   return f;
 }
@@ -150,7 +152,7 @@ let figs=[],tir=[],por=[],hits=[],sel=null,paused=false,spd=1,rnd=Math.random;
 const R={st:'esp',t:0,n:0,gol:0,atj:0,last:null},V=(x,y,z)=>new THREE.Vector3(x,y,z);
 const espT=i=>V((i-2)*3.3,0,10),espK=i=>V([-7,-10,-13,7,10][i],0,-12);
 const ease=u=>u*u*(3-2*u),mez=(a,b,u)=>a.clone().lerp(b,u);
-function ir(f,a,b,u){f.g.position.copy(mez(a,b,u));f.mode=u<1?'walk':'idle';const d=b.clone().sub(a);if(d.lengthSq()>.01)f.cu.rotation.y=Math.atan2(d.x,d.z)}
+function ir(f,a,b,u){f.g.position.copy(mez(a,b,u));f.mode=u<1?'walk':'idle';const d=b.clone().sub(a);if(d.lengthSq()>.01)f.ry=Math.atan2(d.x,d.z)}
 function ronda(){
   let k=0;do{k=Math.floor(rnd()*tir.length)}while(tir.length>1&&k===R.last);R.last=k;
   const sh=tir[k],kp=por[Math.floor(rnd()*por.length)];R.sh=sh;R.kp=kp;R.n++;
@@ -168,7 +170,7 @@ function paso(dt){
   if(paused)return;R.t+=dt*spd;const f=R.sh,k=R.kp,t=R.t;
   if(R.st=='esp'){if(t>.6)ronda();return}
   if(R.st=='ir'){const u=ease(Math.min(1,t/1.5));ir(f,R.a1,V(0,0,4.5),u);ir(k,R.a2,V(0,0,-14.3),u);
-    if(t>1.5){f.cu.rotation.y=Math.PI;k.cu.rotation.y=0;f.mode=k.mode='idle';if(t>1.9){R.st='car';R.t=0;aviso(esc(corto(f.s))+' vs '+esc(corto(k.s)),1500)}}return}
+    if(t>1.5){f.ry=Math.PI;k.ry=0;f.mode=k.mode='idle';if(t>1.9){R.st='car';R.t=0;aviso(esc(corto(f.s))+' vs '+esc(corto(k.s)),1500)}}return}
   if(R.st=='car'){const u=Math.min(1,t/.7);f.g.position.set(0,0,4.5-4.3*u);f.mode='walk';f.fase+=dt*8;if(t>=.7){R.st='tiro';R.t=0;f.mode='kick'}return}
   if(R.st=='tiro'){const u=Math.min(1,t/.6),a=Math.min(1,Math.max(0,(t-.08)/.4));
     k.g.position.x=R.dive*3*a;k.cu.rotation.z=-R.dive*1.3*a;k.g.position.y=a*.4;
@@ -180,10 +182,10 @@ function paso(dt){
     if(t>2.4){R.st='vuelta';R.t=0;f.mode=k.mode='idle';f.s.cel=k.s.cel=0;R.b1=f.g.position.clone();R.b2=k.g.position.clone()}return}
   if(R.st=='vuelta'){const u=ease(Math.min(1,t/1.5));ir(f,R.b1,espT(tir.indexOf(f)),u);ir(k,R.b2,espK(por.indexOf(k)),u);
     k.cu.rotation.z=k.cu.rotation.z*(1-u);k.g.position.y*=1-u;bola.position.lerp(SPOT,u);
-    if(t>1.5){bola.position.copy(SPOT);f.cu.rotation.y=Math.PI;k.cu.rotation.y=0;k.cu.rotation.z=0;f.cab.rotation.x=k.cab.rotation.x=0;R.st='esp';R.t=0}}
+    if(t>1.5){bola.position.copy(SPOT);f.ry=0;k.ry=0;k.cu.rotation.z=0;f.cab.rotation.x=k.cab.rotation.x=0;R.st='esp';R.t=0}}
 }
 function resultado(){
-  const f=R.sh,k=R.kp;f.s.tir++;k.s.tir++;
+  const f=R.sh,k=R.kp;f.ry=0;f.s.tir++;k.s.tir++;
   if(R.res=='gol'){R.gol++;f.s.ok++;f.mode='cel';k.cab.rotation.x=.45;aviso('¡GOOOL!<br><small>'+esc(corto(f.s))+'</small>',2200)}
   else if(R.res=='atajada'){R.atj++;k.s.ok++;k.mode='cel';f.cab.rotation.x=.45;aviso('¡ATAJÓ!<br><small>'+esc(corto(k.s))+'</small>',2200)}
   else{k.mode='cel';f.cab.rotation.x=.45;aviso(R.res=='poste'?'¡AL POSTE!':'¡AFUERA!',2200)}
@@ -204,7 +206,8 @@ function elegir(s){
     :[['Goles',s.g],['Partidos',s.n],['Promedio',s.n?(s.g/s.n).toFixed(2):'—'],['Hat-tricks',s.hat],['Amarillas',s.am],['Rojas',s.ro]];
   c.innerHTML=`<button id="x" aria-label="Cerrar">×</button><div class="cab"><img src="${esc(j.Foto||s.t.URL)}" alt=""><div><h2>${esc(j.Nombre)}</h2><div class="ds">${j.Apodo?'“'+esc(j.Apodo)+'” · ':''}${j.Numero?'#'+esc(j.Numero)+' · ':''}${esc(j.Posicion||'Jugador')}</div><div class="ds" style="color:#cfe3b9">${esc(s.t.Nombre)}</div></div></div>
   <div class="grid">${g.map(([a,b])=>`<div><b>${b}</b><span>${a}</span></div>`).join('')}</div>
-  <div class="grid" style="grid-template-columns:repeat(2,1fr)"><div><b>${s.ok}/${s.tir}</b><span>${k?'Penales atajados':'Penales anotados'} (tanda)</span></div><div><b>${s.tir?Math.round(s.ok/s.tir*100)+'%':'—'}</b><span>Efectividad</span></div></div>`;
+  <div class="grid" style="grid-template-columns:repeat(2,1fr)"><div><b>${s.ok}/${s.tir}</b><span>${k?'Penales atajados':'Penales anotados'} (tanda)</span></div><div><b>${s.tir?Math.round(s.ok/s.tir*100)+'%':'—'}</b><span>Efectividad</span></div></div>`
+  +(k?`<div class="tit k" style="margin-top:4px">Goles recibidos por partido</div>`+(s.det.slice().sort((a,b)=>tf(b.p.Fecha)-tf(a.p.Fecha)).map(d=>`<div class="fila" style="cursor:default"><div class="m">vs ${esc(T[d.rv]?T[d.rv].Nombre:'?')}<small>${esc(d.p.Fecha)} · J${esc(d.p.Jornada)} · ${esc(d.p.Goles_Local)}-${esc(d.p.Goles_Visita)}</small></div><em>${d.c}</em></div>`).join('')||'<div class="fila" style="cursor:default">Sin partidos capturados</div>')+`<div style="font-size:11px;color:#9db38c;margin:6px 2px">Solo cuenta partidos con marcador capturado en la hoja.</div>`:'');
   $('x').onclick=()=>elegir(null);
 }
 
@@ -236,7 +239,8 @@ function animar(){
     else if(f.mode=='cel'){f.bI.rotation.z=2.6+s*.35;f.bD.rotation.z=-2.6-s*.35;f.pI.rotation.x=f.pD.rotation.x=0;f.g.position.y=Math.abs(Math.sin(f.fase*1.2))*.6}
     else if(f.mode=='kick'){f.pD.rotation.x=-1.1*Math.min(1,R.t/.15);f.pI.rotation.x=.2;f.bI.rotation.z=.15;f.bD.rotation.z=-.15}
     else{f.pI.rotation.x=s*.05;f.pD.rotation.x=-s*.05;f.bI.rotation.x=f.bD.rotation.x=0;f.bI.rotation.z=.15;f.bD.rotation.z=-.15;if(f!==R.kp||R.st=='esp')f.g.position.y=f.g.position.y*.8}
-    f.cab.position.y=2.4+Math.sin(f.fase)*.04;f.foto.quaternion.copy(camera.quaternion);f.foto.position.y=4.4+Math.sin(t*2+f.fase)*.06});
+    f.cab.position.y=2.55+Math.sin(f.fase)*.04;
+    let d=f.ry-f.cu.rotation.y;d=Math.atan2(Math.sin(d),Math.cos(d));f.cu.rotation.y+=d*Math.min(1,dt*7)});
   if(sel){const f=figs.find(x=>x.s===sel);if(f){aroSel.visible=true;aroSel.position.x=f.g.position.x;aroSel.position.z=f.g.position.z;aroSel.scale.setScalar(1+Math.sin(t*4)*.08)}}else aroSel.visible=false;
   const k=Math.min(1,dt*4);cam.th+=(meta.th-cam.th)*k;cam.ph+=(meta.ph-cam.ph)*k;cam.d+=(meta.d-cam.d)*k;cam.o.lerp(objetivo,k);
   camera.position.set(cam.o.x+cam.d*Math.sin(cam.ph)*Math.sin(cam.th),cam.o.y+cam.d*Math.cos(cam.ph),cam.o.z+cam.d*Math.sin(cam.ph)*Math.cos(cam.th));
@@ -250,7 +254,7 @@ function animar(){
     const [eq,pa,ju,pr,ev]=await Promise.all([g('eq'),g('pa'),g('ju'),g('pr'),g('ev')]);
     eq.forEach(e=>T[e.ID_Equipo]=e);calcular(ju,pr,ev,pa);
     if(!TOP.length||!KEE.length)throw new Error('faltan goleadores o porteros en la hoja');
-    for(let i=0;i<TOP.length;i++){const f=await figura(TOP[i],i,false);f.g.position.copy(espT(i));f.cu.rotation.y=Math.PI;scene.add(f.g);figs.push(f);tir.push(f);hits.push(f.hit)}
+    for(let i=0;i<TOP.length;i++){const f=await figura(TOP[i],i,false);f.g.position.copy(espT(i));scene.add(f.g);figs.push(f);tir.push(f);hits.push(f.hit)}
     for(let i=0;i<KEE.length;i++){const f=await figura(KEE[i],i,true);f.g.position.copy(espK(i));scene.add(f.g);figs.push(f);por.push(f);hits.push(f.hit)}
     encuadre();cam.d=meta.d;panel();R.on=true;$('msg').remove();animar();
   }catch(e){$('msg').textContent='No se pudo cargar la hoja: '+e.message}
