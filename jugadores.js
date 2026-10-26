@@ -1,1 +1,557 @@
+const URL_JUGADORES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1940220650&single=true&output=csv";
+const URL_EVENTOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=645868286&single=true&output=csv";
+const URL_PARTICIPACIONES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv";
+const URL_PARTIDOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1362473459&single=true&output=csv";
 
+const SHEET_ID_EQUIPOS = "1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE";
+const GID_EQUIPOS = "1894947293";
+const URL_EQUIPOS_NL7 = `https://docs.google.com/spreadsheets/d/${SHEET_ID_EQUIPOS}/export?format=csv&gid=${GID_EQUIPOS}`;
+
+let equiposID = {};
+let logosEquipos = {};
+
+async function cargarEquiposNL7() {
+  const res = await fetch(URL_EQUIPOS_NL7);
+  const txt = await res.text();
+  const filas = txt.replace(/\r/g,'').trim().split("\n");
+  const encabezado = filas[0].split(",").map(h => h.trim().toLowerCase());
+  const colStatus = encabezado.indexOf("status");
+  const idTmp = {}, logoTmp = {};
+  for (let i = 1; i < filas.length; i++) {
+    const c = filas[i].split(",");
+    const id = c[0]?.trim();
+    const nombre = c[1]?.trim();
+    if (!id || !nombre) continue;
+    const status = colStatus >= 0 ? (c[colStatus]?.trim().toLowerCase() || '') : '';
+    if (status === 'baja') continue;
+    idTmp[id] = nombre;
+    logoTmp[id] = (c[4]?.trim() || c[3]?.trim() || '');
+  }
+  equiposID = idTmp;
+  logosEquipos = logoTmp;
+}
+
+function playerCardHTML(j, goles, asistencias, amarillas, rojas) {
+  const equipoNombre = equiposID[Number(j.equipo)] || '';
+  const logoEquipo = logosEquipos[Number(j.equipo)] || '';
+  return `
+  <div class="pcard">
+    <div class="pcard-header">
+      <span class="pcard-equipo-nombre">${equipoNombre}</span>
+      <img src="${logoEquipo}" class="pcard-logo-equipo">
+    </div>
+    <div class="pcard-body">
+      <div class="pcard-stats-left">
+        <div class="pcard-stat"><span class="pcard-lbl">GOLES</span><span class="pcard-val">${goles}</span></div>
+        <div class="pcard-stat"><span class="pcard-lbl">ASIST</span><span class="pcard-val">${asistencias}</span></div>
+        <div class="pcard-stat"><span class="pcard-lbl">🟡 AM</span><span class="pcard-val">${amarillas}</span></div>
+        <div class="pcard-stat"><span class="pcard-lbl">🔴 RJ</span><span class="pcard-val">${rojas}</span></div>
+      </div>
+      <div class="pcard-foto-wrap">
+        <img src="${j.foto}" class="pcard-foto-grande" onerror="this.onerror=null;this.src='${j.logo}';this.classList.add('pcard-foto-fallback')">
+      </div>
+    </div>
+    <div class="pcard-footer">
+      <div class="pcard-nombre">${j.nombre}</div>
+      ${j.posicion ? `<span class="pcard-posicion">${j.posicion}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+function porteroCardHTML(j) {
+  const equipoNombre = equiposID[Number(j.equipo)] || '';
+  const logoEquipo = logosEquipos[Number(j.equipo)] || '';
+  return `
+  <div class="pcard">
+    <div class="pcard-header">
+      <span class="pcard-equipo-nombre">${equipoNombre}</span>
+      <img src="${logoEquipo}" class="pcard-logo-equipo">
+    </div>
+    <div class="pcard-body">
+      <div class="pcard-stats-left">
+        <div class="pcard-stat"><span class="pcard-lbl">🥅 GOL REC</span><span class="pcard-val">${j.golesRecibidos}</span></div>
+        <div class="pcard-stat"><span class="pcard-lbl">🧤 PJ</span><span class="pcard-val">${j.partidosJugados}</span></div>
+        <div class="pcard-stat"><span class="pcard-lbl">📊 PROM</span><span class="pcard-val">${j.promedio.toFixed(1)}</span></div>
+      </div>
+      <div class="pcard-foto-wrap">
+        <img src="${j.foto}" class="pcard-foto-grande" onerror="this.onerror=null;this.src='${j.logo}';this.classList.add('pcard-foto-fallback')">
+      </div>
+    </div>
+    <div class="pcard-footer">
+      <div class="pcard-nombre">${j.nombre}</div>
+      ${j.posicion ? `<span class="pcard-posicion">${j.posicion}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+function jugadorCardHTML(j, goles, porcentaje, suspendido) {
+  return `
+  <div class="pcard">
+    <div class="pcard-body">
+      <div class="pcard-stats-left">
+        <div class="pcard-stat"><span class="pcard-lbl">⚽ GOLES</span><span class="pcard-val">${goles}</span></div>
+        <div class="pcard-stat"><span class="pcard-lbl">🎯 ASIST</span><span class="pcard-val">${porcentaje}%</span></div>
+        <div class="pcard-stat"><span class="pcard-lbl">⛔ SUSP</span><span class="pcard-val">${suspendido}</span></div>
+      </div>
+      <div class="pcard-foto-wrap">
+        <img src="${j.foto}" class="pcard-foto-grande" onerror="this.onerror=null;this.src='${j.logo}';this.classList.add('pcard-foto-fallback')">
+      </div>
+    </div>
+    <div class="pcard-footer">
+      <div class="pcard-nombre">${j.nombre}</div>
+      ${j.posicion ? `<span class="pcard-posicion">${j.posicion}</span>` : ''}
+    </div>
+  </div>`;
+}
+
+(function() {
+  if (document.getElementById("jugadores-card-style")) return;
+  const style = document.createElement("style");
+  style.id = "jugadores-card-style";
+  style.textContent = `
+    /* ===== PLAYER CARD (base, sin cambios) ===== */
+    .pcards-section { margin-bottom: 24px; }
+    .pcards-title {
+      font-size: 18px; font-weight: 900; color: #ffd700;
+      letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 16px; text-align: center;
+      text-shadow: 0 0 10px #ffd700;
+    }
+    .pcard {
+      background: linear-gradient(160deg, #0a0f1e 0%, #050810 100%);
+      border: 1px solid rgba(255,215,0,0.35);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(255,215,0,0.15);
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      box-sizing: border-box;
+    }
+    .pcard-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px 6px;
+      border-bottom: 1px solid rgba(255,215,0,0.1);
+    }
+    .pcard-equipo-nombre {
+      font-size: 10px; font-weight: 700; color: rgba(255,215,0,0.7);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .pcard-logo-equipo { width: 36px; height: 36px; object-fit: contain; }
+    .pcard-body {
+      display: flex; gap: 10px; padding: 12px 14px;
+      align-items: stretch; flex: 1; min-height: 0;
+    }
+    .pcard-stats-left {
+      display: flex; flex-direction: column; gap: 6px;
+      width: 75px; flex-shrink: 0; justify-content: center;
+    }
+    .pcard-stat {
+      background: rgba(255,255,255,0.06);
+      border-radius: 8px; padding: 5px 7px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    .pcard-lbl { font-size: 8px; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; }
+    .pcard-val { font-size: 20px; font-weight: 900; color: #fff; line-height: 1.1; }
+    .pcard-foto-wrap {
+      flex: 1; min-width: 0; aspect-ratio: 3 / 4;
+      border-radius: 12px; overflow: hidden;
+      border: 2px solid rgba(255,215,0,0.55);
+      box-shadow: 0 0 14px rgba(255,215,0,0.35);
+      background: #111;
+    }
+    .pcard-foto-grande { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pcard-foto-grande.pcard-foto-fallback {
+      object-fit: contain; padding: 22%; box-sizing: border-box;
+      background: radial-gradient(circle, rgba(255,215,0,0.10), rgba(255,215,0,0) 70%);
+    }
+    .pcard-footer {
+      background: rgba(0,0,0,0.5);
+      border-top: 1px solid rgba(255,215,0,0.15);
+      padding: 10px 14px; text-align: center;
+    }
+    .pcard-nombre {
+      font-size: 13px; font-weight: 900; color: #fff;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .pcard-posicion {
+      display: inline-block; background: #ffd700; color: black;
+      padding: 2px 10px; border-radius: 10px;
+      font-size: 10px; font-weight: 700; margin-top: 5px;
+    }
+
+    /* ===== CARRUSEL 3D ===== */
+    .pj-carrusel-wrap {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto 10px;
+      height: 380px;
+    }
+    .pj-slide {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 230px;
+      transition: all 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
+      transform: translate(-50%,-50%) scale(0.4);
+      opacity: 0;
+      pointer-events: none;
+      cursor: pointer;
+      filter: grayscale(1) brightness(0.55);
+    }
+    .pj-slide.pj-c {
+      transform: translate(-50%,-50%) scale(1);
+      opacity: 1; z-index: 5; pointer-events: all;
+      filter: grayscale(0) brightness(1);
+    }
+    .pj-slide.pj-l1 {
+      transform: translate(calc(-50% - 195px),-50%) scale(0.75) rotateY(18deg);
+      opacity: 0.85; z-index: 4; pointer-events: all;
+    }
+    .pj-slide.pj-r1 {
+      transform: translate(calc(-50% + 195px),-50%) scale(0.75) rotateY(-18deg);
+      opacity: 0.85; z-index: 4; pointer-events: all;
+    }
+    .pj-slide.pj-l2 {
+      transform: translate(calc(-50% - 330px),-50%) scale(0.55) rotateY(28deg);
+      opacity: 0.4; z-index: 3; pointer-events: all;
+    }
+    .pj-slide.pj-r2 {
+      transform: translate(calc(-50% + 330px),-50%) scale(0.55) rotateY(-28deg);
+      opacity: 0.4; z-index: 3; pointer-events: all;
+    }
+    .pj-flecha {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,215,0,0.4);
+      border-radius: 50%; width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 17px; color: #ffd700; z-index: 10;
+      transition: all 0.3s; touch-action: manipulation; user-select: none;
+    }
+    .pj-flecha:hover { background: rgba(255,215,0,0.2); }
+    .pj-fl { left: 0; } .pj-fr { right: 0; }
+
+    /* ===== VER FOTO EN PANTALLA COMPLETA (doble clic / doble toque) ===== */
+    .foto-lightbox-overlay {
+      position: fixed; inset: 0; z-index: 99999;
+      background: rgba(0,0,0,0.94);
+      display: none; align-items: center; justify-content: center;
+      padding: 24px; box-sizing: border-box;
+    }
+    .foto-lightbox-overlay.activo { display: flex; }
+    .foto-lightbox-img {
+      max-width: 94vw; max-height: 90vh; object-fit: contain;
+      border-radius: 14px; border: 2px solid rgba(255,215,0,0.45);
+      box-shadow: 0 0 40px rgba(255,215,0,0.25);
+    }
+    .foto-lightbox-cerrar {
+      position: absolute; top: 18px; right: 22px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(0,0,0,0.6); border: 1px solid rgba(255,215,0,0.5);
+      color: #ffd700; font-size: 22px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; touch-action: manipulation;
+    }
+    .pj-dots {
+      display: flex; justify-content: center; gap: 7px; margin-top: 6px;
+    }
+    .pj-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s;
+    }
+    .pj-dot.pj-on { background: #ffd700; transform: scale(1.3); }
+
+    @media(max-width: 600px) {
+      .pj-carrusel-wrap { height: 340px; }
+      .pj-slide { width: 190px; }
+      .pj-slide.pj-l1 { transform: translate(calc(-50% - 140px),-50%) scale(0.72) rotateY(18deg); }
+      .pj-slide.pj-r1 { transform: translate(calc(-50% + 140px),-50%) scale(0.72) rotateY(-18deg); }
+      .pj-slide.pj-l2 { transform: translate(calc(-50% - 215px),-50%) scale(0.5) rotateY(28deg); }
+      .pj-slide.pj-r2 { transform: translate(calc(-50% + 215px),-50%) scale(0.5) rotateY(-28deg); }
+
+      .pcard-body { padding: 10px 8px; gap: 6px; }
+      .pcard-stats-left { width: 56px; gap: 4px; }
+      .pcard-stat { padding: 4px 3px; }
+      .pcard-lbl { font-size: 6.5px; }
+      .pcard-val { font-size: 15px; }
+      .pcard-nombre { font-size: 11px; }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
+// ===== HELPER: crear carrusel generico =====
+function crearCarrusel(containerId, cardsHTML) {
+  const wrap = document.getElementById(containerId);
+  if (!cardsHTML.length) {
+    wrap.innerHTML = '<p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px;">Sin datos disponibles</p>';
+    return;
+  }
+
+  let activo = 0;
+  const total = cardsHTML.length;
+
+  const slidesHTML = cardsHTML.map((html, i) => `<div class="pj-slide" data-idx="${i}">${html}</div>`).join('');
+  const dotsHTML = cardsHTML.map((_, i) => `<div class="pj-dot${i===0?' pj-on':''}" data-idx="${i}"></div>`).join('');
+
+  wrap.innerHTML = `
+    <div class="pj-carrusel-wrap">
+      ${slidesHTML}
+      ${total > 1 ? `<div class="pj-flecha pj-fl">&#8592;</div><div class="pj-flecha pj-fr">&#8594;</div>` : ''}
+    </div>
+    ${total > 1 ? `<div class="pj-dots">${dotsHTML}</div>` : ''}
+  `;
+
+  const slides = wrap.querySelectorAll('.pj-slide');
+  const dots = wrap.querySelectorAll('.pj-dot');
+
+  function actualizar() {
+    slides.forEach((slide, i) => {
+      slide.className = 'pj-slide';
+      const diff = ((i - activo) % total + total) % total;
+      let cls = '';
+      if (diff === 0) cls = 'pj-c';
+      else if (diff === 1) cls = 'pj-r1';
+      else if (diff === 2) cls = 'pj-r2';
+      else if (diff === total - 1) cls = 'pj-l1';
+      else if (diff === total - 2) cls = 'pj-l2';
+      if (cls) slide.classList.add(cls);
+    });
+    dots.forEach((d, i) => d.classList.toggle('pj-on', i === activo));
+  }
+
+  function mover(dir) {
+    activo = ((activo + dir) % total + total) % total;
+    actualizar();
+  }
+
+  slides.forEach((slide, i) => {
+    slide.addEventListener('click', e => {
+      if (!slide.classList.contains('pj-c')) {
+        activo = i;
+        actualizar();
+      }
+    });
+    slide.addEventListener('dblclick', e => {
+      const img = slide.querySelector('.pcard-foto-grande');
+      if (img) abrirFotoCompleta(img.src);
+    });
+  });
+
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => { activo = i; actualizar(); });
+  });
+
+  const flIzq = wrap.querySelector('.pj-fl');
+  const flDer = wrap.querySelector('.pj-fr');
+  if (flIzq) flIzq.addEventListener('click', () => mover(-1));
+  if (flDer) flDer.addEventListener('click', () => mover(1));
+
+  // Swipe
+  let touchStartX = 0;
+  const carruselWrap = wrap.querySelector('.pj-carrusel-wrap');
+  carruselWrap.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  carruselWrap.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) mover(diff > 0 ? 1 : -1);
+  });
+
+  actualizar();
+}
+
+function abrirFotoCompleta(src) {
+  if (!src) return;
+  let overlay = document.getElementById('foto-lightbox-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'foto-lightbox-overlay';
+    overlay.className = 'foto-lightbox-overlay';
+    overlay.innerHTML = `
+      <div class="foto-lightbox-cerrar">&times;</div>
+      <img class="foto-lightbox-img" id="foto-lightbox-img">
+    `;
+    overlay.addEventListener('click', () => overlay.classList.remove('activo'));
+    document.body.appendChild(overlay);
+  }
+  document.getElementById('foto-lightbox-img').src = src;
+  overlay.classList.add('activo');
+}
+
+async function cargarJugadores() {
+  await cargarEquiposNL7();
+
+  const [resJ, resE, resP, resPart] = await Promise.all([
+    fetch(URL_JUGADORES), fetch(URL_EVENTOS),
+    fetch(URL_PARTICIPACIONES), fetch(URL_PARTIDOS)
+  ]);
+  const [txtJ, txtE, txtP, txtPart] = await Promise.all([
+    resJ.text(), resE.text(), resP.text(), resPart.text()
+  ]);
+
+  const jugadoresFilas = txtJ.replace(/\r/g,'').trim().split("\n");
+  const eventosFilas   = txtE.replace(/\r/g,'').trim().split("\n");
+  const partFilas      = txtP.replace(/\r/g,'').trim().split("\n");
+  const partidosFilas  = txtPart.replace(/\r/g,'').trim().split("\n");
+
+  const jugadores = [];
+  for (let i = 1; i < jugadoresFilas.length; i++) {
+    const c = jugadoresFilas[i].split(",");
+    if (!c[1]?.trim()) continue;
+    jugadores.push({
+      id: c[0]?.trim(), nombre: c[1]?.trim(), equipo: c[2]?.trim(),
+      numero: c[3]?.trim(), posicion: c[4]?.trim() || '',
+      logo: c[5]?.trim(), foto: c[6]?.trim() ? c[6].trim() : c[7]?.trim()
+    });
+  }
+
+  const golesMap = {}, amarillasMap = {}, rojasMap = {};
+  eventosFilas.slice(1).forEach(f => {
+    const e = f.split(",");
+    const id = e[2]?.trim(), tipo = e[3]?.trim();
+    if (!id) return;
+    if (tipo === "Gol")      golesMap[id]     = (golesMap[id]     || 0) + 1;
+    if (tipo === "Amarilla") amarillasMap[id] = (amarillasMap[id] || 0) + 1;
+    if (tipo === "Roja")     rojasMap[id]     = (rojasMap[id]     || 0) + 1;
+  });
+
+  const asistMap = {};
+  partFilas.slice(1).forEach(f => {
+    const p = f.split(",");
+    const id = p[4]?.trim();
+    if (p[5]?.trim() === "TRUE" && id) asistMap[id] = (asistMap[id] || 0) + 1;
+  });
+
+  const golesRecibidosMap = {}, partidosEquipoMap = {}, partidosInfo = {};
+  partidosFilas.slice(1).forEach(f => {
+    const p = f.replace(/\r/g,'').split(",");
+    if (p[6]?.trim() !== "Jugado") return;
+    const idP = p[0]?.trim();
+    const eqL = p[2]?.trim(), eqV = p[3]?.trim();
+    const gL = parseInt(p[4]?.trim()) || 0, gV = parseInt(p[5]?.trim()) || 0;
+    if (idP) partidosInfo[idP] = { eqL, eqV, gL, gV };
+    if (eqL) {
+      golesRecibidosMap[eqL] = (golesRecibidosMap[eqL] || 0) + gV;
+      partidosEquipoMap[eqL] = (partidosEquipoMap[eqL] || 0) + 1;
+    }
+    if (eqV) {
+      golesRecibidosMap[eqV] = (golesRecibidosMap[eqV] || 0) + gL;
+      partidosEquipoMap[eqV] = (partidosEquipoMap[eqV] || 0) + 1;
+    }
+  });
+
+  // Goles recibidos POR PORTERO: sólo en los partidos que ese portero jugó
+  // (usa la columna ID_Partido de Participaciones; si no existe, usa el total del equipo)
+  const hPart = partFilas[0].split(",").map(h => h.trim().toLowerCase());
+  let colPartido = hPart.indexOf("id_partido");
+  if (colPartido < 0) colPartido = hPart.indexOf("partido");
+  const statsPortero = {};
+  if (colPartido >= 0) {
+    const jugPorId = {};
+    jugadores.forEach(j => (jugPorId[j.id] = j));
+    const vistos = new Set();
+    partFilas.slice(1).forEach(f => {
+      const p = f.split(",");
+      const idJ = p[4]?.trim(), idP = p[colPartido]?.trim();
+      if (!idJ || !idP || p[5]?.trim() !== "TRUE") return;
+      const info = partidosInfo[idP], j = jugPorId[idJ];
+      if (!info || !j || vistos.has(idJ + "|" + idP)) return;
+      vistos.add(idJ + "|" + idP);
+      let rec;
+      if (j.equipo === info.eqL) rec = info.gV;
+      else if (j.equipo === info.eqV) rec = info.gL;
+      else return;
+      const s = statsPortero[idJ] || (statsPortero[idJ] = { rec: 0, pj: 0 });
+      s.rec += rec; s.pj += 1;
+    });
+  }
+  const usarPorPartido = Object.keys(statsPortero).length > 0;
+
+  const goleadores = jugadores
+    .filter(j => j.nombre !== "Penal" && j.nombre !== "Default" && j.nombre !== "Autogol")
+    .filter(j => (golesMap[j.id] || 0) > 0)
+    .sort((a, b) => (golesMap[b.id] || 0) - (golesMap[a.id] || 0))
+    .slice(0, 5);
+
+  const porteros = jugadores
+    .filter(j => j.posicion === "Portero" && j.nombre !== "Penal" && j.nombre !== "Default")
+    .map(j => {
+      const s = statsPortero[j.id];
+      const rec = usarPorPartido ? (s ? s.rec : 0) : (golesRecibidosMap[j.equipo] || 0);
+      const pj  = usarPorPartido ? (s ? s.pj  : 0) : (partidosEquipoMap[j.equipo] || 0);
+      return { ...j, golesRecibidos: rec, partidosJugados: pj, promedio: pj ? rec / pj : 0 };
+    })
+    .filter(j => j.partidosJugados > 0)   // sin partidos jugados no entra al ranking
+    .sort((a, b) => a.golesRecibidos - b.golesRecibidos || a.promedio - b.promedio || b.partidosJugados - a.partidosJugados)
+    .slice(0, 5);
+
+  const htmlGolArr = goleadores.map(j => playerCardHTML(j,
+    golesMap[j.id] || 0, asistMap[j.id] || 0,
+    amarillasMap[j.id] || 0, rojasMap[j.id] || 0
+  ));
+
+  const htmlPortArr = porteros.map(j => porteroCardHTML(j));
+
+  const listaJugadores = document.getElementById("lista-jugadores");
+
+  listaJugadores.innerHTML = `
+    <div id="tops-section">
+      <div class="pcards-section">
+        <div class="pcards-title">⚽ Top 5 Goleadores</div>
+        <div id="carrusel-goleadores"></div>
+      </div>
+      <div class="pcards-section">
+        <div class="pcards-title">🧤 Top 5 Porteros</div>
+        <div id="carrusel-porteros"></div>
+      </div>
+    </div>
+    <div id="equipo-jugadores-section" style="display:none;">
+      <div class="pcards-section">
+        <div class="pcards-title" id="titulo-equipo-jugadores">Jugadores</div>
+        <div id="carrusel-equipo"></div>
+      </div>
+    </div>
+  `;
+
+  crearCarrusel('carrusel-goleadores', htmlGolArr);
+  crearCarrusel('carrusel-porteros', htmlPortArr);
+
+  // Selector equipo
+  const selector = document.getElementById("selector-equipo-jugador");
+  Object.entries(equiposID).forEach(([id, nombre]) => {
+    selector.innerHTML += `<option value="${id}">${nombre}</option>`;
+  });
+
+  selector.addEventListener("change", () => {
+    const equipoID = selector.value;
+    const tops = document.getElementById("tops-section");
+    const equipoSection = document.getElementById("equipo-jugadores-section");
+
+    if (!equipoID) {
+      tops.style.display = 'block';
+      equipoSection.style.display = 'none';
+      return;
+    }
+
+    tops.style.display = 'none';
+    equipoSection.style.display = 'block';
+
+    document.getElementById('titulo-equipo-jugadores').textContent = '👕 ' + (equiposID[equipoID] || 'Jugadores');
+
+    const lista = jugadores.filter(j =>
+      j.equipo === equipoID &&
+      j.nombre !== "Penal" && j.nombre !== "Default" && j.nombre !== "Autogol"
+    );
+
+    const htmlEquipoArr = lista.map(j => {
+      const goles = golesMap[j.id] || 0;
+      const rojas = rojasMap[j.id] || 0;
+      const asist = asistMap[j.id] || 0;
+      const porcentaje = Math.round((asist / 15) * 100);
+      const suspendido = rojas > 0 ? "Sí" : "No";
+      return jugadorCardHTML(j, goles, porcentaje, suspendido);
+    });
+
+    crearCarrusel('carrusel-equipo', htmlEquipoArr);
+  });
+}
+
+cargarJugadores();
