@@ -438,32 +438,6 @@ async function cargarJugadores() {
     }
   });
 
-  // Goles recibidos POR PORTERO: sólo en los partidos que ese portero jugó
-  // (usa la columna ID_Partido de Participaciones; si no existe, usa el total del equipo)
-  const hPart = partFilas[0].split(",").map(h => h.trim().toLowerCase());
-  let colPartido = hPart.indexOf("id_partido");
-  if (colPartido < 0) colPartido = hPart.indexOf("partido");
-  const statsPortero = {};
-  if (colPartido >= 0) {
-    const jugPorId = {};
-    jugadores.forEach(j => (jugPorId[j.id] = j));
-    const vistos = new Set();
-    partFilas.slice(1).forEach(f => {
-      const p = f.split(",");
-      const idJ = p[4]?.trim(), idP = p[colPartido]?.trim();
-      if (!idJ || !idP || p[5]?.trim() !== "TRUE") return;
-      const info = partidosInfo[idP], j = jugPorId[idJ];
-      if (!info || !j || vistos.has(idJ + "|" + idP)) return;
-      vistos.add(idJ + "|" + idP);
-      let rec;
-      if (j.equipo === info.eqL) rec = info.gV;
-      else if (j.equipo === info.eqV) rec = info.gL;
-      else return;
-      const s = statsPortero[idJ] || (statsPortero[idJ] = { rec: 0, pj: 0 });
-      s.rec += rec; s.pj += 1;
-    });
-  }
-  const usarPorPartido = Object.keys(statsPortero).length > 0;
 
   const goleadores = jugadores
     .filter(j => j.nombre !== "Penal" && j.nombre !== "Default" && j.nombre !== "Autogol")
@@ -474,9 +448,9 @@ async function cargarJugadores() {
   const porteros = jugadores
     .filter(j => j.posicion === "Portero" && j.nombre !== "Penal" && j.nombre !== "Default")
     .map(j => {
-      const s = statsPortero[j.id];
-      const rec = usarPorPartido ? (s ? s.rec : 0) : (golesRecibidosMap[j.equipo] || 0);
-      const pj  = usarPorPartido ? (s ? s.pj  : 0) : (partidosEquipoMap[j.equipo] || 0);
+      // A cada portero se le asignan TODOS los goles que recibió su equipo
+      const rec = golesRecibidosMap[j.equipo] || 0;
+      const pj  = partidosEquipoMap[j.equipo] || 0;
       return { ...j, golesRecibidos: rec, partidosJugados: pj, promedio: pj ? rec / pj : 0 };
     })
     .filter(j => j.partidosJugados > 0)   // sin partidos jugados no entra al ranking
