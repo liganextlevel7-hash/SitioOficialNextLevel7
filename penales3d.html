@@ -22,15 +22,15 @@ h1,h2{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;margin:0}
 .tit{font-family:'Bebas Neue';font-size:17px;letter-spacing:1.5px;color:var(--lime);margin:10px 4px 2px}.tit.k{color:var(--cian)}
 .fila{display:flex;align-items:center;gap:8px;padding:6px;border-radius:8px;font-size:13px;cursor:pointer}
 .fila:hover{background:rgba(94,181,13,.14)}.fila.on{background:rgba(94,181,13,.3);outline:1px solid var(--lime)}
-.fila img{width:30px;height:30px;object-fit:cover;border-radius:50%;background:#10281a;flex:none}
+.fila img{width:30px;height:38px;object-fit:cover;object-position:top;border-radius:6px;background:#10281a;flex:none}
 .fila .m{flex:1;min-width:0;line-height:1.25}.fila .m b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fila .m small{color:#9db38c;font-size:11px}
 .fila em{font-style:normal;font-family:'Bebas Neue';font-size:21px;color:var(--gold)}.fila.k em{color:var(--cian)}
 #card{right:16px;top:calc(76px + env(safe-area-inset-top,0px));width:330px;padding:16px;display:none;max-height:calc(100% - 96px);overflow-y:auto}
 body.sel #card{display:block}
-#card .cab{display:flex;gap:12px;align-items:center}
-#card .cab img{width:84px;height:84px;object-fit:cover;border-radius:50%;border:3px solid var(--gold);background:#10281a}#card.k .cab img{border-color:var(--cian)}
+#card .cab{display:block}
+#card .cab img{display:block;width:100%;height:240px;object-fit:contain;border-radius:12px;border:2px solid var(--gold);background:linear-gradient(180deg,#17421f,#0a1f12);margin-bottom:10px}#card.k .cab img{border-color:var(--cian)}
 #card h2{font-size:27px;letter-spacing:1.2px;line-height:1.05}#card .ds{font-size:12px;color:var(--gold);margin-top:3px}#card.k .ds{color:var(--cian)}
-#x{position:absolute;right:8px;top:6px;background:none;border:0;color:#cfe3b9;font-size:24px;cursor:pointer;padding:6px}
+#x{position:absolute;right:10px;top:10px;z-index:2;width:32px;height:32px;line-height:30px;padding:0;border-radius:50%;background:rgba(4,16,10,.75);border:0;color:#cfe3b9;font-size:24px;cursor:pointer;padding:6px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
 .grid div{background:rgba(255,255,255,.06);border-radius:8px;padding:7px 4px;text-align:center}
 .grid b{display:block;font-family:'Bebas Neue';font-weight:400;font-size:26px;line-height:1}.grid span{font-size:11px;color:#9db38c}
@@ -47,6 +47,7 @@ body.sel #card{display:block}
  #lado{left:8px;right:8px;top:auto;bottom:8px;width:auto;height:46vh;display:none}
  body.ab #lado{display:block}body.sel #lado{display:none}
  #card{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:60vh}
+ #card .cab img{height:180px}
  #btnL{display:block;position:fixed;right:10px;top:calc(76px + env(safe-area-inset-top,0px));background:var(--panel);color:var(--gold)}
  body.sel #btnL,body.sel #ctl{display:none}#ctl{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 }
@@ -138,10 +139,8 @@ async function figura(s,i,gk){
   const sh=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(col.clone().multiplyScalar(.55)));sh.position.y=.95;cu.add(sh);
   if(pla)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;cu.add(p)});
   if(gk)[-.68,.68].forEach(x=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),mat(0xf3f5ee));m.position.set(x,1.05,0);(x<0?f.bI:f.bD).add(m);m.position.set(0,-.95,0)});
-  const ft=await tex(s.j.Foto);
   f.cab=new THREE.Mesh(new THREE.SphereGeometry(.58,20,16),piel);f.cab.position.y=2.55;f.cab.castShadow=true;cu.add(f.cab);
-  if(ft){const c=new THREE.Mesh(new THREE.CircleGeometry(.46,32),new THREE.MeshBasicMaterial({map:ft}));c.position.set(0,0,.38);f.cab.add(c)}
-  else f.cab.add(new THREE.Mesh(new THREE.SphereGeometry(.6,18,10,0,7,0,1.2),mat(0x1a1410)));
+  f.cab.add(new THREE.Mesh(new THREE.SphereGeometry(.6,18,10,0,7,0,1.2),mat(0x1a1410)));
   const nm=texto(corto(s).slice(0,16),50,512,96,gk?'#7fe3ff':'#ffe27a');nm.scale.set(4.4,.83,1);nm.position.y=4.1;g.add(nm);
   const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.4,1.4,6,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=3;hit.userData.f=f;g.add(hit);f.hit=hit;
   return f;
