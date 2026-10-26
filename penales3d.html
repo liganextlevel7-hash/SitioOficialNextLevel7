@@ -84,7 +84,7 @@ function calcular(ju,pr,ev,pa){
     if(k=='gol'){s.g++;s.gp[e.Partido]=(s.gp[e.Partido]||0)+1}else if(k=='amarilla')s.am++;else if(k=='roja')s.ro++});
   const all=Object.values(S);all.forEach(s=>{s.n=s.pj.size;Object.values(s.gp).forEach(n=>{if(n>=3)s.hat++})});
   TOP=all.filter(s=>s.g>0&&!s.porte).sort((a,b)=>b.g-a.g||a.n-b.n).slice(0,5);
-  const kp=all.filter(s=>s.porte),con=kp.filter(s=>s.cm.size).sort((a,b)=>a.conc/a.cm.size-b.conc/b.cm.size||b.cm.size-a.cm.size);
+  const kp=all.filter(s=>s.porte),con=kp.filter(s=>s.cm.size).sort((a,b)=>a.conc/a.cm.size-b.conc/b.cm.size||a.conc-b.conc||b.cm.size-a.cm.size);
   KEE=con.concat(kp.filter(s=>!s.cm.size)).slice(0,5);
 }
 
