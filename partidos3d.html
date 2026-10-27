@@ -319,11 +319,11 @@ function gol(e){const S=SIM;S.sc[e]++;S.hold=null;S.pausa=3;S.centro=true;
   aviso('¡GOOOL!<br><small>'+esc(S.eq[e].t.Nombre)+'</small>',2400)}
 function final(){const S=SIM,[a,b]=S.sc;let w=a>b?0:b>a?1:-1,n='';
   if(w<0&&S.p.Ganado_Por=='Penales'&&S.p.Penales){w=S.p.Penales==S.p.Equipo_Local?0:1;n='<br><small>Gana en penales: '+esc(S.eq[w].t.Nombre)+'</small>'}
-  S.fin=true;S.hold=null;S.m=60;
+  S.fin=true;S.finT=0;S.hold=null;S.m=60;
   S.eq.forEach(E=>E.pj.forEach(j=>{if(E.e==w)j.cel=1e9;else if(w>=0)j.lose=true}));
   aviso('FINAL '+a+' - '+b+(w>=0&&!n?'<br><small>Gana '+esc(S.eq[w].t.Nombre)+'</small>':n||'<br><small>Empate</small>'))}
 function simStep(dt){
-  const S=SIM;dt*=simSp;
+  const S=SIM;dt*=simSp;if(S.fin)S.finT+=dt;
   if(!S.fin){
     if(S.seg){const g=S.seg;g.t+=dt;const k=Math.min(1,g.t/g.dur);
       if(g.to){const e=g.to.g?g.to.g.position:g.to,y1=g.to.g?.5:g.to.y;
@@ -343,11 +343,11 @@ function simStep(dt){
     let tx,tz;
     if(!j.i){tx=j.bx;tz=Math.max(-3.5,Math.min(3.5,bp.z*.35))}
     else{tx=j.bx+j.dir*(S.atk==j.e&&!S.fin?9:-3);tx+=(bp.x-tx)*.22;tz=j.bz+(bp.z-j.bz)*.3}
-    if(S.fin)[tx,tz]=[p.x,p.z];
-    const dx=tx-p.x,dz=tz-p.z,dist=Math.hypot(dx,dz),v=dist>.4?Math.min(dist*2.5,j.i?8.5:3):0;
+    if(S.fin){if(j.lose&&S.finT>2.2){tx=p.x;tz=(j.bz>=0?1:-1)*26.2}else[tx,tz]=[p.x,p.z]}
+    const dx=tx-p.x,dz=tz-p.z,dist=Math.hypot(dx,dz),v=dist>.4?Math.min(dist*2.5,j.lose?3.2:(j.i?8.5:3)):0;
     if(v>0){p.x+=dx/dist*v*dt;p.z+=dz/dist*v*dt}
     all.forEach(o=>{if(o!==j){const a=p.x-o.g.position.x,b=p.z-o.g.position.z,l=Math.hypot(a,b);if(l<2&&l>.01){p.x+=a/l*(2-l)*dt*4;p.z+=b/l*(2-l)*dt*4}}});
-    p.x=Math.max(-36,Math.min(36,p.x));p.z=Math.max(-23,Math.min(23,p.z));
+    p.x=Math.max(-36,Math.min(36,p.x));const zl=j.lose?27:23;p.z=Math.max(-zl,Math.min(zl,p.z));
     const ang=j.i?(v>.5?Math.atan2(dx,dz):Math.atan2(bp.x-p.x,bp.z-p.z)):j.dir*Math.PI/2;let da=ang-g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));g.rotation.y+=da*Math.min(1,dt*8);
     j.fase+=dt*(2+v*1.1);const sw=Math.sin(j.fase*1.6)*(v>.5?.75:.08);
     j.pI.rotation.x=sw;j.pD.rotation.x=-sw;j.bI.rotation.x=-sw*.8;j.bD.rotation.x=sw*.8;
