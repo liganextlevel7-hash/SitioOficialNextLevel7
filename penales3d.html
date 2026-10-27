@@ -128,6 +128,10 @@ const cacheT={},tex=u=>cacheT[u]||(cacheT[u]=new Promise(ok=>{if(!u)return ok(nu
 function prom(t,def){try{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(t.image,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,n=0;for(let i=0;i<d.length;i+=4)if(d[i+3]>200){r+=d[i];g+=d[i+1];b+=d[i+2];n++}return n>8?new THREE.Color(r/n/255,g/n/255,b/n/255):def}catch(e){return def}}
 function texto(t,tam,w,h,col){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,h/2);x.fillStyle=col||'#fff';x.fillText(t,w/2,h/2);
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
+/* camiseta que cubre todo el torso (frente y espalda) */
+function torsoMats(pla,col){col=new THREE.Color(col);const m=new THREE.MeshStandardMaterial({color:col,roughness:.7});if(!pla)return m;
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,256,256);x.drawImage(pla.image,0,0,256,256);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;const f=new THREE.MeshBasicMaterial({map:t});return [m,m,m,m,f,f]}
 const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a],KC=[0xe8a317,0x2fb8e0,0x7ac143,0xd9534f,0x9b59b6];
 const corto=s=>s.j.Apodo||s.j.Nombre.split(' ').slice(0,2).join(' ');
 async function figura(s,i,gk){
@@ -135,9 +139,8 @@ async function figura(s,i,gk){
   const g=new THREE.Group(),cu=new THREE.Group();g.add(cu);const mat=(c,r=.7)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),piel=mat(pieles[(s.j.ID_Jugador.length+i)%4]);
   const ext=(r,h,m,x,y)=>{const p=new THREE.Group();p.position.set(x,y,0);const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,h,10),m);b.position.y=-h/2;b.castShadow=true;p.add(b);cu.add(p);return p};
   const f={g,cu,s,gk,fase:Math.random()*9,mode:'idle',ry:0,pI:ext(.2,1,mat(0xf3f5ee),-.28,1.05),pD:ext(.2,1,mat(0xf3f5ee),.28,1.05),bI:ext(.15,.9,piel,-.68,1.95),bD:ext(.15,.9,piel,.68,1.95)};
-  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(col));to.position.y=1.5;to.castShadow=true;cu.add(to);
+  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),torsoMats(pla,col));to.position.y=1.5;to.castShadow=true;cu.add(to);
   const sh=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(col.clone().multiplyScalar(.55)));sh.position.y=.95;cu.add(sh);
-  if(pla)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;cu.add(p)});
   if(gk)[-.68,.68].forEach(x=>{const m=new THREE.Mesh(new THREE.SphereGeometry(.22,10,8),mat(0xf3f5ee));m.position.set(x,1.05,0);(x<0?f.bI:f.bD).add(m);m.position.set(0,-.95,0)});
   f.cab=new THREE.Mesh(new THREE.SphereGeometry(.58,20,16),piel);f.cab.position.y=2.55;f.cab.castShadow=true;cu.add(f.cab);
   f.cab.add(new THREE.Mesh(new THREE.SphereGeometry(.6,18,10,0,7,0,1.2),mat(0x1a1410)));
