@@ -129,6 +129,10 @@ function prom(t,def){try{const c=document.createElement('canvas');c.width=c.heig
 function texto(lineas,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
   lineas.forEach(([t,tam,col,y])=>{x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,y);x.fillStyle=col;x.fillText(t,w/2,y)});
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
+/* camiseta que cubre todo el torso (frente y espalda) */
+function torsoMats(pla,col){col=new THREE.Color(col);const m=new THREE.MeshStandardMaterial({color:col,roughness:.7});if(!pla)return m;
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,256,256);x.drawImage(pla.image,0,0,256,256);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;const f=new THREE.MeshBasicMaterial({map:t});return [m,m,m,m,f,f]}
 const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a];
 const corto=s=>s.j.Apodo||s.j.Nombre.split(' ').slice(0,2).join(' ');
 async function figura(s,i){
@@ -136,9 +140,8 @@ async function figura(s,i){
   const g=new THREE.Group(),cu=new THREE.Group();g.add(cu);const mat=(c,r=.7)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),piel=mat(pieles[(s.j.ID_Jugador.length+i)%4]);
   const ext=(r,h,m,x,y)=>{const p=new THREE.Group();p.position.set(x,y,0);const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,h,10),m);b.position.y=-h/2;b.castShadow=true;p.add(b);cu.add(p);return p};
   const f={g,s,fase:Math.random()*9,pI:ext(.2,1,mat(0xf3f5ee),-.28,1.05),pD:ext(.2,1,mat(0xf3f5ee),.28,1.05),bI:ext(.15,.9,piel,-.68,1.95),bD:ext(.15,.9,piel,.68,1.95)};
-  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(col));to.position.y=1.5;to.castShadow=true;cu.add(to);
+  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),torsoMats(pla,col));to.position.y=1.5;to.castShadow=true;cu.add(to);
   const sh=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(col.clone().multiplyScalar(.55)));sh.position.y=.95;cu.add(sh);
-  if(pla)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;cu.add(p)});
   f.cab=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),piel);f.cab.position.y=2.4;f.cab.castShadow=true;cu.add(f.cab);
   const pe=new THREE.Mesh(new THREE.SphereGeometry(.44,18,10,0,7,0,1.2),mat(0x1a1410));pe.position.y=2.42;cu.add(pe);
   /* foto del jugador (o escudo del equipo) en un círculo que siempre mira a la cámara */
