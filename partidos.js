@@ -298,6 +298,10 @@ async function cargarDatos() {
     } else {
       statusEl.textContent = '⚠️ Selecciona un tipo de filtro'; return;
     }
+    const _act = new Set(todosEquipos.filter(e => (e['Status']||'').trim().toLowerCase() === 'activo').map(e => String(e['ID_Equipo']).trim()));
+    const _ok = x => { x = String(x || '').trim(); return !x || _act.has(x); };
+    filtrados = filtrados.filter(p => (p['Estado']||'').trim() === 'Jugado' || (_ok(p['Equipo_Local']) && _ok(p['Equipo_Visita'])));
+    if (!filtrados.length) { statusEl.textContent = '⚠️ No hay partidos vigentes con ese filtro (los pendientes contra equipos dados de baja ya no cuentan)'; return; }
     ultimosFiltrados = filtrados;
     await Promise.all([cargarClavesEquipos(), cargarConfirmaciones()]);
     renderStack(filtrados);
@@ -405,7 +409,8 @@ const DESCANSOS_MANUALES = { 1: ['Galacticos'] };
 // Deportivo Azul no jugó la J1: se toma como si hubiera jugado contra Puebla 450.
 const JORNADAS_VIRTUALES = { 1: [{ equipo: 'Deportivo Azul', vs: 'Puebla 450' }] };
 let VIRTUALES = {};       // "idEquipo|jornada" -> true
-let VIRTUALES_INFO = [];  // [{ id, nombre, jornada, vs }] para el recordatorio del reporte
+let VIRTUALES_INFO = [];
+let HAY_DESCANSOS = true;  // solo hay descansos cuando los equipos activos son un número impar  // [{ id, nombre, jornada, vs }] para el recordatorio del reporte
 
 // Una jornada solo se usa para detectar descansos "naturales" si ya tiene al menos
 // este número de partidos capturados (con 17 equipos una jornada completa tiene 8).
@@ -472,6 +477,10 @@ function calcularDescansos() {
       if (porJ[j]) porJ[j].ids.add(id);
     });
   });
+
+  // con número PAR de equipos activos (p. ej. 16) nadie descansa
+  HAY_DESCANSOS = activos.length % 2 === 1;
+  if (!HAY_DESCANSOS) { AUSENCIAS = []; JORNADAS_SIN_CAPTURAR = []; DESCANSOS_AVISOS = []; return {}; }
 
   const res = {};
   const asegurar = j => {
@@ -603,6 +612,13 @@ function mostrarDescansos() {
   const st = document.getElementById('statusMsg');
   if (!todosEquipos.length || !todosPartidos.length) { st.textContent = '⚠️ Aún no cargan los datos de la hoja, intenta en un momento'; return; }
   DESCANSOS = calcularDescansos();
+  if (!HAY_DESCANSOS) {
+    const n = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo').length;
+    document.getElementById('stackContainer').classList.remove('con-tarjetas');
+    document.getElementById('stackContainer').innerHTML = `<div class="editor-panel"><h3>😴 Descansos</h3><div style="font-size:14px;line-height:1.5;color:#f3f5ee;">Con <b>${n} equipos activos</b> (número par) ya no descansa nadie: todos los equipos juegan cada domingo.</div></div>`;
+    st.textContent = 'ℹ️ Sin descansos: la liga tiene un número par de equipos';
+    return;
+  }
   const colores = { 'DESCANSÓ': '#9aa89a', 'DESCANSARÁ': '#ddc530', 'SUGERIDO': '#29a6ff' };
   const listados = new Set();
   let filas = '';
@@ -827,6 +843,8 @@ function paginasDescansosHTML() {
 
 async function downloadPNGDescansos() {
   if (!todosEquipos.length || !todosPartidos.length) { alert('Aún no cargan los datos de la hoja, intenta en un momento.'); return; }
+  DESCANSOS = calcularDescansos();
+  if (!HAY_DESCANSOS) { alert('Con un número par de equipos activos ya no descansa nadie, así que no hay reporte de descansos.'); return; }
   const btn = document.getElementById('dlBtnDesc');
   btn.textContent = '⏳ Generando...';
   btn.disabled = true;
@@ -859,6 +877,92 @@ async function downloadPNGDescansos() {
   }
   btn.textContent = '⬇ Descargar reporte de descansos (PNG)';
   btn.disabled = false;
+}
+
+// ===== PROPUESTA DE JUEGO PARA EQUIPOS QUE DESCANSAN (solo reportes "por fecha") =====
+// Si un equipo no tiene partido ese domingo, se propone un juego extra (jornada doble) contra un equipo
+// que de verdad deba jornadas (ya descontando los descansos) y con quien aún no haya jugado.
+// Solo se calcula cuando la fecha está bien capturada (6 o más partidos y máximo 3 equipos sin partido).
+function calcularPropuestas(partidosDia) {
+  if (!partidosDia || !partidosDia.length) return null;
+  const fecha = (partidosDia[0]['Fecha'] || '').trim();
+  if (!fecha || partidosDia.some(p => (p['Fecha'] || '').trim() !== fecha)) return null;
+  if (partidosDia.every(p => (p['Estado'] || '').trim() === 'Jugado')) return null;   // fecha ya jugada
+
+  const activos = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo');
+  const idDe = e => String(e['ID_Equipo']).trim();
+  const juegan = new Set();
+  partidosDia.forEach(p => { [p['Equipo_Local'], p['Equipo_Visita']].forEach(x => { x = String(x || '').trim(); if (x) juegan.add(x); }); });
+  const descansan = activos.filter(e => !juegan.has(idDe(e)));
+  if (partidosDia.length < MIN_PARTIDOS_PARA_DETECTAR || descansan.length === 0 || descansan.length > 3) return null;
+
+  const refJ = encabezadoPorFecha(fecha, partidosDia).jornadaRef;
+  const deben = {};
+  calcularEquiposAtrasados(refJ, partidosDia).forEach(a => { deben[a.id] = a.jornadas; });
+
+  // el equipo que aparece en menos filas es el de los partidos con el rival en blanco (p. ej. Galácticos)
+  const cuenta = {};
+  todosPartidos.forEach(p => { [p['Equipo_Local'], p['Equipo_Visita']].forEach(x => { x = String(x || '').trim(); if (x) cuenta[x] = (cuenta[x] || 0) + 1; }); });
+  const ladoVacio = activos.map(idDe).sort((a, b) => (cuenta[a] || 0) - (cuenta[b] || 0))[0];
+
+  const est = p => (p['Estado'] || '').trim();
+  const l = p => String(p['Equipo_Local'] || '').trim(), v = p => String(p['Equipo_Visita'] || '').trim();
+  const yaJuegan = (a, b) => todosPartidos.some(p => (est(p) === 'Jugado' || est(p) === 'Programado') && ((l(p) === a && v(p) === b) || (l(p) === b && v(p) === a)));
+  const filaPendiente = (a, b) => todosPartidos.find(p => est(p) !== 'Jugado' && est(p) !== 'Programado' && ((l(p) === a && v(p) === b) || (l(p) === b && v(p) === a)))
+    || (b === ladoVacio ? todosPartidos.find(p => est(p) !== 'Jugado' && est(p) !== 'Programado' && ((l(p) === a && !v(p)) || (v(p) === a && !l(p)))) : null)
+    || (a === ladoVacio ? todosPartidos.find(p => est(p) !== 'Jugado' && est(p) !== 'Programado' && ((l(p) === b && !v(p)) || (v(p) === b && !l(p)))) : null);
+  const tiene = (id, jn) => todosPartidos.some(p => (est(p) === 'Jugado') && (l(p) === id || v(p) === id) && Number(p['Jornada']) === jn);
+
+  const usados = new Set(), propuestas = [];
+  descansan.forEach(R => {
+    const idR = idDe(R);
+    const cand = Object.keys(deben).filter(idO => idO !== idR && !usados.has(idO) && !yaJuegan(idR, idO) && filaPendiente(idR, idO))
+      .sort((a, b) => deben[b].length - deben[a].length || Number(a) - Number(b));
+    if (!cand.length) { propuestas.push({ R, O: null }); return; }
+    const idO = cand[0]; usados.add(idO);
+    const O = activos.find(e => idDe(e) === idO);
+    const comunes = (deben[idO] || []).filter(jn => (deben[idR] || []).includes(jn));
+    const libres = (deben[idO] || []).filter(jn => !tiene(idR, jn));
+    const jn = comunes.length ? comunes[0] : (libres.length ? libres[0] : (deben[idO] || [])[0]);
+    propuestas.push({ R, O, jornada: jn, ambos: comunes.includes(jn), debeO: deben[idO] || [], fila: filaPendiente(idR, idO) });
+  });
+  return { fecha, descansan, propuestas };
+}
+
+function bloquePropuestaHTML(opciones, estilo) {
+  const d = opciones && opciones.propuestas;
+  if (!d) return '';
+  const px = estilo === '3d' ? 112 : (estilo === 'chico' ? 56 : 72);
+  const nom = e => ((e && e['Nombre']) || '').toUpperCase();
+  const escudo = (e, lado) => {
+    const url = (estilo === '3d' ? colEquipo(e, lado === 'v' ? 'logo_visitante' : 'logo_local') : '') || colEquipo(e, 'logo_local') || (e && e['URL']) || '';
+    return url
+      ? `<img src="${url}" style="width:${px}px;height:${px}px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6));" onerror="this.style.opacity='0.2'">`
+      : `<div style="width:${px}px;height:${px}px;display:flex;align-items:center;justify-content:center;text-align:center;border:3px solid #5eb50d;border-radius:16px;background:rgba(0,0,0,0.5);font-family:'Bebas Neue',sans-serif;font-size:${Math.round(px / 6)}px;color:#fff;padding:6px;">${nom(e)}</div>`;
+  };
+  const filas = d.propuestas.map(p => {
+    if (!p.O) return `<div style="font-size:14px;font-weight:700;color:#f5f5f0;margin-top:10px;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${nom(p.R)}: sin rival disponible para jornada doble.</div>`;
+    const nota = p.ambos ? `Ambos equipos deben la jornada ${p.jornada}: se ponen al corriente.` : `${nom(p.O)} debe jornada${p.debeO.length > 1 ? 's' : ''} ${p.debeO.join(', ')}; se adelanta la jornada ${p.jornada}.`;
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;">
+        <div style="width:${px + 24}px;display:flex;flex-direction:column;align-items:center;gap:4px;">${escudo(p.R, 'l')}${estilo !== '3d' ? `<div style="font-size:12px;font-weight:800;color:#fff;text-transform:uppercase;line-height:1.1;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${nom(p.R)}</div>` : ''}</div>
+        <div style="flex:1;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:#5eb50d;">JORNADA ${p.jornada}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#f5f5f0;letter-spacing:1.5px;">${d.fecha}</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;color:rgba(255,255,255,0.45);letter-spacing:3px;line-height:1;">VS</div>
+          <div style="font-size:12px;font-weight:700;color:#ddc530;">Hora y campo por definir</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#29a6ff;border:1.5px solid #29a6ff;border-radius:14px;padding:3px 12px 2px;background:rgba(0,0,0,0.45);">PROPUESTA${p.fila && p.fila['ID_Partido'] ? ' · #' + p.fila['ID_Partido'] : ''}</div>
+        </div>
+        <div style="width:${px + 24}px;display:flex;flex-direction:column;align-items:center;gap:4px;">${escudo(p.O, 'v')}${estilo !== '3d' ? `<div style="font-size:12px;font-weight:800;color:#fff;text-transform:uppercase;line-height:1.1;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${nom(p.O)}</div>` : ''}</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:#f5f5f0;margin-top:8px;line-height:1.35;text-shadow:0 1px 3px rgba(0,0,0,0.95);">${nota}</div>`;
+  }).join('');
+  return `
+    <div style="margin-top:20px;padding:16px 18px 14px;background:rgba(0,0,0,0.72);border:1.5px solid rgba(41,166,255,0.7);border-radius:18px;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:#29a6ff;">💡 PROPUESTA · JORNADA DOBLE</div>
+      <div style="font-size:14px;font-weight:700;color:#f5f5f0;margin-top:4px;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${HAY_DESCANSOS ? '😴 ' + (d.descansan.length > 1 ? 'Descansan' : 'Descansa') : '🕒 Sin partido'} este domingo: ${d.descansan.map(nom).join(' · ')}</div>
+      ${filas}
+    </div>`;
 }
 
 // ===== DESCARGAR PNG (paginado: 4 partidos por página) =====
@@ -922,7 +1026,7 @@ function calcularEquiposAtrasados(jornadaActual, partidosDia) {
         }
       });
       const debe = jornadasLigaArr.filter(jn => !jugadas.has(jn) && !programadas.has(jn) && !equipoDescansaEn(idE, jn) && !jornadaTomadaComoJugada(idE, jn));
-      if (debe.length) atrasados.push({ nombre: (e['Nombre']||'').toUpperCase(), jornadas: debe });
+      if (debe.length) atrasados.push({ id: idE, nombre: (e['Nombre']||'').toUpperCase(), jornadas: debe });
     });
   return atrasados;
 }
@@ -976,7 +1080,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
     </div>
     ${descansaHTML}
     <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
-    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) : ''}
+    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) + bloquePropuestaHTML(opciones, 'normal') : ''}
   `;
 
   const filasWrap = content.querySelector('#reporte-filas');
@@ -1089,6 +1193,7 @@ async function downloadPNG() {
   const opcionesPng = tipoFiltro === 'fecha'
     ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
     : {};
+  opcionesPng.propuestas = tipoFiltro === 'fecha' ? calcularPropuestas(partidosOrdenados) : null;
 
   const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
 
@@ -1167,7 +1272,7 @@ function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jorna
     </div>
     ${descansaHTML}
     <div id="reporte-filas-v2" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
-    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) : ''}
+    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) + bloquePropuestaHTML(opciones, 'chico') : ''}
   `;
 
   const filasWrap = content.querySelector('#reporte-filas-v2');
@@ -1265,6 +1370,7 @@ async function downloadPNGv2() {
   const opcionesPng = tipoFiltro === 'fecha'
     ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
     : {};
+  opcionesPng.propuestas = tipoFiltro === 'fecha' ? calcularPropuestas(partidosOrdenados) : null;
 
   const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
 
@@ -1352,7 +1458,7 @@ function construirPaginaReporteV3(paginaPartidos, numPagina, totalPaginas, jorna
     </div>
     ${descansaHTML}
     <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
-    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) : ''}
+    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) + bloquePropuestaHTML(opciones, '3d') : ''}
   `;
 
   const filasWrap = content.querySelector('#reporte-filas');
@@ -1437,6 +1543,7 @@ async function downloadPNGv3() {
   const opcionesPng = tipoFiltro === 'fecha'
     ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
     : {};
+  opcionesPng.propuestas = tipoFiltro === 'fecha' ? calcularPropuestas(partidosOrdenados) : null;
 
   const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA_V3);
 
