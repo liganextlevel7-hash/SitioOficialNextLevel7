@@ -5,16 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tabla General | Liga Next Level 7</title>
 <link rel="stylesheet" href="styles.css">
-<style>
-.btn3d{display:flex;align-items:center;gap:14px;max-width:640px;margin:0 auto 20px;padding:14px 20px;border-radius:16px;text-decoration:none;color:#fff;background:linear-gradient(135deg,#2f7a0b,#5eb50d);border:2px solid #ddc530;box-shadow:0 6px 20px rgba(94,181,13,.35);transition:transform .15s,box-shadow .15s}
-.btn3d:hover,.btn3d:focus-visible{transform:translateY(-2px) scale(1.01);box-shadow:0 10px 26px rgba(94,181,13,.55);outline:none}
-.btn3d b{display:block;font-size:1.2rem;letter-spacing:1px;text-transform:uppercase}
-.btn3d small{display:block;opacity:.92;font-size:.85rem}
-.btn3d .fl{margin-left:auto;font-size:2.2rem;line-height:1;color:#ddc530}
-.btn3d svg{width:42px;height:52px;flex:none;animation:salto 1.4s ease-in-out infinite}
-@keyframes salto{50%{transform:translateY(-6px)}}
-@media(prefers-reduced-motion:reduce){.btn3d svg{animation:none}}
-</style>
 </head>
 <body>
 <header>
@@ -23,13 +13,10 @@
 <p class="subtitulo">Liga Next Level 7</p>
 <nav>
 <a href="index.html">Inicio</a>
+<a href="dashboard3d.html" title="Modo 3D interactivo"><svg viewBox="0 0 32 40" aria-hidden="true" style="height:1.15em;width:auto;vertical-align:-.2em;margin-right:6px"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg>Modo 3D</a>
 </nav>
 </header>
 <section class="contenedor">
-<a href="dashboard3d.html" class="btn3d" aria-label="Abrir el modo 3D interactivo">
-<svg viewBox="0 0 32 40" aria-hidden="true"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg>
-<span><b>Modo 3D interactivo</b><small>Mira la liga en la cancha y toca a tu equipo</small></span><span class="fl" aria-hidden="true">›</span>
-</a>
 <div class="card">
 <h2>🏆 Tabla General Completa</h2>
 <div id="tabla-general-completa">
