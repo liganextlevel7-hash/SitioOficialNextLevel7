@@ -170,6 +170,10 @@ function placa(txt){
   x.font='bold 54px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.lineWidth=10;x.strokeStyle='#04100a';x.strokeText(txt,256,50);x.fillStyle='#fff';x.fillText(txt,256,50);
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(4.6,.86,1);return s;
 }
+/* camiseta que cubre todo el torso (frente y espalda) */
+function torsoMats(pla,col){col=new THREE.Color(col);const m=new THREE.MeshStandardMaterial({color:col,roughness:.7});if(!pla)return m;
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,256,256);x.drawImage(pla.image,0,0,256,256);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;const f=new THREE.MeshBasicMaterial({map:t});return [m,m,m,m,f,f]}
 const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a];
 const jugadores=[],hits=[];
 async function crearJugador(t,i){
@@ -183,9 +187,8 @@ async function crearJugador(t,i){
   const extremidad=(r,h,m,x,y)=>{const p=new THREE.Group();p.position.set(x,y,0);const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,h,10),m);b.position.y=-h/2;b.castShadow=true;p.add(b);g.add(p);return p};
   const piernaI=extremidad(.2,1,mat(0xf3f5ee),-.28,1.05),piernaD=extremidad(.2,1,mat(0xf3f5ee),.28,1.05);
   const brazoI=extremidad(.15,.9,piel,-.68,1.95),brazoD=extremidad(.15,.9,piel,.68,1.95);
-  const torso=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(camiseta));torso.position.y=1.5;torso.castShadow=true;g.add(torso);
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),torsoMats(pla,camiseta));torso.position.y=1.5;torso.castShadow=true;g.add(torso);
   const short=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(camiseta.clone().multiplyScalar(.55)));short.position.y=.95;g.add(short);
-  if(pla)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;g.add(p)});
   const cabeza=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),piel);cabeza.position.y=2.4;cabeza.castShadow=true;g.add(cabeza);
   const pelo=new THREE.Mesh(new THREE.SphereGeometry(.44,18,10,0,7,0,1.2),mat(0x1a1410));pelo.position.y=2.42;g.add(pelo);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:esc,transparent:true,depthTest:false}));sp.scale.set(1.8,1.8,1);sp.position.y=4;sp.renderOrder=2;g.add(sp);
