@@ -48,6 +48,11 @@ body.sel #card{display:block}
 #btnT{display:none}
 #msg{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:'Bebas Neue';font-size:28px;letter-spacing:3px;color:var(--lime);z-index:5;text-align:center;padding:20px}
 #ayuda{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:12px;color:#cfe3b9;text-shadow:0 1px 4px #000;pointer-events:none;white-space:nowrap}
+#nav{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));display:flex;gap:8px;z-index:3}
+.nb{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:#f3f5ee;text-decoration:none;font:700 13px Roboto,Arial;backdrop-filter:blur(6px);transition:background .15s,transform .15s}
+.nb:hover,.nb:focus-visible{background:rgba(94,181,13,.35);transform:translateY(-1px);outline:none}
+.nb svg{width:20px;height:25px;flex:none}.nb .c{display:none}
+@media(max-width:760px){#nav{right:auto;left:16px;top:calc(74px + env(safe-area-inset-top,0px))}.nb .l{display:none}.nb .c{display:inline}}
 @media(max-width:760px){
  #top h1{font-size:26px}
  #tabla{left:8px;right:8px;top:auto;bottom:8px;width:auto;height:44vh;display:none}
@@ -63,6 +68,7 @@ body.sel #card{display:block}
 <body>
 <div id="msg">Cargando la liga…</div>
 <div id="top"><h1>Liga Next Level 7</h1><p>Dashboard 3D · toca un jugador para ver las estadísticas de su equipo</p></div>
+<nav id="nav"><a class="nb" href="tablaGeneral.html" title="Volver a la tabla general"><svg viewBox="0 0 32 40" aria-hidden="true"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg><span class="l">← Tabla general</span><span class="c">← Tabla</span></a><a class="nb" href="index.html" title="Ir al inicio del portal"><span aria-hidden="true">🏠</span><span>Inicio</span></a></nav>
 <button id="btnT">Clasificación</button>
 <aside id="tabla" class="panel"><h2>Clasificación</h2><ul id="lista"></ul></aside>
 <aside id="card" class="panel"></aside>
