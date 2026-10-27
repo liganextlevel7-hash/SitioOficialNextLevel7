@@ -47,7 +47,12 @@ body.sel #card{display:block}
 body.sel #rec,body.ab #rec{display:none}
 #btnL{display:none}
 #msg{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:'Bebas Neue';font-size:28px;letter-spacing:3px;color:var(--lime);z-index:5;text-align:center;padding:20px}
+#nav{position:fixed;right:16px;top:calc(10px + env(safe-area-inset-top,0px));display:flex;gap:8px;z-index:3}
+.nb{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:#f3f5ee;text-decoration:none;font:700 13px Roboto,Arial;backdrop-filter:blur(6px);transition:background .15s,transform .15s}
+.nb:hover,.nb:focus-visible{background:rgba(94,181,13,.35);transform:translateY(-1px);outline:none}
+.nb svg{width:20px;height:25px;flex:none}
 @media(max-width:760px){
+ #nav{right:122px;top:calc(12px + env(safe-area-inset-top,0px))}.nb{padding:6px 10px}.nb .t{display:none}
  #top h1{font-size:24px}
  #lado{left:8px;right:8px;top:auto;bottom:8px;width:auto;height:46vh;display:none}
  body.ab #lado{display:flex}body.sel #lado{display:none}
@@ -61,6 +66,7 @@ body.sel #rec,body.ab #rec{display:none}
 <div id="msg">Cargando a los jugadores…</div>
 <div id="top"><h1>Goleadores Next Level 7</h1><p>Los jugadores con gol (máximo 20) · toca a uno para ver su ficha · desliza abajo para recorrer</p></div>
 <div id="res"></div>
+<nav id="nav"><a class="nb" href="jugadores.html" title="Volver a Jugadores"><span aria-hidden="true">←</span><svg viewBox="0 0 32 40" aria-hidden="true"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg><span class="t">Jugadores</span></a><a class="nb" href="index.html" title="Ir al inicio del portal"><span aria-hidden="true">🏠</span><span class="t">Inicio</span></a></nav>
 <button id="btnL">Categorías</button>
 <aside id="lado" class="panel"><div id="tabs"></div><div id="cont"></div></aside>
 <aside id="card" class="panel"></aside>
@@ -89,12 +95,12 @@ function calcular(ju,pr,ev,pa){
   resumen={goles,jug,prom:jug?(goles/jug).toFixed(1):'0',gol:Object.values(S).filter(s=>s.g).length};
 }
 const MAX=20;
-const top=(k,txt,bar)=>Object.values(S).filter(s=>s.g>0).sort(k).slice(0,MAX).map(s=>({s,txt:txt(s),bar:bar(s)}));
+const topN=(k,txt,bar)=>Object.values(S).filter(s=>s.g>0).sort(k).slice(0,MAX).map(s=>({s,txt:txt(s),bar:bar(s)}));
 const CATS={
-  gol:['⚽ Goleadores',()=>top((a,b)=>b.g-a.g||a.n-b.n,s=>s.g+(s.g==1?' gol':' goles'),s=>s.g)],
-  prom:['📈 Promedio',()=>top((a,b)=>b.g/Math.max(b.n,1)-a.g/Math.max(a.n,1)||b.g-a.g,s=>(s.g/Math.max(s.n,1)).toFixed(2)+' por partido',s=>s.g/Math.max(s.n,1))],
-  hat:['🎩 Hat-tricks',()=>top((a,b)=>b.hat-a.hat||b.dob-a.dob||b.g-a.g,s=>s.hat+' hat-trick · '+s.dob+' doblete'+(s.dob==1?'':'s'),s=>s.hat*3+s.dob+.1)],
-  pg:['🔥 Partidos con gol',()=>top((a,b)=>b.pg-a.pg||b.g-a.g,s=>s.pg+(s.pg==1?' partido':' partidos')+' anotando',s=>s.pg)]
+  gol:['⚽ Goleadores',()=>topN((a,b)=>b.g-a.g||a.n-b.n,s=>s.g+(s.g==1?' gol':' goles'),s=>s.g)],
+  prom:['📈 Promedio',()=>topN((a,b)=>b.g/Math.max(b.n,1)-a.g/Math.max(a.n,1)||b.g-a.g,s=>(s.g/Math.max(s.n,1)).toFixed(2)+' por partido',s=>s.g/Math.max(s.n,1))],
+  hat:['🎩 Hat-tricks',()=>topN((a,b)=>b.hat-a.hat||b.dob-a.dob||b.g-a.g,s=>s.hat+' hat-trick · '+s.dob+' doblete'+(s.dob==1?'':'s'),s=>s.hat*3+s.dob+.1)],
+  pg:['🔥 Partidos con gol',()=>topN((a,b)=>b.pg-a.pg||b.g-a.g,s=>s.pg+(s.pg==1?' partido':' partidos')+' anotando',s=>s.pg)]
 };
 
 /* ---------- escena ---------- */
