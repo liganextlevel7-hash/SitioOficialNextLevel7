@@ -152,14 +152,17 @@ function textura(t,i){return cache[t.id]||(cache[t.id]=(async()=>{const def=new 
 function texto(lineas,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
   lineas.forEach(([t,tam,col,y])=>{x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,y);x.fillStyle=col;x.fillText(t,w/2,y)});
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
+/* camiseta que cubre todo el torso (frente y espalda) */
+function torsoMats(pla,col){col=new THREE.Color(col);const m=new THREE.MeshStandardMaterial({color:col,roughness:.7});if(!pla)return m;
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,256,256);x.drawImage(pla.image,0,0,256,256);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;const f=new THREE.MeshBasicMaterial({map:t});return [m,m,m,m,f,f]}
 const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a];
 async function jugador(t,i,gk){
   const {esc,pla,col}=await textura(t,i),g=new THREE.Group(),mat=(c,r=.7)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),piel=mat(pieles[i%4]);
   const ext=(r,h,m,x,y)=>{const p=new THREE.Group();p.position.set(x,y,0);const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,h,10),m);b.position.y=-h/2;b.castShadow=true;p.add(b);g.add(p);return p};
   const j={g,t,fase:Math.random()*9,pI:ext(.2,1,mat(0xf3f5ee),-.28,1.05),pD:ext(.2,1,mat(0xf3f5ee),.28,1.05),bI:ext(.15,.9,piel,-.68,1.95),bD:ext(.15,.9,piel,.68,1.95)};
-  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(gk||col));to.position.y=1.5;to.castShadow=true;g.add(to);
+  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),torsoMats(gk?null:pla,gk||col));to.position.y=1.5;to.castShadow=true;g.add(to);
   const sh=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(col.clone().multiplyScalar(.55)));sh.position.y=.95;g.add(sh);
-  if(pla&&!gk)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;g.add(p)});
   j.cab=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),piel);j.cab.position.y=2.4;j.cab.castShadow=true;g.add(j.cab);
   const pe=new THREE.Mesh(new THREE.SphereGeometry(.44,18,10,0,7,0,1.2),mat(0x1a1410));pe.position.y=2.42;g.add(pe);
   const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:esc,transparent:true,depthTest:false}));sp.scale.set(1.7,1.7,1);sp.position.y=3.9;sp.renderOrder=2;g.add(sp);
