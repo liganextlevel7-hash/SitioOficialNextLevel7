@@ -196,7 +196,7 @@ async function crearJugador(t,i){
   const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,5,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.5;g.add(hit);
   g.position.set((Math.random()-.5)*50,0,(Math.random()-.5)*30);
   scene.add(g);
-  const j={t,g,piernaI,piernaD,brazoI,brazoD,cabeza,nom,fase:Math.random()*9,obj:null,espera:Math.random()*2,vel:1.3+Math.random()*1.1,sp};
+  const j={t,g,piernaI,piernaD,brazoI,brazoD,cabeza,pelo,nom,fase:Math.random()*9,obj:null,espera:Math.random()*2,vel:1.3+Math.random()*1.1,sp};
   hit.userData.j=j;hits.push(hit);jugadores.push(j);
 }
 function nuevoDestino(j){j.obj=new THREE.Vector3((Math.random()-.5)*62,0,(Math.random()-.5)*38)}
@@ -230,10 +230,12 @@ function elegir(j){
   document.querySelectorAll('#lista li').forEach(li=>li.classList.toggle('on',!!j&&li.dataset.id==j.t.id));
   if(!j){goal.d=Math.max(goal.d,60);goal.obj.set(0,0,0);return}
   goal.d=17;goal.ph=Math.min(goal.ph,1.1);
-  const t=j.t,s=S[t.id],pos=orden.indexOf(t)+1,dg=s.gf-s.gc,pr=proximo(t.ID_Equipo);
+  const t=j.t,s=S[t.id],pos=orden.indexOf(t)+1;
+  j.mood=pos==1&&s.p==0&&s.pj>0?'jubilo':pos<=8?'feliz':'triste';j.k=pos<=8?(9-pos)/8:0;
+  const dg=s.gf-s.gc,pr=proximo(t.ID_Equipo);
   const rival=pr?teams.find(e=>e.id==(pr.Equipo_Local==t.id?pr.Equipo_Visita:pr.Equipo_Local)):null;
   $('card').innerHTML=`<button id="x" aria-label="Cerrar">×</button>
-   <div class="cab">${t.URL?`<img class="esc" src="${esc(t.URL)}" alt="">`:''}<div><h2>${esc(t.Nombre)}</h2><div class="desc">${esc(t.Descripción||'')}</div><div class="pos">Puesto ${pos} de ${teams.length}</div></div></div>
+   <div class="cab">${t.URL?`<img class="esc" src="${esc(t.URL)}" alt="">`:''}<div><h2>${esc(t.Nombre)}</h2><div class="desc">${esc(t.Descripción||'')}</div><div class="pos">Puesto ${pos} de ${teams.length} · ${j.mood=='jubilo'?'¡Líder invicto! 🏆':pos<=8?'Zona de liguilla':'Fuera de liguilla'}</div></div></div>
    <div class="pts"><b>${s.pts}</b><span>puntos</span></div>
    <div class="grid">${[['PJ',s.pj],['G',s.g],['E',s.e],['P',s.p],['GF',s.gf],['GC',s.gc],['DG',(dg>0?'+':'')+dg],['Efect.',s.pj?Math.round(s.pts/(s.pj*3)*100)+'%':'—']].map(([k,v])=>`<div><b>${v}</b><span>${k}</span></div>`).join('')}</div>
    <div class="forma">Últimos:${s.forma.slice(-5).map(f=>`<i class="${f}">${f}</i>`).join('')||' sin partidos jugados'}</div>
@@ -249,12 +251,25 @@ $('btnT').onclick=()=>document.body.classList.toggle('tab');
 addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
 
 /* ---------- animación ---------- */
+/* ánimo del equipo seleccionado según su puesto: 1.º invicto = jubiloso, 2.º-8.º = contento (liguilla), 9.º+ = cabizbajo */
+function reposo(j){j.moodOn=false;j.g.position.y=0;j.brazoI.rotation.z=j.brazoD.rotation.z=0;j.cabeza.position.set(0,2.4,0);j.pelo.position.set(0,2.42,0)}
+function animo(j,t,dt){
+  j.moodOn=true;const m=j.mood,k=j.k,s=Math.sin(t*(m=='jubilo'?7:4)+j.fase),p=j.g.position;
+  const giro=Math.atan2(camera.position.x-p.x,camera.position.z-p.z);let da=giro-j.g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));j.g.rotation.y+=da*Math.min(1,dt*5);
+  [j.piernaI,j.piernaD,j.brazoI,j.brazoD].forEach(b=>b.rotation.x*=.8);
+  if(m=='triste'){j.brazoI.rotation.z=.08;j.brazoD.rotation.z=-.08;p.y=0;j.cabeza.position.set(0,2.2,.14);j.pelo.position.set(0,2.22,.14);return}
+  j.cabeza.position.set(0,2.4,0);j.pelo.position.set(0,2.42,0);
+  if(m=='jubilo'){j.brazoI.rotation.z=-2.6-s*.3;j.brazoD.rotation.z=2.6+s*.3;p.y=Math.abs(s)*.8}
+  else{const a=(1.1+1.5*k)*(.6+.4*s);j.brazoI.rotation.z=-a;j.brazoD.rotation.z=a;p.y=Math.abs(s)*(.15+.45*k)}
+}
 const reloj=new THREE.Clock();
 function animar(){
   requestAnimationFrame(animar);
   const dt=Math.min(reloj.getDelta(),.05),t=reloj.elapsedTime;
   jugadores.forEach(j=>{
     const lento=j===sel?.35:1,p=j.g.position;
+    if(j===sel&&j.mood){animo(j,t,dt);return}
+    if(j.moodOn)reposo(j);
     if(j.espera>0){j.espera-=dt;j.fase+=dt*2;[j.piernaI,j.piernaD,j.brazoI,j.brazoD].forEach(m=>m.rotation.x*=.85);j.cabeza.position.y=2.4+Math.sin(t*2+j.fase)*.03}
     else{
       if(!j.obj)nuevoDestino(j);
