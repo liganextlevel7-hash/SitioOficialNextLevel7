@@ -122,7 +122,10 @@ Object.assign(sun.shadow.camera,{left:-40,right:40,top:30,bottom:-30,near:10,far
 
 /* ---------- texturas y jugadores ---------- */
 const loader=new THREE.TextureLoader();loader.setCrossOrigin('anonymous');
-const cargar=u=>new Promise(ok=>{if(!u)return ok(null);loader.load(u,t=>{t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>ok(null))});
+const cargar=u=>new Promise(ok=>{if(!u)return ok(null);const fin=setTimeout(()=>ok(null),8000);
+  loader.load(u,t=>{clearTimeout(fin);const im=t.image,m=Math.max(im.width,im.height);
+    if(m>384){const k=384/m,c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);t=new THREE.CanvasTexture(c)}
+    t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>{clearTimeout(fin);ok(null)})});
 const cacheT={};const tex=u=>cacheT[u]||(cacheT[u]=cargar(u));
 function prom(t,def){try{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(t.image,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,n=0;
   for(let i=0;i<d.length;i+=4)if(d[i+3]>200){r+=d[i];g+=d[i+1];b+=d[i+2];n++}return n>8?new THREE.Color(r/n/255,g/n/255,b/n/255):def}catch(e){return def}}
@@ -130,9 +133,10 @@ function texto(lineas,w,h){const c=document.createElement('canvas');c.width=w;c.
   lineas.forEach(([t,tam,col,y])=>{x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,y);x.fillStyle=col;x.fillText(t,w/2,y)});
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
 /* camiseta que cubre todo el torso (frente y espalda) */
-function torsoMats(pla,col){col=new THREE.Color(col);const m=new THREE.MeshStandardMaterial({color:col,roughness:.7});if(!pla)return m;
+const TM={};
+function torsoMats(pla,col){col=new THREE.Color(col);if(pla&&TM[pla.uuid])return TM[pla.uuid];const m=new THREE.MeshStandardMaterial({color:col,roughness:.7});if(!pla)return m;
   const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,256,256);x.drawImage(pla.image,0,0,256,256);
-  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;const f=new THREE.MeshBasicMaterial({map:t});return [m,m,m,m,f,f]}
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;const f=new THREE.MeshBasicMaterial({map:t});return TM[pla.uuid]=[m,m,m,m,f,f]}
 const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a];
 const corto=s=>s.j.Apodo||s.j.Nombre.split(' ').slice(0,2).join(' ');
 async function figura(s,i){
@@ -166,6 +170,8 @@ async function dibujar(){
     :'<div id="vacio">Todavía no hay datos de esta categoría en la hoja.</div>';
   $('cont').querySelectorAll('.fila').forEach(e=>e.onclick=()=>{elegir(L[+e.dataset.i].s);document.body.classList.remove('ab')});
   const N=Math.min(MAX,L.length),ord=orden(N),max=Math.max(...L.slice(0,N).map(x=>x.bar),1e-9),sp=5.4;
+  /* descarga todas las imágenes a la vez (antes se pedían una por una) */
+  await Promise.all(L.slice(0,N).flatMap(x=>[tex(x.s.t.Color_Playera),tex(x.s.j.Foto),tex(x.s.t.URL)]));if(mi!=gen)return;
   for(let k=0;k<N;k++){
     const r=ord[k],x=L[r-1],px=(k-(N-1)/2)*sp,h=1.4+7*x.bar/max;
     const col=new THREE.Mesh(new THREE.BoxGeometry(sp*.78,1,sp*.78),new THREE.MeshStandardMaterial({color:COLS[r-1]||0x1d4a22,roughness:.5,metalness:r<4?.5:0}));
