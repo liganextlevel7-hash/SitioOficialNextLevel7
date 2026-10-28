@@ -45,6 +45,22 @@
     padding-bottom: 10px;
   }
 
+  .btn-3d {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #7f5f0d, #ddc530);
+    color: #04100a;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-decoration: none;
+    padding: 10px 22px;
+    border-radius: 25px;
+    box-shadow: 0 0 14px rgba(221,197,48,0.45);
+  }
+  .btn-3d:hover { filter: brightness(1.12); }
+
   .pildora-equipo + .pildora-equipo { margin-top: 8px; }
 
   @media (max-width: 600px) {
@@ -59,6 +75,7 @@
   <p class="subtitulo">Liga Next Level 7</p>
   <nav>
     <a href="index.html">Inicio</a>
+    <a href="liguilla3d.html">🏟️ Liguilla 3D</a>
   </nav>
 </header>
 
@@ -71,6 +88,7 @@
       <option value="Semifinal">Semifinales</option>
       <option value="Final">Final</option>
     </select>
+    <a class="btn-3d" href="liguilla3d.html" title="Ver la liguilla en 3D">🏟️ Liguilla 3D</a>
   </div>
   <div id="contenedor-bracket"></div>
 </section>
