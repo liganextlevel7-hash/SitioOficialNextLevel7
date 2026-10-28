@@ -104,16 +104,16 @@ function calcular(ju,pr,ev,pa){
         const pick=bf<=1?(best.find(p=>p.ID_Partido==c.id)||(best.length==1?best[0]:null)):null;
         if(pick){s.gp[pick.ID_Partido]=(s.gp[pick.ID_Partido]||0)+1;s.pj.add(pick.ID_Partido)}else s.gx++}
       else if(k=='amarilla')s.am++;else if(k=='roja')s.ro++})});
-  Object.values(S).forEach(s=>{Object.values(s.gp).forEach(n=>{if(n>=3)s.hat++;else if(n==2)s.dob++});s.n=s.pj.size;s.pg=Object.keys(s.gp).length});
+  Object.values(S).forEach(s=>{Object.values(s.gp).forEach(n=>{if(n>=3)s.hat++;else if(n==2)s.dob++});s.n=s.pj.size;s.pg=Object.keys(s.gp).length;s.mx=Math.max(0,...Object.values(s.gp))});
   const jug=pa.filter(p=>p.Estado=='Jugado').length;
   resumen={goles,jug,prom:jug?(goles/jug).toFixed(1):'0',gol:Object.values(S).filter(s=>s.g).length};
 }
 const MAX=20;
-const topN=(k,txt,bar)=>Object.values(S).filter(s=>s.g>0).sort(k).slice(0,MAX).map(s=>({s,txt:txt(s),bar:bar(s)}));
+const topN=(k,txt,bar,f=s=>s.g>0)=>Object.values(S).filter(f).sort(k).slice(0,MAX).map(s=>({s,txt:txt(s),bar:bar(s)}));
 const CATS={
   gol:['⚽ Goleadores',()=>topN((a,b)=>b.g-a.g,s=>s.g+(s.g==1?' gol':' goles'),s=>s.g)],
   prom:['📈 Promedio',()=>topN((a,b)=>b.g/Math.max(b.n,1)-a.g/Math.max(a.n,1)||b.g-a.g,s=>(s.g/Math.max(s.n,1)).toFixed(2)+' por partido',s=>s.g/Math.max(s.n,1))],
-  hat:['🎩 Hat-tricks',()=>topN((a,b)=>b.hat-a.hat||b.dob-a.dob||b.g-a.g,s=>s.hat+' hat-trick · '+s.dob+' doblete'+(s.dob==1?'':'s'),s=>s.hat*3+s.dob+.1)],
+  hat:['🎩 Hat-trick (3 en un partido)',()=>topN((a,b)=>b.hat-a.hat||b.mx-a.mx||b.g-a.g,s=>s.hat+(s.hat==1?' hat-trick':' hat-tricks')+' · máx. '+s.mx+' goles en un partido',s=>s.hat*10+s.mx,s=>s.hat>0)],
   pg:['🔥 Partidos con gol',()=>topN((a,b)=>b.pg-a.pg||b.g-a.g,s=>s.pg+(s.pg==1?' partido':' partidos')+' anotando',s=>s.pg)]
 };
 
@@ -182,7 +182,7 @@ async function dibujar(){
   const L=lista=CATS[cat][1](),vacio=$('vacio');
   document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.k==cat));
   $('cont').innerHTML=L.length?L.map((x,i)=>`<div class="fila" data-i="${i}"><span class="r">${i+1}</span><img src="${esc(x.s.j.Foto||x.s.t.URL)}" alt=""><div class="m"><b>${esc(corto(x.s))}</b><small>${esc(x.s.t.Nombre)} · ${esc(x.txt)}</small></div></div>`).join('')
-    :'<div id="vacio">Todavía no hay datos de esta categoría en la hoja.</div>';
+    :'<div id="vacio">'+(cat=='hat'?'Todavía nadie ha metido 3 goles en un mismo partido.':'Todavía no hay datos de esta categoría en la hoja.')+'</div>';
   $('cont').querySelectorAll('.fila').forEach(e=>e.onclick=()=>{elegir(L[+e.dataset.i].s);document.body.classList.remove('ab')});
   const N=Math.min(MAX,L.length),ord=orden(N),max=Math.max(...L.slice(0,N).map(x=>x.bar),1e-9),sp=5.4;
   /* descarga todas las imágenes a la vez (antes se pedían una por una) */
