@@ -173,7 +173,15 @@ const seleccionados = () => EQUIPOS.filter(e => SEL.has(idDe(e)));
 const porEstado = k => EQUIPOS.filter(e => EST[idDe(e)] === k);
 const todosSel = () => EQUIPOS.length > 0 && SEL.size === EQUIPOS.length;
 const eqCelda = e => `<div class="rq-eq"><img src="${esc(e['URL'] || '')}" crossorigin="anonymous" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'])}</span></div>`;
+// Si a algún equipo se le puso estatus (confirmó / descansa / sin confirmar), el comunicado
+// muestra SOLO esos bloques por estatus y la casilla "dirigido a" deja de ser necesaria.
+const hayEstatus = () => EQUIPOS.some(e => EST[idDe(e)]);
 function dirigidoTxt(){
+  if (hayEstatus()){
+    const n = EQUIPOS.filter(e => EST[idDe(e)]).length;
+    if (n === EQUIPOS.length) return 'A todos los equipos participantes';
+    return n === 1 ? 'Al siguiente equipo' : 'A los siguientes equipos';
+  }
   if (todosSel()) return 'A todos los equipos participantes';
   return SEL.size === 1 ? 'Al siguiente equipo' : 'A los siguientes equipos';
 }
@@ -252,7 +260,7 @@ function renderSelector(){
 }
 function resumenSel(){
   const c = k => porEstado(k).length;
-  $('resumen-sel').textContent = `Dirigido a ${SEL.size} de ${EQUIPOS.length} equipos · Confirmaron: ${c('confirmo')} · Descansan: ${c('descansa')} · Sin confirmar: ${c('sin')}`;
+  $('resumen-sel').textContent = (hayEstatus() ? 'Se mostrarán solo los bloques por estatus · ' : `Dirigido a ${SEL.size} de ${EQUIPOS.length} equipos · `) + `Confirmaron: ${c('confirmo')} · Descansan: ${c('descansa')} · Sin confirmar: ${c('sin')}`;
 }
 function selTodos(){ SEL = new Set(EQUIPOS.map(idDe)); renderSelector(); }
 function selNinguno(){ SEL = new Set(); renderSelector(); }
@@ -277,7 +285,7 @@ function render(){
     : '';
   const dest = seleccionados();
   const tituloDest = todosSel() ? `Equipos participantes (${dest.length})` : `Dirigido a (${dest.length} ${dest.length === 1 ? 'equipo' : 'equipos'})`;
-  const bloqueDest = dest.length ? `<div class="rq-equipos"><h3>${tituloDest}</h3><div class="rq-grid">${dest.map(eqCelda).join('')}</div></div>` : '';
+  const bloqueDest = (dest.length && !hayEstatus()) ? `<div class="rq-equipos"><h3>${tituloDest}</h3><div class="rq-grid">${dest.map(eqCelda).join('')}</div></div>` : '';
   const bloquesEst = ESTADOS.map(([k, emo, tit, c]) => {
     const l = porEstado(k);
     return l.length ? `<div class="rq-equipos est-${c}"><h3>${emo} ${tit} (${l.length})</h3><div class="rq-grid">${l.map(eqCelda).join('')}</div></div>` : '';
@@ -337,7 +345,7 @@ async function generar(){
   if (!titulo){ msg('Escribe el asunto del comunicado.', 'err'); $('titulo').focus(); return; }
   if (!texto){ msg('Escribe el texto del comunicado.', 'err'); $('texto').focus(); return; }
   if (!EQUIPOS.length){ msg('No hay equipos cargados. Recarga la página.', 'err'); return; }
-  if (!SEL.size){ msg('Marca al menos un equipo al que va dirigido el comunicado.', 'err'); return; }
+  if (!SEL.size && !hayEstatus()){ msg('Marca al menos un equipo o asígnale un estatus (confirmó, descansa, sin confirmar).', 'err'); return; }
   $('btnGenerar').disabled = true; msg('Generando folio...');
   try {
     const fechaTxt = fechaDelInput();
@@ -383,7 +391,7 @@ async function descargar(){
 function textoWhatsApp(){
   const f = $('firma').value.trim();
   const nom = l => l.map(e => e['Nombre']).join(', ');
-  const dest = todosSel() ? '' : `*Dirigido a:* ${nom(seleccionados())}\n\n`;
+  const dest = (todosSel() || hayEstatus()) ? '' : `*Dirigido a:* ${nom(seleccionados())}\n\n`;
   const est = ESTADOS.map(([k, emo, tit]) => { const l = porEstado(k); return l.length ? `${emo} *${tit} (${l.length}):* ${nom(l)}` : ''; }).filter(Boolean).join('\n');
   return `*COMUNICADO OFICIAL ${GENERADO.folio}*\n*${$('titulo').value.trim()}*\n${GENERADO.fechaTxt}\n\n${dest}${$('texto').value.trim()}\n\n${est ? est + '\n\n' : ''}${f ? f + '\n' : ''}_Liga Next Level 7_`;
 }
