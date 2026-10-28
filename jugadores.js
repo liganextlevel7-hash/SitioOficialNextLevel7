@@ -84,13 +84,19 @@ function porteroCardHTML(j) {
   </div>`;
 }
 
-function jugadorCardHTML(j, goles, porcentaje, suspendido) {
+function jugadorCardHTML(j, goles, porcentaje, suspendido, golesRec, amarillas, rojas) {
+  // Portero: en el lugar de los goles anotados van los goles RECIBIDOS por su equipo
+  const esPortero = golesRec !== undefined && golesRec !== null;
   return `
   <div class="pcard">
     <div class="pcard-body">
       <div class="pcard-stats-left">
-        <div class="pcard-stat"><span class="pcard-lbl">⚽ GOLES</span><span class="pcard-val">${goles}</span></div>
+        <div class="pcard-stat"><span class="pcard-lbl">${esPortero ? '🥅 GOL REC' : '⚽ GOLES'}</span><span class="pcard-val">${esPortero ? golesRec : goles}</span></div>
         <div class="pcard-stat"><span class="pcard-lbl">🎯 ASIST</span><span class="pcard-val">${porcentaje}%</span></div>
+        <div class="pcard-stat-row">
+          <div class="pcard-stat"><span class="pcard-lbl">🟡 AM</span><span class="pcard-val">${amarillas || 0}</span></div>
+          <div class="pcard-stat"><span class="pcard-lbl">🔴 RJ</span><span class="pcard-val">${rojas || 0}</span></div>
+        </div>
         <div class="pcard-stat"><span class="pcard-lbl">⛔ SUSP</span><span class="pcard-val">${suspendido}</span></div>
       </div>
       <div class="pcard-foto-wrap">
@@ -251,6 +257,26 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; touch-action: manipulation;
     }
+    .pcard-stat-row { display: flex; gap: 4px; }
+    .pcard-stat-row .pcard-stat { flex: 1; padding: 5px 2px; }
+
+    /* estadisticas debajo de la foto (solo en pantalla completa) */
+    .foto-lightbox-wrap { display: inline-flex; flex-direction: column; align-items: center; max-width: 94vw; }
+    .foto-lightbox-wrap.con-stats .foto-lightbox-img { max-height: calc(90vh - 170px); }
+    .foto-lightbox-stats {
+      display: none; width: 0; min-width: 100%; box-sizing: border-box; margin-top: 8px;
+      background: rgba(0,0,0,0.8); border: 1px solid rgba(255,215,0,0.45);
+      border-radius: 12px; padding: 10px 12px;
+    }
+    .foto-lightbox-wrap.con-stats .foto-lightbox-stats { display: block; }
+    .fls-top { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    .fls-nombre { font-size: 14px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+    .fls-equipo { text-align: center; font-size: 10px; color: rgba(255,215,0,0.7); text-transform: uppercase; letter-spacing: 1px; margin: 3px 0 8px; }
+    .fls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 6px; }
+    .fls-item { background: rgba(255,255,255,0.07); border-radius: 8px; padding: 5px 4px; display: flex; flex-direction: column; align-items: center; }
+    .fls-item .pcard-lbl { font-size: 8px; text-align: center; }
+    .fls-item .pcard-val { font-size: 19px; }
+
     .pj-dots {
       display: flex; justify-content: center; gap: 7px; margin-top: 6px;
     }
@@ -280,7 +306,7 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido) {
 })();
 
 // ===== HELPER: crear carrusel generico =====
-function crearCarrusel(containerId, cardsHTML) {
+function crearCarrusel(containerId, cardsHTML, statsArr) {
   const wrap = document.getElementById(containerId);
   if (!cardsHTML.length) {
     wrap.innerHTML = '<p style="color:rgba(255,255,255,0.4);text-align:center;padding:20px;">Sin datos disponibles</p>';
@@ -333,7 +359,7 @@ function crearCarrusel(containerId, cardsHTML) {
     });
     slide.addEventListener('dblclick', e => {
       const img = slide.querySelector('.pcard-foto-grande');
-      if (img) abrirFotoCompleta(img.src);
+      if (img) abrirFotoCompleta(img.src, statsArr && statsArr[i]);
     });
   });
 
@@ -358,7 +384,11 @@ function crearCarrusel(containerId, cardsHTML) {
   actualizar();
 }
 
-function abrirFotoCompleta(src) {
+function statsFicha(j, items) {
+  return { nombre: j.nombre, posicion: j.posicion, equipo: equiposID[Number(j.equipo)] || '', items };
+}
+
+function abrirFotoCompleta(src, stats) {
   if (!src) return;
   let overlay = document.getElementById('foto-lightbox-overlay');
   if (!overlay) {
@@ -367,12 +397,27 @@ function abrirFotoCompleta(src) {
     overlay.className = 'foto-lightbox-overlay';
     overlay.innerHTML = `
       <div class="foto-lightbox-cerrar">&times;</div>
-      <img class="foto-lightbox-img" id="foto-lightbox-img">
+      <div class="foto-lightbox-wrap" id="foto-lightbox-wrap">
+        <img class="foto-lightbox-img" id="foto-lightbox-img">
+        <div class="foto-lightbox-stats" id="foto-lightbox-stats"></div>
+      </div>
     `;
     overlay.addEventListener('click', () => overlay.classList.remove('activo'));
     document.body.appendChild(overlay);
   }
   document.getElementById('foto-lightbox-img').src = src;
+  const wrap = document.getElementById('foto-lightbox-wrap');
+  const box = document.getElementById('foto-lightbox-stats');
+  if (stats && stats.items && stats.items.length) {
+    box.innerHTML = `
+      <div class="fls-top"><span class="fls-nombre">${stats.nombre}</span>${stats.posicion ? `<span class="pcard-posicion">${stats.posicion}</span>` : ''}</div>
+      ${stats.equipo ? `<div class="fls-equipo">${stats.equipo}</div>` : ''}
+      <div class="fls-grid">${stats.items.map(i => `<div class="fls-item"><span class="pcard-lbl">${i.l}</span><span class="pcard-val">${i.v}</span></div>`).join('')}</div>`;
+    wrap.classList.add('con-stats');
+  } else {
+    box.innerHTML = '';
+    wrap.classList.remove('con-stats');
+  }
   overlay.classList.add('activo');
 }
 
@@ -464,6 +509,16 @@ async function cargarJugadores() {
 
   const htmlPortArr = porteros.map(j => porteroCardHTML(j));
 
+  // Estadisticas que se ven al dar doble clic a la tarjeta
+  const statsGolArr = goleadores.map(j => statsFicha(j, [
+    { l: '⚽ GOLES', v: golesMap[j.id] || 0 }, { l: '🎯 ASIST', v: asistMap[j.id] || 0 },
+    { l: '🟡 AMARILLAS', v: amarillasMap[j.id] || 0 }, { l: '🔴 ROJAS', v: rojasMap[j.id] || 0 }
+  ]));
+  const statsPortArr = porteros.map(j => statsFicha(j, [
+    { l: '🥅 GOL REC', v: j.golesRecibidos }, { l: '🧤 PJ', v: j.partidosJugados }, { l: '📊 PROM', v: j.promedio.toFixed(1) },
+    { l: '🟡 AMARILLAS', v: amarillasMap[j.id] || 0 }, { l: '🔴 ROJAS', v: rojasMap[j.id] || 0 }
+  ]));
+
   const listaJugadores = document.getElementById("lista-jugadores");
 
   listaJugadores.innerHTML = `
@@ -485,8 +540,8 @@ async function cargarJugadores() {
     </div>
   `;
 
-  crearCarrusel('carrusel-goleadores', htmlGolArr);
-  crearCarrusel('carrusel-porteros', htmlPortArr);
+  crearCarrusel('carrusel-goleadores', htmlGolArr, statsGolArr);
+  crearCarrusel('carrusel-porteros', htmlPortArr, statsPortArr);
 
   // Selector equipo
   const selector = document.getElementById("selector-equipo-jugador");
@@ -515,16 +570,28 @@ async function cargarJugadores() {
       j.nombre !== "Penal" && j.nombre !== "Default" && j.nombre !== "Autogol"
     );
 
-    const htmlEquipoArr = lista.map(j => {
+    const htmlEquipoArr = [], statsEquipoArr = [];
+    lista.forEach(j => {
       const goles = golesMap[j.id] || 0;
       const rojas = rojasMap[j.id] || 0;
+      const amarillas = amarillasMap[j.id] || 0;
       const asist = asistMap[j.id] || 0;
       const porcentaje = Math.round((asist / 15) * 100);
       const suspendido = rojas > 0 ? "Sí" : "No";
-      return jugadorCardHTML(j, goles, porcentaje, suspendido);
+      // Si es portero, se le cargan todos los goles que recibió su equipo (misma regla que el Top 5 Porteros)
+      const golesRec = j.posicion === "Portero" ? (golesRecibidosMap[j.equipo] || 0) : null;
+      htmlEquipoArr.push(jugadorCardHTML(j, goles, porcentaje, suspendido, golesRec, amarillas, rojas));
+      statsEquipoArr.push(statsFicha(j, [
+        golesRec !== null ? { l: '🥅 GOL REC', v: golesRec } : { l: '⚽ GOLES', v: goles },
+        ...(golesRec !== null ? [{ l: '🧤 PJ', v: partidosEquipoMap[j.equipo] || 0 }] : []),
+        { l: '🎯 ASISTENCIA', v: porcentaje + '%' },
+        { l: '🟡 AMARILLAS', v: amarillas },
+        { l: '🔴 ROJAS', v: rojas },
+        { l: '⛔ SUSPENDIDO', v: suspendido }
+      ]));
     });
 
-    crearCarrusel('carrusel-equipo', htmlEquipoArr);
+    crearCarrusel('carrusel-equipo', htmlEquipoArr, statsEquipoArr);
   });
 }
 
