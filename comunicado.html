@@ -22,6 +22,18 @@ input:read-only,textarea:read-only{opacity:.65}
 .btn.pri{background:#5eb50d;color:#0a1a0d}
 .btn.wa{background:#25d366;color:#05260f;border-color:#25d366}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.mini{flex:0 1 auto;min-width:0;padding:8px 12px;font-size:12px}
+#lista-eq{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.eq-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid #5eb50d33;border-radius:10px;background:#071019}
+.eq-row.on{border-color:#5eb50d;background:#0e2306}
+.eq-row input[type=checkbox]{width:20px;height:20px;accent-color:#5eb50d;flex-shrink:0}
+.eq-row img{width:28px;height:28px;object-fit:contain;flex-shrink:0}
+.eq-row .eq-n{flex:1;font-weight:700;font-size:13px;text-transform:uppercase;line-height:1.15;min-width:0}
+.eq-row select{padding:6px;border-radius:8px;border:1px solid #5eb50d66;background:#142702;color:#fff;font-size:12px;max-width:128px}
+.eq-row select.e-confirmo{border-color:#2f9e44;color:#8fe89a}
+.eq-row select.e-descansa{border-color:#9ca3af;color:#cfd4db}
+.eq-row select.e-sin{border-color:#e0a800;color:#f3c94a}
+@media(max-width:700px){#lista-eq{grid-template-columns:1fr}}
 #msg{font-size:13px;color:#9db38c;text-align:center;min-height:18px;margin-top:4px}
 #msg.err{color:#ff6b6b}
 #msg.ok{color:#8fe89a}
@@ -54,6 +66,10 @@ input:read-only,textarea:read-only{opacity:.65}
 .rq-eq:nth-child(4n){border-right:none}
 .rq-eq img{width:30px;height:30px;object-fit:contain;flex-shrink:0}
 .rq-eq span{font-weight:700;text-transform:uppercase;font-size:11.5px;line-height:1.15}
+.rq-equipos.est-v h3{background:#e3f4e6;color:#1b6e2e}
+.rq-equipos.est-g h3{background:#eef0f3;color:#4b5563}
+.rq-equipos.est-a h3{background:#fff4d6;color:#8a6100}
+.rq-equipos+.rq-equipos{margin-top:14px}
 .rq-pie{margin:18px 32px 0;padding:12px 0 18px;border-top:1px solid #d9e0d0;font-size:11px;color:#6b7280;display:flex;justify-content:space-between;gap:10px}
 
 @media print{
@@ -82,8 +98,18 @@ input:read-only,textarea:read-only{opacity:.65}
       <textarea id="texto" placeholder="Escribe aquí el comunicado. Los saltos de línea se respetan."></textarea></label>
   </div>
   <div class="fila">
-    <label class="campo"><span>Dirigido a</span>
-      <input type="text" id="dirigido" value="A todos los equipos participantes" autocomplete="off"></label>
+    <div class="campo" style="min-width:100%"><span>Equipos: marca a quién va dirigido y el estatus de cada uno</span>
+      <div class="fila" style="margin-bottom:8px">
+        <button class="btn mini" onclick="selTodos()">Dirigir a todos</button>
+        <button class="btn mini" onclick="selNinguno()">Quitar a todos</button>
+        <button class="btn mini" onclick="selSinConfirmar()">Dirigir solo a los sin confirmar</button>
+        <button class="btn mini" onclick="todosSinConfirmar()">Marcar todos: sin confirmar</button>
+      </div>
+      <div id="lista-eq"></div>
+      <div class="nota" id="resumen-sel"></div>
+    </div>
+  </div>
+  <div class="fila">
     <label class="campo"><span>Firma</span>
       <input type="text" id="firma" value="Atentamente, Comité organizador" autocomplete="off"></label>
   </div>
@@ -135,6 +161,22 @@ const p2 = n => String(n).padStart(2, '0');
 let EQUIPOS = [];
 let FOLIO = null;        // null = borrador
 let GENERADO = null;     // { folio, fechaTxt, horaTxt } cuando ya se generó
+let SEL = new Set();     // equipos a los que va dirigido
+let EST = {};            // estatus por equipo: 'confirmo' | 'descansa' | 'sin' | ''
+const ESTADOS = [
+  ['confirmo', '✅', 'Confirmaron', 'v'],
+  ['descansa', '😴', 'Descansan', 'g'],
+  ['sin',      '⏳', 'Sin confirmar', 'a']
+];
+const idDe = e => String(e['ID_Equipo']).trim();
+const seleccionados = () => EQUIPOS.filter(e => SEL.has(idDe(e)));
+const porEstado = k => EQUIPOS.filter(e => EST[idDe(e)] === k);
+const todosSel = () => EQUIPOS.length > 0 && SEL.size === EQUIPOS.length;
+const eqCelda = e => `<div class="rq-eq"><img src="${esc(e['URL'] || '')}" crossorigin="anonymous" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'])}</span></div>`;
+function dirigidoTxt(){
+  if (todosSel()) return 'A todos los equipos participantes';
+  return SEL.size === 1 ? 'Al siguiente equipo' : 'A los siguientes equipos';
+}
 
 function parseCSV(text){
   const rows = []; let row = [], cur = '', q = false;
@@ -171,14 +213,55 @@ async function init(){
     const txt = await fetch(URL_EQUIPOS).then(r => r.text());
     EQUIPOS = parseCSV(txt).filter(e => String(e['ID_Equipo'] || '').trim() && !esBaja(e))
       .sort((a, b) => (a['Nombre'] || '').localeCompare(b['Nombre'] || '', 'es'));
+    SEL = new Set(EQUIPOS.map(idDe)); EST = {};
+    renderSelector();
     msg(`${EQUIPOS.length} equipos activos cargados. Escribe el comunicado y presiona "Generar".`);
   } catch (e){
     EQUIPOS = [];
     msg('No se pudieron cargar los equipos. Revisa tu conexión y recarga la página.', 'err');
   }
-  ['titulo','texto','dirigido','firma','fecha'].forEach(id => $(id).addEventListener('input', render));
+  ['titulo','texto','firma','fecha'].forEach(id => $(id).addEventListener('input', render));
+  $('lista-eq').addEventListener('change', ev => {
+    const t = ev.target, id = t.dataset.id; if (!id) return;
+    if (t.type === 'checkbox'){ t.checked ? SEL.add(id) : SEL.delete(id); }
+    else { EST[id] = t.value; t.className = t.value ? 'e-' + t.value : ''; }
+    t.closest('.eq-row').classList.toggle('on', SEL.has(id));
+    resumenSel(); render();
+  });
   render();
 }
+
+// ═══════════════════════════════════════════════
+//  SELECCIÓN DE EQUIPOS Y ESTATUS
+// ═══════════════════════════════════════════════
+function renderSelector(){
+  $('lista-eq').innerHTML = EQUIPOS.map(e => {
+    const id = idDe(e), est = EST[id] || '';
+    return `<div class="eq-row ${SEL.has(id) ? 'on' : ''}">
+      <input type="checkbox" data-id="${esc(id)}" ${SEL.has(id) ? 'checked' : ''} title="Dirigido a este equipo">
+      <img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'">
+      <span class="eq-n">${esc(e['Nombre'])}</span>
+      <select data-id="${esc(id)}" class="${est ? 'e-' + est : ''}">
+        <option value="" ${est === '' ? 'selected' : ''}>Sin estatus</option>
+        <option value="confirmo" ${est === 'confirmo' ? 'selected' : ''}>✅ Confirmó</option>
+        <option value="descansa" ${est === 'descansa' ? 'selected' : ''}>😴 Descansa</option>
+        <option value="sin" ${est === 'sin' ? 'selected' : ''}>⏳ Sin confirmar</option>
+      </select></div>`;
+  }).join('');
+  resumenSel(); render();
+}
+function resumenSel(){
+  const c = k => porEstado(k).length;
+  $('resumen-sel').textContent = `Dirigido a ${SEL.size} de ${EQUIPOS.length} equipos · Confirmaron: ${c('confirmo')} · Descansan: ${c('descansa')} · Sin confirmar: ${c('sin')}`;
+}
+function selTodos(){ SEL = new Set(EQUIPOS.map(idDe)); renderSelector(); }
+function selNinguno(){ SEL = new Set(); renderSelector(); }
+function selSinConfirmar(){
+  const l = porEstado('sin');
+  if (!l.length){ msg('Primero marca el estatus "Sin confirmar" a los equipos que faltan.', 'err'); return; }
+  SEL = new Set(l.map(idDe)); renderSelector(); msg('');
+}
+function todosSinConfirmar(){ EQUIPOS.forEach(e => EST[idDe(e)] = 'sin'); renderSelector(); }
 
 // ═══════════════════════════════════════════════
 //  DOCUMENTO
@@ -192,7 +275,13 @@ function render(){
   const firmaHTML = $('firma').value.trim()
     ? (firmaLineas.length > 1 ? `${esc(firmaLineas[0])},<b>${esc(firmaLineas.slice(1).join(', '))}</b>` : `<b>${esc(firmaLineas[0])}</b>`)
     : '';
-  const equipos = EQUIPOS.map(e => `<div class="rq-eq"><img src="${esc(e['URL'] || '')}" crossorigin="anonymous" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'])}</span></div>`).join('');
+  const dest = seleccionados();
+  const tituloDest = todosSel() ? `Equipos participantes (${dest.length})` : `Dirigido a (${dest.length} ${dest.length === 1 ? 'equipo' : 'equipos'})`;
+  const bloqueDest = dest.length ? `<div class="rq-equipos"><h3>${tituloDest}</h3><div class="rq-grid">${dest.map(eqCelda).join('')}</div></div>` : '';
+  const bloquesEst = ESTADOS.map(([k, emo, tit, c]) => {
+    const l = porEstado(k);
+    return l.length ? `<div class="rq-equipos est-${c}"><h3>${emo} ${tit} (${l.length})</h3><div class="rq-grid">${l.map(eqCelda).join('')}</div></div>` : '';
+  }).join('');
   const pie = GENERADO ? `Comunicado generado el ${esc(GENERADO.fechaTxt)} a las ${esc(GENERADO.horaTxt)}` : 'Borrador: aún no tiene folio';
   $('doc').innerHTML = `
   <div class="rq-doc" id="rq-doc">
@@ -211,15 +300,13 @@ function render(){
       </div>
     </div>
     <div class="rq-body">
-      <div class="rq-dirigido">${esc($('dirigido').value.trim())}</div>
+      <div class="rq-dirigido">${esc(dirigidoTxt())}</div>
       <div class="rq-asunto">${esc(titulo)}</div>
       <div class="rq-texto">${esc(texto)}</div>
       ${firmaHTML ? `<div class="rq-firma">${firmaHTML}</div>` : ''}
     </div>
-    <div class="rq-equipos">
-      <h3>Equipos participantes (${EQUIPOS.length})</h3>
-      <div class="rq-grid">${equipos}</div>
-    </div>
+    ${bloqueDest}
+    ${bloquesEst}
     <div class="rq-pie"><span>${pie}</span><span>Liga Next Level 7</span></div>
   </div>`;
 }
@@ -250,6 +337,7 @@ async function generar(){
   if (!titulo){ msg('Escribe el asunto del comunicado.', 'err'); $('titulo').focus(); return; }
   if (!texto){ msg('Escribe el texto del comunicado.', 'err'); $('texto').focus(); return; }
   if (!EQUIPOS.length){ msg('No hay equipos cargados. Recarga la página.', 'err'); return; }
+  if (!SEL.size){ msg('Marca al menos un equipo al que va dirigido el comunicado.', 'err'); return; }
   $('btnGenerar').disabled = true; msg('Generando folio...');
   try {
     const fechaTxt = fechaDelInput();
@@ -257,7 +345,7 @@ async function generar(){
     const ahora = new Date();
     let h = ahora.getHours(); const ap = h >= 12 ? 'pm' : 'am'; h = h % 12 || 12;
     GENERADO = { folio, fechaTxt, horaTxt: `${h}:${p2(ahora.getMinutes())} ${ap}` };
-    ['titulo','texto','dirigido','firma','fecha'].forEach(id => $(id).readOnly = true);
+    ['titulo','texto','firma','fecha'].forEach(id => $(id).readOnly = true); bloquearEquipos(true);
     $('acciones').hidden = false; $('btnNuevo').hidden = false; $('btnGenerar').hidden = true;
     render();
     msg(`Comunicado generado con folio ${folio}. Ya puedes enviarlo por WhatsApp.`, 'ok');
@@ -268,9 +356,11 @@ async function generar(){
   }
   $('btnGenerar').disabled = false;
 }
+function bloquearEquipos(b){ document.querySelectorAll('#lista-eq input, #lista-eq select, .btn.mini').forEach(x => x.disabled = b); }
 function nuevo(){
   GENERADO = null;
-  ['titulo','texto','dirigido','firma','fecha'].forEach(id => $(id).readOnly = false);
+  ['titulo','texto','firma','fecha'].forEach(id => $(id).readOnly = false); bloquearEquipos(false);
+  SEL = new Set(EQUIPOS.map(idDe)); EST = {}; renderSelector();
   $('titulo').value = ''; $('texto').value = ''; $('fecha').value = hoyISO();
   $('acciones').hidden = true; $('btnNuevo').hidden = true; $('btnGenerar').hidden = false;
   msg(`${EQUIPOS.length} equipos activos cargados. Escribe el comunicado y presiona "Generar".`);
@@ -292,7 +382,10 @@ async function descargar(){
 }
 function textoWhatsApp(){
   const f = $('firma').value.trim();
-  return `*COMUNICADO OFICIAL ${GENERADO.folio}*\n*${$('titulo').value.trim()}*\n${GENERADO.fechaTxt}\n\n${$('texto').value.trim()}\n\n${f ? f + '\n' : ''}_Liga Next Level 7_`;
+  const nom = l => l.map(e => e['Nombre']).join(', ');
+  const dest = todosSel() ? '' : `*Dirigido a:* ${nom(seleccionados())}\n\n`;
+  const est = ESTADOS.map(([k, emo, tit]) => { const l = porEstado(k); return l.length ? `${emo} *${tit} (${l.length}):* ${nom(l)}` : ''; }).filter(Boolean).join('\n');
+  return `*COMUNICADO OFICIAL ${GENERADO.folio}*\n*${$('titulo').value.trim()}*\n${GENERADO.fechaTxt}\n\n${dest}${$('texto').value.trim()}\n\n${est ? est + '\n\n' : ''}${f ? f + '\n' : ''}_Liga Next Level 7_`;
 }
 function enviarTexto(){
   if (!GENERADO) return;
