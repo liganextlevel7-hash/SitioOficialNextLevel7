@@ -253,6 +253,20 @@ const SHEET_ID     = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
 const GID_EQUIPOS  = '1894947293';
 const GID_PARTIDOS = '1362473459';
 const MOD_PASS     = 'nl7admin';
+
+// ── Reglas de datos: las MISMAS del reporte de 15 jornadas y del reporte por equipo ──
+// (así Armar Jornada y los reportes calculan con los mismos partidos)
+const CORR_PARTIDOS    = { '28': ['5','12'], '70': ['6','7'] };   // la hoja trae mal los equipos: id_partido → [local, visita] correctos (28 = Rivera vs Amigos, 70 = Real Alcoholicos vs Chautenco)
+const BAJA_FORZADA     = ['11','15'];                              // Atletico Ballenitas y Dream Team: en baja aunque la hoja no lo marque
+const JORNADA_FIJA     = { '132': 5, '133': 6 };                   // partidos de Galácticos que la hoja trae sin jornada
+const JORNADA_CUBIERTA = { '17': [1], '18': [1] };                 // jornadas que se toman como jugadas sin partido real: Deportivo Azul (J1, contra Puebla 450) y Galácticos (descansó la J1)
+function aplicarCorrecciones(m){
+  const id = String(m.id).trim(), est = (m.estado||'').toLowerCase();
+  const c = CORR_PARTIDOS[id];
+  if(c){ m.local = c[0]; m.visita = c[1]; }
+  if(!String(m.jornada||'').trim() && JORNADA_FIJA[id] && (est==='jugado' || est==='programado')) m.jornada = String(JORNADA_FIJA[id]);
+  return m;
+}
 const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd1NDZg1IY2_y_VGc5xX7b_pmV85PE69c_10Aw58vG8mFPO79K2/exec'; // mismo Apps Script de nextlevelenvivo.html y chat-next-level-7.html
 
 // ════════════════════════════════
@@ -346,7 +360,7 @@ async function init(){
     eq.forEach(r=>{
       const id=r['id_equipo']||r['id'];
       if(!id) return;
-      if((r['status']||'').trim().toLowerCase()==='baja') return; // equipos de baja no se arman en jornadas
+      if((r['status']||'').trim().toLowerCase()==='baja' || BAJA_FORZADA.includes(String(id).trim())) return; // equipos de baja no se arman en jornadas
       S.teams[id]={id, nombre:r['nombre']||'Equipo '+id, logo:r['url']||r['logo']||'', descripcion:r['descripción']||r['descripcion']||''};
     });
 
@@ -365,6 +379,7 @@ async function init(){
         hora:r['hora']||'',
         cancha:r['cancha']||''
       }))
+      .map(aplicarCorrecciones)
       .filter(m=>m.local&&m.visita);
     S.matches = S.allMatches.filter(m=>(m.estado||'').toLowerCase()==='pendiente');
 
@@ -616,6 +631,7 @@ function listaCampos(){
 function jornadasLibresPara(m){
   const ids = [String(m.local), String(m.visita)];
   const ocupadas = new Set();
+  ids.forEach(t=>(JORNADA_CUBIERTA[t]||[]).forEach(j=>ocupadas.add(j)));
   S.allMatches.forEach(x=>{
     if(x.id===m.id || !esAgendado(x)) return;
     if(ids.includes(String(x.local)) || ids.includes(String(x.visita))){
@@ -630,6 +646,26 @@ function jornadasLibresPara(m){
   const libres = [];
   for(let j=1;j<=total;j++){ if(!ocupadas.has(j)) libres.push(j); }
   return libres;
+}
+
+// Por qué una jornada NO aparece: qué partido (programado/jugado) de cuál equipo la ocupa
+function jornadasOcupadasInfo(m){
+  const ids = [String(m.local), String(m.visita)], info = {};
+  ids.forEach(t=>(JORNADA_CUBIERTA[t]||[]).forEach(j=>{ (info[j]=info[j]||[]).push({equipo:t, x:null}); }));
+  S.allMatches.forEach(x=>{
+    if(x.id===m.id || !esAgendado(x)) return;
+    const j = parseInt(x.jornada,10); if(isNaN(j)) return;
+    ids.forEach(t=>{ if(String(x.local)===t || String(x.visita)===t) (info[j]=info[j]||[]).push({equipo:t, x}); });
+  });
+  return info;
+}
+function detalleJornadasOcupadas(m){
+  const info = jornadasOcupadasInfo(m), js = Object.keys(info).map(Number).sort((a,b)=>a-b);
+  if(!js.length) return '';
+  const lineas = js.map(j=>info[j].map(o => o.x
+    ? `<b>J${j}</b> · ${esc(tname(o.equipo))} ya tiene ${esc(tname(o.x.local))} vs ${esc(tname(o.x.visita))} <span style="opacity:.8">(ID ${esc(o.x.id)} · ${esc(o.x.estado||'?')}${o.x.fecha?' · '+esc(o.x.fecha):''})</span>`
+    : `<b>J${j}</b> · ${esc(tname(o.equipo))} (se toma como jugada)`).join('<br>')).join('<br>');
+  return `<details style="margin-top:6px;font-size:11px;color:var(--g400)"><summary style="cursor:pointer">¿Por qué no aparecen otras jornadas? (${js.length} ocupadas)</summary><div style="margin-top:6px;line-height:1.55">${lineas}</div></details>`;
 }
 
 // Calendario del torneo: la Jornada 1 es el domingo de inicio y cada jornada avanza 7 días (igual que el reporte del rol del domingo)
@@ -692,6 +728,7 @@ function abrirFormEditar(m){
   const jOpts = libres.length
     ? libres.map(j=>{ const f=fechaDeJornada(j); return `<option value="${j}" ${String(j)===jSel?'selected':''}>Jornada ${j}${f?' · '+f:''}</option>`; }).join('')
     : '<option value="">(sin jornadas libres para estos equipos)</option>';
+  const detalleOcupadas = detalleJornadasOcupadas(m);
 
   const horaParts = (m.hora||'09:00:00').split(':');
   const {hOpts,mOpts} = buildHoraSelects(parseInt(horaParts[0],10)||9, parseInt(horaParts[1],10)||0);
@@ -711,7 +748,7 @@ function abrirFormEditar(m){
       <div style="display:flex;flex-direction:column;gap:10px">
         <div>
           <label>Jornada (solo las que estos equipos pueden jugar)</label>
-          <select id="edit-jornada" class="msg-input" style="width:100%" onchange="alCambiarJornadaForm()">${jOpts}</select>
+          <select id="edit-jornada" class="msg-input" style="width:100%" onchange="alCambiarJornadaForm()">${jOpts}</select>${detalleOcupadas}
         </div>
         <div>
           <label>Fecha</label>
