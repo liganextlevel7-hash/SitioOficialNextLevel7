@@ -84,13 +84,26 @@ let T={},PA={},S={},lista=[],cat='gol',sel=null,resumen={};
 /* ---------- estadísticas por jugador ---------- */
 function calcular(ju,pr,ev,pa){
   pa.forEach(p=>PA[p.ID_Partido]=p);
-  ju.forEach(j=>{const t=T[j.Equipo];if(!t)return;S[j.ID_Jugador]={j,t,g:0,am:0,ro:0,pj:new Set(),gp:{},conc:0,cpj:0,hat:0,dob:0}});
-  const rival=(p,eq)=>p&&(p.Equipo_Local==eq?+p.Goles_Visita:+p.Goles_Local);
-  pr.forEach(x=>{const s=S[x.Jugador];if(s){s.pj.add(x.Partido);
-    const p=PA[x.Partido];if(p&&p.Estado=='Jugado'&&/portero/i.test(s.j.Posicion||'')&&p.Goles_Local!==''){s.conc+=rival(p,s.j.Equipo)||0;s.cpj++}}});
-  let goles=0;
-  ev.forEach(e=>{const s=S[e.Jugador];if(!s)return;const k=(e.Tipo_Evento||'').toLowerCase();
-    if(k=='gol'){s.g++;goles++;s.gp[e.Partido]=(s.gp[e.Partido]||0)+1;s.pj.add(e.Partido)}else if(k=='amarilla')s.am++;else if(k=='roja')s.ro++});
+  ju.forEach(j=>{const t=T[j.Equipo];if(!t)return;S[j.ID_Jugador]={j,t,g:0,am:0,ro:0,pj:new Set(),gp:{},gx:0,conc:0,cpj:0,hat:0,dob:0}});
+  /* Los ID de partido de Participaciones y Eventos son viejos (hoy apuntan a otros partidos). El partido real se identifica:
+     - asistencia: por EQUIPO + FECHA
+     - goles: por los equipos de quienes anotaron en cada grupo de goles, comparados con los marcadores reales */
+  const JL=pa.filter(p=>p.Estado=='Jugado'&&p.Goles_Local!==''&&p.Goles_Visita!==''),JM={};
+  JL.forEach(p=>[p.Equipo_Local,p.Equipo_Visita].forEach(e=>JM[e+'|'+p.Fecha]=p));
+  pr.forEach(x=>{const s=S[x.Jugador],p=s&&JM[x.Equipo+'|'+x.Fecha];if(p)s.pj.add(p.ID_Partido)});
+  /* portero: se le cargan todos los goles en contra de su equipo */
+  Object.values(S).forEach(s=>{if(!/portero/i.test(s.j.Posicion||''))return;const e=s.j.Equipo;
+    JL.forEach(p=>{if(p.Equipo_Local!=e&&p.Equipo_Visita!=e)return;s.conc+=+(p.Equipo_Local==e?p.Goles_Visita:p.Goles_Local)||0;s.cpj++})});
+  let goles=0;const gm=(p,t)=>+(p.Equipo_Local==t?p.Goles_Local:p.Goles_Visita);
+  const corridas=[];ev.forEach(e=>{const u=corridas[corridas.length-1];if(u&&u.id==e.Partido)u.ev.push(e);else corridas.push({id:e.Partido,ev:[e]})});
+  corridas.forEach(c=>{const g={};c.ev.forEach(e=>{const s=S[e.Jugador];if(s&&(e.Tipo_Evento||'').toLowerCase()=='gol'){const t=s.j.Equipo;g[t]=(g[t]||0)+1}});
+    c.ev.forEach(e=>{const s=S[e.Jugador];if(!s)return;const k=(e.Tipo_Evento||'').toLowerCase();
+      if(k=='gol'){s.g++;goles++;const t=s.j.Equipo;let best=[],bf=9;
+        JL.forEach(p=>{if(p.Equipo_Local!=t&&p.Equipo_Visita!=t)return;const f=Math.abs((g[p.Equipo_Local]||0)-gm(p,p.Equipo_Local))+Math.abs((g[p.Equipo_Visita]||0)-gm(p,p.Equipo_Visita));
+          if(f<bf){bf=f;best=[p]}else if(f==bf)best.push(p)});
+        const pick=bf<=1?(best.find(p=>p.ID_Partido==c.id)||(best.length==1?best[0]:null)):null;
+        if(pick){s.gp[pick.ID_Partido]=(s.gp[pick.ID_Partido]||0)+1;s.pj.add(pick.ID_Partido)}else s.gx++}
+      else if(k=='amarilla')s.am++;else if(k=='roja')s.ro++})});
   Object.values(S).forEach(s=>{Object.values(s.gp).forEach(n=>{if(n>=3)s.hat++;else if(n==2)s.dob++});s.n=s.pj.size;s.pg=Object.keys(s.gp).length});
   const jug=pa.filter(p=>p.Estado=='Jugado').length;
   resumen={goles,jug,prom:jug?(goles/jug).toFixed(1):'0',gol:Object.values(S).filter(s=>s.g).length};
@@ -212,7 +225,7 @@ function elegir(s){
   $('card').innerHTML=`<button id="x" aria-label="Cerrar">×</button><div class="cab"><img src="${esc(j.Foto||s.t.URL)}" alt=""><div><h2>${esc(j.Nombre)}</h2><div class="ds">${j.Apodo?'“'+esc(j.Apodo)+'” · ':''}${j.Numero?'#'+esc(j.Numero)+' · ':''}${esc(j.Posicion||'Jugador')}</div><div class="ds" style="color:#cfe3b9">${esc(s.t.Nombre)}</div></div></div>
   <div class="grid">${[['Goles',s.g],['Partidos',s.n],['Promedio',s.n?(s.g/s.n).toFixed(2):'—'],['Hat-tricks',s.hat],['Amarillas',s.am],['Rojas',s.ro]].map(([k,v])=>`<div><b>${v}</b><span>${k}</span></div>`).join('')}</div>
   ${s.cpj?`<div class="grid" style="grid-template-columns:repeat(2,1fr)"><div><b>${s.conc}</b><span>Goles recibidos</span></div><div><b>${(s.conc/s.cpj).toFixed(2)}</b><span>Por partido</span></div></div>`:''}
-  <div class="tit">Goles por partido</div>${partidos.map(x=>`<div class="fila" style="cursor:default"><div class="m">${x.rv?'vs '+esc(x.rv.Nombre):'Partido '+esc(x.p&&x.p.ID_Partido)}<small>${esc((x.p&&x.p.Fecha)||'')} · J${esc((x.p&&x.p.Jornada)||'?')}</small></div><em>${x.n} ⚽</em></div>`).join('')||'<div class="fila" style="cursor:default">Todavía sin goles</div>'}`;
+  <div class="tit">Goles por partido</div>${partidos.map(x=>`<div class="fila" style="cursor:default"><div class="m">${x.rv?'vs '+esc(x.rv.Nombre):'Partido '+esc(x.p&&x.p.ID_Partido)}<small>${esc((x.p&&x.p.Fecha)||'')} · J${esc((x.p&&x.p.Jornada)||'?')}</small></div><em>${x.n} ⚽</em></div>`).join('')+(s.gx?`<div class="fila" style="cursor:default"><div class="m">Sin partido identificado<small>ID viejo en la hoja Eventos</small></div><em>${s.gx} ⚽</em></div>`:'')||'<div class="fila" style="cursor:default">Todavía sin goles</div>'}`;
   $('x').onclick=()=>elegir(null);
 }
 $('btnL').onclick=()=>document.body.classList.toggle('ab');
