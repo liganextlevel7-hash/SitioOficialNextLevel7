@@ -84,11 +84,11 @@ let T={},PA={},S={},lista=[],cat='gol',sel=null,resumen={};
 /* ---------- estadísticas por jugador ---------- */
 function calcular(ju,pr,ev,pa){
   pa.forEach(p=>PA[p.ID_Partido]=p);
-  ju.forEach(j=>{const t=T[j.Equipo];if(!t)return;S[j.ID_Jugador]={j,t,g:0,am:0,ro:0,pj:new Set(),gp:{},gx:0,conc:0,cpj:0,hat:0,dob:0}});
+  ju.forEach(j=>{const t=T[j.Equipo];if(!t||['Penal','Default','Autogol'].includes(j.Nombre))return;S[j.ID_Jugador]={j,t,g:0,am:0,ro:0,pj:new Set(),gp:{},gx:0,conc:0,cpj:0,hat:0,dob:0}});
   /* Los ID de partido de Participaciones y Eventos son viejos (hoy apuntan a otros partidos). El partido real se identifica:
      - asistencia: por EQUIPO + FECHA
      - goles: por los equipos de quienes anotaron en cada grupo de goles, comparados con los marcadores reales */
-  const JL=pa.filter(p=>p.Estado=='Jugado'&&p.Goles_Local!==''&&p.Goles_Visita!==''),JM={};
+  const JL=pa.filter(p=>p.Estado=='Jugado'),JM={};
   JL.forEach(p=>[p.Equipo_Local,p.Equipo_Visita].forEach(e=>JM[e+'|'+p.Fecha]=p));
   pr.forEach(x=>{const s=S[x.Jugador],p=s&&JM[x.Equipo+'|'+x.Fecha];if(p)s.pj.add(p.ID_Partido)});
   /* portero: se le cargan todos los goles en contra de su equipo */
@@ -111,7 +111,7 @@ function calcular(ju,pr,ev,pa){
 const MAX=20;
 const topN=(k,txt,bar)=>Object.values(S).filter(s=>s.g>0).sort(k).slice(0,MAX).map(s=>({s,txt:txt(s),bar:bar(s)}));
 const CATS={
-  gol:['⚽ Goleadores',()=>topN((a,b)=>b.g-a.g||a.n-b.n,s=>s.g+(s.g==1?' gol':' goles'),s=>s.g)],
+  gol:['⚽ Goleadores',()=>topN((a,b)=>b.g-a.g,s=>s.g+(s.g==1?' gol':' goles'),s=>s.g)],
   prom:['📈 Promedio',()=>topN((a,b)=>b.g/Math.max(b.n,1)-a.g/Math.max(a.n,1)||b.g-a.g,s=>(s.g/Math.max(s.n,1)).toFixed(2)+' por partido',s=>s.g/Math.max(s.n,1))],
   hat:['🎩 Hat-tricks',()=>topN((a,b)=>b.hat-a.hat||b.dob-a.dob||b.g-a.g,s=>s.hat+' hat-trick · '+s.dob+' doblete'+(s.dob==1?'':'s'),s=>s.hat*3+s.dob+.1)],
   pg:['🔥 Partidos con gol',()=>topN((a,b)=>b.pg-a.pg||b.g-a.g,s=>s.pg+(s.pg==1?' partido':' partidos')+' anotando',s=>s.pg)]
