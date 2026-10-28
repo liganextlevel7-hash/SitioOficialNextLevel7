@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Liguilla 3D · Liga Next Level 7</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{--lime:#5eb50d;--gold:#ddc530;--ink:#04100a;--panel:rgba(4,16,10,.86);--line:rgba(94,181,13,.38)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--ink);color:#f3f5ee;font-family:Roboto,Arial,sans-serif;overflow:hidden}
+canvas{display:block;position:fixed;inset:0;touch-action:none}
+h1,h2{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;margin:0}
+#top{position:fixed;left:16px;top:calc(10px + env(safe-area-inset-top,0px));pointer-events:none;text-shadow:0 2px 8px #000}
+#top h1{font-size:30px;letter-spacing:3px;color:var(--gold);line-height:1}
+#top p{margin:2px 0 0;font-size:12px;color:#cfe3b9}
+#nav{position:fixed;right:16px;top:calc(12px + env(safe-area-inset-top,0px));z-index:3;display:flex;gap:8px}
+#nav a{display:inline-block;padding:8px 16px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:#f3f5ee;text-decoration:none;font:700 13px Roboto,Arial}
+#nav a:hover{background:rgba(94,181,13,.35)}
+#rondas{position:fixed;left:16px;right:16px;top:calc(62px + env(safe-area-inset-top,0px));display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+#rondas button{flex:none;background:var(--panel);color:#f3f5ee;border:1px solid var(--line);border-radius:999px;padding:8px 16px;font:700 13px Roboto,Arial;cursor:pointer}
+#rondas button.on{background:var(--gold);color:#04100a;border-color:var(--gold)}
+.panel{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(6px)}
+#lado{left:16px;top:calc(112px + env(safe-area-inset-top,0px));bottom:16px;width:310px;display:flex;flex-direction:column;overflow:hidden}
+#tabs{display:flex;border-bottom:1px solid var(--line)}
+#tabs button{flex:1;background:none;border:0;color:#9db38c;padding:11px 2px;font:700 12px Roboto,Arial;cursor:pointer;border-bottom:3px solid transparent}
+#tabs button.on{color:var(--gold);border-color:var(--gold)}
+#cont{flex:1;overflow-y:auto;padding:6px 8px 10px}
+.fila{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px;font-size:13px;cursor:pointer}
+.fila:hover{background:rgba(94,181,13,.14)}.fila.on{background:rgba(94,181,13,.3);outline:1px solid var(--lime)}
+.fila .r{width:22px;text-align:center;font-family:'Bebas Neue';font-size:20px;color:var(--gold)}
+.fila img{width:28px;height:28px;object-fit:contain;flex:none}
+.fila .m{flex:1;min-width:0;line-height:1.25}.fila .m b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fila .m small{color:#9db38c;font-size:11px}
+.fila em{font-style:normal;font-family:'Bebas Neue';font-size:22px;color:var(--gold)}
+.sc{font-family:'Bebas Neue';font-size:20px;color:var(--gold);min-width:46px;text-align:center}
+.chip{font-size:10px;font-weight:700;border-radius:999px;padding:2px 8px;border:1px solid;white-space:nowrap}
+.c1{color:#9db38c;border-color:#9db38c}.c2{color:var(--gold);border-color:var(--gold)}.c3{color:#6fb4ff;border-color:#6fb4ff}.c4{color:var(--lime);border-color:var(--lime)}
+.tit{font-family:'Bebas Neue';font-size:17px;letter-spacing:1.5px;color:var(--lime);margin:10px 6px 2px}
+.nota{font-size:11px;color:#9db38c;line-height:1.4;padding:6px}
+#card{right:16px;top:calc(112px + env(safe-area-inset-top,0px));width:330px;padding:16px;display:none;max-height:calc(100% - 130px);overflow-y:auto}
+body.sel #card{display:block}
+#card .cab{display:flex;gap:12px;align-items:center}#card .cab img{width:74px;height:74px;object-fit:contain}
+#card h2{font-size:28px;letter-spacing:1.5px;line-height:1}
+#card .ds{font-size:12px;color:var(--gold);margin-top:3px}
+#x{position:absolute;right:8px;top:6px;background:none;border:0;color:#cfe3b9;font-size:24px;cursor:pointer;padding:6px}
+.pts{display:flex;align-items:baseline;gap:8px;margin:10px 0 2px}
+.pts b{font-family:'Bebas Neue';font-weight:400;font-size:58px;line-height:.9;color:var(--gold)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0}
+.grid div{background:rgba(255,255,255,.06);border-radius:8px;padding:6px 4px;text-align:center}
+.grid b{display:block;font-family:'Bebas Neue';font-weight:400;font-size:24px;line-height:1}.grid span{font-size:11px;color:#9db38c}
+#btnL{display:none}
+#msg{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:'Bebas Neue';font-size:28px;letter-spacing:3px;color:var(--gold);z-index:5;text-align:center;padding:20px}
+@media(max-width:760px){
+ #top h1{font-size:24px}
+ #nav{top:calc(14px + env(safe-area-inset-top,0px));right:12px}
+ #nav a{padding:7px 12px;font-size:15px}
+ #nav .t{display:none}
+ #lado{left:8px;right:8px;top:auto;bottom:8px;width:auto;height:46vh;display:none}
+ body.ab #lado{display:flex}body.sel #lado{display:none}
+ #card{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:60vh}
+ #btnL{display:block;position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));background:var(--panel);color:var(--gold);border:1px solid var(--line);border-radius:999px;padding:9px 18px;font:700 14px Roboto,Arial}
+ body.sel #btnL,body.ab #btnL{display:none}
+}
+</style>
+</head>
+<body>
+<div id="msg">Cargando la liguilla…</div>
+<div id="top"><h1>Liguilla Next Level 7</h1><p>Equipos clasificados hasta este momento · toca a un jugador para ver su equipo</p></div>
+<div id="nav"><a href="liguilla.html" title="Volver a la liguilla">←<span class="t"> Liguilla</span></a><a href="index.html" title="Ir al inicio">🏠<span class="t"> Inicio</span></a></div>
+<div id="rondas"></div>
+<button id="btnL">Clasificados</button>
+<aside id="lado" class="panel"><div id="tabs"></div><div id="cont"></div></aside>
+<aside id="card" class="panel"></aside>
+<script>
+const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?single=true&output=csv&gid=';
+const GID={eq:'1894947293',li:'1783955716',es:'979195152'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const esPD=v=>!v||v.trim().toLowerCase().replace(/p+or/,'por')==='por definir';
+function filas(t){const r=[];let f='',row=[],q=false;t=String(t||'');for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f.trim());f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f.trim());f='';if(row.length>1||row[0])r.push(row);row=[]}else f+=c}if(f||row.length){row.push(f.trim());r.push(row)}return r}
+const objetos=t=>{const r=filas(t),h=r.shift()||[];return r.map(a=>Object.fromEntries(h.map((k,i)=>[k,a[i]||''])))};
+
+/* ---------- datos ---------- */
+let T={},TN={},tabla=[],B=[],clas=[],sel=null,ronda='Completa',tab='cla',liguillaRaw=[];
+const PD={id:'pd',Nombre:'Por definir',Descripción:'',URL:'',Color_Playera:''};
+function armar(eqTxt,liTxt,esTxt){
+  const eqs=objetos(eqTxt).map(e=>({...e,id:e.ID_Equipo}));
+  eqs.forEach(e=>{T[e.id]=e;TN[norm(e.Nombre)]=e});
+  const activo=e=>(e.Status||'').toLowerCase()=='activo';
+  /* tabla de clasificación = misma hoja de estadísticas que usa la tabla general */
+  const est=filas(esTxt).slice(1).map(c=>({nombre:c[1],jj:+c[2]||0,jg:+c[3]||0,je:+c[4]||0,jp:+c[5]||0,gf:+c[6]||0,gc:+c[7]||0,dg:+c[8]||0,pts:+c[9]||0,rk:Number(c[10])||999}))
+    .filter(r=>r.nombre&&r.nombre!=='Descansa'&&TN[norm(r.nombre)]&&activo(TN[norm(r.nombre)]));
+  est.sort((a,b)=>a.rk-b.rk);
+  tabla=est.map((r,i)=>({t:TN[norm(r.nombre)],r,pos:i+1}));
+  clas=tabla.slice(0,8);
+  /* partidos de la liguilla (mismas columnas que liguilla.js) */
+  liguillaRaw=filas(liTxt).slice(1).map(c=>({ronda:(c[1]||'').toLowerCase(),nl:c[3],gl:c[4],nv:c[6],gv:c[7],gan:c[8],rl:Number(c[11])||0,rv:Number(c[12])||0,estado:(c[13]||'').toLowerCase(),fecha:c[14]||''}));
+  const sacar=(rn,n)=>liguillaRaw.filter(p=>p.ronda==rn).slice(0,n);
+  const eq=nom=>esPD(nom)?null:(TN[norm(nom)]||null);
+  const asiento=n=>n>0&&tabla[n-1]?tabla[n-1].t:null;
+  B=[];
+  const Q=sacar('cuartos',4);
+  for(let i=0;i<4;i++){
+    const p=Q[i]||{},sl=p.rl||i+1,sv=p.rv||8-i;
+    let l=eq(p.nl),v=eq(p.nv),pl=false,pv=false;
+    if(!l){l=asiento(sl);pl=!!l}if(!v){v=asiento(sv);pv=!!v}
+    B.push({r:'Cuartos',i,loc:l,vis:v,pl,pv,sl,sv,...resultado(p,l,v)});
+  }
+  sacar('semifinal',2).concat([{},{}]).slice(0,2).forEach((p,i)=>{const l=eq(p.nl),v=eq(p.nv);B.push({r:'Semifinal',i,loc:l,vis:v,...resultado(p,l,v)})});
+  const F=sacar('final',1)[0]||{};{const l=eq(F.nl),v=eq(F.nv);B.push({r:'Final',i:0,loc:l,vis:v,...resultado(F,l,v)})}
+}
+function resultado(p,l,v){
+  const jug=(p.estado||'')=='jugado'&&p.gl!==''&&p.gl!=null,gl=+p.gl,gv=+p.gv;
+  let gan=null;if(jug&&l&&v){gan=gl>gv?l:gl<gv?v:(TN[norm(p.gan)]||null)}
+  return {jug,gl:jug?gl:null,gv:jug?gv:null,gan,fecha:p.fecha||''};
+}
+const posDe=t=>t?tabla.findIndex(x=>x.t===t)+1:0;
+
+/* ---------- escena ---------- */
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x06130a);scene.fog=new THREE.Fog(0x06130a,90,230);
+const camera=new THREE.PerspectiveCamera(46,innerWidth/innerHeight,.5,400);
+scene.add(new THREE.HemisphereLight(0xbfe8c0,0x0a1d10,.9));
+const sun=new THREE.DirectionalLight(0xfff4d6,.95);sun.position.set(-25,55,25);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
+Object.assign(sun.shadow.camera,{left:-60,right:60,top:35,bottom:-35,near:10,far:140});scene.add(sun);
+const PW=104,PH=56;
+(function(){
+  const c=document.createElement('canvas');c.width=1560;c.height=840;const x=c.getContext('2d');
+  for(let i=0;i<16;i++){x.fillStyle=i%2?'#2a7a2d':'#348a3a';x.fillRect(i*97.5,0,98,840)}
+  x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=5;x.strokeRect(40,40,1480,760);x.beginPath();x.moveTo(780,40);x.lineTo(780,800);x.stroke();x.beginPath();x.arc(780,420,95,0,7);x.stroke();
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;
+  const f=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),new THREE.MeshStandardMaterial({map:t,roughness:.95}));f.rotation.x=-Math.PI/2;f.receiveShadow=true;scene.add(f);
+  const s=new THREE.Mesh(new THREE.CircleGeometry(260,48),new THREE.MeshStandardMaterial({color:0x08170d,roughness:1}));s.rotation.x=-Math.PI/2;s.position.y=-.05;scene.add(s);
+  const k=document.createElement('canvas');k.width=512;k.height=96;const y=k.getContext('2d');y.fillStyle='#0b1a10';y.fillRect(0,0,512,96);
+  const cols=['#5eb50d','#ddc530','#f3f5ee','#2f6db5','#c0392b','#8fa584'];for(let i=0;i<900;i++){y.fillStyle=cols[i%6];y.globalAlpha=.55+Math.random()*.4;y.fillRect(Math.random()*512,Math.random()*96,3,4)}
+  const ct=new THREE.CanvasTexture(k);ct.encoding=THREE.sRGBEncoding;
+  const grada=(w,px,pz,r)=>{const g=new THREE.Group();for(let i=0;i<3;i++){const ms=Array(6).fill(0).map((_,n)=>n==4?new THREE.MeshBasicMaterial({map:ct}):new THREE.MeshStandardMaterial({color:0x0e1f14}));
+    const b=new THREE.Mesh(new THREE.BoxGeometry(w,1.8,2.4),ms);b.position.set(0,.9+i*1.8,i*2.4);g.add(b)}g.position.set(px,0,pz);g.rotation.y=r;scene.add(g)};
+  grada(110,0,-PH/2-3.5,0);grada(110,0,PH/2+9,Math.PI);grada(60,-PW/2-4.5,0,Math.PI/2);grada(60,PW/2+4.5,0,-Math.PI/2);
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{const g=new THREE.Group(),p=new THREE.Mesh(new THREE.CylinderGeometry(.3,.45,16),new THREE.MeshStandardMaterial({color:0x333c36}));p.position.y=8;g.add(p);
+    const l=new THREE.Mesh(new THREE.BoxGeometry(5,1.6,.5),new THREE.MeshBasicMaterial({color:0xfff2c0}));l.position.y=16.4;l.lookAt(0,10,0);g.add(l);g.position.set(a*(PW/2+10),0,b*(PH/2+12));scene.add(g)});
+})();
+
+/* ---------- jugadores ---------- */
+const loader=new THREE.TextureLoader();loader.setCrossOrigin('anonymous');
+const fb=(txt,col)=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle=col;x.beginPath();x.arc(64,64,58,0,7);x.fill();x.strokeStyle='#fff';x.lineWidth=6;x.stroke();
+  x.fillStyle='#fff';x.font='bold 64px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,64,68);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t};
+const cargar=(u,f)=>new Promise(ok=>{if(!u)return ok(f());const lim=setTimeout(()=>ok(f()),6000);loader.load(u,t=>{clearTimeout(lim);t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>{clearTimeout(lim);ok(f())})});
+function prom(tex,def){try{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(tex.image,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,n=0;
+  for(let i=0;i<d.length;i+=4)if(d[i+3]>200){r+=d[i];g+=d[i+1];b+=d[i+2];n++}return n>8?new THREE.Color(r/n/255,g/n/255,b/n/255):def}catch(e){return def}}
+const cacheT={};
+function textura(t){return cacheT[t.id]||(cacheT[t.id]=(async()=>{const idx=Object.keys(T).indexOf(String(t.id));const def=t.id=='pd'?new THREE.Color(0x6b7a70):new THREE.Color().setHSL((Math.max(idx,0)*.137)%1,.55,.42);
+  const [esc,pla]=await Promise.all([cargar(t.URL,()=>fb(t.id=='pd'?'?':(t.Nombre||'?').charAt(0),'#'+def.getHexString())),cargar(t.Color_Playera,()=>null)]);
+  return {esc,pla,col:pla?prom(pla,def):def}})())}
+function texto(lineas,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+  lineas.forEach(([t,tam,col,y])=>{x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,y);x.fillStyle=col;x.fillText(t,w/2,y)});
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
+const pieles=[0xf1c9a0,0xd9a577,0xb67b4f,0x8d5a3a];
+async function jugador(t,i){
+  const {esc,pla,col}=await textura(t),g=new THREE.Group(),mat=(c,r=.7)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),piel=mat(pieles[i%4]);
+  const ext=(r,h,m,x,y)=>{const p=new THREE.Group();p.position.set(x,y,0);const b=new THREE.Mesh(new THREE.CylinderGeometry(r,r*.85,h,10),m);b.position.y=-h/2;b.castShadow=true;p.add(b);g.add(p);return p};
+  const j={g,t,fase:Math.random()*9,pI:ext(.2,1,mat(0xf3f5ee),-.28,1.05),pD:ext(.2,1,mat(0xf3f5ee),.28,1.05),bI:ext(.15,.9,piel,-.68,1.95),bD:ext(.15,.9,piel,.68,1.95)};
+  const to=new THREE.Mesh(new THREE.BoxGeometry(1.1,1,.5),mat(col));to.position.y=1.5;to.castShadow=true;g.add(to);
+  const sh=new THREE.Mesh(new THREE.BoxGeometry(1.1,.4,.52),mat(col.clone().multiplyScalar(.55)));sh.position.y=.95;g.add(sh);
+  if(pla)[[.27,0],[-.27,Math.PI]].forEach(([z,r])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.25),new THREE.MeshBasicMaterial({map:pla,transparent:true,alphaTest:.1}));p.position.set(0,1.5,z);p.rotation.y=r;g.add(p)});
+  j.cab=new THREE.Mesh(new THREE.SphereGeometry(.42,18,14),piel);j.cab.position.y=2.4;j.cab.castShadow=true;g.add(j.cab);
+  const pe=new THREE.Mesh(new THREE.SphereGeometry(.44,18,10,0,7,0,1.2),mat(0x1a1410));pe.position.y=2.42;g.add(pe);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:esc,transparent:true,depthTest:false}));sp.scale.set(1.8,1.8,1);sp.position.y=4;sp.renderOrder=2;g.add(sp);
+  const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,5,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.5;hit.userData.j=j;g.add(hit);j.hit=hit;
+  return j;
+}
+
+/* ---------- bracket sobre la cancha ---------- */
+const grupo=new THREE.Group();scene.add(grupo);let anim=[],hits=[],gen=0,copaG=null;
+const COLQ=[0xffd700,0xc0c6cc,0xcd7f32,0x29b6f6];
+const XR={Cuartos:-32,Semifinal:0,Final:32},ZQ=[-18,-6,6,18],ZS=[-12,12];
+const posDe2=m=>m.r=='Cuartos'?[XR.Cuartos,ZQ[m.i]]:m.r=='Semifinal'?[XR.Semifinal,ZS[m.i]]:[XR.Final,5];
+function linea(x1,z1,x2,z2,col){const dx=x2-x1,dz=z2-z1,l=Math.hypot(dx,dz)||.01;
+  const m=new THREE.Mesh(new THREE.BoxGeometry(l,.08,.3),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.75}));
+  m.position.set((x1+x2)/2,.08,(z1+z2)/2);m.rotation.y=-Math.atan2(dz,dx);grupo.add(m)}
+function conectar(a,b,col){const m=(a[0]+b[0])/2;linea(a[0]+7,a[1],m,a[1],col);linea(m,a[1],m,b[1],col);linea(m,b[1],b[0]-7,b[1],col)}
+function trofeo(x,z){
+  const g=new THREE.Group(),oro=new THREE.MeshStandardMaterial({color:0xffd24a,metalness:.85,roughness:.25,emissive:0x442c00,emissiveIntensity:.5});
+  const add=(geo,y,mt=oro)=>{const m=new THREE.Mesh(geo,mt);m.position.y=y;m.castShadow=true;g.add(m);return m};
+  add(new THREE.CylinderGeometry(2.2,2.6,.8,24),.4,new THREE.MeshStandardMaterial({color:0x2a1a08,roughness:.6}));
+  add(new THREE.CylinderGeometry(.5,.9,2.2,16),1.9);add(new THREE.SphereGeometry(.75,16,12),3.1);
+  add(new THREE.CylinderGeometry(1.9,.7,2.6,24,1,true),4.6,Object.assign(oro.clone(),{side:THREE.DoubleSide}));
+  [-1,1].forEach(s=>{const a=new THREE.Mesh(new THREE.TorusGeometry(.9,.18,10,20),oro);a.position.set(s*2,4.7,0);a.rotation.y=Math.PI/2;g.add(a)});
+  const bola=new THREE.Mesh(new THREE.SphereGeometry(.7,18,14),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.4}));bola.position.y=6.6;g.add(bola);
+  g.position.set(x,0,z);grupo.add(g);return g;
+}
+function limpiar(){while(grupo.children.length)grupo.remove(grupo.children[0]);anim=[];hits=[];copaG=null}
+function dibujar(){
+  const mi=++gen;limpiar();
+  B.forEach(m=>{
+    const [cx,cz]=posDe2(m),jugM=m.jug;
+    const col=m.r=='Cuartos'?COLQ[m.i]:m.r=='Semifinal'?0xffffff:0xff9800;
+    const ring=new THREE.Mesh(new THREE.RingGeometry(6.2,6.5,48),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.85,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.set(cx,.06,cz);grupo.add(ring);
+    const sub=m.r=='Cuartos'?`#${m.sl} vs #${m.sv}`:m.r=='Semifinal'?'Semifinal '+(m.i+1):'FINAL';
+    const pl=texto([[jugM?`${m.gl} - ${m.gv}`:'VS',jugM?88:76,jugM?'#ddc530':'#f3f5ee',50],[sub+(jugM||!m.fecha?'':' · '+m.fecha),34,m.r=='Final'?'#ff9800':'#cfe3b9',116]],512,150);
+    pl.scale.set(6.6,1.93,1);pl.position.set(cx,6.2,cz);grupo.add(pl);
+    Promise.all([jugador(m.loc||PD,m.i*2),jugador(m.vis||PD,m.i*2+1)]).then(([a,b])=>{
+      if(mi!=gen)return;
+      a.g.position.set(cx-3.3,0,cz);a.g.rotation.y=Math.PI/2;b.g.position.set(cx+3.3,0,cz);b.g.rotation.y=-Math.PI/2;
+      a.res=jugM&&m.gan?(m.gan===m.loc?1:0):null;b.res=jugM&&m.gan?(m.gan===m.vis?1:0):null;
+      if(!m.loc)a.pend=true;if(!m.vis)b.pend=true;a.prov=m.pl;b.prov=m.pv;
+      [a,b].forEach(j=>{grupo.add(j.g);hits.push(j.hit);anim.push(j)});
+    }).catch(e=>console.error(e));
+  });
+  const q=B.filter(m=>m.r=='Cuartos'),s=B.filter(m=>m.r=='Semifinal'),f=B.find(m=>m.r=='Final');
+  q.forEach(m=>conectar(posDe2(m),posDe2(s[Math.floor(m.i/2)]),0xdddddd));
+  s.forEach(m=>conectar(posDe2(m),posDe2(f),0xff9800));
+  const [fx,fz]=posDe2(f);copaG=trofeo(fx,-16);
+  const camp=f&&f.gan;
+  const et=texto(camp?[[camp.Nombre.toUpperCase(),54,'#ffd24a',40],['CAMPEÓN',74,'#ffffff',110]]:[['CAMPEÓN',74,'#ffd24a',50],['por definir',40,'#cfe3b9',112]],512,150);
+  et.scale.set(7.4,2.16,1);et.position.set(fx,10.5,-16);grupo.add(et);
+}
+
+/* ---------- cámara y controles ---------- */
+const cam={th:.2,ph:1.0,d:90,o:new THREE.Vector3(0,0,0)},meta={th:.2,ph:1.0,d:90},objetivo=new THREE.Vector3(0,0,0);
+const ptr=new Map();let mov=0,pinch=0,idle=0;const cv=renderer.domElement;
+const asp=()=>innerWidth/innerHeight,ajuste=w=>Math.min(115,Math.max(24,w/(2*.4245*asp())));
+function enfocar(r){
+  ronda=r;sel=null;document.body.classList.remove('sel');
+  document.querySelectorAll('#rondas button').forEach(b=>b.classList.toggle('on',b.dataset.r==r));
+  const v={Completa:[0,0,ajuste(92)],Cuartos:[XR.Cuartos,0,ajuste(30)],Semifinal:[XR.Semifinal,0,ajuste(30)],Final:[XR.Final-1,-6,ajuste(34)]}[r];
+  objetivo.set(v[0],0,v[1]);meta.d=v[2];meta.ph=Math.min(meta.ph,1.1);idle=0;
+}
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});mov=0;idle=0;if(ptr.size==2){const[a,b]=[...ptr.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y)}});
+cv.addEventListener('pointermove',e=>{const p=ptr.get(e.pointerId);if(!p)return;idle=0;
+  if(ptr.size==2){p.x=e.clientX;p.y=e.clientY;const[a,b]=[...ptr.values()],n=Math.hypot(a.x-b.x,a.y-b.y);meta.d=Math.min(120,Math.max(9,meta.d*pinch/n));pinch=n;mov=99;return}
+  const dx=e.clientX-p.x,dy=e.clientY-p.y;mov+=Math.abs(dx)+Math.abs(dy);p.x=e.clientX;p.y=e.clientY;meta.th-=dx*.006;meta.ph=Math.min(1.45,Math.max(.25,meta.ph-dy*.005))});
+cv.addEventListener('pointerup',e=>{ptr.delete(e.pointerId);if(mov<8&&!ptr.size){ray.setFromCamera(new THREE.Vector2(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1),camera);const h=ray.intersectObjects(hits)[0];elegir(h&&!h.object.userData.j.pend?h.object.userData.j.t:null,h?h.object.userData.j:null)}});
+cv.addEventListener('pointercancel',e=>ptr.delete(e.pointerId));
+cv.addEventListener('wheel',e=>{e.preventDefault();meta.d=Math.min(120,Math.max(9,meta.d*(1+e.deltaY*.001)))},{passive:false});
+const ray=new THREE.Raycaster();
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
+
+/* ---------- interfaz ---------- */
+const estado=m=>m.jug?['Jugado','c1']:(m.loc&&m.vis?['Programado','c2']:['Por definir','c3']);
+const nombreM=t=>t?t.Nombre:'Por definir';
+function panel(){
+  let h='';
+  if(tab=='cla'){
+    h=`<div class="tit">Clasificados hasta este momento</div>`+tabla.slice(0,8).map(x=>`<div class="fila" data-t="${x.t.id}"><span class="r">${x.pos}</span><img src="${esc(x.t.URL)}" alt=""><div class="m"><b>${esc(x.t.Nombre)}</b><small>${x.r.jj} JJ · ${x.r.jg}G ${x.r.je}E ${x.r.jp}P · DG ${x.r.dg>0?'+':''}${x.r.dg}</small></div><em>${x.r.pts}</em></div>`).join('')
+     +(tabla[8]?`<div class="tit">Fuera por ahora</div>`+tabla.slice(8,10).map(x=>`<div class="fila" data-t="${x.t.id}" style="opacity:.7"><span class="r">${x.pos}</span><img src="${esc(x.t.URL)}" alt=""><div class="m"><b>${esc(x.t.Nombre)}</b><small>a ${tabla[7].r.pts-x.r.pts} pt${tabla[7].r.pts-x.r.pts==1?'':'s'} del 8.º lugar</small></div><em>${x.r.pts}</em></div>`).join(''):'')
+     +`<div class="nota">Posiciones actuales de la tabla general. Pueden cambiar hasta que termine la fase regular.</div>`;
+  }else{
+    h=['Cuartos','Semifinal','Final'].map(r=>`<div class="tit">${r=='Semifinal'?'Semifinales':r=='Final'?'Final':'Cuartos de final'}</div>`+B.filter(m=>m.r==r).map(m=>{const[et,cl]=estado(m);
+      return `<div class="fila" data-r="${r}" style="cursor:pointer"><div class="m"><b>${esc(nombreM(m.loc))}</b><small>vs ${esc(nombreM(m.vis))}${m.fecha?' · '+esc(m.fecha):''}</small></div><span class="sc">${m.jug?m.gl+' - '+m.gv:'vs'}</span><span class="chip ${cl}">${et}</span></div>`}).join('')).join('');
+  }
+  $('cont').innerHTML=h;
+  $('cont').querySelectorAll('[data-t]').forEach(e=>e.onclick=()=>{elegir(T[e.dataset.t]);document.body.classList.remove('ab')});
+  $('cont').querySelectorAll('[data-r]').forEach(e=>e.onclick=()=>{enfocar(e.dataset.r);document.body.classList.remove('ab')});
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));
+}
+function elegir(t,fig){
+  if(!t){sel=null;document.body.classList.remove('sel');enfocar(ronda);return}
+  sel=t;document.body.classList.add('sel');
+  const j=fig||anim.find(x=>x.t===t&&!x.pend);if(j){objetivo.set(j.g.position.x,0,j.g.position.z);meta.d=20;meta.ph=Math.min(meta.ph,1.15)}
+  const pos=posDe(t),x=pos?tabla[pos-1].r:null;
+  const mios=B.filter(m=>m.loc===t||m.vis===t);
+  $('card').innerHTML=`<button id="x" aria-label="Cerrar">×</button><div class="cab"><img src="${esc(t.URL)}" alt=""><div><h2>${esc(t.Nombre)}</h2><div class="ds">${esc(t.Descripción||'')}</div><div class="ds" style="color:#cfe3b9">${pos?(pos<=8?'Clasificado · puesto '+pos:'Fuera de zona · puesto '+pos):''}</div></div></div>
+  ${x?`<div class="pts"><b>${x.pts}</b><span>puntos</span></div><div class="grid">${[['JJ',x.jj],['JG',x.jg],['JE',x.je],['JP',x.jp],['GF',x.gf],['GC',x.gc],['DG',(x.dg>0?'+':'')+x.dg]].map(([k,v])=>`<div><b>${v}</b><span>${k}</span></div>`).join('')}</div>`:''}
+  <div class="tit">Su camino en la liguilla</div>${mios.map(m=>{const rv=m.loc===t?m.vis:m.loc,[et,cl]=estado(m);
+    return `<div class="fila" style="cursor:default"><div class="m"><b>${m.r=='Cuartos'?'Cuartos de final':m.r=='Semifinal'?'Semifinal':'Final'}</b><small>vs ${esc(nombreM(rv))}${m.fecha?' · '+esc(m.fecha):''}</small></div><span class="sc">${m.jug?(m.loc===t?m.gl+' - '+m.gv:m.gv+' - '+m.gl):'vs'}</span><span class="chip ${cl}">${et}</span></div>`}).join('')||'<div class="fila" style="cursor:default">Sin partidos de liguilla todavía</div>'}`;
+  $('x').onclick=()=>elegir(null);
+}
+$('btnL').onclick=()=>document.body.classList.toggle('ab');
+
+/* ---------- animación ---------- */
+const reloj=new THREE.Clock(),reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function animar(){
+  requestAnimationFrame(animar);const dt=Math.min(reloj.getDelta(),.05),t=reloj.elapsedTime;
+  anim.forEach(j=>{j.fase+=dt*2.4;const s=Math.sin(j.fase);
+    j.pI.rotation.x=s*.18;j.pD.rotation.x=-s*.18;j.cab.position.y=2.4+Math.abs(Math.cos(j.fase))*.06;
+    if(j.pend){j.g.visible=true;j.bI.rotation.x=0;j.bD.rotation.x=0;return}
+    if(j.res===1){j.bI.rotation.z=2.6+s*.3;j.bD.rotation.z=-2.6-s*.3;j.g.position.y=Math.abs(Math.sin(j.fase*1.5))*.5}
+    else if(j.res===0){j.cab.rotation.x=.45;j.bI.rotation.x=.1;j.bD.rotation.x=.1}
+    else{j.bI.rotation.x=-s*.2;j.bD.rotation.x=s*.2}});
+  if(copaG){copaG.rotation.y+=dt*.8;copaG.position.y=Math.sin(t*1.5)*.25}
+  idle+=dt;if(!sel&&!reduce&&idle>6&&!ptr.size)meta.th=.2+Math.sin(t*.1)*.35;
+  const k=Math.min(1,dt*4);cam.th+=(meta.th-cam.th)*k;cam.ph+=(meta.ph-cam.ph)*k;cam.d+=(meta.d-cam.d)*k;cam.o.lerp(objetivo,k);
+  camera.position.set(cam.o.x+cam.d*Math.sin(cam.ph)*Math.sin(cam.th),cam.d*Math.cos(cam.ph)+1.5,cam.o.z+cam.d*Math.sin(cam.ph)*Math.cos(cam.th));
+  camera.lookAt(cam.o.x,sel?2:0,cam.o.z);renderer.render(scene,camera);
+}
+
+/* ---------- arranque ---------- */
+(async()=>{
+  try{
+    const g=k=>fetch(SHEET+GID[k]).then(r=>r.text()).catch(()=>'');
+    const [eq,li,es]=await Promise.all([g('eq'),g('li'),g('es')]);
+    armar(eq,li,es);
+    $('rondas').innerHTML=[['Completa','Liguilla completa'],['Cuartos','Cuartos'],['Semifinal','Semifinales'],['Final','Final']].map(([k,n])=>`<button data-r="${k}">${n}</button>`).join('');
+    document.querySelectorAll('#rondas button').forEach(b=>b.onclick=()=>enfocar(b.dataset.r));
+    $('tabs').innerHTML=[['cla','Clasificados'],['par','Partidos']].map(([k,n])=>`<button data-k="${k}">${n}</button>`).join('');
+    document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.k;panel()});
+    dibujar();panel();enfocar('Completa');$('msg').remove();animar();
+    if(!tabla.length)$('top').querySelector('p').textContent='No pude leer la tabla de clasificación; revisa la hoja de estadísticas';
+  }catch(e){$('msg').textContent='No se pudo cargar la hoja: '+e.message}
+})();
+</script>
+</body>
+</html>
