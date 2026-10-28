@@ -75,7 +75,7 @@ body.sel #card{display:block}
 <div id="ayuda">Arrastra para girar · rueda o pellizco para acercar</div>
 <script>
 const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?single=true&output=csv&gid=';
-const GID_EQ='1894947293',GID_PA='1362473459';
+const GID_EQ='1894947293',GID_PA='1362473459',GID_ES='979195152'; /* GID_ES = hoja de estadísticas: la misma de la tabla general */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function csv(t){const r=[];let f='',row=[],q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';if(row.length>1||row[0])r.push(row);row=[]}else f+=c}if(f||row.length){row.push(f);r.push(row)}const h=r.shift().map(x=>x.trim());return r.map(a=>Object.fromEntries(h.map((k,i)=>[k,(a[i]||'').trim()])))}
@@ -93,6 +93,25 @@ function calcular(){
         s.pj++;s.gf+=a;s.gc+=b;
         if(a>b){s.g++;s.pts+=3;s.forma.push('G')}else if(a<b){s.p++;s.forma.push('P')}else{s.e++;s.pts++;s.forma.push('E')}})});
   orden=[...teams].sort((a,b)=>S[b.id].pts-S[a.id].pts||(S[b.id].gf-S[b.id].gc)-(S[a.id].gf-S[a.id].gc)||S[b.id].gf-S[a.id].gf);
+  aplicarTablaGeneral();
+}
+/* Puntos, partidos, goles y posición se toman de la hoja de estadísticas, igual que tablaGeneral.js
+   (columnas: equipo, JJ, JG, JE, JP, GF, GC, DG, PTS, ranking). Los últimos resultados se siguen sacando de los partidos. */
+let EST=null;
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+function leerEstadisticas(texto){
+  const f=String(texto||'').replace(/\r/g,'').trim().split('\n').slice(1).map(l=>l.split(',')).map(c=>({equipo:(c[1]||'').trim(),
+    jj:Number(c[2])||0,jg:Number(c[3])||0,je:Number(c[4])||0,jp:Number(c[5])||0,gf:Number(c[6])||0,gc:Number(c[7])||0,dg:Number(c[8])||0,pts:Number(c[9])||0,rank:Number(c[10])||999}))
+    .filter(r=>r.equipo&&r.equipo!=='Descansa');
+  return f.length?f:null;
+}
+function aplicarTablaGeneral(){
+  if(!EST)return;
+  const por={};EST.forEach(r=>por[norm(r.equipo)]=r);
+  teams.forEach(t=>{const r=por[norm(t.Nombre)];if(!r)return;const s=S[t.id];
+    s.pj=r.jj;s.g=r.jg;s.e=r.je;s.p=r.jp;s.gf=r.gf;s.gc=r.gc;s.dg=r.dg;s.pts=r.pts;s.rank=r.rank});
+  const pos=t=>S[t.id].rank!=null?S[t.id].rank:999;
+  orden=[...orden].sort((a,b)=>pos(a)-pos(b));
 }
 function proximo(id){
   const hoy=new Date().setHours(0,0,0,0);
@@ -238,7 +257,7 @@ function elegir(j){
   goal.d=17;goal.ph=Math.min(goal.ph,1.1);
   const t=j.t,s=S[t.id],pos=orden.indexOf(t)+1;
   j.mood=pos==1&&s.p==0&&s.pj>0?'jubilo':pos<=8?'feliz':'triste';j.k=pos<=8?(9-pos)/8:0;
-  const dg=s.gf-s.gc,pr=proximo(t.ID_Equipo);
+  const dg=s.dg!=null?s.dg:s.gf-s.gc,pr=proximo(t.ID_Equipo);
   const rival=pr?teams.find(e=>e.id==(pr.Equipo_Local==t.id?pr.Equipo_Visita:pr.Equipo_Local)):null;
   $('card').innerHTML=`<button id="x" aria-label="Cerrar">×</button>
    <div class="cab">${t.URL?`<img class="esc" src="${esc(t.URL)}" alt="">`:''}<div><h2>${esc(t.Nombre)}</h2><div class="desc">${esc(t.Descripción||'')}</div><div class="pos">Puesto ${pos} de ${teams.length} · ${j.mood=='jubilo'?'¡Líder invicto! 🏆':pos<=8?'Zona de liguilla':'Fuera de liguilla'}</div></div></div>
@@ -309,9 +328,11 @@ function animar(){
 /* ---------- arranque ---------- */
 (async()=>{
   try{
-    const [te,tp]=await Promise.all([fetch(SHEET+GID_EQ).then(r=>r.text()),fetch(SHEET+GID_PA).then(r=>r.text())]);
+    const [te,tp,tes]=await Promise.all([fetch(SHEET+GID_EQ).then(r=>r.text()),fetch(SHEET+GID_PA).then(r=>r.text()),fetch(SHEET+GID_ES).then(r=>r.text()).catch(()=>'')]);
+    EST=leerEstadisticas(tes);
     teams=csv(te).filter(e=>(e.Status||'').toLowerCase()=='activo').map(e=>({...e,id:e.ID_Equipo}));
-    partidos=csv(tp);calcular();lista();
+    const act=new Set(teams.map(t=>t.id)),ok=x=>!x||act.has(x);
+    partidos=csv(tp).filter(p=>p.Estado=='Jugado'||(ok(p.Equipo_Local)&&ok(p.Equipo_Visita)));calcular();lista();
     await Promise.all(teams.map((t,i)=>crearJugador(t,i)));
     $('msg').remove();animar();
   }catch(e){$('msg').textContent='No se pudo cargar la hoja: '+e.message}
