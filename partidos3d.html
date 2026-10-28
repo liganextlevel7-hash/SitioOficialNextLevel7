@@ -92,7 +92,7 @@ const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 function csv(t){const r=[];let f='',row=[],q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';if(row.length>1||row[0])r.push(row);row=[]}else f+=c}if(f||row.length){row.push(f);r.push(row)}const h=r.shift().map(x=>x.trim());return r.map(a=>Object.fromEntries(h.map((k,i)=>[k,(a[i]||'').trim()])))}
 const tf=s=>{const p=(s||'').split('/');return p.length==3?new Date(+p[2],+p[1]-1,+p[0]).getTime():0};
 const hora=h=>h?h.replace(/:00$/,''):'';
-let teams=[],P=[],T={},R={},fechas=[],cur=null,tab='dom';
+let teams=[],P=[],T={},R={},fechas=[],cur=null,tab='dom',HAY_DESC=true;
 
 /* ---------- descansos por equipo ---------- */
 function calcDescansos(){
@@ -101,7 +101,8 @@ function calcDescansos(){
     o.n++;if(!p.Equipo_Local||!p.Equipo_Visita)o.inc=true;[p.Equipo_Local,p.Equipo_Visita].forEach(x=>x&&o.ids.add(x));
     if(p.Fecha)o.f.add(p.Fecha);if(p.Estado=='Jugado')o.jug=true});
   Object.keys(JORNADA_VIRTUAL).forEach(j=>porJ[j]&&JORNADA_VIRTUAL[j].forEach(id=>porJ[j].ids.add(id)));
-  R={};const ya={},fj=j=>porJ[j]?[...porJ[j].f].sort((a,b)=>tf(a)-tf(b)):[];
+  R={};HAY_DESC=teams.length%2===1;if(!HAY_DESC)return;   // con número PAR de equipos activos (16) nadie descansa
+  const ya={},fj=j=>porJ[j]?[...porJ[j].f].sort((a,b)=>tf(a)-tf(b)):[];
   const poner=(id,j,sug)=>{ya[id]=1;R[id]={j:+j,sug,jug:!sug&&porJ[j]&&porJ[j].jug,fechas:fj(j)}};
   Object.keys(DESCANSO_MANUAL).forEach(j=>DESCANSO_MANUAL[j].forEach(id=>poner(id,j,false)));
   Object.keys(porJ).map(Number).sort((a,b)=>a-b).forEach(j=>{const o=porJ[j];if(o.inc||o.n<MIN_PARTIDOS)return;
@@ -236,9 +237,10 @@ function panel(){
   const jug=P.filter(p=>p.Estado=='Jugado').sort((a,b)=>tf(b.Fecha)-tf(a.Fecha)),prog=P.filter(p=>p.Estado=='Programado').sort((a,b)=>tf(a.Fecha)-tf(b.Fecha)),sin=P.filter(p=>p.Estado=='Pendiente'&&!p.Fecha);
   let h='';
   if(tab=='dom'){const ms=P.filter(p=>p.Fecha==cur),jg=new Set(ms.flatMap(p=>[p.Equipo_Local,p.Equipo_Visita])),b=teams.filter(t=>!jg.has(t.id));
-    h=`<div class="tit">${esc(cur||'')} · ${ms.length} partidos</div>`+ms.map(p=>fila(p,0)).join('')+`<div class="tit">Sin partido este domingo</div>`+(b.map(t=>`<div class="fila" data-t="${t.id}"><img src="${esc(t.URL)}" alt=""><div class="m">${esc(t.Nombre)}<small>${R[t.id]&&R[t.id].fechas.includes(cur)?'Descansa hoy':estR(R[t.id])+' '+txtR(R[t.id])}</small></div></div>`).join('')||'<div class="fila">Juegan todos</div>')}
+    h=`<div class="tit">${esc(cur||'')} · ${ms.length} partidos</div>`+ms.map(p=>fila(p,0)).join('')+`<div class="tit">Sin partido este domingo</div>`+(b.map(t=>`<div class="fila" data-t="${t.id}"><img src="${esc(t.URL)}" alt=""><div class="m">${esc(t.Nombre)}<small>${!HAY_DESC?'No juega este domingo':R[t.id]&&R[t.id].fechas.includes(cur)?'Descansa hoy':estR(R[t.id])+' '+txtR(R[t.id])}</small></div></div>`).join('')||'<div class="fila">Juegan todos</div>')}
   else if(tab=='jug')h=`<div class="tit">${jug.length} partidos jugados</div>`+jug.map(p=>fila(p,1)).join('');
   else if(tab=='pen')h=`<div class="tit">Programados (${prog.length})</div>`+prog.map(p=>fila(p,1)).join('')+`<div class="tit">Por programar (${sin.length})</div>`+sin.map(p=>fila(p,0)).join('');
+  else if(!HAY_DESC)h=`<div class="tit">Descansos</div><div class="fila">Con ${teams.length} equipos activos nadie descansa: todos juegan en cada jornada.</div>`;
   else h=`<div class="tit">Día de descanso de cada equipo</div>`+[...teams].sort((a,b)=>(R[a.id]?R[a.id].j:99)-(R[b.id]?R[b.id].j:99)).map(t=>{const r=R[t.id];
     return `<div class="fila" data-t="${t.id}"><img src="${esc(t.URL)}" alt=""><div class="m">${esc(t.Nombre)}<small>${esc(txtR(r)||'Sin asignar')}</small></div><span class="chip ${!r?'c3':r.sug?'c3':r.jug?'c1':'c2'}">${estR(r)}</span></div>`}).join('');
   $('cont').innerHTML=h;
@@ -257,7 +259,7 @@ function elegir(t){
   const res=p=>{const l=p.Equipo_Local==t.id,a=+(l?p.Goles_Local:p.Goles_Visita),b=+(l?p.Goles_Visita:p.Goles_Local);return a>b?'c4':a<b?'c3':'c2'};
   const li=(p,x)=>`<div class="fila" data-f="${esc(p.Fecha)}" data-p="${esc(p.ID_Partido)}" style="cursor:pointer"><img src="${esc(rival(p)&&rival(p).URL)}" alt=""><div class="m">${esc(rival(p)?rival(p).Nombre:'Por definir')}<small>${esc(p.Fecha||'Sin fecha')}${p.Hora&&!x?' · '+esc(hora(p.Hora)):''} · J${esc(p.Jornada||'?')}</small></div>${x?`<span class="sc">${esc(p.Goles_Local)} - ${esc(p.Goles_Visita)}</span><span class="chip ${res(p)}">${res(p)=='c4'?'G':res(p)=='c3'?'P':'E'}</span>`:''}</div>`;
   $('card').innerHTML=`<button id="x" aria-label="Cerrar">×</button><div class="cab"><img src="${esc(t.URL)}" alt=""><div><h2>${esc(t.Nombre)}</h2><div class="ds">${esc(t.Descripción||'')}</div></div></div>
-  <div class="desc">😴 <b>Descanso:</b> ${esc(estR(r))}${r?' · '+esc(txtR(r)):''}</div>
+  ${HAY_DESC?`<div class="desc">😴 <b>Descanso:</b> ${esc(estR(r))}${r?' · '+esc(txtR(r)):''}</div>`:''}
   <div class="tit">Ya jugó (${jug.length})</div>${jug.map(p=>li(p,1)).join('')||'<div class="fila">Aún no juega</div>'}
   <div class="tit">Programados (${prog.length})</div>${prog.map(p=>li(p,0)).join('')||'<div class="fila">Ninguno</div>'}
   <div class="tit">Le faltan por programar (${sin.length})</div>${sin.map(p=>`<div class="fila"><img src="${esc(rival(p)&&rival(p).URL)}" alt=""><div class="m">${esc(rival(p)?rival(p).Nombre:'Por definir')}<small>J${esc(p.Jornada||'?')} sin fecha</small></div></div>`).join('')||'<div class="fila">Ninguno</div>'}`;
@@ -382,7 +384,10 @@ function animar(){
     const [te,tp]=await Promise.all([fetch(SHEET+GID_EQ).then(r=>r.text()),fetch(SHEET+GID_PA).then(r=>r.text())]);
     teams=csv(te).filter(e=>(e.Status||'').toLowerCase()=='activo').map(e=>({...e,id:e.ID_Equipo}));teams.forEach(t=>T[t.id]=t);
     csv(te).forEach(e=>{if(!T[e.ID_Equipo])T[e.ID_Equipo]={...e,id:e.ID_Equipo,baja:true}});   // equipos en baja: sus partidos ya jugados se siguen mostrando
-    P=csv(tp);calcDescansos();
+    const PALL=csv(tp);P=PALL;calcDescansos();   // descansos con TODOS los partidos, como partidos.js
+    /* igual que partidos.js: los jugados siempre se ven; los pendientes/programados solo si los dos equipos están activos */
+    const act=new Set(teams.map(t=>String(t.id).trim())),ok=x=>{x=String(x||'').trim();return !x||act.has(x)};
+    P=PALL.filter(p=>(p.Estado||'').trim()=='Jugado'||(ok(p.Equipo_Local)&&ok(p.Equipo_Visita)));
     fechas=[...new Set(P.map(p=>p.Fecha).filter(Boolean))].sort((a,b)=>tf(a)-tf(b));
     $('fechas').innerHTML=fechas.map(f=>{const ms=P.filter(p=>p.Fecha==f),pen=ms.some(p=>p.Estado!='Jugado');return `<button data-f="${f}" class="${pen?'pen':''}">${f.slice(0,5)}<small>${ms.length} · ${pen?'pendientes':'jugados'}</small></button>`}).join('');
     document.querySelectorAll('#fechas button').forEach(b=>b.onclick=()=>dibujar(b.dataset.f).then(panel));
