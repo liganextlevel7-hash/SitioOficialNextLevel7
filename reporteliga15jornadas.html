@@ -41,6 +41,21 @@
 .r15t td.rc.at{box-shadow:inset 0 0 0 2px #d98a1f!important}
 .leg .rc.q{background:#123a63;color:#9fd0ff}.leg .rc.at{background:#2b1f0a;color:#ffb74d;outline:1px solid #d98a1f}
 .r15 .est{font-size:11px;color:#9fb0d8}.r15 .est b{color:#7bdc6b}
+/* Programado = violeta sólido · Recomendado = azul punteado */
+.r15t td.rc.q{background:#2d2260;box-shadow:inset 0 0 0 1px #8b6cf0}.r15t td.rc.q b{color:#c6b6ff}.r15t td.rc.q .idc{background:#5b44b8}
+.r15t td.rc.r .idc{background:#245ea8}
+.leg .rc.q{background:#2d2260;color:#c6b6ff;box-shadow:inset 0 0 0 1px #8b6cf0}
+/* la fila de jornadas y las columnas ID/EQUIPO se quedan fijas al navegar */
+.r15 .wrap{overflow:auto!important;max-height:80vh}
+.r15t thead th{position:sticky;top:0;z-index:3}.r15t thead th.sticky{z-index:6}
+.r15t td.no,.r15t th.sticky:nth-child(1){min-width:40px;width:40px;max-width:40px;box-sizing:border-box;padding-left:0;padding-right:0}
+.explica .rc.g{background:#16381f;color:#7bdc6b}.explica .rc.e{background:#3a3414;color:#ffd54a}.explica .rc.p{background:#3b1a1a;color:#ff8a80}.explica .rc.q{background:#2d2260;color:#c6b6ff;box-shadow:inset 0 0 0 1px #8b6cf0}.explica .rc.r{background:#0f2a4a;color:#8ec5ff;outline:1px dashed #4a90e2}.explica .rc.at{background:#2b1f0a;color:#ffb74d;outline:1px solid #d98a1f}.explica .rc.c,.explica .rc.d{background:#2a2f40;color:#9fb0d8}.explica .rc.v{color:#ff8a80;outline:1px dashed #b42318}
+.r15t th.jh small.cn{color:#ffd54a;font-size:8.5px;margin-top:1px;font-weight:700}
+.r15 .dm{margin:14px 0 4px;font-size:13px;color:#ffd54a}.r15 .wrap2{overflow-x:auto}
+.r15 table.pf{border-collapse:collapse;width:100%;max-width:820px;font-size:12px;color:#e2e8ff}.r15 table.pf th{font-size:10px;color:#d5a610;text-align:left;padding:4px 8px;background:transparent;position:static}
+.r15 table.pf td{padding:5px 8px;border-top:1px solid rgba(255,255,255,.08)}.r15 table.pf tr.p td:first-child{border-left:3px solid #8b6cf0}.r15 table.pf tr.r td:first-child{border-left:3px dashed #4a90e2}
+.r15 .tg{padding:1px 8px;border-radius:999px;font-size:10px;font-weight:700}.r15 .tg.p{background:#2d2260;color:#c6b6ff}.r15 .tg.r{background:#0f2a4a;color:#8ec5ff;outline:1px dashed #4a90e2}
+.r15 ul.explica{list-style:none;padding:0;margin:8px 0;font-size:12px;color:#c3cde8;line-height:1.5}.r15 ul.explica li{margin:5px 0}.r15 ul.explica .rc{display:inline-block;min-width:0;padding:1px 9px;font-weight:700;margin-right:6px}
 </style>
 </head>
 <body>
@@ -82,13 +97,17 @@ function armar(pa,eq,hoy){
   hoy=new Date(hoy.getFullYear(),hoy.getMonth(),hoy.getDate());
   const E={};eq.forEach(r=>{const id=String(r.id_equipo||r.id||'').trim();if(!id)return;E[id]={id,nombre:r.nombre||'Equipo '+id,logo:r.url||r.logo||'',baja:(r.status||'').trim().toLowerCase()=='baja'||BAJA_FORZADA.includes(id)}});
   const act=Object.keys(E).filter(id=>!E[id].baja).sort((a,b)=>a-b),esAct=new Set(act);
-  const M=pa.map(r=>({id:String(r.id_partido||r.id||'').trim(),jor:String(r.jornada||'').trim(),a:String(r.equipo_local||r.local||'').trim(),b:String(r.equipo_visita||r.visita||'').trim(),est:(r.estado||'').trim().toLowerCase(),fecha:(r.fecha||'').trim(),hora:(r.hora||'').trim(),gl:r.goles_local,gv:r.goles_visita,gan:(r.ganado_por||'').trim(),pen:String(r.penales||'').trim()}))
+  const M=pa.map(r=>({id:String(r.id_partido||r.id||'').trim(),jor:String(r.jornada||'').trim(),a:String(r.equipo_local||r.local||'').trim(),b:String(r.equipo_visita||r.visita||'').trim(),est:(r.estado||'').trim().toLowerCase(),fecha:(r.fecha||'').trim(),hora:(r.hora||'').trim(),cancha:(r.cancha||'').trim(),gl:r.goles_local,gv:r.goles_visita,gan:(r.ganado_por||'').trim(),pen:String(r.penales||'').trim()}))
     .map(m=>{const c=CORR_PARTIDOS[m.id];if(c){m.a=c[0];m.b=c[1]}if(!m.jor&&JORNADA_FIJA[m.id]&&(m.est=='jugado'||m.est=='programado'))m.jor=String(JORNADA_FIJA[m.id]);return m}).filter(m=>m.a&&m.b);
   const NJ=Math.max(1,act.length%2==0?act.length-1:act.length);   /* 16 equipos = 15 jornadas */
   const agend=m=>m.est=='programado'||m.est=='jugado';
   /* jornadas ocupadas por equipo: partido jugado/programado con esa jornada + jornadas cubiertas (igual que Armar Jornada) */
   const ocup={},cel={};act.forEach(t=>{ocup[t]=new Set(JORNADA_CUBIERTA[t]||[]);cel[t]={}});
   M.forEach(m=>{if(!agend(m))return;const j=parseInt(m.jor,10);if(isNaN(j))return;[m.a,m.b].forEach(t=>{if(!ocup[t])return;ocup[t].add(j);if(j>=1&&j<=NJ&&(!cel[t][j]||m.est=='jugado'))cel[t][j]=m})});
+  /* programado sin jornada capturada: se toma la jornada del domingo en que está programado, si los dos equipos la tienen libre */
+  M.filter(m=>m.est=='programado'&&!parseInt(m.jor,10)&&m.fecha&&esAct.has(m.a)&&esAct.has(m.b)).forEach(m=>{
+    const f=m.fecha.split('/'),idx=Math.round((new Date(+f[2],+f[1]-1,+f[0])-new Date(INICIO[0],INICIO[1]-1,INICIO[2]))/604800000)+1;
+    if(idx>=1&&idx<=NJ&&!ocup[m.a].has(idx)&&!ocup[m.b].has(idx)){m.jor=String(idx);m.inf=true;ocup[m.a].add(idx);ocup[m.b].add(idx);cel[m.a][idx]=m;cel[m.b][idx]=m}});
   /* pendientes con los dos equipos activos y cuyo cruce todavía no se juega ni se programa */
   const par=(a,b)=>a<b?a+'|'+b:b+'|'+a,yaPar=new Set(M.filter(agend).map(m=>par(m.a,m.b)));
   const pend=M.filter(m=>m.est=='pendiente'&&esAct.has(m.a)&&esAct.has(m.b)&&!yaPar.has(par(m.a,m.b)));
@@ -115,7 +134,12 @@ function armar(pa,eq,hoy){
     const dt=calJ(asg[m.id]);while(dt<hoy)dt.setDate(dt.getDate()+7);
     for(let i=0;i<60;i++){const f=fmt(dt);if(!ocF[m.a].has(f)&&!ocF[m.b].has(f)&&(cnt[f]||0)<CAP){recF[m.id]=f;ocF[m.a].add(f);ocF[m.b].add(f);cnt[f]=(cnt[f]||0)+1;break}dt.setDate(dt.getDate()+7)}
     rec[m.id]=m});
+  const pares=new Set(yaPar);Object.keys(rec).forEach(id=>pares.add(par(rec[id].a,rec[id].b)));
+  const razon=(t,j)=>{const falta=act.filter(r=>r!=t&&!pares.has(par(t,r)));if(!falta.length)return 'Ya enfrentó o tiene programado a todos los demás equipos.';return 'Le faltan por enfrentar: '+falta.map(r=>E[r].nombre+(ocup[r].has(j)||uso[r].has(j)?' (esa jornada ya la tiene ocupada)':' (libre)')).join('; ')+'. Para que hubiera partido necesitaría un rival que no haya jugado ya contra él y que tenga la J'+j+' libre.'};
   const recT={};act.forEach(t=>recT[t]={});Object.keys(rec).forEach(id=>{const m=rec[id],j=asg[id];recT[m.a][j]=m;recT[m.b][j]=m});
+  const porFecha={};
+  M.forEach(m=>{if(m.est!='programado'||!m.fecha)return;(porFecha[m.fecha]=porFecha[m.fecha]||[]).push({k:'p',id:m.id,a:m.a,b:m.b,hora:m.hora,cancha:m.cancha,j:parseInt(m.jor,10)||0,baja:!(esAct.has(m.a)&&esAct.has(m.b))})});
+  Object.keys(rec).forEach(id=>{const m=rec[id],f=recF[id];if(!f)return;(porFecha[f]=porFecha[f]||[]).push({k:'r',id,a:m.a,b:m.b,hora:'',cancha:'',j:asg[id],baja:false})});
   /* celdas */
   const celdas={};act.forEach(t=>{celdas[t]=[];for(let j=1;j<=NJ;j++){
     const m=cel[t][j],cj=calJ(j);let c;
@@ -125,16 +149,16 @@ function armar(pa,eq,hoy){
       else c={k:'q',id:m.id,r,fecha:m.fecha,hora:m.hora,at:cj<hoy}}
     else if((JORNADA_CUBIERTA[t]||[]).includes(j)){const rv=(COBERTURA_RIVAL[t]||{})[j];c=rv?{k:'c',r:rv}:{k:'d'}}
     else if(recT[t][j]){const m2=recT[t][j];c={k:'r',id:m2.id,r:m2.a==t?m2.b:m2.a,fecha:recF[m2.id],at:cj<hoy}}
-    else c={k:'v'};
+    else c={k:'v',why:razon(t,j)};
     celdas[t].push(c)}});
-  return {E,act,NJ,celdas,jug:M.filter(m=>m.est=='jugado').length,prog:M.filter(m=>m.est=='programado'&&esAct.has(m.a)&&esAct.has(m.b)).length,rec:Object.keys(rec).length,sinJ,asg,rec_:rec,recF};
+  return {E,act,NJ,celdas,jug:M.filter(m=>m.est=='jugado').length,prog:M.filter(m=>m.est=='programado'&&esAct.has(m.a)&&esAct.has(m.b)).length,rec:Object.keys(rec).length,sinJ,asg,rec_:rec,recF,porFecha};
 }
 if(typeof document!=='undefined'){
 function celdaHTML(c,D){
   const nom=c.r?(D.E[c.r]?D.E[c.r].nombre:'Equipo '+c.r):'',logo=c.r&&D.E[c.r]&&D.E[c.r].logo?`<img src="${esc(D.E[c.r].logo)}" alt="" onerror="this.style.opacity=.2">`:'';
-  if(c.k=='v')return `<td class="rc v" title="Esta jornada no tiene rival disponible"><b>SIN RIVAL</b></td>`;
-  if(c.k=='d')return `<td class="rc d" title="Descanso"><b>DESCANSÓ</b></td>`;
-  if(c.k=='c')return `<td class="rc c" title="Se toma como jugada contra ${esc(nom)}">${logo}<span class="rn">${esc(nom)}</span><b>CUBRE</b></td>`;
+  if(c.k=='v')return `<td class="rc v" title="${esc(c.why||'')}"><b>SIN RIVAL</b><small>ver motivo abajo</small></td>`;
+  if(c.k=='d')return `<td class="rc d" title="No jugó esta jornada: descanso fijado a mano. No hay partido ni ID."><b>DESCANSÓ</b><small>sin partido</small></td>`;
+  if(c.k=='c')return `<td class="rc c" title="No jugó esta jornada, pero la liga la toma como jugada contra ${esc(nom)}. No hay partido ni ID.">${logo}<span class="rn">${esc(nom)}</span><b>CUBRE</b><small>sin partido</small></td>`;
   const dia=esc((c.fecha||'').slice(0,5))+(c.hora?' · '+esc(c.hora):''),at=c.at?' at':'';
   if(c.k=='r')return `<td class="rc r${at}" title="Recomendado: ${esc(nom)} · ID ${esc(c.id)} · ${esc(c.fecha||'')}"><span class="idc">ID ${esc(c.id)}</span>${logo}<span class="rn">${esc(nom)}</span><b>VS</b><small>${dia||'sin fecha'}${c.at?' · atrasada':''}</small></td>`;
   if(c.k=='q')return `<td class="rc q${at}" title="Programado: ${esc(nom)} · ID ${esc(c.id)} · ${esc(c.fecha||'')} ${esc(c.hora||'')}"><span class="idc">ID ${esc(c.id)}</span>${logo}<span class="rn">${esc(nom)}</span><b>VS</b><small>${dia||'sin fecha'}${c.at?' · atrasada':''}</small></td>`;
@@ -142,22 +166,41 @@ function celdaHTML(c,D){
 }
 let DATOS=null;
 function pintar(D){
-  const cab=Array.from({length:D.NJ},(_,i)=>`<th class="jh">J${i+1}<small>${p2(calJ(i+1).getDate())}/${p2(calJ(i+1).getMonth()+1)}</small></th>`).join('');
+  const cab=Array.from({length:D.NJ},(_,i)=>{const d=calJ(i+1),L=D.porFecha[fmt(d)]||[],np=L.filter(x=>x.k=='p'&&!x.baja).length,nr=L.filter(x=>x.k=='r').length;
+    return `<th class="jh">J${i+1}<small>${p2(d.getDate())}/${p2(d.getMonth()+1)}</small>${np||nr?`<small class="cn">${np?np+' prog.':''}${np&&nr?' · ':''}${nr?nr+' rec.':''}</small>`:''}</th>`}).join('');
   let filas='';
   D.act.forEach(t=>{const e=D.E[t];filas+=`<tr><td class="no sticky"><span class="rk">${esc(t)}</span></td><td class="eq sticky"><img src="${esc(e.logo||'')}" alt="" onerror="this.style.opacity=.2"><span>${esc(e.nombre)}</span></td>${D.celdas[t].map(c=>celdaHTML(c,D)).join('')}</tr>`});
+  const hu=[];D.act.forEach(t=>D.celdas[t].forEach((c,i)=>{if(c.k=='v')hu.push(`<li><b>${esc(D.E[t].nombre)}</b> · J${i+1}: ${esc(c.why)}</li>`)}));
+  const hoyL=new Date(),hn=fnum(fmt(hoyL)),nomE=id=>D.E[id]?D.E[id].nombre:'Equipo '+id;
+  const dom=Object.keys(D.porFecha).sort((x,y)=>fnum(x)-fnum(y)).filter(f=>fnum(f)>=hn).map(f=>{
+    const L=D.porFecha[f].slice().sort((x,y)=>(x.k>y.k?1:x.k<y.k?-1:0)||String(x.hora).localeCompare(String(y.hora))||(+x.id)-(+y.id)),np=L.filter(x=>x.k=='p'&&!x.baja).length,nr=L.filter(x=>x.k=='r').length,[dd,mm,yy]=f.split('/').map(Number);
+    const rows=L.map(x=>{const jt=!x.j?'sin jornada':'J'+x.j+(calJ(x.j)<new Date(yy,mm-1,dd-6)?' · atrasada':'');return `<tr class="${x.k}"><td>ID ${esc(x.id)}</td><td>${esc(nomE(x.a))} vs ${esc(nomE(x.b))}${x.baja?' <small>(equipo en baja)</small>':''}</td><td>${esc(String(x.hora).slice(0,5))||'—'}</td><td>${esc(x.cancha)||'—'}</td><td>${jt}</td><td><span class="tg ${x.k}">${x.k=='p'?'Programado':'Recomendado'}</span></td></tr>`}).join('');
+    return `<h4 class="dm">Domingo ${f} · ${np} programados${nr?' · '+nr+' recomendados':''}</h4><div class="wrap2"><table class="pf"><thead><tr><th>ID</th><th>Partido</th><th>Hora</th><th>Cancha</th><th>Jornada</th><th>Estado</th></tr></thead><tbody>${rows}</tbody></table></div>`}).join('');
   const sin=D.sinJ.map(m=>`<li><b>${esc(D.E[m.a].nombre)}</b> vs <b>${esc(D.E[m.b].nombre)}</b> <small>(ID ${esc(m.id)})</small></li>`).join('');
   document.getElementById('r15').innerHTML=`<div class="r15-top"><div class="kpis"><div><b>${D.act.length}</b><span>equipos activos</span></div><div><b>${D.jug}</b><span>jugados</span></div><div><b>${D.prog}</b><span>programados</span></div><div><b>${D.rec}</b><span>recomendados</span></div><div><b>${D.NJ}</b><span>jornadas</span></div></div><div><button class="dl" id="act">Actualizar ahora</button> <button class="dl" id="dl">Descargar PNG</button></div></div>
   <p class="est" id="est"></p>
   <div class="wrap" id="wrap"><table class="r15t"><thead><tr><th class="sticky">ID</th><th class="sticky">EQUIPO</th>${cab}</tr></thead><tbody>${filas}</tbody></table></div>
   <div class="leg"><span class="rc g">Ganó</span><span class="rc e">Empató</span><span class="rc p">Perdió</span><span class="rc q">Programado</span><span class="rc r">Recomendado</span><span class="rc at">Jornada atrasada</span><span class="rc c">Cubierta</span><span class="rc v">Sin rival</span></div>
-  <p class="nota">Cada jornada es un domingo (J1 = 20/09/2026). Un equipo solo puede jugar una vez por jornada: los partidos jugados o programados, y los juegos contra equipos en baja, ocupan su jornada. Los <b>recomendados</b> se recalculan solos con lo que hay en tu hoja. Equipos ordenados por ID.</p>
+  <h3 class="sh">¿Qué significa cada casilla?</h3>
+  <ul class="explica">
+    <li><span class="rc g">Ganó</span><span class="rc e">Empató</span><span class="rc p">Perdió</span> partido ya jugado, con marcador e ID.</li>
+    <li><span class="rc q">Programado</span> partido que <b>ya está en tu hoja</b> con jornada y fecha.</li>
+    <li><span class="rc r">Recomendado</span> propuesta del sistema: aún <b>no está programado</b>; se recalcula solo con lo que haya en la hoja.</li>
+    <li><span class="rc at">Jornada atrasada</span> la jornada ya pasó y el partido todavía no se juega.</li>
+    <li><span class="rc c">Cubre</span> el equipo no jugó esa jornada, pero la liga la toma como jugada contra otro equipo (Deportivo Azul en la J1, contra Puebla 450). No hay partido ni ID.</li>
+    <li><span class="rc d">Descansó</span> jornada sin partido fijada a mano (Galácticos en la J1).</li>
+    <li><span class="rc v">Sin rival</span> el equipo tiene esa jornada vacía y no hay a quién ponerle: los que le faltan ya tienen esa jornada ocupada con otro partido, o ya jugaron contra él. Abajo sale el motivo de cada una.</li>
+  </ul>
+  <p class="nota">Cada jornada es un domingo (J1 = 20/09/2026). Un equipo juega una sola vez por jornada; los juegos contra equipos en baja (Ballenitas y Dream team) también ocupan su jornada. Equipos ordenados por ID.</p>
+  <h3 class="sh">Partidos por domingo</h3><p class="nota">Aquí salen todos los partidos de cada domingo, aunque en la tabla de arriba aparezcan en otra columna porque su <b>jornada</b> es otra (por ejemplo, un partido del 01/11 que paga la J2).</p>${dom||'<p class="nota">No hay partidos programados ni recomendados.</p>'}
+  ${hu.length?`<h3 class="sh">Casillas sin rival: por qué</h3><ul class="nota">${hu.join('')}</ul>`:''}
   ${D.sinJ.length?`<h3 class="sh">Cruces sin jornada disponible</h3><ul class="nota">${sin}</ul>`:''}`;
   document.getElementById('dl').onclick=descargar;document.getElementById('act').onclick=()=>cargar(true);
 }
 async function descargar(){
-  const w=document.getElementById('wrap'),ant=w.style.overflow;w.style.overflow='visible';
+  const w=document.getElementById('wrap'),ant=w.style.overflow,antH=w.style.maxHeight;w.style.overflow='visible';w.style.maxHeight='none';
   try{const cv=await html2canvas(w,{scale:2,backgroundColor:'#0b1530',width:w.scrollWidth,windowWidth:w.scrollWidth+40});const a=document.createElement('a');a.download='reporte-15-jornadas.png';a.href=cv.toDataURL('image/png');a.click()}
-  catch(e){alert('No se pudo generar la imagen: '+e.message)}finally{w.style.overflow=ant}
+  catch(e){alert('No se pudo generar la imagen: '+e.message)}finally{w.style.overflow=ant;w.style.maxHeight=antH}
 }
 async function leer(gid){
   try{const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}&t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('export');return csv(await r.text())}
