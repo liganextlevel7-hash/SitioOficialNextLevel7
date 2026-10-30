@@ -65,6 +65,24 @@
 .rs .rl{margin:4px 0;line-height:1.25}.rs .rl b{font-size:15px;margin-right:4px}
 .rs .f b{color:#7ee081}.rs .a b{color:#8ec5ff}.rs .t b{color:#ffb86b}.rs .x b{color:#ffd54a}.rs .rl.z{opacity:.45}
 .rs .rl small{display:block;color:#b9c6ea;font-size:9px;line-height:1.25;word-break:break-word}
+.r15t td.rc.v .cd{font-size:9px;line-height:1.2;color:#ffb3a8;margin-top:2px;text-transform:uppercase;font-weight:700}
+.r15t td.rc.v .cd i{font-style:normal;color:#ddc530}.r15t td.rc.v small{font-size:8.5px}.r15t td.rc.v small.lk{color:#b9c6ea;margin-top:3px;font-size:7.5px}
+
+/* ===== sin fondo azul: tonos neutros ===== */
+.r15t th,.r15t .sticky,.r15t tfoot td{background:#0e1209}
+.r15t th.jh small{color:#9aa59a}
+.r15t td.rc{background:#181b16}
+.r15t td.rc.r{background:#171a15;box-shadow:inset 0 0 0 1px #6f7a6f;outline:1px dashed #aab5aa;outline-offset:-3px}
+.r15t td.rc.r b{color:#eef3ee}.r15t td.rc.r .idc{background:#4a554a}
+.r15t td.rc.c,.r15t td.rc.d{background:#262826}
+.r15t td.rc small,.r15t td.rc .tx,.rs .rl small{color:#b3bfb3}
+.r15t td.rc .rn{color:#eef3ee}
+.r15 .nota,.r15 .est{color:#b3bfb3}
+.r15 .leg .rc.r,.explica .rc.r,.r15 .tg.r{background:#171a15;color:#eef3ee;outline:1px dashed #aab5aa}
+.r15 table.pf tr.r td:first-child{border-left:3px dashed #aab5aa}
+.leg .rc.c,.explica .rc.c,.explica .rc.d,.r15 .leg .rc.d{background:#262826;color:#cfd8cf}
+.rs .a b{color:#9fd88a}
+.r15t td.rc.v .cd{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -74,7 +92,6 @@
 <p class="subtitulo">Liga Next Level 7</p>
 <nav>
 <a href="index.html">Inicio</a>
-<a href="tablaGeneral.html">Tabla General</a>
 </nav>
 </header>
 <section class="contenedor">
@@ -144,7 +161,15 @@ function armar(pa,eq,hoy){
     for(let i=0;i<60;i++){const f=fmt(dt);if(!ocF[m.a].has(f)&&!ocF[m.b].has(f)&&(cnt[f]||0)<CAP){recF[m.id]=f;ocF[m.a].add(f);ocF[m.b].add(f);cnt[f]=(cnt[f]||0)+1;break}dt.setDate(dt.getDate()+7)}
     rec[m.id]=m});
   const pares=new Set(yaPar);Object.keys(rec).forEach(id=>pares.add(par(rec[id].a,rec[id].b)));
-  const razon=(t,j)=>{const falta=act.filter(r=>r!=t&&!pares.has(par(t,r)));if(!falta.length)return 'Ya enfrentó o tiene programado a todos los demás equipos.';return 'Le faltan por enfrentar: '+falta.map(r=>E[r].nombre+(ocup[r].has(j)||uso[r].has(j)?' (esa jornada ya la tiene ocupada)':' (libre)')).join('; ')+'. Para que hubiera partido necesitaría un rival que no haya jugado ya contra él y que tenga la J'+j+' libre.'};
+  /* para cada casilla vacía: los equipos que ese equipo todavía debe enfrentar y por qué no caben en esa jornada */
+  const idPar={};M.filter(m=>m.est=='pendiente').forEach(m=>{const k=par(m.a,m.b);if(!idPar[k])idPar[k]=m.id});
+  const nomX=id=>E[id]?E[id].nombre:'Equipo '+id;
+  const quien=(r,j)=>{const m=cel[r]&&cel[r][j];if(m)return {id:m.id,rv:m.a==r?m.b:m.a,tipo:m.est=='jugado'?'ya jugó':'tiene programado'};
+    const m2=recT[r]&&recT[r][j];if(m2)return {id:m2.id,rv:m2.a==r?m2.b:m2.a,tipo:'tiene recomendado'};
+    if((JORNADA_CUBIERTA[r]||[]).includes(j))return {id:'',rv:'',tipo:'la tiene cubierta'};return null};
+  const candidatos=(t,j)=>act.filter(r=>r!=t&&!pares.has(par(t,r))).map(r=>({r,idP:idPar[par(t,r)]||'',q:quien(r,j)}));
+  const razon=(t,j)=>{const cd=candidatos(t,j);if(!cd.length)return 'Ya enfrentó o tiene programado a todos los demás equipos: no le queda rival por enfrentar.';
+    return 'Le tocaba enfrentar a: '+cd.map(x=>nomX(x.r)+(x.idP?' (ID '+x.idP+')':' (sin ID: ese cruce no está capturado en la hoja)')+' → '+(x.q?'esa jornada '+x.q.tipo+(x.q.id?' ID '+x.q.id:'')+(x.q.rv?' vs '+nomX(x.q.rv):''):'libre')).join('; ')+'. Para que hubiera partido necesita un rival que no haya jugado ya contra él y que tenga la J'+j+' libre.'};
   const recT={};act.forEach(t=>recT[t]={});Object.keys(rec).forEach(id=>{const m=rec[id],j=asg[id];recT[m.a][j]=m;recT[m.b][j]=m});
   const porFecha={};
   M.forEach(m=>{if(m.est!='programado'||!m.fecha)return;(porFecha[m.fecha]=porFecha[m.fecha]||[]).push({k:'p',id:m.id,a:m.a,b:m.b,hora:m.hora,cancha:m.cancha,j:parseInt(m.jor,10)||0,baja:!(esAct.has(m.a)&&esAct.has(m.b))})});
@@ -164,14 +189,14 @@ function armar(pa,eq,hoy){
       else c={k:'q',id:m.id,r,fecha:m.fecha,hora:m.hora,at:cj<hoy}}
     else if((JORNADA_CUBIERTA[t]||[]).includes(j)){const rv=(COBERTURA_RIVAL[t]||{})[j];c=rv?{k:'c',r:rv}:{k:'d'}}
     else if(recT[t][j]){const m2=recT[t][j];c={k:'r',id:m2.id,r:m2.a==t?m2.b:m2.a,fecha:recF[m2.id],at:cj<hoy}}
-    else c={k:'v',why:razon(t,j),corto:act.some(r=>r!=t&&!pares.has(par(t,r)))?'sus rivales tienen esa jornada ocupada':'ya los enfrentó a todos'};
+    else{const cd=candidatos(t,j);c={k:'v',why:razon(t,j),cand:cd.map(x=>({r:x.r,id:x.idP,libre:!x.q})),corto:cd.length?'':'ya los enfrentó a todos'}}
     celdas[t].push(c)}});
   return {E,act,NJ,resumen,celdas,jug:M.filter(m=>m.est=='jugado').length,prog:M.filter(m=>m.est=='programado'&&esAct.has(m.a)&&esAct.has(m.b)).length,rec:Object.keys(rec).length,sinJ,asg,rec_:rec,recF,porFecha};
 }
 if(typeof document!=='undefined'){
 function celdaHTML(c,D){
   const nom=c.r?(D.E[c.r]?D.E[c.r].nombre:'Equipo '+c.r):'',logo=c.r&&D.E[c.r]&&D.E[c.r].logo?`<img src="${esc(D.E[c.r].logo)}" alt="" onerror="this.style.opacity=.2">`:'';
-  if(c.k=='v')return `<td class="rc v" title="${esc(c.why||'')}"><b>SIN RIVAL</b><small>${esc(c.corto||'ver motivo abajo')}</small></td>`;
+  if(c.k=='v')return `<td class="rc v" title="${esc(c.why||'')}"><b>SIN RIVAL</b>${c.cand&&c.cand.length?`<small>le tocaba:</small>${c.cand.slice(0,3).map(x=>`<div class="cd">${x.libre?'✅':'🔒'} ${esc(D.E[x.r]?D.E[x.r].nombre:'Equipo '+x.r)}${x.id?' <i>#'+esc(x.id)+'</i>':''}</div>`).join('')}${c.cand.length>3?`<div class="cd">+${c.cand.length-3} más</div>`:''}<small class="lk">🔒 = esa jornada ya la tiene ocupada</small>`:`<small>${esc(c.corto||'ver motivo abajo')}</small>`}</td>`;
   if(c.k=='d')return `<td class="rc d" title="No jugó esta jornada: descanso fijado a mano. No hay partido ni ID."><b>DESCANSÓ</b><small>sin partido</small></td>`;
   if(c.k=='c')return `<td class="rc c" title="No jugó esta jornada, pero la liga la toma como jugada contra ${esc(nom)}. No hay partido ni ID.">${logo}<span class="rn">${esc(nom)}</span><b>CUBRE</b><small>sin partido</small></td>`;
   const dia=esc((c.fecha||'').slice(0,5))+(c.hora?' · '+esc(c.hora):''),at=c.at?' at':'';
@@ -203,7 +228,7 @@ function pintar(D){
   const sin=D.sinJ.map(m=>`<li><b>${esc(D.E[m.a].nombre)}</b> vs <b>${esc(D.E[m.b].nombre)}</b> <small>(ID ${esc(m.id)})</small></li>`).join('');
   document.getElementById('r15').innerHTML=`<div class="r15-top"><div class="kpis"><div><b>${D.act.length}</b><span>equipos activos</span></div><div><b>${D.jug}</b><span>jugados</span></div><div><b>${D.prog}</b><span>programados</span></div><div><b>${D.rec}</b><span>recomendados</span></div><div><b>${D.NJ}</b><span>jornadas</span></div></div><div><button class="dl" id="act">Actualizar ahora</button> <button class="dl" id="dl">Descargar PNG</button></div></div>
   <p class="est" id="est"></p>
-  <div class="wrap" id="wrap"><table class="r15t"><thead><tr><th class="sticky">ID</th><th class="sticky">EQUIPO</th>${cab}</tr></thead><tbody>${filas}</tbody><tfoot>${pie}</tfoot></table></div>
+  <div class="wrap" id="wrap"><table class="r15t" style="table-layout:fixed;width:${40+190+D.NJ*120}px"><colgroup><col style="width:40px"><col style="width:190px">${Array.from({length:D.NJ},()=>'<col style="width:120px">').join('')}</colgroup><thead><tr><th class="sticky">ID</th><th class="sticky">EQUIPO</th>${cab}</tr></thead><tbody>${filas}</tbody><tfoot>${pie}</tfoot></table></div>
   <div class="leg"><span class="rc g">Ganó</span><span class="rc e">Empató</span><span class="rc p">Perdió</span><span class="rc q">Programado</span><span class="rc r">Recomendado</span><span class="rc at">Jornada atrasada</span><span class="rc c">Cubierta</span><span class="rc v">Sin rival</span></div>
   <h3 class="sh">¿Qué significa cada casilla?</h3>
   <ul class="explica">
