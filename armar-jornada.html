@@ -97,6 +97,70 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
   body{padding:0;align-items:flex-start}
   #login-screen,#app-screen{border-radius:0;margin-top:0}
 }
+
+
+/* Panel de administración: navegación, pendientes y revisión. */
+body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9f1e5;}
+#app-screen{max-width:1080px;border-radius:22px;box-shadow:0 24px 80px #0005;}
+.app-header{padding:24px 28px;background:#13250f;}
+.app-header-title{font-size:23px;color:#f0f7eb;letter-spacing:-.6px;}
+.app-header-sub{font-size:12px;margin-top:5px;color:#a9bda2;}
+.app-brand{display:flex;align-items:center;gap:14px;}
+.app-monogram{background:var(--neon);color:#15250e;font-size:20px;font-weight:900;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;}
+.app-tabs{display:flex;gap:6px;padding:12px 28px;background:#13250f;border-bottom:1px solid #ffffff12;}
+.app-tab{font:600 14px var(--font);border:0;color:#afc1a8;background:transparent;padding:12px 20px;border-radius:10px;cursor:pointer;}
+.app-tab[aria-selected=true]{background:#5eb50d;color:#102006;}
+.app-tab:focus-visible,.pending-action:focus-visible{outline:3px solid #c6ff95;outline-offset:3px;}
+.panel{padding:28px;gap:0;}
+.panel [hidden]{display:none!important;}
+.admin-panel>.mod-section-title{font-size:19px;color:#f1f6ed!important;text-transform:none;letter-spacing:-.3px;margin-bottom:8px;}
+.mod-hint{color:#a4b79c;font-size:12px;line-height:1.6;}
+.admin-date{display:flex;align-items:center;justify-content:space-between;gap:20px;background:#203a17;border:1px solid #5eb50d55;border-radius:14px;padding:18px 20px;margin:20px 0;}
+.admin-date label{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:#b6cfaa;}
+.admin-date strong{display:block;font-size:20px;line-height:1.3;margin-top:5px;color:#f5faef;}
+.admin-date input{width:175px;flex:none;font-size:15px;background:#13250f;color:#eef6e8;}
+.pending-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 12px;}
+.pending-heading h3{font-size:16px;}
+.pending-count{font-size:12px;background:#5eb50d22;color:#b2ea85;border:1px solid #5eb50d33;padding:5px 10px;border-radius:20px;}
+.pending-search{width:100%;font-size:14px;background:#172b11;margin-bottom:12px;}
+.pending-scroll{max-height:460px;overflow:auto;border:1px solid #ffffff14;border-radius:12px;}
+.pending-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;}
+.pending-table th{position:sticky;top:0;z-index:1;background:#20371a;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#afc5a4;padding:13px 16px;}
+.pending-table td{padding:15px 16px;border-top:1px solid #ffffff0c;vertical-align:middle;}
+.pending-table tbody tr:hover{background:#ffffff04;}
+.pending-table .pending-id{font-weight:800;color:#b8d4a7;}
+.pending-table b{display:block;font-size:13px;color:#edf4e7;}
+.pending-table small{display:block;font-size:11px;color:#98af8d;margin-top:5px;}
+.pending-action{font:700 12px var(--font);padding:9px 13px;border-radius:8px;color:#173108;background:#a1df63;border:0;cursor:pointer;white-space:nowrap;}
+.pending-empty{text-align:center;color:#b3c4a9;padding:28px!important;}
+.advanced-search{margin:18px 0;color:#b3c4a9;border-bottom:1px solid #ffffff14;padding-bottom:16px;}
+.advanced-search summary{font-size:12px;cursor:pointer;padding:8px 0;}
+.advanced-search[open] summary{margin-bottom:12px;}
+#buscar-resultado:not(:empty){margin-top:20px;padding-top:20px;border-top:1px solid #5eb50d44;scroll-margin-top:18px;}
+#tab-reportes>div{background:#1c3016;border:1px solid #ffffff14!important;border-radius:14px;padding:22px!important;margin:0 0 18px!important;}
+#tab-reportes .mod-section-title{font-size:16px;text-transform:none;}
+#tab-cartel{padding-top:0!important;border:0!important;}
+.admin-legend{font-size:11px;color:#b3c4a9;margin-top:7px;}
+.review-dialog{background:#172b11;color:#eef4e9;border:1px solid #5eb50d77;border-radius:18px;padding:26px;width:min(440px,calc(100% - 32px));margin:auto;box-shadow:0 24px 100px #0009;}
+.review-dialog::backdrop{background:#071004c9;}
+.review-dialog h3{font-size:20px;margin-bottom:8px;}
+.review-dialog p{font-size:12px;color:#b7c9ad;line-height:1.6;}
+.review-dialog dl{margin:18px 0;display:grid;grid-template-columns:80px 1fr;gap:12px;font-size:13px;}
+.review-dialog dt{color:#a9c19c;}.review-dialog dd{margin:0;font-weight:700;}
+.review-actions{display:flex;gap:10px;justify-content:flex-end;}
+.review-actions button{padding:12px 16px;border-radius:9px;font:700 13px var(--font);cursor:pointer;border:1px solid #ffffff25;background:transparent;color:#dbe9d3;}
+.review-actions button[value=guardar]{background:var(--neon);color:#14250a;border-color:var(--neon);}
+@media(max-width:650px){
+ .app-header{padding:20px 16px;}.app-header-title{font-size:18px;}.app-monogram{width:39px;height:39px;font-size:16px;}.app-brand{gap:10px;}
+ .app-tabs{padding:10px 12px;gap:4px;}.app-tab{flex:1;padding:12px 5px;font-size:12px;}.panel{padding:20px 14px;}
+ .admin-date{align-items:flex-start;flex-direction:column;gap:13px;padding:16px;}.admin-date input{width:100%;}.admin-date strong{font-size:18px;}
+ .pending-table thead{display:none;}.pending-table,.pending-table tbody,.pending-table tr,.pending-table td{display:block;}
+ .pending-table tr{padding:12px 14px;border-bottom:1px solid #ffffff14;}.pending-table td{padding:5px 0;border:0;}
+ .pending-table td[data-label]::before{content:attr(data-label);color:#a4ba98;font-size:10px;letter-spacing:.7px;text-transform:uppercase;display:block;margin-bottom:4px;}
+ .pending-table td:last-child{text-align:right;}.pending-action{min-height:42px;}.pending-scroll{max-height:540px;}
+ .pending-heading h3{font-size:15px;}.msg-input{min-width:0;}#tab-reportes>div{padding:16px!important;}
+}
+
 </style>
 </head>
 <body>
@@ -125,24 +189,33 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 
 <div id="app-screen">
   <div class="app-header">
-    <div>
-      <div class="app-header-title">🛠️ Programar Partidos</div>
-      <div class="app-header-sub">Liga Next Level 7</div>
-    </div>
+    <div class="app-brand"><div class="app-monogram" aria-hidden="true">N7</div><div>
+      <div class="app-header-title">Control de partidos</div>
+      <div class="app-header-sub">NEXT LEVEL 7 · ADMINISTRACIÓN</div>
+    </div></div>
     <a href="partidos.html" class="btn-logout">← Partidos</a>
   </div>
 
+  <nav class="app-tabs" role="tablist" aria-label="Administración">
+    <button type="button" class="app-tab" id="nav-programar" role="tab" aria-controls="tab-programar" aria-selected="true" onclick="cambiarPestana('programar')">Programar partidos</button>
+    <button type="button" class="app-tab" id="nav-cartel" role="tab" aria-controls="tab-cartel" aria-selected="false" onclick="cambiarPestana('cartel')">Cartel</button>
+    <button type="button" class="app-tab" id="nav-reportes" role="tab" aria-controls="tab-reportes" aria-selected="false" onclick="cambiarPestana('reportes')">Reportes</button>
+  </nav>
   <div class="panel">
 
     <!-- EDITAR / PROGRAMAR PARTIDO -->
-    <div>
-      <div class="mod-section-title" style="color:var(--neon)">🔁 Editar / Programar un partido</div>
-      <div class="mod-hint">Trae el partido por su ID, o elige los dos equipos que se enfrentan, y confirma los nombres antes de guardar — así no se mueve el partido equivocado.</div>
+    <section class="admin-panel" id="tab-programar" role="tabpanel" aria-labelledby="nav-programar">
+      <div class="mod-section-title" style="color:var(--neon)">Programa el próximo encuentro</div>
+      <div class="mod-hint">Elige una fecha, encuentra un partido pendiente y asigna su horario y campo.</div>
 
-      <div style="margin-bottom:14px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
-        <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;margin-bottom:5px">📆 Fecha para programar</label>
-        <input type="date" id="armando-fecha" class="msg-input" style="width:100%" oninput="actualizarSelectsPorFecha()">
+      <div class="admin-date"><div><label for="armando-fecha">Fecha de juego</label><strong id="fecha-destacada">Selecciona una fecha</strong></div>
+        <input type="date" id="armando-fecha" class="msg-input" oninput="actualizarSelectsPorFecha()">
       </div>
+      <div class="pending-heading"><h3>Partidos pendientes</h3><span class="pending-count" id="pendientes-total"></span></div>
+      <label for="pendientes-buscar" style="display:block;font-size:12px;color:#b3c4a9;margin-bottom:7px">Buscar por equipo o ID</label>
+      <input type="search" id="pendientes-buscar" class="msg-input pending-search" placeholder="Escribe el nombre de un equipo o el ID del juego…" oninput="renderTablaPendientes()">
+      <div class="pending-scroll"><table class="pending-table"><thead><tr><th>ID</th><th>Equipo local</th><th>Equipo visitante</th><th><span style="position:absolute;clip:rect(0,0,0,0)">Acción</span></th></tr></thead><tbody id="pendientes-tabla"></tbody></table></div>
+      <details class="advanced-search"><summary>Buscar también por ID o pareja de equipos</summary>
       <div id="armando-descansa" style="font-size:12px;color:var(--neon);margin-bottom:12px;min-height:16px"></div>
       <div id="armando-confirmaciones" style="font-size:12px;margin-bottom:12px"></div>
 
@@ -167,11 +240,12 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
         </div>
       </div>
       <div id="pendientes-equipo" style="font-size:12px;color:var(--g400);margin-bottom:12px"></div>
+      </details>
       <div id="buscar-resultado"></div>
-    </div>
+    </section>
 
     <!-- ARMAR ROL DEL DOMINGO -->
-    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
+    <section class="admin-panel" id="tab-cartel" role="tabpanel" aria-labelledby="nav-cartel" hidden>
       <div class="mod-section-title" style="color:var(--neon)">📋 Armar Rol del Domingo (cartel)</div>
 
       <div style="display:flex;gap:8px;margin-bottom:12px">
@@ -203,8 +277,9 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 
         <button class="btn-descargar-cartel" onclick="descargarCartelPNG()">📥 Descargar cartel PNG</button>
       </div>
-    </div>
+    </section>
 
+    <section class="admin-panel" id="tab-reportes" role="tabpanel" aria-labelledby="nav-reportes" hidden>
     <!-- CÉDULA DE JORNADA -->
     <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
       <div class="mod-section-title" style="color:var(--neon)">📋 Cédula arbitral (para el árbitro)</div>
@@ -233,8 +308,14 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
       <div id="cf-aviso" style="font-size:12px;color:var(--g500);text-align:center;min-height:16px"></div>
     </div>
 
+    </section>
   </div>
 </div>
+<dialog id="revision-partido" class="review-dialog" aria-labelledby="revision-titulo">
+ <h3 id="revision-titulo">Revisar programación</h3><p>Confirma los equipos, la fecha y el horario antes de guardar.</p>
+ <dl id="revision-datos"></dl>
+ <form method="dialog" class="review-actions"><button value="cancelar" autofocus>Volver</button><button value="guardar">Confirmar y guardar</button></form>
+</dialog>
 
 <script>
 // ════════════════════════════════
@@ -411,6 +492,43 @@ function llenarSelectsEquipos(){
 }
 
 // La condición local / visitante se conserva en cada registro e ID.
+
+function cambiarPestana(nombre){
+  ['programar','cartel','reportes'].forEach(id=>{
+    document.getElementById('tab-'+id).hidden=id!==nombre;
+    document.getElementById('nav-'+id).setAttribute('aria-selected',String(id===nombre));
+  });
+}
+function renderTablaPendientes(){
+  const tbody=document.getElementById('pendientes-tabla');
+  if(!tbody) return;
+  const q=normTxt(document.getElementById('pendientes-buscar').value);
+  const todos=partidosPendientes();
+  const lista=todos.filter(m=>normTxt([m.id,tname(m.local),tname(m.visita)].join(' ')).includes(q));
+  document.getElementById('pendientes-total').textContent=q ? `${lista.length} de ${todos.length} pendientes` : `${todos.length} pendientes`;
+  tbody.innerHTML=lista.length ? lista.map(m=>`<tr><td class="pending-id" data-label="ID">#${esc(m.id)}</td><td data-label="Local"><b>${esc(tname(m.local))}</b><small>${esc(etiquetaJuego(m,'local'))}</small></td><td data-label="Visitante"><b>${esc(tname(m.visita))}</b><small>${esc(etiquetaJuego(m,'visita'))}</small></td><td><button type="button" class="pending-action" data-partido="${esc(m.id)}">Programar →</button></td></tr>`).join('') : '<tr><td colspan="4" class="pending-empty">No hay partidos pendientes que coincidan con la búsqueda.</td></tr>';
+  tbody.querySelectorAll('[data-partido]').forEach(btn=>btn.addEventListener('click',()=>programarDesdeTabla(btn.dataset.partido)));
+}
+function programarDesdeTabla(id){
+  cambiarPestana('programar');
+  elegirPendientePorId(id);
+  document.getElementById('buscar-resultado').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function actualizarFechaDestacada(){
+  const f=document.getElementById('armando-fecha').value;
+  document.getElementById('fecha-destacada').textContent=f ? new Date(f+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : 'Selecciona una fecha';
+}
+function revisarProgramacion(m, fecha, hora, cancha){
+  const d=document.getElementById('revision-partido');
+  const pares=[['Local',tname(m.local)],['Visitante',tname(m.visita)],['ID',m.id],['Fecha',fecha],['Hora',formatHora12(hora)],['Campo',cancha]];
+  document.getElementById('revision-datos').innerHTML=pares.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+  return new Promise(resolve=>{
+    d.returnValue='cancelar';
+    d.addEventListener('close',()=>resolve(d.returnValue==='guardar'),{once:true});
+    d.showModal();
+  });
+}
+
 // Número de juego por equipo y condición, siguiendo el orden original de la hoja.
 // Incluye todos los estados para que el número no cambie al programar o jugar.
 function numeroJuego(m, condicion){
@@ -453,6 +571,8 @@ async function pintarConfirmacionesFecha(){
   }catch(e){ if(version===confirmVersion) el.textContent='No se pudieron consultar las confirmaciones de esa fecha.'; }
 }
 function actualizarSelectsPorFecha(){
+  actualizarFechaDestacada();
+  renderTablaPendientes();
   clearTimeout(confirmDebounce);
   confirmVersion++;
   confirmDebounce = setTimeout(pintarConfirmacionesFecha,350);
@@ -483,6 +603,7 @@ function actualizarSelectsPorFecha(){
 // ════════════════════════════════
 // Lista de IDs: solo pendientes con ambos equipos activos
 function llenarListaIds(){
+  renderTablaPendientes();
   const dl = document.getElementById('lista-ids-partido');
   if(!dl) return;
   const nid = x => { const n = Number(x.id); return isNaN(n) ? 0 : n; };
@@ -634,7 +755,7 @@ function abrirFormEditar(m){
           <label>Campo / Cancha</label>
           <select id="edit-cancha" class="msg-input" style="width:100%" onchange="refrescarDisponibilidad()">${cOpts}</select>
         </div>
-        <div id="disp-panel"></div>
+        <div id="disp-panel"></div><div class="admin-legend">Libre: puedes elegirlo · Ocupado: hay un cruce de campo o equipo. Duración por juego: 60 minutos.</div>
       </div>
       <button class="btn-anunciar" id="btn-guardar-editar" style="margin-top:14px" onclick="guardarEdicionPartido()">✅ Guardar cambios</button>
     </div>
@@ -724,6 +845,8 @@ async function guardarEdicionPartido(){
     return;
   }
 
+  if(!await revisarProgramacion(m,fechaSheet,hora,cancha)) return;
+  if(S.matchToProgram!==m || !esPendiente(m)) return;
   const btn = document.getElementById('btn-guardar-editar');
   if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
 
