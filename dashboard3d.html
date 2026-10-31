@@ -313,13 +313,11 @@ async function crearJugador(t,i){
   elbow.rotation.x=-.18;codos.push(elbow);return shoulder;
  }
  const brazoI=brazo(-1),brazoD=brazo(1);
- // Cabeza con rostro liso, mandíbula y orejas; comparte la articulación del cuello.
+ // Cabeza lisa de una sola pieza, sin rasgos ni cabello.
  const cabeza=new THREE.Group();cabeza.position.set(0,2.30,0);g.add(cabeza);
- volumen(cabeza,piel,0,.04,0,.175,.225,.172);volumen(cabeza,piel,0,-.09,.025,.138,.115,.14);
+ volumen(cabeza,piel,0,.04,0,.175,.225,.172);
  volumen(cabeza,piel,-.18,.025,0,.035,.06,.028);volumen(cabeza,piel,.18,.025,0,.035,.06,.028);
  const pelo=new THREE.Group();pelo.position.set(0,2.32,0);g.add(pelo);
- const hairMat=new THREE.MeshStandardMaterial({color:[0x211c17,0x38271c,0x151719][i%3],roughness:1});
- const cap=new THREE.Mesh(new THREE.SphereGeometry(1,12,8,0,Math.PI*2,0,1.35),hairMat);cap.scale.set(.18,.235,.18);cap.position.y=.045;pelo.add(cap);
  // Escudo cosido al pecho cuando no existe una imagen de uniforme.
  if(!pla){const badge=new THREE.Mesh(new THREE.PlaneGeometry(.115,.135),new THREE.MeshStandardMaterial({map:escudo,transparent:true,roughness:.8,side:THREE.DoubleSide}));badge.position.set(-.16,1.77,.177);g.add(badge);}
  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:escudo,transparent:true,depthTest:false}));sp.scale.set(.95,.95,1);sp.position.y=3.25;sp.renderOrder=2;g.add(sp);
