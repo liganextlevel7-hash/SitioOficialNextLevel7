@@ -269,7 +269,7 @@ function renderStack(filtrados) {
   if(document.getElementById('filterTipo').value==='equipo'&&filtrados.length){
     const nombre=document.getElementById('filterEquipo').value;
     const equipo=todosEquipos.find(e=>String(e.Nombre).toUpperCase()===nombre);
-    if(equipo){const r=NL7Juegos.resumen(todosPartidos.filter(p=>!NL7Juegos.esCubierto(p,todosEquipos)&&(NL7Juegos.estado(p)==='jugado'||[p.Equipo_Local,p.Equipo_Visita].every(id=>todosEquipos.some(e=>String(e.ID_Equipo)===String(id)&&String(e.Status).toLowerCase()==='activo')))),equipo.ID_Equipo);cont.innerHTML+=`<div class="juego-resumen">${r.jugados} jugados · ${r.local} de local · ${r.visita} de visitante · ${r.programados} programados · ${r.pendientes} por programar · ${r.total} en total</div>`;}
+    if(equipo){const r=NL7Juegos.resumen(todosPartidos.filter(p=>!NL7Juegos.esCubierto(p,todosEquipos)&&(NL7Juegos.estado(p)==='jugado'||[p.Equipo_Local,p.Equipo_Visita].every(id=>todosEquipos.some(e=>String(e.ID_Equipo)===String(id)&&String(e.Status).toLowerCase()==='activo')))),equipo.ID_Equipo);cont.innerHTML+=NL7Juegos.resumenHTML(r,equipo,String(equipo.Nombre).normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase()==='deportivo azul'?1:0);}
   }
   filtrados.forEach((p, idx) => {
     const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
