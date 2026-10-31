@@ -1036,97 +1036,6 @@ function encabezadoPorFecha(fechaStr, partidos) {
   };
 }
 
-function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados, opciones) {
-  const eqMap = {};
-  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
-
-  const inner = document.createElement('div');
-  inner.style.cssText = `
-    position:relative;
-    width:700px;
-    min-height:900px;
-    background-image:url('fondonuevo.png');
-    background-size:cover;
-    background-position:center;
-    padding:28px 24px 32px;
-    box-sizing:border-box;
-  `;
-
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;`;
-  inner.appendChild(overlay);
-
-  const content = document.createElement('div');
-  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
-
-  opciones = opciones || {};
-  const paginaTxt = (totalPaginas > 1 && !opciones.ocultarPagina) ? ` · Página ${numPagina}/${totalPaginas}` : '';
-  const subtituloHTML = opciones.subtitulo
-    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
-    : '';
-  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
-  content.innerHTML = `
-    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
-      ${subtituloHTML}
-    </div>
-    ${descansaHTML}
-    <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
-    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) + bloquePropuestaHTML(opciones, 'normal') : ''}
-  `;
-
-  const filasWrap = content.querySelector('#reporte-filas');
-  paginaPartidos.forEach((p, i) => {
-    const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
-    const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
-    const nomL = (eqL['Nombre'] || `Equipo ${p['Equipo_Local']}`).toUpperCase();
-    const nomV = (eqV['Nombre'] || `Equipo ${p['Equipo_Visita']}`).toUpperCase();
-    const urlL = eqL['URL'] || '';
-    const urlV = eqV['URL'] || '';
-    const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : null;
-    const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
-    const estado = (p['Estado'] || '').trim();
-    const fecha = p['Fecha'] || '';
-    const jornadaFila = NL7Juegos.meta(p) + (NL7Juegos.prevista(p,'local').d ? ' · Prevista L: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'local').d) : '') + (NL7Juegos.prevista(p,'visita').d ? ' · Prevista V: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'visita').d) : '');
-    const hora = p['Hora'] ? formatHora(p['Hora']) : '';
-    const cancha = p['Cancha'] || '';
-    const jugado = estado === 'Jugado' && gL !== null && gV !== null;
-    const centerHTML = jugado
-      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#ddc530;text-shadow:0 0 10px rgba(94,181,13,0.5);letter-spacing:2px;line-height:1;">${gL} - ${gV}</div>`
-      : `<div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:rgba(255,255,255,0.5);letter-spacing:2px;">VS</div>`;
-
-    const sep = i < paginaPartidos.length - 1
-      ? `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`
-      : '';
-
-    const fila = document.createElement('div');
-    fila.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;padding:16px 4px;">
-        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:1;min-width:0;">
-          <div style="width:173px;flex-shrink:0;font-size:15px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;">${nomL}</div>
-          <img src="${urlL}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
-        </div>
-        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:3px;">
-          ${jornadaFila ? `<div style="font-size:10px;color:#5eb50d;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">${jornadaFila}</div>` : ''}
-          ${fecha ? `<div style="font-size:13px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
-          <div style="width:18px;height:2px;background:#5eb50d;border-radius:2px;margin:2px auto;"></div>
-          ${centerHTML}
-          ${hora ? `<div style="font-size:14px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}</div>` : ''}
-          ${cancha ? `<div style="font-size:11px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${cancha}</div>` : ''}
-        </div>
-        <div style="display:flex;align-items:center;justify-content:flex-start;gap:8px;flex:1;min-width:0;">
-          <img src="${urlV}" style="width:88px;height:88px;object-fit:contain;flex-shrink:0;" onerror="this.style.opacity='0.2'">
-          <div style="width:173px;flex-shrink:0;font-size:15px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;">${nomV}</div>
-        </div>
-      </div>
-      ${sep}
-    `;
-    filasWrap.appendChild(fila);
-  });
-
-  inner.appendChild(content);
-  return inner;
-}
 
 // Ordena por Horario primero (comparación numérica real, ya que la hora en la
 // hoja viene como texto "9:00:00" / "10:00:00" y comparada como texto salía mal)
@@ -1151,256 +1060,10 @@ function ordenarPorCampoHora(lista) {
   });
 }
 
-async function downloadPNG() {
-  if (!ultimosFiltrados.length) { alert('Primero carga los datos de los partidos.'); return; }
-  const btn = document.getElementById('dlBtn');
-  btn.textContent = '⏳ Generando...';
-  btn.disabled = true;
-
-  const tipoFiltro = document.getElementById('filterTipo').value;
-  const partidosOrdenados = tipoFiltro === 'equipo'
-    ? [...ultimosFiltrados]
-    : ordenarPorCampoHora(ultimosFiltrados);
-  const firstP = partidosOrdenados[0];
-  let jornadaTitulo;
-  if (tipoFiltro === 'equipo') {
-    const equipoNombre = document.getElementById('filterEquipo').value.trim();
-    jornadaTitulo = equipoNombre ? equipoNombre.toUpperCase() : 'Calendario del Equipo';
-  } else if (tipoFiltro === 'fecha') {
-    jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
-  } else {
-    jornadaTitulo = 'Partidos';
-  }
-  const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
-
-  let equipoDescansa = null;
-  let equiposAtrasados = [];
-  if (tipoFiltro === 'jornada') {
-    const jornadaNum = String(firstP?.Jornada || '').trim();
-    equipoDescansa = descansoParaReporte(jornadaNum);
-    equiposAtrasados = calcularEquiposAtrasados(jornadaNum);
-  } else if (tipoFiltro === 'fecha') {
-    equiposAtrasados = [];
-  }
-  const opcionesPng = tipoFiltro === 'fecha'
-    ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
-    : {};
-  opcionesPng.propuestas = tipoFiltro === 'fecha' ? calcularPropuestas(partidosOrdenados) : null;
-
-  const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
-
-  try {
-    for (let p = 0; p < totalPaginas; p++) {
-      const pagina = partidosOrdenados.slice(p*REPORTE_POR_PAGINA, (p+1)*REPORTE_POR_PAGINA);
-      const temp = document.createElement('div');
-      temp.style.position = 'fixed';
-      temp.style.left = '-9999px';
-      temp.style.top = '0';
-
-      const inner = construirPaginaReporte(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados, opcionesPng);
-      temp.appendChild(inner);
-      document.body.appendChild(temp);
-
-      await esperarImagenesReporte(temp);
-
-      const canvas = await html2canvas(temp, {
-        useCORS: true, allowTaint: true, scale: 4,
-        backgroundColor: '#142702', imageTimeout: 20000, logging: false
-      });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = totalPaginas > 1 ? `partidos_nextlevel7_pagina${p+1}.png` : `partidos_nextlevel7.png`;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a); URL.revokeObjectURL(url);
-
-      document.body.removeChild(temp);
-      await new Promise(r => setTimeout(r, 400));
-    }
-  } catch(e) {
-    alert('❌ Error: ' + e.message);
-  }
-
-  btn.textContent = '⬇ Descargar Lista como PNG';
-  btn.disabled = false;
-}
 
 
 // ===== VARIANTE 2: escudo/nombre más chicos, usando el color de playera (Color_Playera) =====
-function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasados, opciones) {
-  const eqMap = {};
-  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
-  const inner = document.createElement('div');
-  inner.style.cssText = `
-    position:relative;
-    width:700px;
-    min-height:900px;
-    background-image:url('fondonuevo.png');
-    background-size:cover;
-    background-position:center;
-    padding:28px 24px 32px;
-    box-sizing:border-box;
-  `;
-
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;`;
-  inner.appendChild(overlay);
-
-  const content = document.createElement('div');
-  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
-
-  opciones = opciones || {};
-  const paginaTxt = (totalPaginas > 1 && !opciones.ocultarPagina) ? ` · Página ${numPagina}/${totalPaginas}` : '';
-  const subtituloHTML = opciones.subtitulo
-    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
-    : '';
-  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
-  content.innerHTML = `
-    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
-      ${subtituloHTML}
-    </div>
-    ${descansaHTML}
-    <div id="reporte-filas-v2" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
-    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) + bloquePropuestaHTML(opciones, 'chico') : ''}
-  `;
-
-  const filasWrap = content.querySelector('#reporte-filas-v2');
-  paginaPartidos.forEach((p, i) => {
-    const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
-    const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
-    const nomL = (eqL['Nombre'] || `Equipo ${p['Equipo_Local']}`).toUpperCase();
-    const nomV = (eqV['Nombre'] || `Equipo ${p['Equipo_Visita']}`).toUpperCase();
-    // Color_Playera (columna G de Equipos); si un equipo aún no la tiene cargada, usamos su escudo (URL) de respaldo
-    const colorL = eqL['Color_Playera'] || '';
-    const colorV = eqV['Color_Playera'] || '';
-    const urlL = eqL['URL'] || '';
-    const urlV = eqV['URL'] || '';
-    const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : null;
-    const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
-    const estado = (p['Estado'] || '').trim();
-    const fecha = p['Fecha'] || '';
-    const jornadaFila = NL7Juegos.meta(p) + (NL7Juegos.prevista(p,'local').d ? ' · Prevista L: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'local').d) : '') + (NL7Juegos.prevista(p,'visita').d ? ' · Prevista V: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'visita').d) : '');
-    const hora = p['Hora'] ? formatHora(p['Hora']) : '';
-    const cancha = p['Cancha'] || '';
-    const jugado = estado === 'Jugado' && gL !== null && gV !== null;
-    const centerHTML = jugado
-      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#ddc530;text-shadow:0 0 10px rgba(94,181,13,0.5);letter-spacing:2px;line-height:1;">${gL} - ${gV}</div>`
-      : `<div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:rgba(255,255,255,0.5);letter-spacing:2px;">VS</div>`;
-
-    const sep = i < paginaPartidos.length - 1
-      ? `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`
-      : '';
-
-    const equipoBloque = (nombre, urlEscudo, align) => `
-      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0;">
-        <img src="${urlEscudo}" style="width:56px;height:56px;object-fit:contain;" onerror="this.style.opacity='0.2';">
-        <div style="max-width:140px;font-size:13px;font-weight:900;color:#f5f5f0;text-transform:uppercase;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:${align};">${nombre}</div>
-      </div>`;
-
-    const playeraBloque = (colorImg) => colorImg
-      ? `<div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;"><img src="${colorImg}" style="width:76px;height:76px;object-fit:contain;" onerror="this.parentElement.style.display='none';"></div>`
-      : '';
-
-    const fila = document.createElement('div');
-    fila.innerHTML = `
-      <div style="display:flex;align-items:center;gap:5px;padding:8px 4px;">
-        ${equipoBloque(nomL, urlL, 'center')}
-        ${playeraBloque(colorL)}
-        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:74px;text-align:center;gap:1px;">
-          ${jornadaFila ? `<div style="font-size:10px;color:#5eb50d;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;text-shadow:0 1px 3px rgba(0,0,0,0.85);">${jornadaFila}</div>` : ''}
-          ${fecha ? `<div style="font-size:13px;color:#f0f0f0;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
-          <div style="width:14px;height:2px;background:#5eb50d;border-radius:2px;margin:2px auto;"></div>
-          ${centerHTML}
-          ${hora ? `<div style="font-size:14px;color:#ffd83d;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,0.9);">${hora}</div>` : ''}
-          ${cancha ? `<div style="font-size:11px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${cancha}</div>` : ''}
-        </div>
-        ${playeraBloque(colorV)}
-        ${equipoBloque(nomV, urlV, 'center')}
-      </div>
-      ${sep}
-    `;
-    filasWrap.appendChild(fila);
-  });
-
-  inner.appendChild(content);
-  return inner;
-}
-
-async function downloadPNGv2() {
-  if (!ultimosFiltrados.length) { alert('Primero carga los datos de los partidos.'); return; }
-  const btn = document.getElementById('dlBtnV2');
-  if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
-
-  const tipoFiltro = document.getElementById('filterTipo').value;
-  const partidosOrdenados = tipoFiltro === 'equipo'
-    ? [...ultimosFiltrados]
-    : ordenarPorCampoHora(ultimosFiltrados);
-  const firstP = partidosOrdenados[0];
-  let jornadaTitulo;
-  if (tipoFiltro === 'equipo') {
-    const equipoNombre = document.getElementById('filterEquipo').value.trim();
-    jornadaTitulo = equipoNombre ? equipoNombre.toUpperCase() : 'Calendario del Equipo';
-  } else if (tipoFiltro === 'fecha') {
-    jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
-  } else {
-    jornadaTitulo = 'Partidos';
-  }
-  const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
-
-  let equipoDescansa = null;
-  let equiposAtrasadosV2 = [];
-  if (tipoFiltro === 'jornada') {
-    const jornadaNum = String(firstP?.Jornada || '').trim();
-    equipoDescansa = descansoParaReporte(jornadaNum);
-    equiposAtrasadosV2 = calcularEquiposAtrasados(jornadaNum);
-  } else if (tipoFiltro === 'fecha') {
-    equiposAtrasadosV2 = [];
-  }
-  const opcionesPng = tipoFiltro === 'fecha'
-    ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
-    : {};
-  opcionesPng.propuestas = tipoFiltro === 'fecha' ? calcularPropuestas(partidosOrdenados) : null;
-
-  const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA);
-
-  try {
-    for (let p = 0; p < totalPaginas; p++) {
-      const pagina = partidosOrdenados.slice(p*REPORTE_POR_PAGINA, (p+1)*REPORTE_POR_PAGINA);
-      const temp = document.createElement('div');
-      temp.style.position = 'fixed';
-      temp.style.left = '-9999px';
-      temp.style.top = '0';
-
-      const inner = construirPaginaReporteV2(pagina, p+1, totalPaginas, jornadaTitulo, vueltaTitulo, equipoDescansa, equiposAtrasadosV2, opcionesPng);
-      temp.appendChild(inner);
-      document.body.appendChild(temp);
-
-      await esperarImagenesReporte(temp);
-
-      const canvas = await html2canvas(temp, {
-        useCORS: true, allowTaint: true, scale: 4,
-        backgroundColor: '#142702', imageTimeout: 20000, logging: false
-      });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = totalPaginas > 1 ? `partidos_nextlevel7_colores_pagina${p+1}.png` : `partidos_nextlevel7_colores.png`;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a); URL.revokeObjectURL(url);
-
-      document.body.removeChild(temp);
-      await new Promise(r => setTimeout(r, 400));
-    }
-  } catch(e) {
-    alert('❌ Error: ' + e.message);
-  }
-
-  if (btn) { btn.textContent = '⬇ Descargar (escudos chicos)'; btn.disabled = false; }
-}
 
 // ===== VARIANTE 3: "escudos 3d" =====
 // Sin nombres de equipo, escudos grandes, fecha/jornada/hora en letra grande y 4 partidos por hoja
@@ -1415,165 +1078,7 @@ function colEquipo(eq, nombre) {
   return k ? String(eq[k] || '').trim() : '';
 }
 
-function construirPaginaReporteV3(paginaPartidos, numPagina, totalPaginas, jornadaTitulo, equipoDescansa, equiposAtrasados, opciones) {
-  const eqMap = {};
-  todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
 
-  const inner = document.createElement('div');
-  inner.style.cssText = `
-    position:relative;
-    width:700px;
-    min-height:900px;
-    background-image:url('fondonuevo.png');
-    background-size:cover;
-    background-position:center;
-    padding:28px 24px 32px;
-    box-sizing:border-box;
-  `;
-  const overlay = document.createElement('div');
-  overlay.style.cssText = `position:absolute;inset:0;background:rgba(0,0,0,0.15);z-index:0;`;
-  inner.appendChild(overlay);
-
-  const content = document.createElement('div');
-  content.style.cssText = 'position:relative;z-index:1;display:flex;flex-direction:column;min-height:844px;';
-
-  opciones = opciones || {};
-  const paginaTxt = (totalPaginas > 1 && !opciones.ocultarPagina) ? ` · Página ${numPagina}/${totalPaginas}` : '';
-  const subtituloHTML = opciones.subtitulo
-    ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f5f5f0;margin-top:2px;text-shadow:0 2px 4px rgba(0,0,0,0.8);">${opciones.subtitulo}</div>`
-    : '';
-  const descansaHTML = (equipoDescansa && numPagina === 1) ? descansoBloqueHTML(equipoDescansa) : '';
-  content.innerHTML = `
-    <div style="text-align:center;margin-top:220px;margin-bottom:8px;">
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:5px;color:#5eb50d;text-shadow:0 0 18px rgba(94,181,13,0.55),0 2px 4px rgba(0,0,0,0.7);">${jornadaTitulo}${paginaTxt}</div>
-      ${subtituloHTML}
-    </div>
-    ${descansaHTML}
-    <div id="reporte-filas" style="flex:1;display:flex;flex-direction:column;justify-content:center;"></div>
-    ${numPagina === totalPaginas ? bloqueEquiposAtrasadosHTML(equiposAtrasados) + bloquePropuestaHTML(opciones, '3d') : ''}
-  `;
-
-  const filasWrap = content.querySelector('#reporte-filas');
-  paginaPartidos.forEach((p, i) => {
-    const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
-    const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
-    // escudo según juegue de local o de visitante (si falta, se usa el escudo normal)
-    const urlL = colEquipo(eqL, 'logo_local') || eqL['URL'] || '';
-    const urlV = colEquipo(eqV, 'logo_visitante') || eqV['URL'] || '';
-    const gL = p['Goles_Local'] !== '' ? p['Goles_Local'] : null;
-    const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
-    const estado = (p['Estado'] || '').trim();
-    const fecha = p['Fecha'] || '';
-    const jornadaFila = NL7Juegos.meta(p) + (NL7Juegos.prevista(p,'local').d ? ' · Prevista L: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'local').d) : '') + (NL7Juegos.prevista(p,'visita').d ? ' · Prevista V: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'visita').d) : '');
-    const hora = p['Hora'] ? formatHora(p['Hora']) : '';
-    const cancha = p['Cancha'] || '';
-    const jugado = estado === 'Jugado' && gL !== null && gV !== null;
-    const centerHTML = jugado
-      ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:50px;color:#ddc530;text-shadow:0 0 12px rgba(94,181,13,0.5),0 2px 4px rgba(0,0,0,0.8);letter-spacing:3px;line-height:1;">${gL} - ${gV}</div>`
-      : `<div style="font-family:'Bebas Neue',sans-serif;font-size:34px;color:rgba(255,255,255,0.6);letter-spacing:3px;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.8);">VS</div>`;
-
-    const sep = i < paginaPartidos.length - 1
-      ? `<hr style="border:none;border-top:1px dotted rgba(94,181,13,0.4);margin:0;">`
-      : '';
-
-    const fila = document.createElement('div');
-    fila.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:14px 0;">
-        <div style="width:190px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-          <img src="${urlL}" style="width:182px;height:182px;object-fit:contain;" onerror="this.style.opacity='0.2'">
-        </div>
-        <div style="flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:5px;">
-          ${jornadaFila ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:27px;color:#5eb50d;letter-spacing:2px;line-height:1.05;text-transform:uppercase;text-shadow:0 2px 4px rgba(0,0,0,0.9);">${jornadaFila}</div>` : ''}
-          ${fecha ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#f5f5f0;letter-spacing:1.5px;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.9);">${fecha}</div>` : ''}
-          <div style="width:26px;height:3px;background:#5eb50d;border-radius:2px;margin:1px auto;"></div>
-          ${centerHTML}
-          ${hora ? `<div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:#ffd83d;letter-spacing:2px;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.9);">${hora}</div>` : ''}
-          ${cancha ? `<div style="font-size:16px;color:#5eb50d;font-weight:700;letter-spacing:0.5px;text-shadow:0 2px 4px rgba(0,0,0,0.9);">${cancha}</div>` : ''}
-        </div>
-        <div style="width:190px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
-          <img src="${urlV}" style="width:182px;height:182px;object-fit:contain;" onerror="this.style.opacity='0.2'">
-        </div>
-      </div>
-      ${sep}
-    `;
-    filasWrap.appendChild(fila);
-  });
-
-  inner.appendChild(content);
-  return inner;
-}
-
-async function downloadPNGv3() {
-  if (!ultimosFiltrados.length) { alert('Primero carga los datos de los partidos.'); return; }
-  const btn = document.getElementById('dlBtnV3');
-  if (btn) { btn.textContent = '⏳ Generando...'; btn.disabled = true; }
-
-  const tipoFiltro = document.getElementById('filterTipo').value;
-  const partidosOrdenados = tipoFiltro === 'equipo'
-    ? [...ultimosFiltrados]
-    : ordenarPorCampoHora(ultimosFiltrados);     // 9:00, 10:00, 11:00, 12:00 (y por campo dentro de la misma hora)
-  const firstP = partidosOrdenados[0];
-  let jornadaTitulo;
-  if (tipoFiltro === 'equipo') {
-    const equipoNombre = document.getElementById('filterEquipo').value.trim();
-    jornadaTitulo = equipoNombre ? equipoNombre.toUpperCase() : 'Calendario del Equipo';
-  } else if (tipoFiltro === 'fecha') {
-    jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
-  } else {
-    jornadaTitulo = 'Partidos';
-  }
-
-  let equipoDescansa = null;
-  let equiposAtrasadosV3 = [];
-  if (tipoFiltro === 'jornada') {
-    const jornadaNum = String(firstP?.Jornada || '').trim();
-    equipoDescansa = descansoParaReporte(jornadaNum);
-    equiposAtrasadosV3 = calcularEquiposAtrasados(jornadaNum);
-  } else if (tipoFiltro === 'fecha') {
-    equiposAtrasadosV3 = [];
-  }
-  const opcionesPng = tipoFiltro === 'fecha'
-    ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
-    : {};
-  opcionesPng.propuestas = tipoFiltro === 'fecha' ? calcularPropuestas(partidosOrdenados) : null;
-
-  const totalPaginas = Math.ceil(partidosOrdenados.length / REPORTE_POR_PAGINA_V3);
-
-  try {
-    for (let p = 0; p < totalPaginas; p++) {
-      const pagina = partidosOrdenados.slice(p*REPORTE_POR_PAGINA_V3, (p+1)*REPORTE_POR_PAGINA_V3);
-      const temp = document.createElement('div');
-      temp.style.position = 'fixed';
-      temp.style.left = '-9999px';
-      temp.style.top = '0';
-
-      const inner = construirPaginaReporteV3(pagina, p+1, totalPaginas, jornadaTitulo, equipoDescansa, equiposAtrasadosV3, opcionesPng);
-      temp.appendChild(inner);
-      document.body.appendChild(temp);
-
-      await esperarImagenesReporte(temp);
-
-      const canvas = await html2canvas(temp, {
-        useCORS: true, allowTaint: true, scale: 4,
-        backgroundColor: '#142702', imageTimeout: 20000, logging: false
-      });
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = totalPaginas > 1 ? `escudos_3d_pagina${p+1}.png` : `escudos_3d.png`;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a); URL.revokeObjectURL(url);
-
-      document.body.removeChild(temp);
-      await new Promise(r => setTimeout(r, 400));
-    }
-  } catch(e) {
-    alert('❌ Error: ' + e.message);
-  }
-
-  if (btn) { btn.textContent = '⬇ Descargar (escudos 3d)'; btn.disabled = false; }
-}
 
 
 function bannerDescansoHTML(){ return ''; }
@@ -1587,5 +1092,64 @@ async function downloadPNGDescansos(){
  const el=document.createElement('div');el.innerHTML=NL7Juegos.documento('Partidos pendientes',NL7Juegos.tabla(todosPartidos.filter(p=>NL7Juegos.estado(p)==='pendiente'&&!NL7Juegos.esCubierto(p,todosEquipos)&&[p.Equipo_Local,p.Equipo_Visita].every(id=>todosEquipos.some(e=>String(e.ID_Equipo)===String(id)&&String(e.Status).toLowerCase()==='activo'))),todosEquipos));el.style.cssText='position:absolute;left:-12000px;top:0;width:1000px';document.body.append(el);
  try{const c=await html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true});const a=document.createElement('a');a.download='partidos-pendientes.png';a.href=c.toDataURL('image/png');a.click();}finally{el.remove();}
 }
+// Exportación acotada: cada equipo ocupa su propia columna y el centro no crece con sus etiquetas.
+function pngPagina(tipo,partidos,pagina,total,titulo,opciones){
+ const G=NL7Juegos,E=Object.fromEntries(todosEquipos.map(e=>[String(e.ID_Equipo).trim(),e]));opciones=opciones||{};
+ const root=document.createElement('div');root.className='png-pagina';root.style.cssText="position:relative;width:700px;min-height:900px;background:#071b10 url('fondonuevo.png') center top / cover no-repeat;padding:28px 24px 32px;box-sizing:border-box;color:#fff;font-family:Arial,sans-serif;";
+ const content=document.createElement('div');content.style.cssText='position:relative;z-index:1;';
+ const h=document.createElement('div');h.className='png-cabecera';h.style.cssText='padding-top:220px;text-align:center;margin-bottom:16px;';
+ h.innerHTML=`<div style="font-size:32px;line-height:1.15;color:#8bd331;letter-spacing:2px;text-shadow:0 2px 4px #000">${G.esc(titulo)}</div>${opciones.subtitulo?`<div style="font-size:22px;margin-top:6px">${G.esc(opciones.subtitulo)}</div>`:''}<div style="font-size:12px;color:#d4e7be;margin-top:8px">Página ${pagina} de ${total}</div>`;content.append(h);
+ const imagen=(url,w,h)=>`<img crossorigin="anonymous" src="${G.esc(url||'logo-liga.png.png')}" alt="" style="display:block;width:${w}px;height:${h}px;object-fit:contain;flex:none;" onerror="this.onerror=null;this.style.opacity='.25'">`;
+ for(const p of partidos){
+  const row=document.createElement('div');row.className='png-partido';row.dataset.id=String(p.ID_Partido);row.style.cssText=`display:grid;grid-template-columns:${tipo===3?'190px 252px 190px':'226px 180px 226px'};gap:10px;align-items:center;padding:${tipo===3?'12px 0':'14px 0'};min-height:${tipo===3?210:136}px;border-bottom:1px dotted #6d922b;box-sizing:border-box;width:652px;`;
+  const team=lado=>{const e=E[String(p[lado==='local'?'Equipo_Local':'Equipo_Visita']).trim()]||{},nom=e.Nombre||'Equipo por definir',num=G.numero(p,lado);const bloque=document.createElement('div');bloque.className='png-equipo';bloque.style.cssText='min-width:0;width:100%;text-align:center;box-sizing:border-box;';
+   const juego=num?'Juego '+num+' · '+(lado==='local'?'Local':'Visitante'):(lado==='local'?'Local':'Visitante')+' · Sin número';
+   if(tipo===3){const logo=colEquipo(e,lado==='local'?'logo_local':'logo_visitante')||e.URL;bloque.innerHTML=`<div style="display:flex;justify-content:center">${imagen(logo,174,174)}</div><div class="png-numero" style="font-size:14px;line-height:1.3;color:#b9e879;margin-top:6px">${G.esc(juego)}</div>`;}
+   else if(tipo===2){bloque.innerHTML=`<div class="png-imagenes" style="display:flex;justify-content:center;align-items:center;gap:14px;height:88px;">${imagen(e.URL,68,76)}${e.Color_Playera?imagen(e.Color_Playera,82,88):''}</div><div class="png-nombre" style="font-size:14px;line-height:1.25;font-weight:700;white-space:normal;overflow-wrap:break-word;margin:6px 0 3px;">${G.esc(nom.toUpperCase())}</div><div style="font-size:11px;line-height:1.3;color:#b9e879">${G.esc(juego)}</div>`;}
+   else{bloque.innerHTML=`<div style="display:flex;gap:8px;align-items:center;justify-content:center;${lado==='local'?'flex-direction:row-reverse;':''}">${imagen(e.URL,80,88)}<div style="width:138px;min-width:0;"><div class="png-nombre" style="font-size:14px;line-height:1.25;font-weight:700;white-space:normal;overflow-wrap:break-word;">${G.esc(nom.toUpperCase())}</div><div style="font-size:11px;line-height:1.35;color:#b9e879;margin-top:6px">${G.esc(juego)}</div></div></div>`;}
+   return bloque;};
+  const mid=document.createElement('div');mid.className='png-centro';mid.style.cssText='width:100%;min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;line-height:1.25;';
+  const jugado=G.estado(p)==='jugado'&&p.Goles_Local!==''&&p.Goles_Visita!=='';
+  mid.innerHTML=`<div style="font-size:${tipo===3?22:14}px;color:#f1f5ed">${G.esc(p.Fecha||'Fecha por definir')}</div><div style="width:24px;height:2px;background:#8bd331"></div><div style="font-size:${tipo===3?32:26}px;color:${jugado?'#ffd83d':'#d6dfd0'}">${jugado?G.esc(p.Goles_Local)+' – '+G.esc(p.Goles_Visita):'VS'}</div><div style="font-size:${tipo===3?29:20}px;font-weight:700;color:#ffd83d">${G.esc(formatHora(p.Hora)||'Horario por definir')}</div><div style="font-size:13px;color:#b9e879">${G.esc(p.Cancha||'Campo por definir')}</div><div style="font-size:10px;color:#c8d7bb">ID ${G.esc(p.ID_Partido)}</div>`;
+  row.append(team('local'),mid,team('visita'));content.append(row);
+ }
+ if(pagina===total&&opciones.fechaControl){const footer=document.createElement('div');footer.className='png-control-fechas';footer.style.cssText='margin-top:18px;padding:14px;background:rgba(0,12,6,.8);border:1px solid #5b7c2d;border-radius:10px;font-size:12px;line-height:1.5;box-sizing:border-box;';footer.innerHTML=G.leyendaFechas(todosPartidos,todosEquipos,opciones.fechaControl);content.append(footer);}
+ root.append(content);return root;
+}
+function pngAjustarPagina(root){const h=root.querySelector('.png-cabecera');for(let i=0;i<6;i++){const top=Math.max(220,Math.ceil(root.offsetHeight*.21)+10);if(Math.abs(parseFloat(h.style.paddingTop)-top)<2)break;h.style.paddingTop=top+'px';}}
+function construirPaginaReporte(p,n,total,t,v,d,a,o){return pngPagina(1,p,n,total,t,o);}
+function construirPaginaReporteV2(p,n,total,t,v,d,a,o){return pngPagina(2,p,n,total,t,o);}
+function construirPaginaReporteV3(p,n,total,t,d,a,o){return pngPagina(3,p,n,total,t,o);}
+let pngEnCurso=false;const pngDescargas=[];
+async function pngExportar(tipo){
+ if(pngEnCurso)return;pngEnCurso=true;const id=tipo===3?'dlBtnV3':tipo===2?'dlBtnV2':'dlBtn',btn=document.getElementById(id),original=btn?.textContent;let box=null;
+ try{
+  // Cada descarga usa la selección actual; no obliga a cargar el otro panel del reporte.
+  ultimosFiltrados=[];await cargarDatos();if(!ultimosFiltrados.length)throw Error(document.getElementById('statusMsg')?.textContent||'Selecciona fecha o equipo.');
+  if(btn){btn.disabled=true;btn.textContent='Preparando imágenes…';}
+  if(document.fonts?.ready)await document.fonts.ready;
+  const lista=document.getElementById('filterTipo').value==='equipo'?[...ultimosFiltrados]:ordenarPorCampoHora(ultimosFiltrados),porPagina=tipo===3?4:7,total=Math.ceil(lista.length/porPagina);
+  const fecha=document.getElementById('filterTipo').value==='fecha'?document.getElementById('filterFecha').value:'',titulo=fecha?encabezadoPorFecha(fecha,lista).titulo:document.getElementById('filterEquipo').value||'Partidos';
+  pngDescargas.splice(0).forEach(u=>URL.revokeObjectURL(u));document.getElementById('png-descargas-listas')?.remove();
+  box=document.createElement('div');box.id='png-descargas-listas';box.style.cssText='display:flex;gap:8px;flex-wrap:wrap;padding:14px;border:1px solid #6a913e;border-radius:10px;margin:12px 0;color:#e1f0cf;';box.setAttribute('aria-live','polite');const msg=document.createElement('div');msg.style.width='100%';box.append(msg);(document.getElementById('panel-imagenes')||document.getElementById('stackContainer')).prepend(box);
+  for(let i=0;i<total;i++){
+   msg.textContent=`Generando página ${i+1} de ${total}…`;
+   const temp=document.createElement('div');temp.style.cssText='position:absolute;left:-12000px;top:0;width:700px;';const page=pngPagina(tipo,lista.slice(i*porPagina,(i+1)*porPagina),i+1,total,titulo,{subtitulo:fecha,fechaControl:fecha});temp.append(page);document.body.append(temp);
+   try{
+    await esperarImagenesReporte(temp);pngAjustarPagina(page);
+    const canvas=await html2canvas(page,{useCORS:true,allowTaint:false,scale:window.__NL7_PNG_TEST_SCALE||4,backgroundColor:'#071b10',imageTimeout:20000,logging:false,windowWidth:1200,scrollX:0,scrollY:0});
+    const blob=await new Promise(ok=>canvas.toBlob(ok,'image/png'));if(!blob)throw Error('No se pudo preparar la imagen.');const url=URL.createObjectURL(blob);pngDescargas.push(url);canvas.width=canvas.height=0;
+    const a=document.createElement('a');a.href=url;a.download=`${tipo===3?'escudos_3d':tipo===2?'partidos_colores':'partidos_lista'}_pagina${i+1}.png`;a.textContent=`Descargar página ${i+1} de ${total}`;a.style.cssText='padding:11px;background:#25441a;color:#fff;border-radius:8px;text-decoration:none;';box.append(a);a.click();
+   }finally{temp.remove();}
+  }
+  msg.textContent=`${total} página${total>1?'s':''} lista${total>1?'s':''}. Si el navegador bloqueó alguna descarga, usa estos botones.`;
+ }catch(e){if(box)box.firstChild.textContent='No se completó la exportación: '+e.message;const st=document.getElementById('statusMsg');if(st)st.textContent='Error al generar PNG: '+e.message;}
+ finally{pngEnCurso=false;if(btn){btn.disabled=false;btn.textContent=original;}}
+}
+async function downloadPNG(){return pngExportar(1);}
+async function downloadPNGv2(){return pngExportar(2);}
+async function downloadPNGv3(){return pngExportar(3);}
+
 cargarFechasYEquipos();
+
 
