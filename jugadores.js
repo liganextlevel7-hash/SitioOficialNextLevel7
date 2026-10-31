@@ -31,6 +31,39 @@ async function cargarEquiposNL7() {
   logosEquipos = logoTmp;
 }
 
+// Se conserva la base de 15 partidos que utiliza la página original.
+function porcentajeAsistencia(asistencias) {
+  return Math.round((asistencias / 15) * 100) + '%';
+}
+
+// Compatibilidad con el HTML anterior al rediseño.
+function prepararControlesJugadores() {
+  const contenedor = document.querySelector('.contenedor-jugadores');
+  const selector = document.getElementById('selector-equipo-jugador');
+  if (!contenedor || !selector) return;
+  let filtro = document.getElementById('filtro-equipo');
+  if (!filtro) {
+    filtro = document.createElement('div');
+    filtro.id = 'filtro-equipo';
+    filtro.hidden = true;
+    const etiqueta = document.createElement('label');
+    etiqueta.htmlFor = selector.id;
+    etiqueta.textContent = 'Seleccionar equipo';
+    const anterior = selector.closest('.card');
+    contenedor.insertBefore(filtro, document.getElementById('lista-jugadores'));
+    filtro.append(etiqueta, selector);
+    if (anterior) anterior.remove();
+  }
+  if (!contenedor.querySelector('[data-jugadores-tab]')) {
+    const tabs = document.createElement('div');
+    tabs.className = 'jugadores-tabs';
+    tabs.setAttribute('aria-label', 'Categorías de jugadores');
+    tabs.innerHTML = '<button type="button" data-jugadores-tab="goleadores" aria-selected="true">Goleadores</button><button type="button" data-jugadores-tab="porteros" aria-selected="false">Porteros</button><button type="button" data-jugadores-tab="equipo" aria-selected="false">Por equipo</button>';
+    contenedor.insertBefore(tabs, filtro);
+  }
+}
+prepararControlesJugadores();
+
 function tarjetaJugador(j, items) {
   return `<article class="pcard">
     <div class="pcard-header"><span class="pcard-equipo-nombre">${equiposID[Number(j.equipo)] || ''}</span><img class="pcard-logo-equipo" src="${logosEquipos[Number(j.equipo)] || j.logo}" alt="Escudo del equipo"></div>
@@ -41,14 +74,14 @@ function tarjetaJugador(j, items) {
   </article>`;
 }
 function playerCardHTML(j, goles, asistencias, amarillas, rojas) {
-  return tarjetaJugador(j, [['Goles',goles],['Asistencia',asistencias],['Amarillas',amarillas],['Rojas',rojas]]);
+  return tarjetaJugador(j, [['Goles',goles],['Asistencia',porcentajeAsistencia(asistencias)],['🟨 Amarillas',amarillas],['🟥 Rojas',rojas]]);
 }
-function porteroCardHTML(j) {
-  return tarjetaJugador(j, [['Goles recibidos',j.golesRecibidos],['Partidos',j.partidosJugados],['Promedio',j.promedio.toFixed(1)]]);
+function porteroCardHTML(j, asistencias, amarillas, rojas) {
+  return tarjetaJugador(j, [['Goles recibidos',j.golesRecibidos],['Partidos',j.partidosJugados],['Promedio',j.promedio.toFixed(1)],['Asistencia',porcentajeAsistencia(asistencias)],['🟨 Amarillas',amarillas],['🟥 Rojas',rojas]]);
 }
 function jugadorCardHTML(j, goles, porcentaje, suspendido, golesRec, amarillas, rojas) {
   const esPortero = golesRec !== undefined && golesRec !== null;
-  return tarjetaJugador(j, [[esPortero ? 'Goles recibidos' : 'Goles',esPortero ? golesRec : goles],['Asistencia',porcentaje+'%'],['Amarillas',amarillas||0],['Rojas',rojas||0],['Suspendido',suspendido]]);
+  return tarjetaJugador(j, [[esPortero ? 'Goles recibidos' : 'Goles',esPortero ? golesRec : goles],['Asistencia',porcentaje+'%'],['🟨 Amarillas',amarillas||0],['🟥 Rojas',rojas||0],['Suspendido',suspendido]]);
 }
 
 (function() {
@@ -89,7 +122,7 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido, golesRec, amarillas, 
     .pcard-lbl { font-size:11px; color:#bac9dd; }
     .pcard-val { font-size:23px; font-weight:700; color:#f4f7ff; }
     .pcard-ver-ficha { display:block; width:calc(100% - 28px); margin:0 14px 14px; padding:12px; border:0; border-radius:9px; background:#a7e267; color:#17240e; font-size:14px; font-weight:700; cursor:pointer; }
-    .pj-carrusel-wrap { position:relative; width:100%; max-width:960px; margin:auto; height:610px; overflow:hidden; touch-action:pan-y; }
+    .pj-carrusel-wrap { position:relative; width:100%; max-width:960px; margin:auto; height:690px; overflow:hidden; touch-action:pan-y; }
     .pj-slide { position:absolute; top:50%; left:50%; width:300px; transition:transform .4s,opacity .4s,filter .4s; transform:translate(-50%,-50%) scale(.4); opacity:0; pointer-events:none; filter:brightness(.45); }
     .pj-slide.pj-c { transform:translate(-50%,-50%); opacity:1; z-index:5; pointer-events:auto; filter:none; }
     .pj-slide.pj-l1 { transform:translate(calc(-50% - 245px),-50%) scale(.76); opacity:.65; z-index:4; pointer-events:auto; }
@@ -119,7 +152,7 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido, golesRec, amarillas, 
       .pj-slide { width:min(300px,calc(100vw - 88px)); }
       .pj-slide:not(.pj-c) { opacity:0; pointer-events:none; }
       .pcard-foto-wrap { height:215px; } .pcard-nombre { font-size:17px; }
-      .pj-carrusel-wrap { height:625px; }
+      .pj-carrusel-wrap { height:700px; }
     }
     @media(prefers-reduced-motion:reduce) { .pj-slide { transition:none; } }
 
@@ -344,15 +377,15 @@ async function cargarJugadores() {
     amarillasMap[j.id] || 0, rojasMap[j.id] || 0
   ));
 
-  const htmlPortArr = porteros.map(j => porteroCardHTML(j));
+  const htmlPortArr = porteros.map(j => porteroCardHTML(j, asistMap[j.id] || 0, amarillasMap[j.id] || 0, rojasMap[j.id] || 0));
 
   // Estadisticas que se ven al dar doble clic a la tarjeta
   const statsGolArr = goleadores.map(j => statsFicha(j, [
-    { l: '⚽ GOLES', v: golesMap[j.id] || 0 }, { l: 'Asistencia', v: asistMap[j.id] || 0 },
+    { l: '⚽ GOLES', v: golesMap[j.id] || 0 }, { l: 'Asistencia', v: porcentajeAsistencia(asistMap[j.id] || 0) },
     { l: '🟡 AMARILLAS', v: amarillasMap[j.id] || 0 }, { l: '🔴 ROJAS', v: rojasMap[j.id] || 0 }
   ]));
   const statsPortArr = porteros.map(j => statsFicha(j, [
-    { l: '🥅 GOL REC', v: j.golesRecibidos }, { l: '🧤 PJ', v: j.partidosJugados }, { l: '📊 PROM', v: j.promedio.toFixed(1) },
+    { l: '🥅 GOL REC', v: j.golesRecibidos }, { l: '🧤 PJ', v: j.partidosJugados }, { l: '📊 PROM', v: j.promedio.toFixed(1) }, { l: 'Asistencia', v: porcentajeAsistencia(asistMap[j.id] || 0) },
     { l: '🟡 AMARILLAS', v: amarillasMap[j.id] || 0 }, { l: '🔴 ROJAS', v: rojasMap[j.id] || 0 }
   ]));
 
