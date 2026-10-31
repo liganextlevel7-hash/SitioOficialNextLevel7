@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reporte 15 Jornadas | Liga Next Level 7</title>
+<title>Control por juegos y fechas | Liga Next Level 7</title>
 <link rel="stylesheet" href="styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -142,10 +142,11 @@
 </header>
 <section class="contenedor">
 <div class="card">
-<h2>📅 Jornadas de cada equipo</h2>
+<h2>📅 Juegos y fechas de cada equipo</h2>
 <div id="r15" class="r15">Cargando reporte...</div>
 </div>
 </section>
+<script src="juegos-control.js?v=20261031"></script>
 <script>
 const SHEET_ID='1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE',GID_EQ='1894947293',GID_PA='1362473459';
 const PUB='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?single=true&output=csv&gid=';
@@ -319,7 +320,7 @@ function pintar(D){
 }
 async function descargar(){
   const w=document.getElementById('wrap'),ant=w.style.overflow,antH=w.style.maxHeight;w.style.overflow='visible';w.style.maxHeight='none';
-  try{const cv=await html2canvas(w,{scale:2,backgroundColor:'#ffffff',width:w.scrollWidth,windowWidth:w.scrollWidth+40});const a=document.createElement('a');a.download='reporte-15-jornadas.png';a.href=cv.toDataURL('image/png');a.click()}
+  try{const cv=await html2canvas(w,{scale:2,backgroundColor:'#ffffff',width:w.scrollWidth,windowWidth:w.scrollWidth+40});const a=document.createElement('a');a.download='control-juegos-fechas.png';a.href=cv.toDataURL('image/png');a.click()}
   catch(e){alert('No se pudo generar la imagen: '+e.message)}finally{w.style.overflow=ant;w.style.maxHeight=antH}
 }
 async function leer(gid){
@@ -329,13 +330,25 @@ async function leer(gid){
 let cargando=false;
 async function cargar(manual){
   if(cargando)return;cargando=true;
-  try{const [pa,eq]=await Promise.all([leer(GID_PA),leer(GID_EQ)]);pintar(armar(pa,eq,new Date()));
+  try{const [pa,eq]=await Promise.all([leer(GID_PA),leer(GID_EQ)]);controlFechas(pa,eq);
     const h=new Date();document.getElementById('est').innerHTML='Actualizado <b>'+p2(h.getHours())+':'+p2(h.getMinutes())+':'+p2(h.getSeconds())+'</b> · se actualiza solo cada minuto con tu hoja de partidos'}
   catch(e){if(!DATOS)document.getElementById('r15').textContent='No se pudo cargar la información: '+e.message}
   finally{cargando=false}
 }
+// Salida del control histórico adaptada al esquema JJL/JJV. No deduce fechas por ID.
+function controlFechas(pa,eq){
+ const G=NL7Juegos,convert=r=>{const o={};for(const k in r)o[({'id_partido':'ID_Partido','equipo_local':'Equipo_Local','equipo_visita':'Equipo_Visita','goles_local':'Goles_Local','goles_visita':'Goles_Visita','ganado_por':'Ganado_Por','id_equipo':'ID_Equipo','jjl':'JJL','jjv':'JJV','fecha_original':'Fecha_Original','fecha_prevista':'Fecha_Prevista','fecha_correspondiente':'Fecha_Correspondiente','fecha_original_local':'Fecha_Original_Local','fecha_original_visitante':'Fecha_Original_Visitante'})[k]||k.charAt(0).toUpperCase()+k.slice(1)]=r[k];return o;};
+ const E=eq.map(convert),P=G.correcciones(pa.map(convert));const activos=E.filter(e=>String(e.Status).toLowerCase()!=='baja'&&!BAJA_FORZADA.includes(String(e.ID_Equipo))),ids=new Set(activos.map(e=>String(e.ID_Equipo)));
+ const a=P.filter(p=>!G.esCubierto(p,E)&&!G.estado(p).includes('cancel')&&(G.estado(p)==='jugado'||ids.has(String(p.Equipo_Local))&&ids.has(String(p.Equipo_Visita))));
+ const filas=activos.map(e=>{const r=G.resumen(a,e.ID_Equipo),contado=String(e.ID_Equipo)==='17'?1:0;return `<tr><td>${G.esc(e.Nombre)}</td><td>${r.jugados}</td><td>${r.local}</td><td>${r.visita}</td><td>${r.programados}</td><td>${r.pendientes}</td><td>${contado}</td><td>${r.total+contado}</td></tr>`}).join('');
+ const contenido=`<table class="jg-tabla"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Pendientes</th><th>Contados</th><th>Total</th></tr></thead><tbody>${filas}</tbody></table>`+G.tabla(a,E)+`<p class="jg-nota">Se mantienen las correcciones ID 28 y 70, las bajas de Ballenitas y Dream team, el juego contado de Deportivo Azul contra Puebla 450 y el descanso inicial de Galácticos. El descanso no se suma a partidos jugados. Para propuestas con horarios y campos utiliza el reporte por equipo.</p>`;
+ document.getElementById('r15').innerHTML=`<div class="r15-top"><button id="act" class="dl">Actualizar</button><button id="dl" class="dl">Descargar PNG</button><a href="reporte_por_equipo.html">Reportes y propuestas</a></div><p id="est"></p><div id="wrap" class="wrap">${G.documento('Control por juegos y fechas',contenido)}</div>`;
+ document.getElementById('dl').onclick=descargar;document.getElementById('act').onclick=()=>cargar(true);DATOS={P,E};
+}
+
 cargar();setInterval(cargar,REFRESCO_MS);document.addEventListener('visibilitychange',()=>{if(!document.hidden)cargar()});
 }else module.exports={armar,csv};
 </script>
 </body>
 </html>
+
