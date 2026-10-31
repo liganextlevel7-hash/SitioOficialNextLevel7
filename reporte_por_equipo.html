@@ -267,7 +267,7 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
 </div>
 <div id="vista-wrap" hidden><div id="vista"></div></div>
 
-<script src="juegos-control.js?v=20261031-cupo15"></script>
+<script src="juegos-control.js?v=20261031-png-reparado"></script>
 <script>
 // ═══════════════════════════════════════════════
 //  CONFIGURACIÓN
@@ -351,6 +351,7 @@ const idDe = e => String(e['ID_Equipo']).trim();
 // ═══════════════════════════════════════════════
 //  CARGA
 // ═══════════════════════════════════════════════
+let errorCargaReporte='';
 async function init(){
   try {
     const [te, tp] = await Promise.all([ fetch(URL_EQUIPOS).then(r => r.text()), fetch(URL_PARTIDOS).then(r => r.text()) ]);
@@ -359,7 +360,7 @@ async function init(){
     const ord = [...EQUIPOS].sort((a, b) => a['Nombre'].localeCompare(b['Nombre'], 'es'));
     $('sel-equipo').innerHTML = '<option value="">— Selecciona un equipo —</option>' + ord.map(e => `<option value="${esc(idDe(e))}">${esc(e['Nombre'])}${esBaja(e) ? ' (baja)' : ''}</option>`).join('');
     msg('Elige un equipo y presiona "Ver reporte".' + (corregidos.length ? ` · Se aplicaron las correcciones de captura a los partidos ID ${corregidos.join(' y ')}.` : ''));
-  } catch (e){ $('sel-equipo').innerHTML = '<option value="">No se pudieron cargar los datos</option>'; msg('No se pudieron cargar los datos. Revisa tu conexión.', true); }
+  } catch (e){ errorCargaReporte=e.message; $('sel-equipo').innerHTML = '<option value="">No se pudieron cargar los datos</option>'; msg('No se pudieron cargar los datos. Revisa tu conexión.', true); }
 }
 function msg(t, err){ $('msg').textContent = t; $('msg').className = err ? 'err' : ''; }
 function cambiarTipo(){
@@ -1125,13 +1126,15 @@ function construir(){
   const eq = EQUIPOS.find(e => idDe(e) === id);
   return { html: docEquipo(id), nombre: 'reporte_' + (eq['Nombre'] || id).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase() };
 }
-function ver(){
+async function ver(){
+  if(!await asegurarDatosReporte())return;
   const r = construir(); if (!r) return; msg('');
   const wrap = $('vista-wrap'), v = $('vista'); wrap.hidden = false; v.innerHTML = r.html;
   const doc = v.firstElementChild, ancho = parseInt(doc.style.width, 10) || 900, k = Math.min(1, wrap.clientWidth / ancho);
   doc.style.transform = ''; doc.style.transformOrigin = ''; wrap.style.height = ''; wrap.style.overflowX = 'auto';
 }
 async function descargar(){
+  if(!await asegurarDatosReporte())return;
   const r = construir(); if (!r) return; msg('Generando PNG...');
   const t = document.createElement('div'); t.style.cssText = 'position:fixed;left:-99999px;top:0'; t.innerHTML = r.html; document.body.appendChild(t);
   try {
@@ -1144,6 +1147,7 @@ async function descargar(){
   finally { document.body.removeChild(t); }
 }
 async function imprimir(){
+  if(!await asegurarDatosReporte())return;
   const r = construir(); if (!r) return; msg('');
   const css = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n');
   const f = document.createElement('iframe'); f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'; document.body.appendChild(f);
@@ -1216,10 +1220,20 @@ function docPropuesta(n,doble){return planJuegos(n,doble,false);}
 function docHorarios(n){return planJuegos(n,false,true);}
 function docTentativo(){const a=juegosValidos().filter(p=>estadoDe(p)==='programado');return NL7Juegos.documento('Partidos programados',NL7Juegos.tabla(a,EQUIPOS)+`<p class="jg-nota">Se conserva la distinción de publicación: la fecha se considera confirmada desde el jueves anterior; antes es tentativa.</p>`+notaEspecialJuegos());}
 
-init();
+let cargaReporte=null;
+async function asegurarDatosReporte(){
+ if(PARTIDOS.length&&EQUIPOS.length)return true;
+ if(!cargaReporte)cargaReporte=init().finally(()=>cargaReporte=null);
+ await cargaReporte;
+ if(!PARTIDOS.length){msg('No se pudieron cargar los datos del reporte. Reintenta; detalle: '+(errorCargaReporte||'la hoja respondió vacía'),true);return false;}
+ return true;
+}
+
+cargaReporte=init().finally(()=>cargaReporte=null);
 </script>
-<script src="reportes_imagenes.js?v=20261031-cupo15"></script>
+<script src="reportes_imagenes.js?v=20261031-png-reparado"></script>
 </body>
 </html>
+
 
 
