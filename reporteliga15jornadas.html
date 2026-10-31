@@ -146,7 +146,7 @@
 <div id="r15" class="r15">Cargando reporte...</div>
 </div>
 </section>
-<script src="juegos-control.js?v=20261031"></script>
+<script src="juegos-control.js?v=20261031-cupo15"></script>
 <script>
 const SHEET_ID='1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE',GID_EQ='1894947293',GID_PA='1362473459';
 const PUB='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?single=true&output=csv&gid=';
@@ -340,8 +340,8 @@ function controlFechas(pa,eq){
  const G=NL7Juegos,convert=r=>{const o={};for(const k in r)o[({'id_partido':'ID_Partido','equipo_local':'Equipo_Local','equipo_visita':'Equipo_Visita','goles_local':'Goles_Local','goles_visita':'Goles_Visita','ganado_por':'Ganado_Por','id_equipo':'ID_Equipo','jjl':'JJL','jjv':'JJV','fecha_original':'Fecha_Original','fecha_prevista':'Fecha_Prevista','fecha_correspondiente':'Fecha_Correspondiente','fecha_original_local':'Fecha_Original_Local','fecha_original_visitante':'Fecha_Original_Visitante'})[k]||k.charAt(0).toUpperCase()+k.slice(1)]=r[k];return o;};
  const E=eq.map(convert),P=G.correcciones(pa.map(convert));const activos=E.filter(e=>String(e.Status).toLowerCase()!=='baja'&&!BAJA_FORZADA.includes(String(e.ID_Equipo))),ids=new Set(activos.map(e=>String(e.ID_Equipo)));
  const a=P.filter(p=>!G.esCubierto(p,E)&&!G.estado(p).includes('cancel')&&(G.estado(p)==='jugado'||ids.has(String(p.Equipo_Local))&&ids.has(String(p.Equipo_Visita))));
- const filas=activos.map(e=>{const r=G.resumen(a,e.ID_Equipo),contado=String(e.ID_Equipo)==='17'?1:0;return `<tr><td>${G.esc(e.Nombre)}</td><td>${r.jugados}</td><td>${r.local}</td><td>${r.visita}</td><td>${r.programados}</td><td>${r.pendientes}</td><td>${contado}</td><td>${r.total+contado}</td></tr>`}).join('');
- const contenido=`<table class="jg-tabla"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Pendientes</th><th>Contados</th><th>Total</th></tr></thead><tbody>${filas}</tbody></table>`+G.tabla(a,E)+`<p class="jg-nota">Se mantienen las correcciones ID 28 y 70, las bajas de Ballenitas y Dream team, el juego contado de Deportivo Azul contra Puebla 450 y el descanso inicial de Galácticos. El descanso no se suma a partidos jugados. Para propuestas con horarios y campos utiliza el reporte por equipo.</p>`;
+ const filas=activos.map(e=>{const r=G.resumen(a,e.ID_Equipo),contado=String(e.ID_Equipo)==='17'?1:0;const b=G.balance(r,e,contado);return `<tr><td>${G.esc(e.Nombre)}</td><td>${r.jugados}</td><td>${r.local}</td><td>${r.visita}</td><td>${r.programados}</td><td>${contado}</td><td>${b.especial?'Por definir':b.faltan}</td><td>${b.excedentes||'—'}</td></tr>`}).join('');
+ const contenido=`<table class="jg-tabla"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Contados</th><th>Faltan para 15</th><th>Cruces de más por revisar</th></tr></thead><tbody>${filas}</tbody></table>`+G.tabla(a,E)+`<p class="jg-nota">Se mantienen las correcciones ID 28 y 70, las bajas de Ballenitas y Dream team, el juego contado de Deportivo Azul contra Puebla 450 y el descanso inicial de Galácticos. El descanso no se suma a partidos jugados. Para propuestas con horarios y campos utiliza el reporte por equipo.</p>`;
  document.getElementById('r15').innerHTML=`<div class="r15-top"><button id="act" class="dl">Actualizar</button><button id="dl" class="dl">Descargar PNG</button><a href="reporte_por_equipo.html">Reportes y propuestas</a></div><p id="est"></p><div id="wrap" class="wrap">${G.documento('Control por juegos y fechas',contenido)}</div>`;
  document.getElementById('dl').onclick=descargar;document.getElementById('act').onclick=()=>cargar(true);DATOS={P,E};
 }
