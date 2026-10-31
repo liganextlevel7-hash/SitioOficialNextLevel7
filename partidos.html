@@ -240,12 +240,13 @@
  #stackContainer .confirm-lado{min-width:0}#stackContainer .confirm-lado input{font-size:16px;min-height:44px}#stackContainer .confirm-lado button{min-height:44px;font-size:11px;letter-spacing:0}
 }
 
-.nav-partidos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:20px}
+.nav-partidos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:20px}
 .nav-partidos a,.nav-partidos a.nav-admin{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:10px 8px;border:1px solid #405b2e;border-radius:12px;background:#101f17;color:#e0edcf;font-size:13px;line-height:1.25;text-align:center;transition:background .18s,border-color .18s}
 .nav-partidos a svg{width:21px;height:21px;flex:none;color:#ade36f}
 .nav-partidos a:hover{background:#203b24;color:#fff;border-color:#a4dc67;box-shadow:none}
 .nav-partidos a:focus-visible{outline:2px solid #ddc530;outline-offset:3px}
 @media(max-width:600px){.nav-partidos{grid-template-columns:repeat(2,minmax(0,1fr))}.nav-partidos a,.nav-partidos a.nav-admin{font-size:13px;min-height:48px}}
+@media(max-width:600px){.nav-partidos a:last-child{grid-column:1 / -1}}
 </style>
 </head>
 <body>
@@ -254,6 +255,7 @@
     <a href="partidos3d.html" class=""><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 9 5v10l-9 5-9-5V7zM3 7l9 5 9-5M12 12v10"/></svg><span>Modo 3D</span></a>
     <a href="reporte_por_equipo.html" class="nav-admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 16v-4m5 4V7m5 9v-6"/></svg><span>Reportes</span></a>
     <a href="armar-jornada.html" class="nav-admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-9 3v5m-2.5-2.5h5"/></svg><span>Programar partidos</span></a>
+    <a href="reporteliga15jornadas.html" class="nav-admin" title="Control de los 15 juegos por equipo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 9v12M9 15h12"/></svg><span>Control de 15 juegos</span></a>
   </nav>
 
   <div class="editor-panel">
@@ -290,4 +292,5 @@
   <script src="partidos.js?v=20261031-cupo15"></script>
 </body>
 </html>
+
 
