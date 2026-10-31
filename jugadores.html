@@ -18,16 +18,18 @@
 </nav>
 </header>
 <section class="contenedor-jugadores">
-<div class="card">
-<h2>🛡️ Seleccionar Equipo</h2>
-<select id="selector-equipo-jugador">
-<option value="">
-Selecciona un equipo
-</option>
-</select>
+<div class="jugadores-tabs" aria-label="Categorías de jugadores">
+<button type="button" data-jugadores-tab="goleadores" aria-selected="true">Goleadores</button>
+<button type="button" data-jugadores-tab="porteros" aria-selected="false">Porteros</button>
+<button type="button" data-jugadores-tab="equipo" aria-selected="false">Por equipo</button>
+</div>
+<div id="filtro-equipo" hidden>
+<label for="selector-equipo-jugador">Seleccionar equipo</label>
+<select id="selector-equipo-jugador"><option value="">Selecciona un equipo</option></select>
 </div>
 <div id="lista-jugadores"></div>
 </section>
-<script src="jugadores.js"></script>
+<script src="jugadores.js?v=20261031-correccion2"></script>
 </body>
 </html>
+
