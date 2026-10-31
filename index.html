@@ -172,32 +172,12 @@ body.arena{--arena-green:#9fe751;--arena-gold:#e0bb58;background:radial-gradient
 @media(prefers-reduced-motion:reduce){.arena *{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
 
 
-/* Propuesta alternativa: menú lateral y una tarjeta seleccionada. */
-.arena .arena-header{padding-bottom:18px;}.arena .arena-selected{margin-top:15px;}
-.arena .side-shell{display:grid;grid-template-columns:230px minmax(0,1fr);gap:36px;align-items:start;max-width:1020px;margin:8px auto 26px;padding:0 22px;}
-.arena .side-nav{background:#111b11;border:1px solid #a4ce6b29;border-radius:15px;padding:18px 12px;}
-.arena .side-nav-title{font-size:10px;font-weight:700;letter-spacing:2px;color:#8da17c;padding:0 11px 12px;}
-.arena .arena-menu{display:flex;flex-direction:column;gap:5px;margin:0;padding:0;max-width:none;}
-.arena .arena-section{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;border:1px solid transparent;border-radius:9px;padding:12px 13px;font-size:13px;color:#b3c3a5;background:transparent;min-height:43px;}
-.arena .arena-section::after{content:'›';font-size:19px;color:#69835a;line-height:1;}.arena .arena-section[aria-pressed=true]{background:#2d4819;border-color:#8bc64b44;color:#e2f8c7;box-shadow:inset 3px 0 #9fe751;}.arena .arena-section[aria-pressed=true]::after{color:#b0ec7a;}
-.arena .side-stage{min-width:0;display:flex;flex-direction:column;align-items:center;padding:12px 28px 22px;background:radial-gradient(ellipse at 50% 45%,#4f762d22,transparent 70%);}
-.arena .side-stage-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:#9db189;margin:0 0 14px;text-align:center;}
-.arena .carrusel-seccion{perspective:none;height:auto;min-height:0;width:100%;max-width:400px;overflow:visible;margin:0;isolation:auto;}
-.arena #carrusel-circular{position:static;width:100%;height:auto;transform:none!important;transition:none;display:block;}
-.arena .card-sec{display:none!important;position:relative;left:auto;top:auto;width:100%;max-width:380px;margin:0 auto;transform:none!important;filter:none;backface-visibility:visible;}
-.arena .card-sec.card-sec-activa{display:block!important;animation:side-card-in .28s ease both;}
-.arena .car-flecha,.arena .car-dots{display:none!important;}
-.arena .side-toggle{display:none;}.arena .side-caption{font-size:12px;color:#a2b594;text-align:center;line-height:1.5;margin:18px 0 0;}
-@keyframes side-card-in{from{opacity:.25;translate:0 8px}to{opacity:1;translate:0 0}}
-@media(max-width:700px){
- .arena .side-shell{display:block;position:relative;padding:0 18px;margin:4px auto 20px;max-width:440px;}
- .arena .side-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;font:700 14px 'Segoe UI',Arial,sans-serif;color:#e2f5d0;background:#23381a;border:1px solid #91bd6255;border-radius:10px;margin-bottom:17px;min-height:46px;}
- .arena .side-toggle span:last-child{color:#b2d393;font-size:13px;}.arena .side-nav{display:none;position:absolute;z-index:80;top:55px;left:18px;right:18px;max-height:65vh;overflow:auto;background:#152010;border-color:#8cba5b77;box-shadow:0 24px 60px #000b;}
- .arena .side-shell.menu-open .side-nav{display:block;}.arena .arena-section{min-height:45px;font-size:14px;}
- .arena .side-stage{padding:0 10px 10px;}.arena .side-stage-label{display:none;}.arena .card-sec{max-width:360px;width:100%;}.arena .arena-header{padding-bottom:12px;}.arena .arena-brand-row .logo-liga{width:65px;height:76px;}.arena .side-caption{font-size:11px;margin-top:12px;}
-}
-@media(max-width:360px){.arena .side-shell{padding:0 12px;}.arena .side-nav{left:12px;right:12px;}.arena .side-stage{padding-left:7px;padding-right:7px;}.arena .arena-brand-row .logo-liga{width:54px;height:65px;}}
-
+/* Tabla General: conservar completa la proporción original del podio. */
+.arena .c-tabla{width:min(320px,calc(100vw - 64px));}
+.arena .c-tabla .card-body{padding:0;min-height:0;aspect-ratio:2 / 3;}
+.arena .c-tabla .card-titulo{position:absolute;top:20px;left:0;right:0;z-index:2;}
+.arena .c-tabla .card-contenido{background-size:100% 100%;background-position:center;}
+.arena .carrusel-seccion{height:570px;}
 </style>
 </head>
 <body class="arena">
@@ -209,10 +189,7 @@ body.arena{--arena-green:#9fe751;--arena-gold:#e0bb58;background:radial-gradient
  <p class="arena-intro">Tu equipo, tus resultados y toda la emoción de la liga.</p>
  <div class="arena-selected"><span>EXPLORA</span><b id="arena-current" aria-live="polite">Tabla General</b></div>
 </header>
-<main class="side-shell" id="side-shell">
-<button type="button" class="side-toggle" id="side-toggle" aria-expanded="false" aria-controls="side-nav" onclick="toggleSideMenu()"><span>☰ Secciones</span><span id="side-current">Tabla General</span></button>
-<aside class="side-nav" id="side-nav"><div class="side-nav-title">EXPLORA LA LIGA</div></aside>
-<section class="side-stage" aria-label="Tarjeta seleccionada"><div class="side-stage-label">Toda tu liga, a un toque</div>
+<main>
 <div class="carrusel-seccion" id="carrusel-wrap">
 
   <div class="card-sec c-tabla" id="ccard-0" data-link="tablaGeneral.html">
@@ -335,10 +312,9 @@ body.arena{--arena-green:#9fe751;--arena-gold:#e0bb58;background:radial-gradient
   <div class="car-dots" id="car-dots"></div>
 </div>
 
-<p class="side-caption">Selecciona una sección y pulsa Entrar para abrirla.</p></section>
 <nav class="arena-menu" id="arena-menu" aria-label="Secciones de la liga"></nav>
 </main>
-<footer class="arena-footer"><span>Liga Next Level 7 · Torneo Dominical</span><span>Selecciona una sección · Pulsa Entrar para abrir</span><a href="nextlevelenvivo.html">Administración →</a></footer>
+<footer class="arena-footer"><span>Liga Next Level 7 · Torneo Dominical</span><span>Gira con las flechas o desliza · Pulsa Entrar para abrir</span><a href="nextlevelenvivo.html">Administración →</a></footer>
 <script>
 const palabras = ['LIGA', 'NEXT', 'LEVEL', '7'];
 const letrasEl = document.getElementById('titulo-letras');
@@ -613,18 +589,6 @@ window.addEventListener('resize',()=>{
  carCardsOriginal.forEach((card,i)=>{card.style.transform=`translate(-50%,-50%) rotateY(${carAngulo*i}deg) translateZ(${carRadio}px)`;});
  carPintar();
 });
-document.getElementById('side-nav').appendChild(arenaMenu);
-function toggleSideMenu(){
- const shell=document.getElementById('side-shell');
- const open=shell.classList.toggle('menu-open');
- document.getElementById('side-toggle').setAttribute('aria-expanded',String(open));
-}
-function closeSideMenu(){
- document.getElementById('side-shell').classList.remove('menu-open');
- document.getElementById('side-toggle').setAttribute('aria-expanded','false');
-}
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('side-shell').classList.contains('menu-open')){closeSideMenu();document.getElementById('side-toggle').focus();}});
-document.addEventListener('click',e=>{if(!e.target.closest('.side-shell'))closeSideMenu();});
 function carPintar(){
   // translateZ(-carRadio) recorre TODO el anillo hacia atrás para que la tarjeta activa
   // quede exactamente en el plano de la cámara (tamaño real, sin agrandarse por la perspectiva)
@@ -633,7 +597,6 @@ function carPintar(){
   document.querySelectorAll('.car-dot').forEach((d,i)=>{d.classList.toggle('on',i===carActivo);d.setAttribute('aria-pressed',String(i===carActivo));});
   document.querySelectorAll('.arena-section').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===carActivo)));
   document.getElementById('arena-current').textContent=arenaNames[carActivo];
-  document.getElementById('side-current').textContent=arenaNames[carActivo];
   carCardsOriginal.forEach((card,i)=>{card.querySelectorAll('a').forEach(a=>a.tabIndex=i===carActivo?0:-1);});
 }
 function irA(indice){
@@ -650,9 +613,6 @@ function irA(indice){
     carCircular.style.transition='transform 1s cubic-bezier(0.4,0,0.2,1)';
   }
   carPintar();
-  const wasOpen=document.getElementById('side-shell').classList.contains('menu-open');
-  closeSideMenu();
-  if(wasOpen&&window.matchMedia('(max-width:700px)').matches)document.getElementById('side-toggle').focus();
 }
 function carMover(dir){ irA(((carActivo+dir)%carTotal+carTotal)%carTotal); }
 const carDotsEl=document.getElementById('car-dots');
