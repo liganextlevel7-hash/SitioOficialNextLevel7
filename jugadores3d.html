@@ -360,8 +360,8 @@ function animar(){
     f.fase+=dt*3;const s=Math.sin(f.fase),fest=f.rank<=3||f.s===sel;
     f.g.position.y=h+(fest&&!reduce?Math.abs(Math.sin(f.fase*1.2))*(f.rank==1?.14:.08):0);
     f.pI.rotation.x=s*.08;f.pD.rotation.x=-s*.08;f.cab.position.y=2.30+Math.sin(f.fase)*.008;
-    if(fest){f.bI.rotation.z=2.3+s*.12;f.bD.rotation.z=-2.3-s*.12}else{f.bI.rotation.z=.15;f.bD.rotation.z=-.15}
-    f.codos.forEach(c=>c.rotation.x=fest?-.25:0);f.rodillas.forEach(k=>k.rotation.x=fest?.08:0);
+    if(fest){f.bI.rotation.z=-1.85-s*.08;f.bD.rotation.z=1.85+s*.08}else{f.bI.rotation.z=.15;f.bD.rotation.z=-.15}
+    f.codos.forEach(c=>c.rotation.x=fest?-.12:0);f.rodillas.forEach(k=>k.rotation.x=fest?.08:0);
     f.et.position.y=h*.5;
     if(f.haz){f.haz.position.y=h+8;f.haz.material.opacity=.12+Math.sin(t*2)*.03}
   });
