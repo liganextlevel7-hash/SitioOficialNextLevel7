@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Armar Jornada - Next Level 7</title>
+<title>Programar Partidos - Next Level 7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -103,14 +103,14 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 
 <div id="loading-screen">
   <div class="load-ball">⚽</div>
-  <div class="load-title">ARMAR JORNADA</div>
+  <div class="load-title">PROGRAMAR PARTIDOS</div>
   <div class="load-sub" id="load-msg">Conectando con Google Sheets...</div>
 </div>
 
 <div id="login-screen">
   <div class="login-hero">
     <div class="login-hero-icon">🛠️</div>
-    <div class="login-hero-title">ARMAR JORNADA</div>
+    <div class="login-hero-title">PROGRAMAR PARTIDOS</div>
     <div class="login-hero-sub">Liga Next Level 7 · Panel de administración</div>
   </div>
   <div class="login-body">
@@ -126,7 +126,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 <div id="app-screen">
   <div class="app-header">
     <div>
-      <div class="app-header-title">🛠️ Armar Jornada</div>
+      <div class="app-header-title">🛠️ Programar Partidos</div>
       <div class="app-header-sub">Liga Next Level 7</div>
     </div>
     <a href="partidos.html" class="btn-logout">← Partidos</a>
@@ -139,15 +139,9 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
       <div class="mod-section-title" style="color:var(--neon)">🔁 Editar / Programar un partido</div>
       <div class="mod-hint">Trae el partido por su ID, o elige los dos equipos que se enfrentan, y confirma los nombres antes de guardar — así no se mueve el partido equivocado.</div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
-        <div>
-          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🗓️ Jornada (opcional)</label>
-          <input type="number" id="armando-jornada" class="msg-input" style="width:100%" min="1" placeholder="Ej. 2" oninput="actualizarSelectsPorJornada()">
-        </div>
-        <div>
-          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">📆 Fecha (sombrea equipos que ya juegan ese día)</label>
-          <input type="date" id="armando-fecha" class="msg-input" style="width:100%" oninput="actualizarSelectsPorJornada()">
-        </div>
+      <div style="margin-bottom:14px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
+        <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;margin-bottom:5px">📆 Fecha para programar</label>
+        <input type="date" id="armando-fecha" class="msg-input" style="width:100%" oninput="actualizarSelectsPorFecha()">
       </div>
       <div id="armando-descansa" style="font-size:12px;color:var(--neon);margin-bottom:12px;min-height:16px"></div>
       <div id="armando-confirmaciones" style="font-size:12px;margin-bottom:12px"></div>
@@ -159,19 +153,20 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
           <button type="button" onclick="buscarPartidoPorId()" style="padding:10px 16px;background:var(--dark);border:1px solid rgba(94,181,13,.35);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Traer →</button>
         </div>
         <datalist id="lista-ids-partido"></datalist>
-        <div class="mod-hint" style="margin:6px 0 0">Trae el partido directo para programarlo. Si arriba pones Jornada y Fecha, se usan como sugerencia. Con el mismo ID puedes volver a programar uno ya programado.</div>
+        <div class="mod-hint" style="margin:6px 0 0">Trae el partido directo para programarlo. La fecha de arriba se usa como sugerencia. Solo se muestran y se pueden elegir partidos pendientes.</div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
         <div>
-          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo A</label>
-          <select id="buscar-equipo-a" class="msg-input" style="width:100%" onchange="actualizarSelectsPorJornada(); buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
+          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Consultar equipo</label>
+          <select id="buscar-equipo-a" class="msg-input" style="width:100%" onchange="actualizarSelectsPorFecha(); buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
         </div>
         <div>
-          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo B</label>
+          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Rival pendiente</label>
           <select id="buscar-equipo-b" class="msg-input" style="width:100%" onchange="buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
         </div>
       </div>
+      <div id="pendientes-equipo" style="font-size:12px;color:var(--g400);margin-bottom:12px"></div>
       <div id="buscar-resultado"></div>
     </div>
 
@@ -186,7 +181,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
         <label style="font-size:12px;color:var(--g400);white-space:nowrap">📆 Fecha:</label>
-        <input type="date" id="rol-fecha" class="msg-input" style="flex:1;padding:8px 12px;font-size:13px">
+        <input type="date" id="rol-fecha" onchange="updateRolPreview()" class="msg-input" style="flex:1;padding:8px 12px;font-size:13px">
       </div>
 
       <div id="rol-slots" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
@@ -200,7 +195,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
         <div class="mod-section-title">👁️ Vista previa</div>
         <div id="rol-preview" style="background:var(--dark2);border:1px solid rgba(94,181,13,0.2);border-radius:var(--r);padding:14px"></div>
 
-        <div class="mod-section-title" style="margin-top:16px">🖼️ Cartel de la jornada</div>
+        <div class="mod-section-title" style="margin-top:16px">🖼️ Cartel por fecha</div>
         <div class="cartel-wrap-scroll">
           <div class="cartel-poster" id="cartel-poster"></div>
         </div>
@@ -213,11 +208,9 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
     <!-- CÉDULA DE JORNADA -->
     <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
       <div class="mod-section-title" style="color:var(--neon)">📋 Cédula arbitral (para el árbitro)</div>
-      <div class="mod-hint">Formato oficial de la liga, en hoja carta horizontal con dos encuentros por hoja (los dos del mismo campo). Trae de la hoja "Jugadores" el N°, nombre, apodo y posición de cada equipo, y incluye una casilla Asistió para marcar y deja en blanco G / A / R para que el árbitro anote a mano, más resultado final, observaciones y firmas. Salen primero los encuentros del Campo 1 y luego los del Campo 2 (solo encuentros ya programados). Puedes elegirla por jornada o por fecha, imprimirla o descargarla en PNG.</div>
+      <div class="mod-hint">Formato oficial de la liga, en hoja carta horizontal con dos encuentros por hoja (los dos del mismo campo). Trae de la hoja "Jugadores" el N°, nombre, apodo y posición de cada equipo, y incluye una casilla Asistió para marcar y deja en blanco G / A / R para que el árbitro anote a mano, más resultado final, observaciones y firmas. Salen primero los encuentros del Campo 1 y luego los del Campo 2 (solo encuentros ya programados). Puedes elegirla por fecha, imprimirla o descargarla en PNG.</div>
       <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <select id="cedula-tipo" class="msg-input" style="flex:0 0 130px" onchange="cambiarCedulaTipo()"><option value="jornada">Por jornada</option><option value="fecha">Por fecha</option></select>
-        <select id="cedula-jornada" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona jornada —</option></select>
-        <select id="cedula-fecha" class="msg-input" style="flex:1;min-width:140px;display:none"><option value="">— Selecciona fecha —</option></select>
+        <select id="cedula-fecha" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona fecha —</option></select>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:10px">
         <button onclick="generarCedulaJornada('imprimir')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>
@@ -229,11 +222,9 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
     <!-- REPORTE DE CONFIRMACIÓN DE ENCUENTROS -->
     <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px;margin-top:20px">
       <div class="mod-section-title" style="color:var(--neon)">📑 Reporte de Confirmación de Encuentros</div>
-      <div class="mod-hint">Documento formal con cada encuentro programado y si cada equipo ya confirmó su asistencia (lee las confirmaciones en el momento). Puedes imprimirlo o descargarlo como PNG, por jornada o por fecha.</div>
+      <div class="mod-hint">Documento formal con cada encuentro programado y si cada equipo ya confirmó su asistencia (lee las confirmaciones en el momento). Puedes imprimirlo o descargarlo como PNG, por fecha.</div>
       <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <select id="cf-tipo" class="msg-input" style="flex:0 0 130px" onchange="cambiarCfTipo()"><option value="jornada">Por jornada</option><option value="fecha">Por fecha</option></select>
-        <select id="cf-jornada" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona jornada —</option></select>
-        <select id="cf-fecha" class="msg-input" style="flex:1;min-width:140px;display:none"><option value="">— Selecciona fecha —</option></select>
+        <select id="cf-fecha" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona fecha —</option></select>
       </div>
       <div style="display:flex;gap:10px;margin-bottom:10px">
         <button onclick="cfReporte('imprimir')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>
@@ -381,7 +372,7 @@ async function init(){
       }))
       .map(aplicarCorrecciones)
       .filter(m=>m.local&&m.visita);
-    S.matches = S.allMatches.filter(m=>(m.estado||'').toLowerCase()==='pendiente');
+    S.matches = partidosPendientes();
 
     msg.textContent = 'Cargando jugadores...';
     await cargarJugadores();
@@ -416,146 +407,89 @@ function entrarPanel(){
 }
 
 function llenarSelectsEquipos(){
-  actualizarSelectsPorJornada();
+  actualizarSelectsPorFecha();
 }
 
-// Convierte el <input type=date> (yyyy-mm-dd) al formato dd/mm/yyyy que usa la hoja
-async function pintarConfirmacionesJornada(){
-  const el = document.getElementById('armando-confirmaciones');
-  if(!el) return;
-  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
-  if(!jornadaTarget){ el.innerHTML=''; return; }
-  const partidosJornada = S.allMatches.filter(m=>{
-    const est=(m.estado||'').toLowerCase();
-    return (est==='programado'||est==='jugado') && String(m.jornada).trim()===jornadaTarget;
-  });
-  if(!partidosJornada.length){ el.innerHTML=''; return; }
-  let conf = {};
-  try{
-    const r = await fetch('https://liga-next-level-7-default-rtdb.firebaseio.com/confirmaciones.json');
-    conf = (await r.json()) || {};
-  }catch(e){ /* si falla, mostramos igual sin confirmaciones */ }
-  const filas = partidosJornada.map(m=>{
-    const c = conf[m.id] || {};
-    const nomL = S.teams[m.local]?.nombre || m.local;
-    const nomV = S.teams[m.visita]?.nombre || m.visita;
-    const okL = c.local ? '✅' : '⏳';
-    const okV = c.visita ? '✅' : '⏳';
-    return `<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;">
-      <span>${esc(nomL)} ${okL} &nbsp;vs&nbsp; ${okV} ${esc(nomV)}</span>
-    </div>`;
-  }).join('');
-  el.innerHTML = `<div style="color:var(--neon);font-weight:700;margin-bottom:4px">Confirmaciones — Jornada ${esc(jornadaTarget)}</div>${filas}`;
+// La condición local / visitante se conserva en cada registro e ID.
+// Número de juego por equipo y condición, siguiendo el orden original de la hoja.
+// Incluye todos los estados para que el número no cambie al programar o jugar.
+function numeroJuego(m, condicion){
+  const equipo=String(m[condicion]);
+  let numero=0;
+  for(const partido of S.allMatches){
+    if(String(partido[condicion])===equipo) numero++;
+    if(partido===m || String(partido.id)===String(m.id)) return numero;
+  }
+  return '';
 }
-
+function etiquetaJuego(m, condicion){
+  return `Juego ${numeroJuego(m,condicion)} como ${condicion==='local'?'local':'visitante'}`;
+}
+function estadoPartido(m){ return String(m.estado||'').trim().toLowerCase(); }
+function esPendiente(m){ return estadoPartido(m)==='pendiente' && !!S.teams[m.local] && !!S.teams[m.visita]; }
+function partidosPendientes(){ return S.allMatches.filter(esPendiente); }
 function fechaInputASheet(v){
   if(!v) return '';
   const [y,m,d] = v.split('-');
   return (y&&m&&d) ? `${d}/${m}/${y}` : '';
 }
-
-// ¿Ya existe un partido con Estado=Jugado entre estos dos equipos?
-function jugaronYa(idA, idB){
-  return S.allMatches.some(m=>{
-    if((m.estado||'').toLowerCase() !== 'jugado') return false;
-    return (String(m.local)===idA && String(m.visita)===idB) || (String(m.local)===idB && String(m.visita)===idA);
-  });
-}
-
-// Repinta Equipo A / Equipo B: deshabilita (no oculta) los equipos que ya tienen partido
-// Programado o Jugado en la "Jornada que estoy armando", y calcula quién descansa esa fecha.
-// Además, en Equipo B deshabilita a los rivales con los que Equipo A ya jugó (Estado=Jugado).
 let confirmDebounce = null;
-function actualizarSelectsPorJornada(){
-  clearTimeout(confirmDebounce);
-  confirmDebounce = setTimeout(pintarConfirmacionesJornada, 350);
-  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
-  const fechaTarget = fechaInputASheet(document.getElementById('armando-fecha')?.value || '');
-
-  const ocupadosJornada = new Set();
-  if(jornadaTarget){
-    S.allMatches.forEach(m=>{
-      const est = (m.estado||'').toLowerCase();
-      if((est==='programado'||est==='jugado') && String(m.jornada).trim()===jornadaTarget){
-        if(m.local) ocupadosJornada.add(String(m.local));
-        if(m.visita) ocupadosJornada.add(String(m.visita));
-      }
-    });
-  }
-
-  // NUEVO: equipos que ya tienen partido (programado/jugado) en la FECHA elegida
-  const ocupadosFecha = new Set();
-  if(fechaTarget){
-    S.allMatches.forEach(m=>{
-      const est = (m.estado||'').toLowerCase();
-      if((est==='programado'||est==='jugado') && fechaNumSheet(m.fecha)===fechaNumSheet(fechaTarget)){
-        if(m.local) ocupadosFecha.add(String(m.local));
-        if(m.visita) ocupadosFecha.add(String(m.visita));
-      }
-    });
-  }
-
-  const ordenados = Object.values(S.teams).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
-  const equipoASel = document.getElementById('buscar-equipo-a')?.value || '';
-
-  function construirOpciones(esSelectB){
-    return '<option value="">— Selecciona —</option>' + ordenados.map(t=>{
-      const idStr = String(t.id);
-      const ocupadoJornada = ocupadosJornada.has(idStr);
-      const ocupadoFecha = ocupadosFecha.has(idStr);
-      const yaJugaron = esSelectB && equipoASel && idStr!==equipoASel && jugaronYa(equipoASel, idStr);
-      const deshabilitado = ocupadoJornada || ocupadoFecha || yaJugaron;
-      let etiqueta = '';
-      if(ocupadoFecha) etiqueta = ' (ya juega esta fecha)';
-      else if(ocupadoJornada) etiqueta = ' (ya tiene partido esta jornada)';
-      else if(yaJugaron) etiqueta = ' (ya jugaron)';
-      return `<option value="${t.id}" ${deshabilitado?'disabled':''}>${esc(t.nombre)}${etiqueta}</option>`;
+let confirmVersion = 0;
+async function pintarConfirmacionesFecha(){
+  const version = ++confirmVersion;
+  const el = document.getElementById('armando-confirmaciones');
+  const fecha = fechaInputASheet(document.getElementById('armando-fecha').value);
+  const partidos = S.allMatches.filter(m=>esAgendado(m) && fechaNumSheet(m.fecha)===fechaNumSheet(fecha));
+  if(!fecha || !partidos.length){ el.innerHTML=''; return; }
+  try{
+    const r = await fetch('https://liga-next-level-7-default-rtdb.firebaseio.com/confirmaciones.json');
+    if(!r.ok) throw new Error('No se pudieron leer las confirmaciones');
+    const conf = (await r.json()) || {};
+    if(version!==confirmVersion || fecha!==fechaInputASheet(document.getElementById('armando-fecha').value)) return;
+    el.innerHTML = `<div style="color:var(--neon);font-weight:700;margin-bottom:4px">Confirmaciones — ${esc(fecha)}</div>` + partidos.map(m=>{
+      const c=conf[m.id]||{};
+      return `<div>ID ${esc(m.id)} · ${esc(tname(m.local))} ${c.local?'✅':'⏳'} vs ${c.visita?'✅':'⏳'} ${esc(tname(m.visita))} · ${esc(hhmm(m.hora))}</div>`;
     }).join('');
-  }
-
-  const selA = document.getElementById('buscar-equipo-a');
-  const valA = selA.value;
-  selA.innerHTML = construirOpciones(false);
-  if(valA && !ocupadosJornada.has(valA) && !ocupadosFecha.has(valA)) selA.value = valA;
-
-  const selB = document.getElementById('buscar-equipo-b');
-  const valB = selB.value;
-  selB.innerHTML = construirOpciones(true);
-  if(valB && !ocupadosJornada.has(valB) && !ocupadosFecha.has(valB) && !jugaronYa(equipoASel, valB)) selB.value = valB;
-
-  const descansaEl = document.getElementById('armando-descansa');
-  if(!descansaEl) return;
-  if(!fechaTarget){ descansaEl.textContent=''; return; }
-  const juegan = new Set();
-  S.allMatches.forEach(m=>{
-    const est = (m.estado||'').toLowerCase();
-    if((est==='programado'||est==='jugado') && (m.fecha||'').trim()===fechaTarget){
-      if(m.local) juegan.add(String(m.local));
-      if(m.visita) juegan.add(String(m.visita));
-    }
-  });
-  const descansan = Object.values(S.teams).filter(t=>!juegan.has(String(t.id)));
-  if(descansan.length===1){
-    descansaEl.textContent = `🛌 Descansa esta fecha: ${descansan[0].nombre}`;
-  } else if(descansan.length===0){
-    descansaEl.textContent = '';
-  } else {
-    descansaEl.textContent = `Faltan ${descansan.length} equipos por programar esta fecha.`;
-  }
+  }catch(e){ if(version===confirmVersion) el.textContent='No se pudieron consultar las confirmaciones de esa fecha.'; }
+}
+function actualizarSelectsPorFecha(){
+  clearTimeout(confirmDebounce);
+  confirmVersion++;
+  confirmDebounce = setTimeout(pintarConfirmacionesFecha,350);
+  const a=document.getElementById('buscar-equipo-a'), b=document.getElementById('buscar-equipo-b');
+  const valA=a.value, valB=b.value;
+  const pendientes=partidosPendientes();
+  const equipos=Object.values(S.teams).filter(t=>pendientes.some(m=>m.local===String(t.id)||m.visita===String(t.id)))
+    .sort((x,y)=>x.nombre.localeCompare(y.nombre,'es'));
+  a.innerHTML='<option value="">— Selecciona —</option>'+equipos.map(t=>{
+    const local=pendientes.filter(m=>m.local===String(t.id)).length;
+    const visita=pendientes.filter(m=>m.visita===String(t.id)).length;
+    return `<option value="${esc(t.id)}">${esc(t.nombre)} · ${local+visita} pendientes (${local} local / ${visita} visitante)</option>`;
+  }).join('');
+  if(equipos.some(t=>String(t.id)===valA)) a.value=valA;
+  const rivales=pendientes.filter(m=>m.local===a.value||m.visita===a.value);
+  const ids=new Set(rivales.map(m=>m.local===a.value?m.visita:m.local));
+  b.innerHTML='<option value="">— Selecciona —</option>'+equipos.filter(t=>ids.has(String(t.id))).map(t=>`<option value="${esc(t.id)}">${esc(t.nombre)}</option>`).join('');
+  if(ids.has(valB)) b.value=valB;
+  document.getElementById('pendientes-equipo').innerHTML=a.value ? rivales.map(m=>`<div>ID ${esc(m.id)} · ${esc(tname(m.local))} (${esc(etiquetaJuego(m,'local'))}) vs ${esc(tname(m.visita))} (${esc(etiquetaJuego(m,'visita'))})</div>`).join('') : '';
+  const fecha=fechaInputASheet(document.getElementById('armando-fecha').value);
+  const juegan=new Set(S.allMatches.filter(m=>esAgendado(m)&&fechaNumSheet(m.fecha)===fechaNumSheet(fecha)).flatMap(m=>[m.local,m.visita]));
+  const libres=Object.values(S.teams).filter(t=>!juegan.has(String(t.id)));
+  document.getElementById('armando-descansa').textContent=fecha ? `Equipos sin partido programado en esta fecha: ${libres.map(t=>t.nombre).join(', ')||'ninguno'}. Un equipo puede repetir si no se cruzan sus horarios.` : '';
 }
 
 // ════════════════════════════════
 //  EDITAR / PROGRAMAR PARTIDO (por pareja de equipos)
 // ════════════════════════════════
-// Lista de IDs sugeridos (partidos que aún no están Jugado y cuyos dos equipos siguen activos)
+// Lista de IDs: solo pendientes con ambos equipos activos
 function llenarListaIds(){
   const dl = document.getElementById('lista-ids-partido');
   if(!dl) return;
   const nid = x => { const n = Number(x.id); return isNaN(n) ? 0 : n; };
   dl.innerHTML = S.allMatches
-    .filter(m => m.id && (m.estado||'').toLowerCase() !== 'jugado' && S.teams[m.local] && S.teams[m.visita])
+    .filter(m => m.id && esPendiente(m))
     .sort((a,b) => nid(a) - nid(b))
-    .map(m => `<option value="${esc(m.id)}">${esc(tname(m.local))} vs ${esc(tname(m.visita))} · J${esc(m.jornada||'?')} · ${esc(m.estado||'?')}</option>`)
+    .map(m => `<option value="${esc(m.id)}">${esc(tname(m.local))} vs ${esc(tname(m.visita))} · ${esc(etiquetaJuego(m,'local'))} / ${esc(etiquetaJuego(m,'visita'))} · Pendiente</option>`)
     .join('');
 }
 
@@ -577,8 +511,8 @@ function buscarPartidoPorId(){
     cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} tiene un equipo dado de baja, no se puede programar.</div>`;
     return;
   }
-  if((m.estado||'').toLowerCase() === 'jugado'){
-    cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} (${esc(tname(m.local))} vs ${esc(tname(m.visita))}) ya está Jugado, no se puede programar.</div>`;
+  if(!esPendiente(m)){
+    cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} (${esc(tname(m.local))} vs ${esc(tname(m.visita))}) no está Pendiente, no se puede programar.</div>`;
     return;
   }
   // limpiar los selects de equipos para que no se confundan con el partido traído por ID
@@ -588,22 +522,20 @@ function buscarPartidoPorId(){
 }
 
 function buscarPartidoEntreEquipos(){
-  const a = document.getElementById('buscar-equipo-a').value;
-  const b = document.getElementById('buscar-equipo-b').value;
-  const cont = document.getElementById('buscar-resultado');
-  S.matchToProgram = null;
-  if(!a || !b){ cont.innerHTML=''; return; }
-  if(a === b){ cont.innerHTML = '<div class="mod-preview-empty">Elige dos equipos distintos</div>'; return; }
-
-  const m = S.allMatches.find(x =>
-    (x.estado||'').toLowerCase() !== 'jugado' &&
-    ((x.local===a && x.visita===b) || (x.local===b && x.visita===a))
-  );
-  if(!m){
-    cont.innerHTML = `<div class="mod-preview-empty">No hay partido pendiente ni programado entre ${esc(tname(a))} y ${esc(tname(b))}</div>`;
-    return;
-  }
-  abrirFormEditar(m);
+  const a=document.getElementById('buscar-equipo-a').value;
+  const b=document.getElementById('buscar-equipo-b').value;
+  const cont=document.getElementById('buscar-resultado');
+  S.matchToProgram=null;
+  if(!a||!b){ cont.innerHTML=''; return; }
+  if(a===b){ cont.innerHTML='<div class="mod-preview-empty">Elige dos equipos distintos.</div>'; return; }
+  const partidos = partidosPendientes().filter(m=>(m.local===a && m.visita===b)||(m.local===b && m.visita===a));
+  if(!partidos.length){ cont.innerHTML='<div class="mod-preview-empty">No hay partidos pendientes entre estos equipos.</div>'; return; }
+  if(partidos.length===1){ abrirFormEditar(partidos[0]); return; }
+  cont.innerHTML=`<label style="color:var(--g400);font-size:12px">Elige el ID y la condición de local / visitante</label><select class="msg-input" style="width:100%;margin-top:8px" onchange="elegirPendientePorId(this.value)"><option value="">— Selecciona partido pendiente —</option>${partidos.map(m=>`<option value="${esc(m.id)}">ID ${esc(m.id)} · ${esc(tname(m.local))} (${esc(etiquetaJuego(m,'local'))}) vs ${esc(tname(m.visita))} (${esc(etiquetaJuego(m,'visita'))})</option>`).join('')}</select>`;
+}
+function elegirPendientePorId(id){
+  const m=partidosPendientes().find(x=>x.id===id);
+  if(m) abrirFormEditar(m);
 }
 
 function pad2(n){ return n<10 ? '0'+n : ''+n; }
@@ -619,7 +551,7 @@ const HORAS_BASE   = ['09:00','10:00','11:00','12:00'];
 const CAMPOS_BASE  = ['Campo 1','Campo 2'];
 
 function hhmm(hora){ const p=String(hora||'').split(':'); return pad2(parseInt(p[0],10)||0)+':'+pad2(parseInt(p[1],10)||0); }
-function esAgendado(m){ const e=(m.estado||'').toLowerCase(); return e==='programado'||e==='jugado'; }
+function esAgendado(m){ const e=estadoPartido(m); return e==='programado'||e==='jugado'; }
 
 function listaCampos(){
   const set = new Set(CAMPOS_BASE);
@@ -627,81 +559,7 @@ function listaCampos(){
   return [...set].sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
 }
 
-// Jornadas en las que NINGUNO de los dos equipos tiene ya partido programado/jugado
-function jornadasLibresPara(m){
-  const ids = [String(m.local), String(m.visita)];
-  const ocupadas = new Set();
-  ids.forEach(t=>(JORNADA_CUBIERTA[t]||[]).forEach(j=>ocupadas.add(j)));
-  S.allMatches.forEach(x=>{
-    if(x.id===m.id || !esAgendado(x)) return;
-    if(ids.includes(String(x.local)) || ids.includes(String(x.visita))){
-      const j = parseInt(x.jornada,10); if(!isNaN(j)) ocupadas.add(j);
-    }
-  });
-  const n = Object.keys(S.teams).length;
-  const rondas = n%2===0 ? n-1 : n;                       // jornadas por vuelta
-  const maxVuelta = Math.max(1, ...S.allMatches.map(x=>parseInt(x.vuelta,10)||1));
-  const maxData = Math.max(0, ...S.allMatches.map(x=>parseInt(x.jornada,10)||0));
-  const total = Math.max(rondas*maxVuelta, maxData);
-  const libres = [];
-  for(let j=1;j<=total;j++){ if(!ocupadas.has(j)) libres.push(j); }
-  return libres;
-}
-
-// Por qué una jornada NO aparece: qué partido (programado/jugado) de cuál equipo la ocupa
-function jornadasOcupadasInfo(m){
-  const ids = [String(m.local), String(m.visita)], info = {};
-  ids.forEach(t=>(JORNADA_CUBIERTA[t]||[]).forEach(j=>{ (info[j]=info[j]||[]).push({equipo:t, x:null}); }));
-  S.allMatches.forEach(x=>{
-    if(x.id===m.id || !esAgendado(x)) return;
-    const j = parseInt(x.jornada,10); if(isNaN(j)) return;
-    ids.forEach(t=>{ if(String(x.local)===t || String(x.visita)===t) (info[j]=info[j]||[]).push({equipo:t, x}); });
-  });
-  return info;
-}
-function detalleJornadasOcupadas(m){
-  const info = jornadasOcupadasInfo(m), js = Object.keys(info).map(Number).sort((a,b)=>a-b);
-  if(!js.length) return '';
-  const lineas = js.map(j=>info[j].map(o => o.x
-    ? `<b>J${j}</b> · ${esc(tname(o.equipo))} ya tiene ${esc(tname(o.x.local))} vs ${esc(tname(o.x.visita))} <span style="opacity:.8">(ID ${esc(o.x.id)} · ${esc(o.x.estado||'?')}${o.x.fecha?' · '+esc(o.x.fecha):''})</span>`
-    : `<b>J${j}</b> · ${esc(tname(o.equipo))} (se toma como jugada)`).join('<br>')).join('<br>');
-  return `<details style="margin-top:6px;font-size:11px;color:var(--g400)"><summary style="cursor:pointer">¿Por qué no aparecen otras jornadas? (${js.length} ocupadas)</summary><div style="margin-top:6px;line-height:1.55">${lineas}</div></details>`;
-}
-
-// Calendario del torneo: la Jornada 1 es el domingo de inicio y cada jornada avanza 7 días (igual que el reporte del rol del domingo)
-const INICIO_TORNEO = [2026, 9, 20];   // año, mes, día
-function fechaCalendarioJornada(j){
-  const n = parseInt(j,10);
-  if(isNaN(n) || n < 1) return '';
-  const d = new Date(INICIO_TORNEO[0], INICIO_TORNEO[1]-1, INICIO_TORNEO[2] + 7*(n-1));
-  return pad2(d.getDate()) + '/' + pad2(d.getMonth()+1) + '/' + d.getFullYear();
-}
-
-// Fecha sugerida para programar un partido de la jornada j:
-// la de calendario; si ya pasó, o alguno de los dos equipos ya juega ese día, el siguiente domingo libre para ambos.
-// (Así un juego atrasado de la J5 se propone para el siguiente domingo, no para el 18/10 que ya está lleno.)
-function fechaSugerida(m, j){
-  const cal = fechaCalendarioJornada(j);
-  if(!cal || !m) return cal || '';
-  const [d,mo,y] = cal.split('/').map(Number);
-  const dt = new Date(y, mo-1, d);
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  while(dt < hoy) dt.setDate(dt.getDate()+7);
-  const ids = [String(m.local), String(m.visita)];
-  for(let i=0;i<60;i++){
-    const f = pad2(dt.getDate()) + '/' + pad2(dt.getMonth()+1) + '/' + dt.getFullYear();
-    const ocupado = S.allMatches.some(x => x.id!==m.id && esAgendado(x) && fechaNumSheet(x.fecha)===fechaNumSheet(f)
-                                           && (ids.includes(String(x.local)) || ids.includes(String(x.visita))));
-    if(!ocupado) return f;
-    dt.setDate(dt.getDate()+7);
-  }
-  return cal;
-}
-
-function fechaDeJornada(j){
-  const f = S.allMatches.find(x=>String(x.jornada).trim()===String(j) && esAgendado(x) && x.fecha);
-  return f ? f.fecha : '';
-}
+// La jornada original solo se conserva como dato interno para compatibilidad con la hoja.
 
 function ocupadosDeFecha(fechaSheet, excluirId){
   return S.allMatches.filter(x=>x.id!==excluirId && esAgendado(x) && fechaNumSheet(x.fecha)===fechaNumSheet(fechaSheet));
@@ -714,21 +572,33 @@ function conflictoCampo(ocupados, campo, hora){
                         && Math.abs(minutosDeHora(x.hora)-t) < DURACION_MIN);
 }
 
+function conflictoEquipo(ocupados, m, hora){
+  const ids=[String(m.local),String(m.visita)];
+  return ocupados.find(x=>(ids.includes(String(x.local))||ids.includes(String(x.visita))) && (!x.hora || Math.abs(minutosDeHora(x.hora)-minutosDeHora(hora))<DURACION_MIN));
+}
+function conflictoRol(slot, idx){
+  const m=partidosPendientes().find(x=>x.id===slot.matchId);
+  if(!m) return 'Elige un partido pendiente.';
+  if(!slot.hora) return 'Selecciona la hora del encuentro.';
+  if(rolSlots.some((s,i)=>i!==idx && s.matchId===slot.matchId)) return 'Ese ID de partido ya está incluido en el rol.';
+  const fecha=fechaInputASheet(document.getElementById('rol-fecha').value);
+  const ocupados=ocupadosDeFecha(fecha,m.id).concat(rolSlots.flatMap((s,i)=>{
+    if(i===idx || !s.matchId) return [];
+    const otro=partidosPendientes().find(x=>x.id===s.matchId);
+    return otro ? [{...otro,hora:s.hora,cancha:s.campo}] : [];
+  }));
+  const eq=conflictoEquipo(ocupados,m,slot.hora);
+  if(eq) return `Horario de equipo ocupado por ${tname(eq.local)} vs ${tname(eq.visita)} (${hhmm(eq.hora)}).`;
+  const campo=slot.campo && conflictoCampo(ocupados,slot.campo,slot.hora);
+  if(campo) return `Campo ocupado por ${tname(campo.local)} vs ${tname(campo.visita)} (${hhmm(campo.hora)}).`;
+  return '';
+}
+
 function abrirFormEditar(m){
   S.matchToProgram = m;
-  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
-  const fechaTarget = document.getElementById('armando-fecha')?.value || '';
-  const [d,mo,y] = (m.fecha||'').split('/');
-  const fechaInput = (y&&mo&&d) ? `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}` : fechaTarget;
-
-  // Jornadas en las que estos dos equipos PUEDEN jugar
-  const libres = jornadasLibresPara(m);
-  const pref = String(m.jornada || jornadaTarget || '');
-  const jSel = libres.map(String).includes(pref) ? pref : (libres[0] ? String(libres[0]) : '');
-  const jOpts = libres.length
-    ? libres.map(j=>{ const f=fechaDeJornada(j); return `<option value="${j}" ${String(j)===jSel?'selected':''}>Jornada ${j}${f?' · '+f:''}</option>`; }).join('')
-    : '<option value="">(sin jornadas libres para estos equipos)</option>';
-  const detalleOcupadas = detalleJornadasOcupadas(m);
+  if(!esPendiente(m)) return;
+  const fechaTarget = document.getElementById('armando-fecha').value || '';
+  const fechaInput = fechaTarget;
 
   const horaParts = (m.hora||'09:00:00').split(':');
   const {hOpts,mOpts} = buildHoraSelects(parseInt(horaParts[0],10)||9, parseInt(horaParts[1],10)||0);
@@ -740,16 +610,13 @@ function abrirFormEditar(m){
       <img src="${m.ll||tlogo(m.local)}" onerror="this.style.opacity='.2'">
       <div>
         <div class="mod-match-name">${esc(tname(m.local))} vs ${esc(tname(m.visita))}</div>
+        <div class="mod-match-meta">${esc(etiquetaJuego(m,'local'))} / ${esc(etiquetaJuego(m,'visita'))}</div>
         <div class="mod-match-meta">ID interno: ${esc(m.id)} · Estado actual: ${esc(m.estado||'?')}</div>
       </div>
       <img src="${m.lv||tlogo(m.visita)}" onerror="this.style.opacity='.2'">
     </div>
     <div class="programar-box">
       <div style="display:flex;flex-direction:column;gap:10px">
-        <div>
-          <label>Jornada (solo las que estos equipos pueden jugar)</label>
-          <select id="edit-jornada" class="msg-input" style="width:100%" onchange="alCambiarJornadaForm()">${jOpts}</select>${detalleOcupadas}
-        </div>
         <div>
           <label>Fecha</label>
           <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}" oninput="refrescarDisponibilidad()">
@@ -772,30 +639,10 @@ function abrirFormEditar(m){
       <button class="btn-anunciar" id="btn-guardar-editar" style="margin-top:14px" onclick="guardarEdicionPartido()">✅ Guardar cambios</button>
     </div>
   `;
-  alCambiarJornadaForm(true);
-}
-
-// Al elegir jornada: si esa jornada ya tiene fecha (otros partidos), se propone esa misma fecha
-function alCambiarJornadaForm(soloSiVacia){
-  const j = document.getElementById('edit-jornada')?.value;
-  const inp = document.getElementById('edit-fecha');
-  const hint = document.getElementById('edit-fecha-hint');
-  if(j && inp){
-    const fCal = fechaCalendarioJornada(j);        // fecha que le toca por calendario (la del reporte)
-    const fHoja = fechaDeJornada(j);               // fecha de otros partidos ya agendados con esa jornada
-    const fSug = fechaSugerida(S.matchToProgram, j) || fCal;
-    const f = fSug || fHoja;
-    if(f && (!soloSiVacia || !inp.value)){
-      const [d,mo,y] = f.split('/');
-      if(y&&mo&&d) inp.value = `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}`;
-    }
-    if(hint){
-      const otra = fHoja && fCal && fechaNumSheet(fHoja)!==fechaNumSheet(fCal);
-      hint.innerHTML = fCal ? `📆 Por calendario, la Jornada ${esc(j)} es el ${esc(fCal)}.` + ((fSug && fSug!==fCal) ? ` <span style="color:var(--neon)">Se sugiere el ${esc(fSug)}, el siguiente domingo libre para estos equipos.</span>` : '') + (otra ? ` <span style="color:#f87171">⚠️ En la hoja ya hay partidos de la Jornada ${esc(j)} el ${esc(fHoja)}.</span>` : '') : '';
-    }
-  }
   refrescarDisponibilidad();
 }
+
+
 
 // Cuadrícula horario × campo para la fecha elegida: libre / ocupado (y por quién)
 function refrescarDisponibilidad(){
@@ -817,12 +664,12 @@ function refrescarDisponibilidad(){
   const ids = [String(m.local), String(m.visita)];
   const choqueEq = ocupados.filter(x=>ids.includes(String(x.local))||ids.includes(String(x.visita)));
   const aviso = choqueEq.length
-    ? `<div style="font-size:12px;color:#f87171;margin-bottom:8px">⚠️ ${choqueEq.map(x=>esc(tname(x.local))+' vs '+esc(tname(x.visita))+' ('+esc(hhmm(x.hora))+')').join(' · ')} ya juega(n) esa fecha.</div>` : '';
+    ? `<div style="font-size:12px;color:#f87171;margin-bottom:8px">⚠️ ${choqueEq.map(x=>esc(tname(x.local))+' vs '+esc(tname(x.visita))+' ('+esc(hhmm(x.hora))+')').join(' · ')} ya juega(n) esa fecha; puedes repetir equipo en otro horario sin traslapes.</div>` : '';
 
   const th = campos.map(c=>`<th style="padding:6px 4px;font-size:11px;color:var(--g400)">${esc(c)}</th>`).join('');
   const filas = [...horas].sort().map(h=>{
     const celdas = campos.map(c=>{
-      const x = conflictoCampo(ocupados, c, h);
+      const x = conflictoCampo(ocupados, c, h) || conflictoEquipo(ocupados, m, h);
       const elegido = (h===hSel && c.toLowerCase()===cSel.toLowerCase());
       if(x) return `<td style="padding:4px"><div style="font-size:10px;line-height:1.2;padding:6px 4px;border-radius:6px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#f87171">✖ ${esc(tname(x.local))} vs ${esc(tname(x.visita))}</div></td>`;
       return `<td style="padding:4px"><button type="button" onclick="elegirSlot('${h}','${esc(c).replace(/'/g,"\\'")}')" style="width:100%;padding:7px 4px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ${elegido?'var(--neon)':'rgba(94,181,13,.35)'};background:${elegido?'var(--neon)':'var(--neon-dim)'};color:${elegido?'#122400':'var(--neon)'}">${elegido?'✔ Elegido':'Libre'}</button></td>`;
@@ -849,15 +696,16 @@ function elegirSlot(hora, campo){
 async function guardarEdicionPartido(){
   const m = S.matchToProgram;
   if(!m) return;
-  const jornada = document.getElementById('edit-jornada').value.trim();
+  if(!esPendiente(m)){ alert('Solo puedes programar partidos pendientes.'); return; }
+  const jornada = m.jornada; // dato original de la hoja, no se reasigna por fecha
   const fecha = document.getElementById('edit-fecha').value;
   const horaH = document.getElementById('edit-hora-h').value;
   const horaM = document.getElementById('edit-hora-m').value;
   const hora = (horaH&&horaM) ? `${horaH}:${horaM}:00` : '';
   const cancha = document.getElementById('edit-cancha').value.trim();
 
-  if(!jornada || !fecha || !hora || !cancha){
-    alert('Completa Jornada, Fecha, Hora y Campo antes de guardar.');
+  if(!fecha || !hora || !cancha){
+    alert('Completa Fecha, Hora y Campo antes de guardar.');
     return;
   }
   const [anioF,mesF,diaF] = fecha.split('-');
@@ -870,9 +718,9 @@ async function guardarEdicionPartido(){
     alert(`Ese horario/campo ya está ocupado: ${tname(choqueCampo.local)} vs ${tname(choqueCampo.visita)} (${hhmm(choqueCampo.hora)}, ${choqueCampo.cancha}).`);
     return;
   }
-  const choqueEquipo = ocupadosF.find(x=>[String(m.local),String(m.visita)].includes(String(x.local))||[String(m.local),String(m.visita)].includes(String(x.visita)));
+  const choqueEquipo = conflictoEquipo(ocupadosF, m, hora);
   if(choqueEquipo){
-    alert(`Uno de estos equipos ya juega esa fecha: ${tname(choqueEquipo.local)} vs ${tname(choqueEquipo.visita)}.`);
+    alert(`Uno de estos equipos tiene un horario que se cruza: ${tname(choqueEquipo.local)} vs ${tname(choqueEquipo.visita)}.`);
     return;
   }
 
@@ -891,12 +739,16 @@ async function guardarEdicionPartido(){
 
   // Actualización local optimista
   m.estado='programado'; m.fecha=fechaSheet; m.hora=hora; m.cancha=cancha; m.jornada=jornada;
-  S.matches = S.allMatches.filter(x=>(x.estado||'').toLowerCase()==='pendiente');
+  S.matches = partidosPendientes();
 
-  document.getElementById('buscar-resultado').innerHTML = `<div class="programar-hint">✅ Guardado: ${esc(tname(m.local))} vs ${esc(tname(m.visita))} — Jornada ${esc(jornada)}, ${esc(fechaSheet)}, ${esc(horaH)}:${esc(horaM)}, ${esc(cancha)}</div>`;
+  document.getElementById('buscar-resultado').innerHTML = `<div class="programar-hint">✅ Guardado: ${esc(tname(m.local))} vs ${esc(tname(m.visita))} — ${esc(fechaSheet)}, ${esc(horaH)}:${esc(horaM)}, ${esc(cancha)}</div>`;
   document.getElementById('buscar-equipo-a').value='';
   document.getElementById('buscar-equipo-b').value='';
-  actualizarSelectsPorJornada();
+  actualizarSelectsPorFecha();
+  llenarSelectCedula();
+  llenarSelectConfirmacion();
+  rolSlots = rolSlots.filter(s=>s.matchId!==m.id);
+  renderSlots();
   const idInp = document.getElementById('buscar-id-partido');
   if(idInp){ idInp.value=''; llenarListaIds(); idInp.focus(); }
 }
@@ -906,6 +758,7 @@ async function guardarEdicionPartido(){
 // ════════════════════════════════
 function setVuelta(v){
   S.vuelta=v;
+  rolSlots=[];
   document.getElementById('vbtn1').className='vbtn'+(v===1?' active':'');
   document.getElementById('vbtn2').className='vbtn'+(v===2?' active':'');
   renderSlots();
@@ -933,19 +786,9 @@ function addSlot(hora, matchId){
   const idx = rolSlots.length;
   const horaDefault = hora || HORARIOS_DEFAULT[idx] || '09:00';
 
-  const usados = {};
-  rolSlots.forEach(s=>{
-    if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
-    if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
-  });
+  const disponibles = pending.filter(m=>!rolSlots.some(s=>s.matchId===m.id));
 
-  const disponibles = pending.filter(m=>{
-    const lUsos = usados[m.local]||0;
-    const vUsos = usados[m.visita]||0;
-    return lUsos < 2 && vUsos < 2;
-  });
-
-  const slot = { hora: horaDefault, matchId: matchId || (disponibles[0]?.id||''), localId:'', visitaId:'', campo:'' };
+  const slot = { hora: horaDefault, matchId: matchId || '', localId:'', visitaId:'', campo:'' };
   if(slot.matchId){
     const m = S.matches.find(x=>x.id===slot.matchId);
     if(m){ slot.localId=m.local; slot.visitaId=m.visita; }
@@ -965,22 +808,11 @@ function renderSlots(){
   const container = document.getElementById('rol-slots');
 
   container.innerHTML = rolSlots.map((slot,idx)=>{
-    const usados = {};
-    rolSlots.forEach((s,i)=>{
-      if(i===idx) return;
-      if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
-      if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
-    });
-
-    const disponibles = pending.filter(m=>{
-      const lUsos = usados[m.local]||0;
-      const vUsos = usados[m.visita]||0;
-      return lUsos<2 && vUsos<2;
-    });
+    const disponibles = pending.filter(m=>m.id===slot.matchId || !rolSlots.some((s,i)=>i!==idx && s.matchId===m.id));
 
     const options = disponibles.map(m=>
       `<option value="${m.id}" ${m.id===slot.matchId?'selected':''}>
-        ${esc(tname(m.local))} vs ${esc(tname(m.visita))} (J${esc(m.jornada)})
+        ID ${esc(m.id)} · ${esc(tname(m.local))} (${esc(etiquetaJuego(m,'local'))}) vs ${esc(tname(m.visita))} (${esc(etiquetaJuego(m,'visita'))})
       </option>`
     ).join('');
 
@@ -997,7 +829,7 @@ function renderSlots(){
       </select>
       ${lv?`<img src="${lv}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
            `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
-      <input type="text" value="${slot.campo||''}" onchange="updateSlotCampo(${idx},this.value)" placeholder="Campo (opcional)" style="width:110px;padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;flex-shrink:0">
+      <input type="text" value="${esc(slot.campo||'')}" onchange="updateSlotCampo(${idx},this.value)" placeholder="Campo (opcional)" style="width:110px;padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;flex-shrink:0">
       <button onclick="removeSlot(${idx})" style="background:none;border:none;color:#f87171;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 4px">✕</button>
     </div>`;
   }).join('');
@@ -1050,22 +882,16 @@ function mejorConjuntoDePartidos(pending, limite){
 }
 
 function autoRol(){
+  if(!document.getElementById('rol-fecha').value){ alert('Elige la fecha del rol.'); return; }
   const vuelta = String(S.vuelta);
   const pending = [...S.matches.filter(m=>m.vuelta===vuelta)]
-    .sort((a,b) => (Number(a.jornada)||0) - (Number(b.jornada)||0) || (Number(a.id)||0) - (Number(b.id)||0));
+    .sort((a,b) => (Number(a.id)||0) - (Number(b.id)||0));
   rolSlots = [];
 
-  const seleccionados = mejorConjuntoDePartidos(pending, 8);
-
-  seleccionados.forEach((m,i)=>{
-    rolSlots.push({
-      hora: HORARIOS_DEFAULT[i]||'09:00',
-      matchId: m.id,
-      localId: m.local,
-      visitaId: m.visita,
-      campo: CAMPOS_DEFAULT[i]||''
-    });
-  });
+  for(let i=0;i<HORARIOS_DEFAULT.length;i++){
+    const candidato=pending.find(m=>!rolSlots.some(s=>s.matchId===m.id) && !conflictoRol({matchId:m.id,hora:HORARIOS_DEFAULT[i],campo:CAMPOS_DEFAULT[i]},-1));
+    if(candidato) rolSlots.push({hora:HORARIOS_DEFAULT[i],matchId:candidato.id,localId:candidato.local,visitaId:candidato.visita,campo:CAMPOS_DEFAULT[i]});
+  }
 
   renderSlots();
   document.getElementById('rol-preview-wrap').style.display='block';
@@ -1102,7 +928,8 @@ function updateRolPreview(){
   }
   document.getElementById('rol-preview-wrap').style.display='block';
 
-  let html = `<div style="text-align:center;font-size:13px;font-weight:700;color:var(--neon);margin-bottom:12px;text-transform:capitalize">📅 ${fechaStr}</div>`;
+  const errores=rolSlots.flatMap((slot,i)=>slot.matchId && conflictoRol(slot,i) ? [`ID ${slot.matchId}: ${conflictoRol(slot,i)}`] : []);
+  let html = (errores.length ? `<div style="color:#f87171;margin-bottom:10px">${errores.map(esc).join('<br>')}</div>` : '') + `<div style="text-align:center;font-size:13px;font-weight:700;color:var(--neon);margin-bottom:12px;text-transform:capitalize">📅 ${fechaStr}</div>`;
   filled.forEach(slot=>{
     const m = S.matches.find(x=>x.id===slot.matchId);
     if(!m) return;
@@ -1111,9 +938,9 @@ function updateRolPreview(){
     html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
       <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${esc(slot.hora)}</span>
       <img src="${ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
-      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${esc(tname(m.local))}</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${esc(tname(m.local))}<small style="display:block;font-size:10px">${esc(etiquetaJuego(m,'local'))}</small></span>
       <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
-      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${esc(tname(m.visita))}</span>
+      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${esc(tname(m.visita))}<small style="display:block;font-size:10px">${esc(etiquetaJuego(m,'visita'))}</small></span>
       <img src="${lv}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
     </div>`;
   });
@@ -1159,10 +986,10 @@ function pintarCartelPagina(paginaSlots, numPagina, totalPaginas, equipoDescansa
       <div class="cartel-row" style="padding:${T.padY}px 0;">
         <div class="cartel-team local">
           <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${ll}" onerror="this.style.opacity='.2'">
-          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.local))}</span>
+          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.local))}<small style="display:block;font-size:10px">${esc(etiquetaJuego(m,'local'))}</small></span>
         </div>
         <div class="cartel-center">
-          <span class="cartel-jv" style="font-size:${T.jv}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">Jornada ${esc(m.jornada||'?')}</span>
+          <span class="cartel-jv" style="font-size:${T.jv}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">ID ${esc(m.id)}</span>
           <span class="cartel-fecha" style="font-size:${T.fecha}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(document.getElementById('rol-fecha').value.split('-').reverse().join('/'))}</span>
           <div class="cartel-linea" style="margin:${T.gap}px 0;"></div>
           <span class="cartel-hora" style="font-size:${T.hora}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${horaFmt}</span>
@@ -1170,7 +997,7 @@ function pintarCartelPagina(paginaSlots, numPagina, totalPaginas, equipoDescansa
         </div>
         <div class="cartel-team visita">
           <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${lv}" onerror="this.style.opacity='.2'">
-          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.visita))}</span>
+          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.visita))}<small style="display:block;font-size:10px">${esc(etiquetaJuego(m,'visita'))}</small></span>
         </div>
       </div>
       ${i < paginaSlots.length-1 ? '<hr class="cartel-sep">' : ''}
@@ -1181,7 +1008,7 @@ function pintarCartelPagina(paginaSlots, numPagina, totalPaginas, equipoDescansa
     <div style="text-align:center;margin-bottom:14px;display:flex;flex-direction:column;align-items:center;gap:5px;">
       <div style="font-family:'Arial Black',Arial,sans-serif;font-size:22px;letter-spacing:1px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,.5),0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.nombre)}</div>
       <div style="font-size:13px;font-weight:700;color:#f3c94a;text-shadow:0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.descripcion)}</div>
-      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:14px;letter-spacing:1px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,.8);">DESCANSA ESTA JORNADA</div>
+      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:14px;letter-spacing:1px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,.8);">DESCANSA ESTA FECHA</div>
     </div>
   ` : '';
 
@@ -1237,6 +1064,9 @@ async function descargarCartelPNG(){
     alert('Primero arma el Rol del Domingo (Auto-proponer o agregar horarios) para generar el cartel.');
     return;
   }
+  if(!document.getElementById('rol-fecha').value){ alert('Elige la fecha del rol.'); return; }
+  const errores=rolSlots.flatMap((slot,i)=>slot.matchId && conflictoRol(slot,i) ? [`ID ${slot.matchId}: ${conflictoRol(slot,i)}`] : []);
+  if(errores.length){ alert(errores.join('\n')); return; }
   const btn = document.querySelector('.btn-descargar-cartel');
   const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
   const fecha = document.getElementById('rol-fecha').value || 'jornada';
@@ -1284,30 +1114,13 @@ function diaSemanaSheet(f){
   return dias[new Date(Date.UTC(p[2], p[1]-1, p[0])).getUTCDay()];
 }
 
-function llenarSelectCedula(){
-  const sel = document.getElementById('cedula-jornada');
-  if(!sel) return;
-  const jornadas = [...new Set(S.allMatches.filter(esAgendado).map(m=>String(m.jornada||'').trim()).filter(Boolean))]
-    .sort((a,b)=>Number(a)-Number(b));
-  sel.innerHTML = '<option value="">— Selecciona jornada —</option>' + jornadas.map(j=>`<option value="${j}">Jornada ${esc(j)}</option>`).join('');
-
-  const selF = document.getElementById('cedula-fecha');
-  if(selF){
-    const fechas = [...new Set(S.allMatches.filter(esAgendado).map(m=>String(m.fecha||'').trim()).filter(Boolean))]
-      .sort((a,b)=>fechaNumSheet(b)-fechaNumSheet(a)); // la más reciente primero
-    selF.innerHTML = '<option value="">— Selecciona fecha —</option>' + fechas.map(f=>{
-      const dia = diaSemanaSheet(f);
-      return `<option value="${esc(f)}">${esc((dia?dia+' ':'')+f)}</option>`;
-    }).join('');
-  }
+function llenarFechasReporte(id){
+  const sel=document.getElementById(id), anterior=sel.value;
+  const fechas=[...new Set(S.allMatches.filter(esAgendado).map(m=>String(m.fecha||'').trim()).filter(Boolean))].sort((a,b)=>fechaNumSheet(b)-fechaNumSheet(a));
+  sel.innerHTML='<option value="">— Selecciona fecha —</option>'+fechas.map(f=>`<option value="${esc(f)}">${esc(diaSemanaSheet(f)+' '+f)}</option>`).join('');
+  if(fechas.includes(anterior)) sel.value=anterior;
 }
-
-function cambiarCedulaTipo(){
-  const t = document.getElementById('cedula-tipo').value;
-  document.getElementById('cedula-jornada').style.display = (t==='jornada') ? '' : 'none';
-  document.getElementById('cedula-fecha').style.display   = (t==='fecha')   ? '' : 'none';
-  document.getElementById('cedula-aviso').textContent = '';
-}
+function llenarSelectCedula(){ llenarFechasReporte('cedula-fecha'); }
 
 function abreviaPosicion(p){
   const t = String(p||'').trim();
@@ -1349,12 +1162,12 @@ function clCardHTML(m, renglones, rowH, idx, total, emision, sello){
   const ll = m.ll || tlogo(m.local);
   const lv = m.lv || tlogo(m.visita);
   const campo = String(m.cancha||'').trim() || '—';
-  const folio = `CA-J${m.jornada||'X'}-P${m.id}-${sello}`;
+  const folio = `CA-F${String(m.fecha||'').replace(/\//g,'')}-P${m.id}-${sello}`;
   return `<div class="cl-card">
     <div class="cl-head">
       <div>
         <div class="cl-liga">Liga Next Level 7 · Torneo Dominical</div>
-        <div class="cl-titulo">Cédula arbitral <span>· Jornada ${esc(m.jornada||'—')} · ${esc(campo)}</span></div>
+        <div class="cl-titulo">Cédula arbitral <span>· ${esc(m.fecha||'—')} · ${esc(campo)}</span></div>
       </div>
       <div class="cl-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
     </div>
@@ -1365,15 +1178,14 @@ function clCardHTML(m, renglones, rowH, idx, total, emision, sello){
         <div class="eq v"><img src="${lv}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.visita))}</b></div>
       </div>
       <div class="cl-info">
-        <span>Jornada ${esc(m.jornada||'—')}</span>
         <span>${esc(m.fecha||'—')}${dia ? ' · ' + esc(dia) : ''}</span>
         <span>${m.hora ? esc(formatHora12(m.hora)) : '—'}</span>
         <span>${esc(campo)}</span>
         <span>ID ${esc(m.id)}</span>
       </div>
       <div class="cl-tablas">
-        ${clTablaHTML(m.local, 'Local', renglones, rowH)}
-        ${clTablaHTML(m.visita, 'Visitante', renglones, rowH)}
+        ${clTablaHTML(m.local, etiquetaJuego(m,'local'), renglones, rowH)}
+        ${clTablaHTML(m.visita, etiquetaJuego(m,'visita'), renglones, rowH)}
       </div>
       <div class="cl-marcador">
         <div><span>${esc(tname(m.local))}</span><div class="box"></div></div>
@@ -1417,21 +1229,11 @@ function cedulaOrdenarPartidos(partidos){
 }
 
 async function generarCedulaJornada(modo){
-  const tipo = document.getElementById('cedula-tipo').value;
   const aviso = document.getElementById('cedula-aviso');
-  let partidos, nombreArchivo;
-
-  if(tipo === 'fecha'){
-    const f = document.getElementById('cedula-fecha').value;
-    if(!f){ aviso.textContent = 'Selecciona una fecha primero.'; return; }
-    partidos = S.allMatches.filter(m => esAgendado(m) && String(m.fecha||'').trim() === f);
-    nombreArchivo = 'cedula_fecha_' + f.replace(/\//g,'-');
-  } else {
-    const jornadaSel = document.getElementById('cedula-jornada').value;
-    if(!jornadaSel){ aviso.textContent = 'Selecciona una jornada primero.'; return; }
-    partidos = S.allMatches.filter(m => esAgendado(m) && String(m.jornada||'').trim() === jornadaSel);
-    nombreArchivo = `cedula_jornada${jornadaSel}`;
-  }
+  const f = document.getElementById('cedula-fecha').value;
+  if(!f){ aviso.textContent='Selecciona una fecha primero.'; return; }
+  let partidos=S.allMatches.filter(m=>esAgendado(m) && String(m.fecha||'').trim()===f);
+  const nombreArchivo='cedula_fecha_'+f.replace(/\//g,'-');
   if(!partidos.length){ aviso.textContent = 'No hay encuentros programados en esa selección.'; return; }
   partidos = cedulaOrdenarPartidos(partidos);
   const totalPartidos = partidos.length;
@@ -1580,28 +1382,7 @@ const CA_CSS = `
   .cl-tabla td.jug.largo i{font-size:7.5px;}
 `;
 
-function llenarSelectConfirmacion(){
-  const sel = document.getElementById('cf-jornada');
-  if(!sel) return;
-  const jornadas = [...new Set(S.allMatches.map(m=>String(m.jornada||'').trim()).filter(Boolean))]
-    .sort((a,b)=>Number(a)-Number(b));
-  sel.innerHTML = '<option value="">— Selecciona jornada —</option>' + jornadas.map(j=>`<option value="${j}">Jornada ${esc(j)}</option>`).join('');
-  const selF = document.getElementById('cf-fecha');
-  if(selF){
-    const fechas = [...new Set(S.allMatches.map(m=>String(m.fecha||'').trim()).filter(Boolean))]
-      .sort((a,b)=>fechaNumSheet(b)-fechaNumSheet(a));
-    selF.innerHTML = '<option value="">— Selecciona fecha —</option>' + fechas.map(f=>{
-      const dia = diaSemanaSheet(f);
-      return `<option value="${esc(f)}">${esc((dia?dia+' ':'')+f)}</option>`;
-    }).join('');
-  }
-}
-function cambiarCfTipo(){
-  const t = document.getElementById('cf-tipo').value;
-  document.getElementById('cf-jornada').style.display = (t==='jornada') ? '' : 'none';
-  document.getElementById('cf-fecha').style.display   = (t==='fecha')   ? '' : 'none';
-  document.getElementById('cf-aviso').textContent = '';
-}
+function llenarSelectConfirmacion(){ llenarFechasReporte('cf-fecha'); }
 
 function cfDocHTML(partidos, conf, tipo, valor){
   const ahora = new Date();
@@ -1624,14 +1405,14 @@ function cfDocHTML(partidos, conf, tipo, valor){
     if(!okV) pendientes.push(`${esc(nomV)} <small>(vs ${esc(nomL)})</small>`);
     const pill = n===2 ? '<span class="cf-pill v">COMPLETA</span>' : (n===1 ? '<span class="cf-pill a">PARCIAL</span>' : '<span class="cf-pill r">SIN CONFIRMAR</span>');
     const jugado = (m.estado||'').toLowerCase()==='jugado' ? '<div style="font-size:10px;color:#6b7280;margin-top:3px">Jugado</div>' : '';
-    const eq = (nombre, logo, ok) => `<div class="cf-eq"><img src="${logo}" onerror="this.style.opacity='.15'"><div><b>${esc(nombre)}</b><span class="${ok?'cf-ok':'cf-pend'}">${ok?'✔ Confirmado':'○ Pendiente'}</span></div></div>`;
+    const eq = (nombre, logo, ok, juego) => `<div class="cf-eq"><img src="${logo}" onerror="this.style.opacity='.15'"><div><b>${esc(nombre)}</b><small>${esc(juego)}</small><br><span class="${ok?'cf-ok':'cf-pend'}">${ok?'✔ Confirmado':'○ Pendiente'}</span></div></div>`;
     return `<tr>
       <td class="n">${i+1}</td>
-      <td>${esc(m.jornada||'')}</td>
+      <td>${esc(m.id)}</td>
       <td class="fh"><b>${esc(m.fecha||'—')}</b><span>${m.hora ? esc(formatHora12(m.hora)) : '—'}</span></td>
       <td class="cm">${esc(m.cancha||'—')}</td>
-      <td>${eq(nomL, m.ll || tlogo(m.local), okL)}</td>
-      <td>${eq(nomV, m.lv || tlogo(m.visita), okV)}</td>
+      <td>${eq(nomL, m.ll || tlogo(m.local), okL, etiquetaJuego(m,'local'))}</td>
+      <td>${eq(nomV, m.lv || tlogo(m.visita), okV, etiquetaJuego(m,'visita'))}</td>
       <td>${pill}${jugado}</td>
     </tr>`;
   }).join('');
@@ -1658,7 +1439,7 @@ function cfDocHTML(partidos, conf, tipo, valor){
         <div class="cf-kpi ${pendientes.length?'a':'v'}"><b>${pendientes.length}</b><span>Equipos pendientes</span></div>
       </div>
       <table class="cf-tabla">
-        <thead><tr><th style="width:30px">No.</th><th style="width:44px">Jor.</th><th style="width:96px">Fecha y hora</th><th style="width:78px">Campo</th><th>Equipo local</th><th>Equipo visitante</th><th style="width:112px">Situación</th></tr></thead>
+        <thead><tr><th style="width:30px">No.</th><th style="width:44px">ID</th><th style="width:96px">Fecha y hora</th><th style="width:78px">Campo</th><th>Equipo local</th><th>Equipo visitante</th><th style="width:112px">Situación</th></tr></thead>
         <tbody>${filas}</tbody>
       </table>
       <div class="cf-seccion"><h4>Equipos pendientes de confirmar asistencia</h4>${seccionPend}</div>
@@ -1685,9 +1466,9 @@ async function cfImprimir(html, extraCss=''){
 }
 
 async function cfReporte(modo){
-  const tipo = document.getElementById('cf-tipo').value;
+  const tipo = 'fecha';
   const aviso = document.getElementById('cf-aviso');
-  const valor = document.getElementById(tipo==='fecha' ? 'cf-fecha' : 'cf-jornada').value;
+  const valor = document.getElementById('cf-fecha').value;
   if(!valor){ aviso.textContent = tipo==='fecha' ? 'Selecciona una fecha primero.' : 'Selecciona una jornada primero.'; return; }
 
   let partidos = S.allMatches.filter(m=>{
@@ -1748,3 +1529,4 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 </script>
 </body>
 </html>
+
