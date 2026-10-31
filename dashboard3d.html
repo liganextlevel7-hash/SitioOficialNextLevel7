@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="dashboard-version" content="rostro-liso-playera-3">
 <title>Dashboard 3D · Liga Next Level 7</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -276,12 +277,12 @@ function volumen(parent,mat,x,y,z,sx,sy,sz){const m=new THREE.Mesh(anatomiaGeo,m
 function telaTorso(tex,col){
  // Se toma la zona de tela de la imagen de la playera, en vez de pegar su silueta completa.
  const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,512,256);
- if(tex?.image){const im=tex.image,w=im.width,h=im.height;for(let side=0;side<2;side++)x.drawImage(im,w*.27,h*.20,w*.46,h*.67,side*256,0,256,256);}
+ if(tex?.image){const im=tex.image,w=im.width,h=im.height;for(let side=0;side<2;side++)x.drawImage(im,w*.20,h*.15,w*.60,h*.82,side*256,48,256,208);}
  const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=4;map.wrapS=THREE.RepeatWrapping;return new THREE.MeshStandardMaterial({map,roughness:.9});
 }
 function camisetaMesh(mat){
  const rings=[[1.18,.285,.17],[1.36,.30,.185],[1.62,.345,.195],[1.88,.39,.18],[2.02,.255,.135]],verts=[],uv=[],idx=[],N=20;
- rings.forEach(([y,rx,rz],r)=>{for(let a=0;a<=N;a++){const th=a/N*Math.PI*2;verts.push(Math.sin(th)*rx,y,Math.cos(th)*rz);uv.push(a/N+.25,(y-1.18)/.84);}});
+ rings.forEach(([y,rx,rz],r)=>{for(let a=0;a<=N;a++){const th=a/N*Math.PI*2;verts.push(Math.sin(th)*rx,y,Math.cos(th)*rz);const frontal=Math.cos(th)>=0;const u=(frontal?.25:.75)+Math.sin(th)*(frontal?.25:-.25);uv.push(u,(y-1.18)/.84);}});
  for(let r=0;r<rings.length-1;r++)for(let a=0;a<N;a++){const i=r*(N+1)+a;idx.push(i,i+1,i+N+1,i+1,i+N+2,i+N+1);}
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();return new THREE.Mesh(geo,mat);
 }
@@ -294,7 +295,7 @@ async function crearJugador(t,i){
  const sock=new THREE.MeshStandardMaterial({color:0xe9e9db,roughness:.95}),boot=new THREE.MeshStandardMaterial({color:i%2?0x202827:0xeeeecc,roughness:.6});
  const torso=camisetaMesh(telaTorso(pla,color));torso.castShadow=true;g.add(torso);
  // Cuello y ribete real de la camiseta.
- volumen(g,piel,0,2.055,0,.115,.16,.115);
+ volumen(g,piel,0,2.035,0,.09,.12,.09);
  const collar=new THREE.Mesh(new THREE.TorusGeometry(.135,.027,6,18),new THREE.MeshStandardMaterial({color:0xe6e8d9,roughness:.8}));collar.rotation.x=Math.PI/2;collar.position.y=2.035;g.add(collar);
  volumen(g,shortMat,0,1.12,0,.30,.20,.18);
  const rodillas=[],codos=[];
@@ -315,7 +316,7 @@ async function crearJugador(t,i){
  const brazoI=brazo(-1),brazoD=brazo(1);
  // Cabeza lisa de una sola pieza, sin rasgos ni cabello.
  const cabeza=new THREE.Group();cabeza.position.set(0,2.30,0);g.add(cabeza);
- volumen(cabeza,piel,0,.04,0,.175,.225,.172);
+ const cabezaLisa=new THREE.Mesh(new THREE.SphereGeometry(1,32,24),piel);cabezaLisa.position.y=.04;cabezaLisa.scale.set(.175,.225,.172);cabeza.add(cabezaLisa);
  volumen(cabeza,piel,-.18,.025,0,.035,.06,.028);volumen(cabeza,piel,.18,.025,0,.035,.06,.028);
  const pelo=new THREE.Group();pelo.position.set(0,2.32,0);g.add(pelo);
  // Escudo cosido al pecho cuando no existe una imagen de uniforme.
