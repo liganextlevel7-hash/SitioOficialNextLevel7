@@ -31,83 +31,24 @@ async function cargarEquiposNL7() {
   logosEquipos = logoTmp;
 }
 
+function tarjetaJugador(j, items) {
+  return `<article class="pcard">
+    <div class="pcard-header"><span class="pcard-equipo-nombre">${equiposID[Number(j.equipo)] || ''}</span><img class="pcard-logo-equipo" src="${logosEquipos[Number(j.equipo)] || j.logo}" alt="Escudo del equipo"></div>
+    <div class="pcard-foto-wrap"><span class="pcard-numero">${j.numero ? '#' + j.numero : ''}</span><img src="${j.foto}" alt="${j.nombre}" class="pcard-foto-grande" onerror="this.onerror=null;this.src='${j.logo}';this.classList.add('pcard-foto-fallback')"></div>
+    <div class="pcard-footer"><div class="pcard-nombre">${j.nombre}</div>${j.posicion ? `<span class="pcard-posicion">${j.posicion}</span>` : ''}</div>
+    <div class="pcard-stats-left">${items.map(([l,v])=>`<div class="pcard-stat"><span class="pcard-val">${v}</span><span class="pcard-lbl">${l}</span></div>`).join('')}</div>
+    <button type="button" class="pcard-ver-ficha">Ver ficha ↗</button>
+  </article>`;
+}
 function playerCardHTML(j, goles, asistencias, amarillas, rojas) {
-  const equipoNombre = equiposID[Number(j.equipo)] || '';
-  const logoEquipo = logosEquipos[Number(j.equipo)] || '';
-  return `
-  <div class="pcard">
-    <div class="pcard-header">
-      <span class="pcard-equipo-nombre">${equipoNombre}</span>
-      <img src="${logoEquipo}" class="pcard-logo-equipo">
-    </div>
-    <div class="pcard-body">
-      <div class="pcard-stats-left">
-        <div class="pcard-stat"><span class="pcard-lbl">GOLES</span><span class="pcard-val">${goles}</span></div>
-        <div class="pcard-stat"><span class="pcard-lbl">ASIST</span><span class="pcard-val">${asistencias}</span></div>
-        <div class="pcard-stat"><span class="pcard-lbl">🟡 AM</span><span class="pcard-val">${amarillas}</span></div>
-        <div class="pcard-stat"><span class="pcard-lbl">🔴 RJ</span><span class="pcard-val">${rojas}</span></div>
-      </div>
-      <div class="pcard-foto-wrap">
-        <img src="${j.foto}" class="pcard-foto-grande" onerror="this.onerror=null;this.src='${j.logo}';this.classList.add('pcard-foto-fallback')">
-      </div>
-    </div>
-    <div class="pcard-footer">
-      <div class="pcard-nombre">${j.nombre}</div>
-      ${j.posicion ? `<span class="pcard-posicion">${j.posicion}</span>` : ''}
-    </div>
-  </div>`;
+  return tarjetaJugador(j, [['Goles',goles],['Asistencia',asistencias],['Amarillas',amarillas],['Rojas',rojas]]);
 }
-
 function porteroCardHTML(j) {
-  const equipoNombre = equiposID[Number(j.equipo)] || '';
-  const logoEquipo = logosEquipos[Number(j.equipo)] || '';
-  return `
-  <div class="pcard">
-    <div class="pcard-header">
-      <span class="pcard-equipo-nombre">${equipoNombre}</span>
-      <img src="${logoEquipo}" class="pcard-logo-equipo">
-    </div>
-    <div class="pcard-body">
-      <div class="pcard-stats-left">
-        <div class="pcard-stat"><span class="pcard-lbl">🥅 GOL REC</span><span class="pcard-val">${j.golesRecibidos}</span></div>
-        <div class="pcard-stat"><span class="pcard-lbl">🧤 PJ</span><span class="pcard-val">${j.partidosJugados}</span></div>
-        <div class="pcard-stat"><span class="pcard-lbl">📊 PROM</span><span class="pcard-val">${j.promedio.toFixed(1)}</span></div>
-      </div>
-      <div class="pcard-foto-wrap">
-        <img src="${j.foto}" class="pcard-foto-grande" onerror="this.onerror=null;this.src='${j.logo}';this.classList.add('pcard-foto-fallback')">
-      </div>
-    </div>
-    <div class="pcard-footer">
-      <div class="pcard-nombre">${j.nombre}</div>
-      ${j.posicion ? `<span class="pcard-posicion">${j.posicion}</span>` : ''}
-    </div>
-  </div>`;
+  return tarjetaJugador(j, [['Goles recibidos',j.golesRecibidos],['Partidos',j.partidosJugados],['Promedio',j.promedio.toFixed(1)]]);
 }
-
 function jugadorCardHTML(j, goles, porcentaje, suspendido, golesRec, amarillas, rojas) {
-  // Portero: en el lugar de los goles anotados van los goles RECIBIDOS por su equipo
   const esPortero = golesRec !== undefined && golesRec !== null;
-  return `
-  <div class="pcard">
-    <div class="pcard-body">
-      <div class="pcard-stats-left">
-        <div class="pcard-stat"><span class="pcard-lbl">${esPortero ? '🥅 GOL REC' : '⚽ GOLES'}</span><span class="pcard-val">${esPortero ? golesRec : goles}</span></div>
-        <div class="pcard-stat"><span class="pcard-lbl">🎯 ASIST</span><span class="pcard-val">${porcentaje}%</span></div>
-        <div class="pcard-stat-row">
-          <div class="pcard-stat"><span class="pcard-lbl">🟡 AM</span><span class="pcard-val">${amarillas || 0}</span></div>
-          <div class="pcard-stat"><span class="pcard-lbl">🔴 RJ</span><span class="pcard-val">${rojas || 0}</span></div>
-        </div>
-        <div class="pcard-stat"><span class="pcard-lbl">⛔ SUSP</span><span class="pcard-val">${suspendido}</span></div>
-      </div>
-      <div class="pcard-foto-wrap">
-        <img src="${j.foto}" class="pcard-foto-grande" onerror="this.onerror=null;this.src='${j.logo}';this.classList.add('pcard-foto-fallback')">
-      </div>
-    </div>
-    <div class="pcard-footer">
-      <div class="pcard-nombre">${j.nombre}</div>
-      ${j.posicion ? `<span class="pcard-posicion">${j.posicion}</span>` : ''}
-    </div>
-  </div>`;
+  return tarjetaJugador(j, [[esPortero ? 'Goles recibidos' : 'Goles',esPortero ? golesRec : goles],['Asistencia',porcentaje+'%'],['Amarillas',amarillas||0],['Rojas',rojas||0],['Suspendido',suspendido]]);
 }
 
 (function() {
@@ -115,192 +56,73 @@ function jugadorCardHTML(j, goles, porcentaje, suspendido, golesRec, amarillas, 
   const style = document.createElement("style");
   style.id = "jugadores-card-style";
   style.textContent = `
-    /* ===== PLAYER CARD (base, sin cambios) ===== */
-    .pcards-section { margin-bottom: 24px; }
-    .pcards-title {
-      font-size: 18px; font-weight: 900; color: #ffd700;
-      letter-spacing: 3px; text-transform: uppercase;
-      margin-bottom: 16px; text-align: center;
-      text-shadow: 0 0 10px #ffd700;
-    }
-    .pcard {
-      background: linear-gradient(160deg, #0a0f1e 0%, #050810 100%);
-      border: 1px solid rgba(255,215,0,0.35);
-      border-radius: 18px;
-      overflow: hidden;
-      box-shadow: 0 0 15px rgba(255,215,0,0.15);
-      width: 100%; height: 100%;
-      display: flex; flex-direction: column;
-      box-sizing: border-box;
-    }
-    .pcard-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 14px 6px;
-      border-bottom: 1px solid rgba(255,215,0,0.1);
-    }
-    .pcard-equipo-nombre {
-      font-size: 10px; font-weight: 700; color: rgba(255,215,0,0.7);
-      text-transform: uppercase; letter-spacing: 1px;
-    }
-    .pcard-logo-equipo { width: 36px; height: 36px; object-fit: contain; }
-    .pcard-body {
-      display: flex; gap: 10px; padding: 12px 14px;
-      align-items: stretch; flex: 1; min-height: 0;
-    }
-    .pcard-stats-left {
-      display: flex; flex-direction: column; gap: 6px;
-      width: 75px; flex-shrink: 0; justify-content: center;
-    }
-    .pcard-stat {
-      background: rgba(255,255,255,0.06);
-      border-radius: 8px; padding: 5px 7px;
-      display: flex; flex-direction: column; align-items: center;
-    }
-    .pcard-lbl { font-size: 8px; color: rgba(255,255,255,0.4); letter-spacing: 1px; text-transform: uppercase; }
-    .pcard-val { font-size: 20px; font-weight: 900; color: #fff; line-height: 1.1; }
-    .pcard-foto-wrap {
-      flex: 1; min-width: 0; aspect-ratio: 3 / 4;
-      border-radius: 12px; overflow: hidden;
-      border: 2px solid rgba(255,215,0,0.55);
-      box-shadow: 0 0 14px rgba(255,215,0,0.35);
-      background: #111;
-    }
-    .pcard-foto-grande { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .pcard-foto-grande.pcard-foto-fallback {
-      object-fit: contain; padding: 22%; box-sizing: border-box;
-      background: radial-gradient(circle, rgba(255,215,0,0.10), rgba(255,215,0,0) 70%);
-    }
-    .pcard-footer {
-      background: rgba(0,0,0,0.5);
-      border-top: 1px solid rgba(255,215,0,0.15);
-      padding: 10px 14px; text-align: center;
-    }
-    .pcard-nombre {
-      font-size: 13px; font-weight: 900; color: #fff;
-      text-transform: uppercase; letter-spacing: 1px;
-    }
-    .pcard-posicion {
-      display: inline-block; background: #ffd700; color: black;
-      padding: 2px 10px; border-radius: 10px;
-      font-size: 10px; font-weight: 700; margin-top: 5px;
-    }
 
-    /* ===== CARRUSEL 3D ===== */
-    .pj-carrusel-wrap {
-      position: relative;
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto 10px;
-      height: 380px;
+    body { margin:0; background:#080f16; color:#edf3fc; font-family:Arial,sans-serif; }
+    body > header { background:radial-gradient(ellipse at top,#193123,#0b1714); border-bottom:1px solid #293a28; padding:24px 16px; text-align:center; }
+    header .logo-liga { width:80px; height:80px; object-fit:contain; }
+    header h1 { font-size:clamp(25px,5vw,36px); color:#edf3fc; letter-spacing:3px; margin:10px 0; text-shadow:none; }
+    header .subtitulo { color:#aebcae; margin:8px 0 18px; }
+    header nav { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
+    header nav a { color:#d0e8bd; background:#17261c; border:1px solid #34472c; padding:11px 16px; border-radius:10px; text-decoration:none; }
+    .contenedor-jugadores { width:100%; max-width:1040px; margin:24px auto; padding:0 12px 32px; box-sizing:border-box; }
+    .jugadores-tabs { display:flex; gap:5px; padding:5px; border:1px solid #28392b; border-radius:13px; background:#111f18; max-width:560px; margin:0 auto 22px; }
+    .jugadores-tabs button { flex:1; min-width:0; padding:12px 6px; border:0; border-radius:9px; color:#b9c7b3; background:transparent; font:600 13px Arial; cursor:pointer; }
+    .jugadores-tabs button[aria-selected=true] { background:#a7e267; color:#16240d; }
+    #filtro-equipo { max-width:480px; margin:0 auto 18px; }
+    #filtro-equipo label { display:block; color:#b9c7b3; margin-bottom:8px; }
+    #selector-equipo-jugador { width:100%; box-sizing:border-box; padding:13px; font-size:16px; background:#132139; color:#edf3fc; border:1px solid #415571; border-radius:10px; }
+    .pcards-section { margin-bottom:18px; }
+    .pcards-title { font-size:18px; font-weight:700; color:#d8c58c; letter-spacing:1px; margin-bottom:10px; text-align:center; }
+    .pcard { background:linear-gradient(150deg,#192f50,#0c1a30); border:1px solid #aa914e; border-radius:18px; overflow:hidden; width:100%; box-sizing:border-box; box-shadow:0 15px 36px #0005; }
+    .pcard-header { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 16px; min-height:38px; border-bottom:1px solid #ffffff12; }
+    .pcard-equipo-nombre { font-size:12px; color:#ddca92; text-transform:uppercase; letter-spacing:1px; overflow-wrap:anywhere; }
+    .pcard-logo-equipo { width:36px; height:36px; object-fit:contain; }
+    .pcard-foto-wrap { height:230px; position:relative; background:radial-gradient(ellipse,#355375,#10223c); }
+    .pcard-numero { position:absolute; top:12px; left:14px; color:#fff; font-size:23px; font-weight:700; text-shadow:0 2px 5px #000; z-index:1; }
+    .pcard-foto-grande { width:100%; height:100%; object-fit:contain; display:block; }
+    .pcard-foto-fallback { padding:32px; box-sizing:border-box; }
+    .pcard-footer { padding:13px 14px 8px; text-align:center; }
+    .pcard-nombre { color:#f4f7ff; font-size:18px; font-weight:700; overflow-wrap:anywhere; line-height:1.25; }
+    .pcard-posicion { display:inline-block; color:#b8e38f; font-size:12px; margin-top:6px; }
+    .pcard-stats-left { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; padding:8px 14px 12px; }
+    .pcard-stat { background:#ffffff07; border-radius:9px; padding:8px 3px; display:flex; flex-direction:column; align-items:center; gap:3px; text-align:center; }
+    .pcard-lbl { font-size:11px; color:#bac9dd; }
+    .pcard-val { font-size:23px; font-weight:700; color:#f4f7ff; }
+    .pcard-ver-ficha { display:block; width:calc(100% - 28px); margin:0 14px 14px; padding:12px; border:0; border-radius:9px; background:#a7e267; color:#17240e; font-size:14px; font-weight:700; cursor:pointer; }
+    .pj-carrusel-wrap { position:relative; width:100%; max-width:960px; margin:auto; height:610px; overflow:hidden; touch-action:pan-y; }
+    .pj-slide { position:absolute; top:50%; left:50%; width:300px; transition:transform .4s,opacity .4s,filter .4s; transform:translate(-50%,-50%) scale(.4); opacity:0; pointer-events:none; filter:brightness(.45); }
+    .pj-slide.pj-c { transform:translate(-50%,-50%); opacity:1; z-index:5; pointer-events:auto; filter:none; }
+    .pj-slide.pj-l1 { transform:translate(calc(-50% - 245px),-50%) scale(.76); opacity:.65; z-index:4; pointer-events:auto; }
+    .pj-slide.pj-r1 { transform:translate(calc(-50% + 245px),-50%) scale(.76); opacity:.65; z-index:4; pointer-events:auto; }
+    .pj-slide.pj-l2 { transform:translate(calc(-50% - 390px),-50%) scale(.55); opacity:.3; z-index:3; }
+    .pj-slide.pj-r2 { transform:translate(calc(-50% + 390px),-50%) scale(.55); opacity:.3; z-index:3; }
+    .pj-flecha { position:absolute; top:50%; transform:translateY(-50%); width:44px; height:44px; border:1px solid #66834b; border-radius:50%; color:#d3efb5; background:#132518ed; font-size:22px; cursor:pointer; z-index:10; }
+    .pj-fl { left:3px; } .pj-fr { right:3px; }
+    .pj-dots { display:flex; justify-content:center; flex-wrap:wrap; gap:2px; }
+    .pj-dot { width:28px; height:28px; border:0; background:transparent; cursor:pointer; padding:9px; }
+    .pj-dot:after { content:''; display:block; width:8px; height:8px; border-radius:50%; background:#4c5a4c; }
+    .pj-dot.pj-on:after { background:#a7e267; }
+    .foto-lightbox-overlay { position:fixed; inset:0; z-index:99999; background:#050b15f5; display:none; align-items:center; justify-content:center; padding:65px 16px 20px; box-sizing:border-box; overflow-y:auto; }
+    .foto-lightbox-overlay.activo { display:flex; }
+    .foto-lightbox-wrap { width:100%; max-width:480px; max-height:100%; }
+    .foto-lightbox-img { display:block; width:100%; max-height:48dvh; object-fit:contain; border-radius:12px; background:#122139; }
+    .foto-lightbox-cerrar { position:absolute; top:12px; right:16px; width:44px; height:44px; background:#172a40; color:#edf3fc; border:1px solid #7d713e; border-radius:50%; font-size:26px; cursor:pointer; }
+    .foto-lightbox-stats { margin-top:12px; padding:15px; border-radius:12px; background:#132139; }
+    .fls-top { text-align:center; } .fls-nombre { display:block; font-size:19px; color:#fff; }
+    .fls-equipo { color:#ddca92; text-align:center; margin:8px 0 12px; }
+    .fls-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .fls-item { display:flex; flex-direction:column; align-items:center; gap:5px; padding:8px; background:#ffffff07; border-radius:8px; }
+    [hidden] { display:none !important; }
+    @media(max-width:600px) {
+      body > header { padding:18px 12px; } header .logo-liga { width:65px; height:65px; }
+      .contenedor-jugadores { margin-top:18px; padding-left:6px; padding-right:6px; }
+      .pj-slide { width:min(300px,calc(100vw - 88px)); }
+      .pj-slide:not(.pj-c) { opacity:0; pointer-events:none; }
+      .pcard-foto-wrap { height:215px; } .pcard-nombre { font-size:17px; }
+      .pj-carrusel-wrap { height:625px; }
     }
-    .pj-slide {
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 230px;
-      transition: all 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
-      transform: translate(-50%,-50%) scale(0.4);
-      opacity: 0;
-      pointer-events: none;
-      cursor: pointer;
-      filter: grayscale(1) brightness(0.55);
-    }
-    .pj-slide.pj-c {
-      transform: translate(-50%,-50%) scale(1);
-      opacity: 1; z-index: 5; pointer-events: all;
-      filter: grayscale(0) brightness(1);
-    }
-    .pj-slide.pj-l1 {
-      transform: translate(calc(-50% - 195px),-50%) scale(0.75) rotateY(18deg);
-      opacity: 0.85; z-index: 4; pointer-events: all;
-    }
-    .pj-slide.pj-r1 {
-      transform: translate(calc(-50% + 195px),-50%) scale(0.75) rotateY(-18deg);
-      opacity: 0.85; z-index: 4; pointer-events: all;
-    }
-    .pj-slide.pj-l2 {
-      transform: translate(calc(-50% - 330px),-50%) scale(0.55) rotateY(28deg);
-      opacity: 0.4; z-index: 3; pointer-events: all;
-    }
-    .pj-slide.pj-r2 {
-      transform: translate(calc(-50% + 330px),-50%) scale(0.55) rotateY(-28deg);
-      opacity: 0.4; z-index: 3; pointer-events: all;
-    }
-    .pj-flecha {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,215,0,0.4);
-      border-radius: 50%; width: 38px; height: 38px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 17px; color: #ffd700; z-index: 10;
-      transition: all 0.3s; touch-action: manipulation; user-select: none;
-    }
-    .pj-flecha:hover { background: rgba(255,215,0,0.2); }
-    .pj-fl { left: 0; } .pj-fr { right: 0; }
+    @media(prefers-reduced-motion:reduce) { .pj-slide { transition:none; } }
 
-    /* ===== VER FOTO EN PANTALLA COMPLETA (doble clic / doble toque) ===== */
-    .foto-lightbox-overlay {
-      position: fixed; inset: 0; z-index: 99999;
-      background: rgba(0,0,0,0.94);
-      display: none; align-items: center; justify-content: center;
-      padding: 24px; box-sizing: border-box;
-    }
-    .foto-lightbox-overlay.activo { display: flex; }
-    .foto-lightbox-img {
-      max-width: 94vw; max-height: 90vh; object-fit: contain;
-      border-radius: 14px; border: 2px solid rgba(255,215,0,0.45);
-      box-shadow: 0 0 40px rgba(255,215,0,0.25);
-    }
-    .foto-lightbox-cerrar {
-      position: absolute; top: 18px; right: 22px;
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(0,0,0,0.6); border: 1px solid rgba(255,215,0,0.5);
-      color: #ffd700; font-size: 22px; line-height: 1;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; touch-action: manipulation;
-    }
-    .pcard-stat-row { display: flex; gap: 4px; }
-    .pcard-stat-row .pcard-stat { flex: 1; padding: 5px 2px; }
-
-    /* estadisticas debajo de la foto (solo en pantalla completa) */
-    .foto-lightbox-wrap { display: inline-flex; flex-direction: column; align-items: center; max-width: 94vw; }
-    .foto-lightbox-wrap.con-stats .foto-lightbox-img { max-height: calc(90vh - 170px); }
-    .foto-lightbox-stats {
-      display: none; width: 0; min-width: 100%; box-sizing: border-box; margin-top: 8px;
-      background: rgba(0,0,0,0.8); border: 1px solid rgba(255,215,0,0.45);
-      border-radius: 12px; padding: 10px 12px;
-    }
-    .foto-lightbox-wrap.con-stats .foto-lightbox-stats { display: block; }
-    .fls-top { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
-    .fls-nombre { font-size: 14px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-    .fls-equipo { text-align: center; font-size: 10px; color: rgba(255,215,0,0.7); text-transform: uppercase; letter-spacing: 1px; margin: 3px 0 8px; }
-    .fls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 6px; }
-    .fls-item { background: rgba(255,255,255,0.07); border-radius: 8px; padding: 5px 4px; display: flex; flex-direction: column; align-items: center; }
-    .fls-item .pcard-lbl { font-size: 8px; text-align: center; }
-    .fls-item .pcard-val { font-size: 19px; }
-
-    .pj-dots {
-      display: flex; justify-content: center; gap: 7px; margin-top: 6px;
-    }
-    .pj-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s;
-    }
-    .pj-dot.pj-on { background: #ffd700; transform: scale(1.3); }
-
-    @media(max-width: 600px) {
-      .pj-carrusel-wrap { height: 340px; }
-      .pj-slide { width: 190px; }
-      .pj-slide.pj-l1 { transform: translate(calc(-50% - 140px),-50%) scale(0.72) rotateY(18deg); }
-      .pj-slide.pj-r1 { transform: translate(calc(-50% + 140px),-50%) scale(0.72) rotateY(-18deg); }
-      .pj-slide.pj-l2 { transform: translate(calc(-50% - 215px),-50%) scale(0.5) rotateY(28deg); }
-      .pj-slide.pj-r2 { transform: translate(calc(-50% + 215px),-50%) scale(0.5) rotateY(-28deg); }
-
-      .pcard-body { padding: 10px 8px; gap: 6px; }
-      .pcard-stats-left { width: 56px; gap: 4px; }
-      .pcard-stat { padding: 4px 3px; }
-      .pcard-lbl { font-size: 6.5px; }
-      .pcard-val { font-size: 15px; }
-      .pcard-nombre { font-size: 11px; }
-    }
   `;
   document.head.appendChild(style);
 })();
@@ -317,12 +139,12 @@ function crearCarrusel(containerId, cardsHTML, statsArr) {
   const total = cardsHTML.length;
 
   const slidesHTML = cardsHTML.map((html, i) => `<div class="pj-slide" data-idx="${i}">${html}</div>`).join('');
-  const dotsHTML = cardsHTML.map((_, i) => `<div class="pj-dot${i===0?' pj-on':''}" data-idx="${i}"></div>`).join('');
+  const dotsHTML = cardsHTML.map((_, i) => `<button type="button" aria-label="Ver jugador ${i+1}" class="pj-dot${i===0?' pj-on':''}" data-idx="${i}"></button>`).join('');
 
   wrap.innerHTML = `
     <div class="pj-carrusel-wrap">
       ${slidesHTML}
-      ${total > 1 ? `<div class="pj-flecha pj-fl">&#8592;</div><div class="pj-flecha pj-fr">&#8594;</div>` : ''}
+      ${total > 1 ? `<button type="button" class="pj-flecha pj-fl" aria-label="Jugador anterior">&#8592;</button><button type="button" class="pj-flecha pj-fr" aria-label="Siguiente jugador">&#8594;</button>` : ''}
     </div>
     ${total > 1 ? `<div class="pj-dots">${dotsHTML}</div>` : ''}
   `;
@@ -333,6 +155,7 @@ function crearCarrusel(containerId, cardsHTML, statsArr) {
   function actualizar() {
     slides.forEach((slide, i) => {
       slide.className = 'pj-slide';
+      slide.inert = i !== activo;
       const diff = ((i - activo) % total + total) % total;
       let cls = '';
       if (diff === 0) cls = 'pj-c';
@@ -351,6 +174,10 @@ function crearCarrusel(containerId, cardsHTML, statsArr) {
   }
 
   slides.forEach((slide, i) => {
+    slide.querySelector('.pcard-ver-ficha').addEventListener('click', e => {
+      e.stopPropagation();
+      abrirFotoCompleta(slide.querySelector('.pcard-foto-grande').src, statsArr && statsArr[i]);
+    });
     slide.addEventListener('click', e => {
       if (!slide.classList.contains('pj-c')) {
         activo = i;
@@ -396,13 +223,21 @@ function abrirFotoCompleta(src, stats) {
     overlay.id = 'foto-lightbox-overlay';
     overlay.className = 'foto-lightbox-overlay';
     overlay.innerHTML = `
-      <div class="foto-lightbox-cerrar">&times;</div>
+      <button type="button" class="foto-lightbox-cerrar" aria-label="Cerrar ficha">&times;</button>
       <div class="foto-lightbox-wrap" id="foto-lightbox-wrap">
         <img class="foto-lightbox-img" id="foto-lightbox-img">
         <div class="foto-lightbox-stats" id="foto-lightbox-stats"></div>
       </div>
     `;
-    overlay.addEventListener('click', () => overlay.classList.remove('activo'));
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-label','Ficha del jugador');
+    const cerrar = () => { overlay.classList.remove('activo'); if (overlay.returnFocus) overlay.returnFocus.focus(); };
+    overlay.addEventListener('click', e => { if (e.target === overlay || e.target.closest('.foto-lightbox-cerrar')) cerrar(); });
+    overlay.addEventListener('keydown', e => {
+      if (e.key === 'Escape') cerrar();
+      if (e.key === 'Tab') { e.preventDefault(); overlay.querySelector('button').focus(); }
+    });
     document.body.appendChild(overlay);
   }
   document.getElementById('foto-lightbox-img').src = src;
@@ -418,7 +253,9 @@ function abrirFotoCompleta(src, stats) {
     box.innerHTML = '';
     wrap.classList.remove('con-stats');
   }
+  overlay.returnFocus = document.activeElement;
   overlay.classList.add('activo');
+  overlay.querySelector('button').focus();
 }
 
 async function cargarJugadores() {
@@ -511,7 +348,7 @@ async function cargarJugadores() {
 
   // Estadisticas que se ven al dar doble clic a la tarjeta
   const statsGolArr = goleadores.map(j => statsFicha(j, [
-    { l: '⚽ GOLES', v: golesMap[j.id] || 0 }, { l: '🎯 ASIST', v: asistMap[j.id] || 0 },
+    { l: '⚽ GOLES', v: golesMap[j.id] || 0 }, { l: 'Asistencia', v: asistMap[j.id] || 0 },
     { l: '🟡 AMARILLAS', v: amarillasMap[j.id] || 0 }, { l: '🔴 ROJAS', v: rojasMap[j.id] || 0 }
   ]));
   const statsPortArr = porteros.map(j => statsFicha(j, [
@@ -543,6 +380,20 @@ async function cargarJugadores() {
   crearCarrusel('carrusel-goleadores', htmlGolArr, statsGolArr);
   crearCarrusel('carrusel-porteros', htmlPortArr, statsPortArr);
 
+  const tabs = document.querySelectorAll('[data-jugadores-tab]');
+  let tabActual = 'goleadores';
+  function mostrarTab(nombre) {
+    tabActual = nombre;
+    tabs.forEach(b => b.setAttribute('aria-selected', String(b.dataset.jugadoresTab === nombre)));
+    document.getElementById('filtro-equipo').hidden = nombre !== 'equipo';
+    document.getElementById('tops-section').style.display = nombre === 'equipo' ? 'none' : 'block';
+    document.getElementById('carrusel-goleadores').parentElement.hidden = nombre !== 'goleadores';
+    document.getElementById('carrusel-porteros').parentElement.hidden = nombre !== 'porteros';
+    document.getElementById('equipo-jugadores-section').style.display = nombre === 'equipo' && document.getElementById('selector-equipo-jugador').value ? 'block' : 'none';
+  }
+  tabs.forEach(b => b.addEventListener('click', () => mostrarTab(b.dataset.jugadoresTab)));
+  mostrarTab(tabActual);
+
   // Selector equipo
   const selector = document.getElementById("selector-equipo-jugador");
   Object.entries(equiposID).forEach(([id, nombre]) => {
@@ -555,7 +406,7 @@ async function cargarJugadores() {
     const equipoSection = document.getElementById("equipo-jugadores-section");
 
     if (!equipoID) {
-      tops.style.display = 'block';
+      tops.style.display = 'none';
       equipoSection.style.display = 'none';
       return;
     }
@@ -596,3 +447,4 @@ async function cargarJugadores() {
 }
 
 cargarJugadores();
+
