@@ -313,13 +313,10 @@ async function crearJugador(t,i){
   elbow.rotation.x=-.18;codos.push(elbow);return shoulder;
  }
  const brazoI=brazo(-1),brazoD=brazo(1);
- // Cabeza, mandíbula, orejas y rasgos; todo comparte la articulación del cuello.
+ // Cabeza con rostro liso, mandíbula y orejas; comparte la articulación del cuello.
  const cabeza=new THREE.Group();cabeza.position.set(0,2.30,0);g.add(cabeza);
  volumen(cabeza,piel,0,.04,0,.175,.225,.172);volumen(cabeza,piel,0,-.09,.025,.138,.115,.14);
- volumen(cabeza,piel,-.18,.025,0,.035,.06,.028);volumen(cabeza,piel,.18,.025,0,.035,.06,.028);volumen(cabeza,piel,0,.005,.174,.034,.058,.045);
- const blanco=new THREE.MeshStandardMaterial({color:0xf0eee1,roughness:.6}),negro=new THREE.MeshStandardMaterial({color:0x25231e,roughness:.8});
- for(const sign of [-1,1]){volumen(cabeza,blanco,sign*.069,.055,.156,.038,.019,.014);volumen(cabeza,negro,sign*.069,.055,.169,.012,.014,.006);volumen(cabeza,negro,sign*.069,.091,.157,.044,.009,.012);}
- volumen(cabeza,new THREE.MeshStandardMaterial({color:0x87503e,roughness:.9}),0,-.095,.148,.045,.009,.012);
+ volumen(cabeza,piel,-.18,.025,0,.035,.06,.028);volumen(cabeza,piel,.18,.025,0,.035,.06,.028);
  const pelo=new THREE.Group();pelo.position.set(0,2.32,0);g.add(pelo);
  const hairMat=new THREE.MeshStandardMaterial({color:[0x211c17,0x38271c,0x151719][i%3],roughness:1});
  const cap=new THREE.Mesh(new THREE.SphereGeometry(1,12,8,0,Math.PI*2,0,1.35),hairMat);cap.scale.set(.18,.235,.18);cap.position.y=.045;pelo.add(cap);
@@ -459,4 +456,5 @@ function animar(){
 </script>
 </body>
 </html>
+
 
