@@ -220,7 +220,26 @@
       .stack-id-tag { font-size: 18px; }
       .stack-bottom-row { font-size: 13px; gap: 12px; }
     }
-  </style>
+  
+.juego-numero{font-size:12px;color:#c8eaa5;margin-top:5px;line-height:1.4}.juego-detalle{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;font-size:12px;color:#ccd9c3;margin:8px 0}.stack-top-row{flex-wrap:wrap}.stack-team{min-width:0}.stack-team-name{overflow-wrap:anywhere}
+@media(max-width:600px){.controls-row{display:flex;flex-wrap:wrap}.controls-row .field-group{flex:1 1 140px;min-width:0}.stack-teams{gap:8px}.stack-team img{max-width:85px}.stack-team-name{font-size:14px}.juego-numero{font-size:11px}.stack-bottom-row{flex-wrap:wrap;gap:8px}}
+
+.juego-resumen{padding:14px 16px;background:#142c20;border:1px solid #4c713a;border-radius:12px;color:#e4f2dc;font-size:13px;line-height:1.7;margin-bottom:16px}
+#stackContainer .stack-top-row{gap:10px;justify-content:space-between;letter-spacing:1px}
+#stackContainer .stack-vuelta-tag{color:#b9df8a;font-size:13px}
+#stackContainer .juego-numero{text-align:center;color:#dfedcd;font-size:12px;line-height:1.4;margin-top:2px}
+#stackContainer .juego-detalle{line-height:1.5;text-align:center}
+@media(max-width:600px){
+ #stackContainer .stack-card-inner{padding:18px 14px}
+ #stackContainer .stack-teams{display:grid;grid-template-columns:minmax(0,1fr) 58px minmax(0,1fr);gap:8px;align-items:center}
+ #stackContainer .stack-team{width:100%;gap:5px}
+ #stackContainer .stack-team img{width:72px;height:72px;max-width:100%}
+ #stackContainer .stack-score{font-size:32px;min-width:0}
+ #stackContainer .stack-team-name{font-size:13px;text-align:center}
+ #stackContainer .stack-bottom-row{font-size:13px;gap:8px;margin-top:14px}
+ #stackContainer .confirm-lado{min-width:0}#stackContainer .confirm-lado input{font-size:16px;min-height:44px}#stackContainer .confirm-lado button{min-height:44px;font-size:11px;letter-spacing:0}
+}
+</style>
 </head>
 <body>
   <div class="nav-top">
@@ -241,18 +260,11 @@
       <div class="field-group">
         <label>Filtrar por</label>
         <select id="filterTipo" onchange="cambiarFiltro()">
-          <option value="jornada">Por Jornada</option>
           <option value="fecha">Por Fecha</option>
           <option value="equipo">Por Equipo</option>
         </select>
       </div>
-      <div class="field-group" id="groupJornada">
-        <label>Jornada</label>
-        <select id="filterJornada">
-          <option value="">— Selecciona —</option>
-        </select>
-      </div>
-      <div class="field-group" id="groupFecha" style="display:none">
+      <div class="field-group" id="groupFecha">
         <label>Fecha</label>
         <select id="filterFecha"><option value="">— Cargando... —</option></select>
       </div>
@@ -264,13 +276,15 @@
         <button class="load-btn" onclick="cargarDatos()">🔄 Cargar Datos</button>
       </div>
     </div>
-    <div class="status-msg" id="statusMsg">Selecciona jornada, fecha o equipo y presiona Cargar Datos</div>
+    <div class="status-msg" id="statusMsg">Selecciona fecha o equipo y presiona Cargar Datos</div>
   </div>
 
   <div class="stack-container" id="stackContainer">
     <div class="empty-msg">CARGA LOS DATOS PARA VER LOS PARTIDOS</div>
   </div>
 
-  <script src="partidos.js"></script>
+  <script src="juegos-control.js?v=20261031"></script>
+  <script src="partidos.js?v=20261031-juegos"></script>
 </body>
 </html>
+
