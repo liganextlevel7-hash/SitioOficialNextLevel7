@@ -134,24 +134,79 @@
 .pn-pts.pn-2 { left:20%; top:91%; font-size:11px; }
 .pn-pts.pn-3 { left:78%; top:91%; font-size:11px; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+
+/* Portada Next Level 7: estilos exclusivos de index.html. */
+body.home{--h-bg:#0c1110;--h-panel:#141b17;--h-line:#ffffff15;--h-text:#f0f4ed;--h-muted:#a9b5a5;--h-accent:#a5e963;background:var(--h-bg);color:var(--h-text);font-family:'Segoe UI',Arial,sans-serif;}
+.home *{box-sizing:border-box;}.home a:focus-visible,.home button:focus-visible{outline:3px solid var(--h-accent);outline-offset:4px;}
+.home .home-shell{max-width:1200px;margin:auto;padding:0 28px;}
+.home .home-header{padding:18px 0;border-bottom:1px solid var(--h-line);text-align:left;background:#0e1511;}
+.home .home-header-inner{display:flex;align-items:center;justify-content:space-between;gap:24px;}
+.home .home-brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--h-text);}
+.home .home-logos{display:flex;align-items:center;gap:12px;}.home .home-logos img{width:54px;height:58px;object-fit:contain;filter:none;max-width:none;}
+.home .home-brand strong{display:block;font-size:17px;letter-spacing:-.5px;}.home .home-brand small{display:block;font-size:10px;letter-spacing:2px;color:var(--h-muted);margin-top:5px;}
+.home .home-nav{display:flex;gap:24px;margin:0;align-items:center;flex-wrap:wrap;}
+.home .home-nav a{margin:0;padding:8px 0;background:none;border:0;border-radius:0;color:#c1ccba;font-size:13px;text-decoration:none;font-weight:600;box-shadow:none;}
+.home .home-nav a:hover{color:var(--h-accent);transform:none;}.home .home-nav .nav-action{padding:10px 15px;border:1px solid #a5e96366;border-radius:8px;color:var(--h-accent);}
+.home .home-hero{display:grid;grid-template-columns:1.15fr 1fr;gap:40px;align-items:center;padding-top:50px;padding-bottom:44px;}
+.home .home-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--h-accent);text-transform:uppercase;display:flex;align-items:center;gap:8px;}
+.home .home-eyebrow::before{content:'';width:22px;height:2px;background:var(--h-accent);}
+.home .home-hero h1{font-size:clamp(34px,5.4vw,64px);line-height:1.02;letter-spacing:-2.5px;color:#f2f7ee;text-shadow:none;margin:18px 0 14px;position:relative;}
+.home .home-hero h1 span{max-width:100%;}.home .titulo-palabra{display:inline-block;white-space:nowrap;}.home .hero-tagline{font-size:22px;line-height:1.3;font-weight:600;color:#b7d49d;margin:0 0 12px;letter-spacing:-.5px;}
+.home .hero-description{font-size:14px;line-height:1.7;color:var(--h-muted);max-width:410px;margin:0 0 24px;}
+.home .hero-actions{display:flex;gap:12px;flex-wrap:wrap;}.home .home-button{display:inline-flex;align-items:center;justify-content:center;gap:12px;border-radius:9px;padding:13px 18px;font-size:13px;font-weight:700;text-decoration:none;border:1px solid #ffffff28;background:transparent;color:var(--h-text);}
+.home .home-button.primary{background:var(--h-accent);color:#15220c;border-color:var(--h-accent);}.home .home-button:hover{filter:brightness(1.1);}
+.home .hero-photo{position:relative;height:300px;border-radius:18px;overflow:hidden;background:#1a301a;}
+.home .hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;}
+.home .hero-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#081408ee,transparent 80%);}
+.home .hero-photo-caption{position:absolute;bottom:24px;left:24px;z-index:1;}.home .hero-photo-caption small{font-size:10px;letter-spacing:2px;color:#c0d9b0;}.home .hero-photo-caption strong{display:block;font-size:26px;letter-spacing:-1px;margin-top:6px;}
+.home .live-strip{display:flex;align-items:center;justify-content:space-between;gap:16px;background:#282017;border:1px solid #ab833a66;border-radius:11px;padding:15px 20px;margin-bottom:24px;}.home .live-strip[hidden]{display:none;}.home .live-strip a{color:#ffda93;text-decoration:none;font-weight:700;font-size:13px;}.home .live-strip strong{font-size:14px;}.home .live-strip small{font-size:12px;color:#d2bd95;}
+.home .home-block{margin-bottom:30px;scroll-margin-top:20px;}.home .home-block-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;}
+.home .home-block-header h2{color:var(--h-text);font-size:20px;font-weight:700;letter-spacing:-.6px;margin:0;}.home .home-block-header a{font-size:12px;color:var(--h-accent);text-decoration:none;white-space:nowrap;}
+.home .home-columns{display:grid;grid-template-columns:1.15fr 1fr;gap:24px;}.home .home-surface{background:var(--h-panel);border:1px solid var(--h-line);border-radius:14px;padding:10px 20px;overflow:hidden;}
+.home .home-surface .cartel-row{padding:15px 0;gap:14px;}.home .home-surface .cartel-crest{width:40px;height:40px;}.home .home-surface .cartel-team{gap:10px;}
+.home .home-surface .cartel-name{font-size:12px;line-height:1.35;white-space:normal;overflow-wrap:anywhere;text-transform:none;letter-spacing:0;}
+.home .home-surface .cartel-center{min-width:86px;gap:4px;}.home .home-surface .cartel-fecha{font-size:11px;color:#a9b5a5;}.home .home-surface .cartel-hora{font-size:16px;}.home .home-surface .cartel-campo{font-size:11px;color:#a5e963;}.home .home-surface .cartel-marcador{font-size:21px;color:#e7f2df;}.home .home-surface .cartel-linea{display:none;}.home .home-surface .cartel-sep{border:0;border-top:1px solid var(--h-line);}
+.home .home-surface .car-cargando{font-size:13px;color:var(--h-muted);padding:35px 8px;}
+.home .ranking-row{display:grid;grid-template-columns:28px 38px 1fr auto;align-items:center;gap:12px;padding:17px 0;border-bottom:1px solid var(--h-line);font-size:14px;}.home .ranking-row:last-child{border:0;}.home .ranking-row img{width:36px;height:36px;object-fit:contain;}.home .ranking-row .rank{font-weight:800;color:#9eac97;}.home .ranking-row:first-child .rank{color:#cce995;}.home .ranking-row strong{font-weight:600;}.home .ranking-row .score{text-align:right;font-size:20px;font-weight:800;color:var(--h-accent);}.home .ranking-row small{display:block;font-size:10px;font-weight:400;color:#98a98f;margin-top:3px;}.home .ranking-row .scorer-name small{font-size:11px;}
+.home .home-shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}.home .shortcut{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:176px;border:1px solid var(--h-line);border-radius:12px;overflow:hidden;text-decoration:none;background:#19251b;padding:20px;color:#eff6e9;}
+.home .shortcut img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45;transition:transform .3s;}.home .shortcut::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#0c160bf5,transparent);}.home .shortcut strong,.home .shortcut small{position:relative;z-index:1;}.home .shortcut strong{font-size:16px;letter-spacing:-.3px;}.home .shortcut small{font-size:11px;color:#c0d2b3;margin-top:6px;}.home .shortcut:hover img{transform:scale(1.04);}
+.home .home-access-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}.home .home-access-row a{font-size:12px;padding:11px 16px;border:1px solid var(--h-line);border-radius:8px;color:#c3d2ba;text-decoration:none;background:#121a13;}
+.home .carousel-heading{margin-top:38px;border-top:1px solid var(--h-line);padding-top:26px;}.home .carousel-heading p{color:var(--h-muted);font-size:12px;margin:7px 0 0;}
+.home .carrusel-seccion{max-width:1200px;overflow:hidden;isolation:isolate;height:490px;margin:0 auto 24px;}.home .card-sec{border:1px solid #47683b;box-shadow:0 10px 30px #0004;}.home .car-hint{font-size:11px;color:#d0ddc6;}
+.home .home-footer{border-top:1px solid var(--h-line);padding:24px 0 30px;color:#99aa90;font-size:12px;}.home .home-footer .home-shell{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}.home .home-footer a{color:#bbd6a5;text-decoration:none;}
+.home .balon-container{display:none!important;}.home .titulo-letra{opacity:1;}.home .titulo-letra.animar{animation:none;}
+@media(max-width:800px){.home .home-header-inner{flex-direction:column;align-items:flex-start;gap:15px;}.home .home-nav{gap:18px;}.home .home-hero{gap:24px;}.home .hero-photo{height:280px;}.home .home-shortcuts{grid-template-columns:repeat(2,1fr);}.home .home-columns{grid-template-columns:1fr;gap:0;}}
+@media(max-width:540px){.home .home-shell{padding-left:18px;padding-right:18px;}.home .home-nav{gap:14px;}.home .home-nav a{font-size:12px;}.home .home-hero{grid-template-columns:1fr;padding-top:30px;padding-bottom:30px;}.home .home-hero h1{font-size:44px;letter-spacing:-2px;}.home .hero-tagline{font-size:20px;}.home .hero-photo{height:210px;}.home .home-logos img{width:44px;height:48px;}.home .home-surface{padding:7px 12px;}.home .home-surface .cartel-row{gap:7px;}.home .home-surface .cartel-crest{width:29px;height:29px;}.home .home-surface .cartel-team{gap:6px;}.home .home-surface .cartel-center{min-width:73px;}.home .home-surface .cartel-name{font-size:12px;}.home .home-block-header h2{font-size:19px;}.home .shortcut{min-height:155px;padding:16px;}.home .home-shortcuts{gap:10px;}.home .shortcut strong{font-size:15px;}.home .live-strip{align-items:flex-start;flex-direction:column;}.home .carrusel-seccion{height:485px;}.home .ranking-row{font-size:13px;gap:9px;}}
+@media(prefers-reduced-motion:reduce){.home *{scroll-behavior:auto!important;animation:none!important;transition:none!important;}}
+
 </style>
 </head>
-<body>
-<header>
-  <div style="display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;">
-    <img src="logo-liga.png.png" class="logo-liga">
-    <img src="laregionallstars.png" class="logo-liga">
-  </div>
-  <h1 style="position:relative;display:inline-block;">
-    <div class="balon-container" id="balon-wrap">
-      <div class="balon-emoji">⚽</div>
-      <div class="balon-sombra"></div>
-    </div>
-    <span id="titulo-letras"></span>
-  </h1>
-  <p class="subtitulo">Torneo Dominical</p>
-</header>
-
+<body class="home">
+<header class="home-header"><div class="home-shell home-header-inner">
+ <a class="home-brand" href="index.html" aria-label="Next Level 7, inicio"><span class="home-logos"><img src="logo-liga.png.png" alt="Liga Next Level 7"><img src="laregionallstars.png" alt="La Región All Stars"></span><span><strong>Next Level 7</strong><small>TORNEO DOMINICAL</small></span></a>
+ <nav class="home-nav" aria-label="Navegación principal"><a href="partidos.html">Partidos</a><a href="tablaGeneral.html">Posiciones</a><a href="jugadores.html">Goleadores</a><a class="nav-action" href="registro-jugadores.html">Registrar jugadores ↗</a></nav>
+</div></header>
+<main>
+<section class="home-shell home-hero" aria-labelledby="hero-title"><div>
+ <div class="home-eyebrow">Fútbol 7 · Torneo Dominical</div>
+ <h1 id="hero-title"><div class="balon-container" id="balon-wrap" aria-hidden="true"><div class="balon-emoji">⚽</div><div class="balon-sombra"></div></div><span id="titulo-letras"></span></h1>
+ <p class="hero-tagline">El domingo se juega aquí.</p><p class="hero-description">Sigue a tu equipo, consulta los encuentros y vive cada partido de nuestra liga.</p>
+ <div class="hero-actions"><a href="#proximos" class="home-button primary">Próximos partidos <span aria-hidden="true">↗</span></a><a href="tablaGeneral.html" class="home-button">Ver posiciones</a></div>
+</div><div class="hero-photo"><img src="fondodominical.png" alt="Torneo Dominical Next Level 7"><div class="hero-photo-caption"><small>NUESTRA CANCHA. NUESTRA LIGA.</small><strong>La pasión nos reúne.</strong></div></div></section>
+<div class="home-shell">
+ <aside class="live-strip" id="home-live" hidden><div><strong>● Estamos en vivo</strong><br><small>Sigue la transmisión de la cancha.</small></div><a href="envivo-publico.html">Ver transmisión →</a></aside>
+ <div class="home-columns"><section class="home-block" id="proximos"><div class="home-block-header"><h2>Próximos partidos</h2><a href="partidos.html">Ver todos →</a></div><div class="home-surface" id="home-proxima"><div class="car-cargando">Cargando encuentros…</div></div></section>
+ <section class="home-block"><div class="home-block-header"><h2>Últimos resultados</h2><a href="partidos.html">Ver resultados →</a></div><div class="home-surface" id="home-resultados"><div class="car-cargando">Cargando resultados…</div></div></section></div>
+ <div class="home-columns"><section class="home-block"><div class="home-block-header"><h2>En lo más alto</h2><a href="tablaGeneral.html">Tabla completa →</a></div><div class="home-surface" id="home-tabla"><div class="car-cargando">Cargando posiciones…</div></div></section>
+ <section class="home-block"><div class="home-block-header"><h2>Goleadores de la liga</h2><a href="jugadores.html">Ver jugadores →</a></div><div class="home-surface" id="home-goles"><div class="car-cargando">Cargando goleadores…</div></div></section></div>
+ <section class="home-block"><div class="home-block-header"><h2>Todo lo que nos une</h2></div><div class="home-shortcuts">
+ <a class="shortcut" href="equipos.html"><img src="equipos.png" loading="lazy" alt=""><strong>Nuestros equipos ↗</strong><small>Los protagonistas de la liga</small></a>
+ <a class="shortcut" href="liguilla.html"><img src="liguilla.png" loading="lazy" alt=""><strong>La liguilla ↗</strong><small>El camino al campeonato</small></a>
+ <a class="shortcut" href="familia-futbolera.html"><img src="Red-Social-Next-Leve-en-la-Cancha.png" loading="lazy" alt=""><strong>Familia futbolera ↗</strong><small>La comunidad dentro y fuera de la cancha</small></a>
+ <a class="shortcut" href="radio.html"><img src="fondoradio.png" loading="lazy" alt=""><strong>Radio Next Level 7 ↗</strong><small>Narración y música de nuestra liga</small></a>
+ </div><div class="home-access-row"><a href="registro-jugadores.html">Registro de jugadores →</a><a href="envivo-publico.html">Transmisiones →</a></div></section>
+ <div class="home-block-header carousel-heading"><div><h2>Explora la liga</h2><p>Recorre las tarjetas con las flechas. Doble clic en una tarjeta para entrar.</p></div></div>
+</div>
 <div class="carrusel-seccion" id="carrusel-wrap">
 
   <div class="card-sec c-tabla" id="ccard-0" data-link="tablaGeneral.html">
@@ -274,17 +329,21 @@
   <div class="car-dots" id="car-dots"></div>
 </div>
 
+</main>
+<footer class="home-footer"><div class="home-shell"><span>Liga Next Level 7 · Torneo Dominical</span><a href="nextlevelenvivo.html">Administración de transmisiones →</a></div></footer>
 <script>
+function homeEsc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 const palabras = ['LIGA', 'NEXT', 'LEVEL', '7'];
 const letrasEl = document.getElementById('titulo-letras');
 let letraIEl = null;
 let totalLetras = 0;
 palabras.forEach((palabra, pi) => {
   if (pi > 0) { const esp = document.createElement('span'); esp.className = 'titulo-espacio'; letrasEl.appendChild(esp); }
+  const palabraEl=document.createElement('span'); palabraEl.className='titulo-palabra'; letrasEl.appendChild(palabraEl);
   palabra.split('').forEach((ch, ci) => {
     const span = document.createElement('span'); span.className = 'titulo-letra'; span.textContent = ch; span.dataset.idx = totalLetras;
     if (pi === 0 && ch === 'I' && !letraIEl) letraIEl = span;
-    letrasEl.appendChild(span); totalLetras++;
+    palabraEl.appendChild(span); totalLetras++;
   });
 });
 let delay = 300;
@@ -365,6 +424,8 @@ async function cargarCarrusel() {
     for(let i=1;i<filasE.length;i++){ const c=filasE[i].split(','); const n=(c[1]||'').trim(); if(n==='Descansa'||!n||carBajas.has(n)) continue; equipos.push({ranking:Number(c[10])||999,nombre:n,pts:Number(c[9])||0}); }
     equipos.sort((a,b)=>a.ranking-b.ranking);
     const top3eq = equipos.slice(0,3);
+    document.getElementById('home-tabla').innerHTML=top3eq.map((e,i)=>`<div class="ranking-row"><span class="rank">${i+1}</span><img src="${carLogos[e.nombre]||''}" alt="" onerror="this.style.visibility='hidden'"><strong>${homeEsc(e.nombre)}</strong><span class="score">${e.pts}<small>PUNTOS</small></span></div>`).join('')||'<div class="car-cargando">Sin datos</div>';
+
     let htmlTabla='';
     if (top3eq.length) {
       const claves = ['pn-1','pn-2','pn-3'];
@@ -423,6 +484,8 @@ async function cargarCarrusel() {
     function iniciarRotacionCartel(containerId, filas, tipo, equipoDescansa){
       const cont = document.getElementById(containerId);
       if(!cont) return;
+      const portada=document.getElementById(containerId==='car-proxima'?'home-proxima':'home-resultados');
+      if(portada) portada.innerHTML=filas.length ? filas.map((p,i)=>filaHTML(p,tipo)+(i<filas.length-1?'<hr class="cartel-sep">':'')).join('') : '<div class="car-cargando">Sin datos</div>';
       if(window.carruselesActivos[containerId]) clearInterval(window.carruselesActivos[containerId]);
       if(!filas.length){
         cont.innerHTML = '<div class="car-cargando">Sin datos</div>';
@@ -467,7 +530,7 @@ async function cargarCarrusel() {
       const filasFu = jugConFecha.filter(p=>fechaNum(p.fecha)===fu);
       iniciarRotacionCartel('car-resultados', filasFu, 'resultado', calcularEquipoDescansaIndex(filasFu));
     } else {
-      document.getElementById('car-resultados').innerHTML = '<div class="car-cargando">Sin resultados</div>';
+      document.getElementById('car-resultados').innerHTML = document.getElementById('home-resultados').innerHTML = '<div class="car-cargando">Sin resultados</div>';
     }
 
     // PRÓXIMA JORNADA: partidos con Estado = Programado de la fecha MÁS CERCANA (hoy o futura).
@@ -488,7 +551,7 @@ async function cargarCarrusel() {
       });
       iniciarRotacionCartel('car-proxima', filasFp, 'proxima', calcularEquipoDescansaIndex(filasFp));
     } else {
-      document.getElementById('car-proxima').innerHTML = '<div class="car-cargando">Sin partidos programados</div>';
+      document.getElementById('car-proxima').innerHTML = document.getElementById('home-proxima').innerHTML = '<div class="car-cargando">Sin partidos programados</div>';
     }
 
     const jugadores=carParseCSV(tJ), eventos=carParseCSV(tEv), partic=carParseCSV(tPart);
@@ -499,6 +562,7 @@ async function cargarCarrusel() {
     filasP.slice(1).forEach(line => { const c = line.split(','); if ((c[6]||'').trim() === 'Jugado' && c[1]) jornadasJugadas.add(c[1].trim()); });
     const totalJornadas = jornadasJugadas.size || 1;
     const top3=jugadores.filter(j=>golMap[j.ID_Jugador]>0&&!carBajasID.has(Number(j.Equipo))).map(j=>({nombre:j.Nombre||'',equipoID:Number(j.Equipo),numero:j.Numero||'-',goles:golMap[j.ID_Jugador]||0,partidosJugados:partMap[j.ID_Jugador]||0})).sort((a,b)=>b.goles-a.goles).slice(0,3);
+    document.getElementById('home-goles').innerHTML=top3.map((j,i)=>`<div class="ranking-row"><span class="rank">${i+1}</span><img src="${carLogosID[j.equipoID]||''}" alt="" onerror="this.style.visibility='hidden'"><strong class="scorer-name">${homeEsc(j.nombre)}<small>${homeEsc(carEqID[j.equipoID]||'')}</small></strong><span class="score">${j.goles}<small>${j.goles===1?'GOL':'GOLES'}</small></span></div>`).join('')||'<div class="car-cargando">Sin goles aún</div>';
     let htmlGoles='';
     if(top3.length){
       // orden en la foto: 2° a la izquierda, 1° al centro, 3° a la derecha
@@ -576,6 +640,7 @@ cargarCarrusel();
       fetch(FB+'/transmision/cancha2.json').then(function(r){return r.ok?r.json():null;}).catch(function(){return null;})
     ]).then(function(res){
       var activa = res.some(function(d){return d&&d.activo===true;});
+      document.getElementById('home-live').hidden=!activa;
       document.getElementById('envivo-publico').style.display = activa?'block':'none';
       document.getElementById('envivo-offline').style.display = activa?'none':'block';
       document.getElementById('envivo-badge').style.display   = activa?'block':'none';
@@ -602,3 +667,4 @@ cargarCarrusel();
 </script>
 </body>
 </html>
+
