@@ -63,15 +63,58 @@ body.sel #card{display:block}
  body.sel #btnT{display:none}
  #ayuda{display:none}
 }
+
+/* Estadio nocturno y paneles: cambios de presentación y controles de cámara. */
+:root{--lime:#9fe751;--gold:#e0bb58;--ink:#071019;--panel:rgba(8,20,34,.94);--line:rgba(159,231,81,.23)}
+#top{left:22px;top:calc(20px + env(safe-area-inset-top,0px));max-width:calc(100% - 330px);}
+#top h1{font-size:32px;letter-spacing:1.5px;color:#edf5e7;}#top p{color:#a7bea0;font-size:12px;line-height:1.5;max-width:440px;}
+.panel{background:linear-gradient(150deg,rgba(16,32,50,.96),rgba(7,18,30,.94));border:1px solid #a4cc6f33;border-radius:17px;box-shadow:0 16px 48px #0005;}
+#tabla{top:calc(100px + env(safe-area-inset-top,0px));left:20px;bottom:65px;width:260px;}
+#tabla h2{font-size:23px;color:#e2eacb;letter-spacing:1px;padding:16px 16px 10px;border-bottom:1px solid #ffffff0c;}
+#lista{padding:7px 8px 12px;scrollbar-width:thin;scrollbar-color:#4b683a transparent;}
+#lista li{padding:9px 8px;min-height:43px;gap:9px;font-size:12px;border-bottom:1px solid #ffffff06;}
+#lista li.on{background:#9fe75118;outline:1px solid #9fe75166;}
+#lista .n{font-weight:700;width:22px;height:22px;display:grid;place-items:center;flex-shrink:0;font-size:11px;border-radius:50%;background:#ffffff09;color:#bccdb0;}
+#lista li:nth-child(1) .n{background:#e0bb58;color:#30250c;}#lista li:nth-child(2) .n{background:#c3c8ce;color:#18212a;}#lista li:nth-child(3) .n{background:#b97a42;color:#fff;}
+#lista li:nth-child(n+4):nth-child(-n+8){border-left:2px solid #91c45a55;}#lista li:nth-child(9){border-top:1px solid #b0cb7c55;}
+#lista img{width:30px;height:30px;}#lista em{font-size:22px;color:#b9e585;}
+#card{top:calc(100px + env(safe-area-inset-top,0px));right:20px;width:310px;max-height:calc(100dvh - 180px);padding:20px 16px 16px;}
+#card .cab{padding-right:20px;gap:12px;}#card .cab img.esc{width:64px;height:64px;flex-shrink:0;}#card h2{font-size:27px;letter-spacing:.7px;overflow-wrap:anywhere;}
+#card .desc{font-size:12px;color:#c4cdab;}#card .pos{font-size:11px;color:#a7bea0;line-height:1.5;margin-top:5px;}
+#x{color:#bfd0b3;background:#ffffff08;border-radius:50%;width:32px;height:32px;padding:0;right:9px;top:9px;}
+.pts{margin:16px 0 10px;padding:12px;background:#a5df6010;border:1px solid #a5df6026;border-radius:11px;}.pts b{font-size:56px;color:#b8ef79;}.pts span{font-size:12px;color:#bfd2b1;}
+.grid{gap:6px;}.grid div{padding:9px 4px;background:#ffffff04;border:1px solid #ffffff08;}.grid b{font-size:24px;}.grid span{font-size:10px;color:#abc09b;}
+.forma{font-size:11px;gap:6px;margin-top:12px;flex-wrap:wrap;}.forma i{width:24px;height:24px;font-size:11px;}.prox{font-size:12px;color:#c3d1b8;line-height:1.6;margin-top:12px;border-top:1px solid #ffffff12;padding-top:12px;}.prox img{height:40px;max-width:64px;object-fit:contain;}
+#nav{top:calc(20px + env(safe-area-inset-top,0px));right:20px;}.nb{border-radius:9px;padding:9px 12px;font-size:12px;background:#0c1c2cee;}.nb svg{height:22px;}
+#camera-controls{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:20px;display:flex;gap:6px;z-index:4;}
+.camera-btn{border:1px solid #a4cc6f44;border-radius:10px;min-height:42px;min-width:42px;padding:9px 13px;background:#0d1e2ef2;color:#deedce;font:700 12px Roboto,Arial;cursor:pointer;box-shadow:0 5px 20px #0004;}.camera-btn:hover{background:#283d1a;}
+#ayuda{bottom:26px;font-size:11px;color:#a6c29a;}
+#btnT{z-index:4;}button:focus-visible,.nb:focus-visible,#lista li:focus-visible{outline:2px solid #e0bb58;outline-offset:3px;}
+#msg{background:radial-gradient(ellipse,#15301d,#071019 65%);color:#b2e47e;font-size:24px;letter-spacing:1px;}
+@media(max-width:1000px) and (min-width:761px){#ayuda{left:auto;right:20px;transform:none;}#card{width:280px;}#tabla{width:225px;}}
+@media(max-width:760px){
+ #top{left:14px;top:calc(14px + env(safe-area-inset-top,0px));max-width:calc(100% - 125px);}#top h1{font-size:24px;letter-spacing:1px;}#top p{font-size:11px;line-height:1.35;margin-top:5px;}
+ #nav{left:14px;right:auto;top:calc(85px + env(safe-area-inset-top,0px));gap:6px;}.nb{padding:7px 10px;font-size:11px;min-height:38px;}.nb svg{height:20px;}
+ #btnT{top:calc(15px + env(safe-area-inset-top,0px));right:12px;font-size:12px;padding:10px 12px;border-radius:9px;min-height:40px;background:#142b25;color:#d5efaf;}
+ #tabla{left:8px;right:8px;top:auto;bottom:calc(64px + env(safe-area-inset-bottom,0px));height:45dvh;width:auto;}
+ #card{left:8px;right:8px;top:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:auto;max-height:39dvh;padding:13px 12px;overscroll-behavior:contain;border-radius:16px;}
+ #card .cab{gap:9px;min-height:44px;}#card .cab img.esc{width:43px;height:43px;}#card h2{font-size:22px;}#card .desc{font-size:11px;margin-top:2px;}#card .pos{font-size:10px;margin-top:2px;}
+ .pts{position:absolute;right:47px;top:13px;margin:0;padding:5px 9px;display:block;border-radius:8px;}.pts b{font-size:30px;display:block;text-align:center;}.pts span{font-size:9px;display:block;text-align:center;}#card .cab{padding-right:106px;}
+ .grid{margin-top:10px;gap:5px;grid-template-columns:repeat(4,1fr);}.grid div{padding:6px 3px;}.grid b{font-size:21px;}.grid span{font-size:10px;}.forma{margin-top:9px;}.forma i{height:21px;width:21px;}.prox{margin-top:9px;padding-top:8px;font-size:11px;}
+ #camera-controls{left:auto;right:12px;top:calc(85px + env(safe-area-inset-top,0px));bottom:auto;gap:4px;}.camera-btn{min-height:38px;min-width:34px;padding:8px;font-size:11px;}.camera-btn .long{display:none;}
+}
+@media(max-width:380px){#top h1{font-size:21px;}#card h2{font-size:20px;}.nb{padding:7px 8px;gap:5px;}.camera-btn{padding:7px;min-width:32px;}}
+
 </style>
 </head>
 <body>
 <div id="msg">Cargando la liga…</div>
-<div id="top"><h1>Liga Next Level 7</h1><p>Dashboard 3D · toca un jugador para ver las estadísticas de su equipo</p></div>
+<div id="top"><h1>Liga Next Level 7</h1><p>Cada jugador representa un equipo. Tócalo para ver sus estadísticas.</p></div>
 <nav id="nav"><a class="nb" href="tablaGeneral.html" title="Volver a la tabla general"><svg viewBox="0 0 32 40" aria-hidden="true"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg><span class="l">← Tabla general</span><span class="c">← Tabla</span></a><a class="nb" href="index.html" title="Ir al inicio del portal"><span aria-hidden="true">🏠</span><span>Inicio</span></a></nav>
 <button id="btnT">Clasificación</button>
 <aside id="tabla" class="panel"><h2>Clasificación</h2><ul id="lista"></ul></aside>
 <aside id="card" class="panel"></aside>
+<div id="camera-controls" aria-label="Controles de cámara"><button type="button" class="camera-btn" onclick="vistaGeneral()" aria-label="Volver a la vista general">↺ <span class="long">Vista general</span></button><button type="button" class="camera-btn" onclick="zoomCamara(-1)" aria-label="Acercar">+</button><button type="button" class="camera-btn" onclick="zoomCamara(1)" aria-label="Alejar">−</button></div>
 <div id="ayuda">Arrastra para girar · rueda o pellizco para acercar</div>
 <script>
 const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?single=true&output=csv&gid=';
@@ -121,19 +164,20 @@ function proximo(id){
 
 /* ---------- escena ---------- */
 const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<=760?1.5:2));renderer.setSize(innerWidth,innerHeight);
 renderer.outputEncoding=THREE.sRGBEncoding;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 document.body.prepend(renderer.domElement);
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x06130a);scene.fog=new THREE.Fog(0x06130a,70,190);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x06101c);scene.fog=new THREE.Fog(0x06101c,65,185);
 const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.5,400);
-scene.add(new THREE.HemisphereLight(0xbfe8c0,0x0a1d10,.85));
-const sun=new THREE.DirectionalLight(0xfff4d6,.95);sun.position.set(-25,50,20);sun.castShadow=true;
-sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-45,right:45,top:35,bottom:-35,near:10,far:120});scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xc5e1ff,0x112410,.65));
+const sun=new THREE.DirectionalLight(0xfff4d6,.8);sun.position.set(-25,50,20);sun.castShadow=true;
+const shadowSize=innerWidth<=760?512:1024;sun.shadow.mapSize.set(shadowSize,shadowSize);Object.assign(sun.shadow.camera,{left:-45,right:45,top:35,bottom:-35,near:10,far:120});scene.add(sun);
 
 const PW=74,PH=48.6;
 function campoTex(){
   const c=document.createElement('canvas');c.width=1400;c.height=920;const x=c.getContext('2d');
-  for(let i=0;i<14;i++){x.fillStyle=i%2?'#2a7a2d':'#348a3a';x.fillRect(i*100,0,100,920)}
+  for(let i=0;i<14;i++){x.fillStyle=i%2?'#246531':'#2c7839';x.fillRect(i*100,0,100,920)}
+  for(let n=0;n<6500;n++){x.fillStyle=n%2?'rgba(255,255,255,.035)':'rgba(0,0,0,.05)';x.fillRect(Math.random()*1400,Math.random()*920,1,3)}
   x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#fff';x.lineWidth=5;const m=40;
   x.strokeRect(m,m,1400-2*m,920-2*m);x.beginPath();x.moveTo(700,m);x.lineTo(700,880);x.stroke();
   x.beginPath();x.arc(700,460,95,0,7);x.stroke();x.beginPath();x.arc(700,460,6,0,7);x.fill();
@@ -171,10 +215,18 @@ function grada(w,x,z,rot){
   g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);
 }
 grada(78,0,-PH/2-3.5,0);grada(78,0,PH/2+3.5,Math.PI);grada(52,-PW/2-4.5,0,Math.PI/2);grada(52,PW/2+4.5,0,-Math.PI/2);
+let haloTex=null;
+function haloTextura(){
+ if(haloTex)return haloTex;
+ const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+ const grad=x.createRadialGradient(64,64,0,64,64,64);grad.addColorStop(0,'rgba(220,240,255,1)');grad.addColorStop(.2,'rgba(180,220,255,.5)');grad.addColorStop(1,'rgba(140,190,255,0)');x.fillStyle=grad;x.fillRect(0,0,128,128);haloTex=new THREE.CanvasTexture(c);return haloTex;
+}
 [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([a,b])=>{
   const g=new THREE.Group();const p=new THREE.Mesh(new THREE.CylinderGeometry(.3,.45,16),new THREE.MeshStandardMaterial({color:0x333c36}));p.position.y=8;g.add(p);
   const l=new THREE.Mesh(new THREE.BoxGeometry(5,1.6,.5),new THREE.MeshBasicMaterial({color:0xfff2c0}));l.position.y=16.4;l.lookAt(0,10,0);g.add(l);
   g.position.set(a*(PW/2+9),0,b*(PH/2+9));scene.add(g);
+  const luz=new THREE.PointLight(0xd8edff,.6,95,2);luz.position.set(a*(PW/2+4),15,b*(PH/2+4));scene.add(luz);
+  const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:haloTextura(),transparent:true,opacity:.42,depthWrite:false,blending:THREE.AdditiveBlending}));halo.position.copy(g.position);halo.position.y=16.4;halo.scale.set(9,5,1);scene.add(halo);
 });
 
 /* ---------- jugadores ---------- */
@@ -192,7 +244,7 @@ function promedio(tex,def){
 }
 function placa(txt){
   const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');
-  x.font='bold 54px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.lineWidth=10;x.strokeStyle='#04100a';x.strokeText(txt,256,50);x.fillStyle='#fff';x.fillText(txt,256,50);
+  let labelSize=54;while(labelSize>26){x.font='bold '+labelSize+'px Roboto,Arial';if(x.measureText(txt).width<=488)break;labelSize-=2;}x.textAlign='center';x.textBaseline='middle';x.lineWidth=10;x.strokeStyle='#04100a';x.strokeText(txt,256,50);x.fillStyle='#fff';x.fillText(txt,256,50);
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.scale.set(4.6,.86,1);return s;
 }
 /* camiseta que cubre todo el torso (frente y espalda) */
@@ -253,6 +305,7 @@ function tocar(x,y){
 function elegir(j){
   sel=j;document.body.classList.toggle('sel',!!j);aro.visible=!!j;
   document.querySelectorAll('#lista li').forEach(li=>li.classList.toggle('on',!!j&&li.dataset.id==j.t.id));
+  ajustarEncuadre();
   if(!j){goal.d=Math.max(goal.d,60);goal.obj.set(0,0,0);return}
   goal.d=17;goal.ph=Math.min(goal.ph,1.1);
   const t=j.t,s=S[t.id],pos=orden.indexOf(t)+1;
@@ -269,11 +322,18 @@ function elegir(j){
   $('x').onclick=()=>elegir(null);
 }
 function lista(){
-  $('lista').innerHTML=orden.map((t,i)=>`<li data-id="${t.id}"><span class="n">${i+1}</span>${t.URL?`<img src="${esc(t.URL)}" alt="">`:'<span style="width:26px"></span>'}<b>${esc(t.Nombre)}</b><em>${S[t.id].pts}</em></li>`).join('');
-  document.querySelectorAll('#lista li').forEach(li=>li.onclick=()=>{const j=jugadores.find(x=>x.t.id==li.dataset.id);if(j){elegir(j);document.body.classList.remove('tab')}});
+  $('lista').innerHTML=orden.map((t,i)=>`<li data-id="${t.id}" role="button" tabindex="0"><span class="n">${i+1}</span>${t.URL?`<img src="${esc(t.URL)}" alt="">`:'<span style="width:26px"></span>'}<b>${esc(t.Nombre)}</b><em>${S[t.id].pts}</em></li>`).join('');
+  document.querySelectorAll('#lista li').forEach(li=>{li.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();li.click()}};li.onclick=()=>{const j=jugadores.find(x=>x.t.id==li.dataset.id);if(j){elegir(j);document.body.classList.remove('tab')}};});
+}
+function vistaGeneral(){elegir(null);document.body.classList.remove('tab');goal.th=.6;goal.ph=.95;goal.d=78;goal.obj.set(0,0,0);idle=0;}
+function zoomCamara(dir){goal.d=Math.min(110,Math.max(9,goal.d*(dir<0?.84:1.19)));idle=0;}
+function ajustarEncuadre(){
+ if(innerWidth<=760&&sel)camera.setViewOffset(innerWidth,innerHeight,0,Math.round(innerHeight*.16),innerWidth,innerHeight);
+ else camera.clearViewOffset();
+ camera.updateProjectionMatrix();
 }
 $('btnT').onclick=()=>document.body.classList.toggle('tab');
-addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()});
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;ajustarEncuadre()});
 
 /* ---------- animación ---------- */
 /* ánimo del equipo seleccionado según su puesto: 1.º invicto = jubiloso, 2.º-8.º = contento (liguilla), 9.º+ = cabizbajo */
@@ -340,3 +400,4 @@ function animar(){
 </script>
 </body>
 </html>
+
