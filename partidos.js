@@ -53,7 +53,7 @@ async function confirmarAsistencia(idPartido, lado, idEquipo, nombreEquipo) {
     renderStack(ultimosFiltrados);
 
     const partido = todosPartidos.find(p => String(p['ID_Partido']) === String(idPartido));
-    const jornadaTxt = partido?.Jornada ? `Jornada ${partido.Jornada}` : '';
+    const jornadaTxt = partido ? `${NL7Juegos.meta(partido)} · ${partido.Fecha || 'Sin fecha'}` : '';
     avisarWhatsApp(`✅ Confirmación de asistencia\nEquipo: ${nombreEquipo}\n${jornadaTxt}`);
   } catch (e) { alert('No se pudo guardar, revisa tu conexión.'); }
 }
@@ -87,7 +87,7 @@ function formatHora(t) {
 
 function cambiarFiltro() {
   const tipo = document.getElementById('filterTipo').value;
-  document.getElementById('groupJornada').style.display = tipo === 'jornada' ? 'flex' : 'none';
+  
   document.getElementById('groupFecha').style.display = tipo === 'fecha' ? 'flex' : 'none';
   document.getElementById('groupEquipo').style.display = tipo === 'equipo' ? 'flex' : 'none';
   document.getElementById('statusMsg').textContent = 'Selecciona opción y presiona Cargar Datos';
@@ -98,14 +98,10 @@ function poblarSelectores() {
   // Todos los partidos sin filtrar por vuelta
   const base = todosPartidos;
 
-  const jornadas = [...new Set(base.filter(p => p['Jornada']).map(p => Number(p['Jornada'])))].sort((a,b)=>a-b);
-  const selJornada = document.getElementById('filterJornada');
-  selJornada.innerHTML = '<option value="">— Selecciona —</option>';
-  jornadas.forEach(j => selJornada.innerHTML += `<option value="${j}">Jornada ${j}</option>`);
-
   const fechas = [...new Set(base.filter(p => p['Fecha'] && p['Fecha'].trim() !== '').map(p => p['Fecha'].trim()))];
   const selFecha = document.getElementById('filterFecha');
   selFecha.innerHTML = '<option value="">— Selecciona una fecha —</option>';
+  fechas.sort((a,b)=>parseFecha(b)-parseFecha(a));
   fechas.forEach(f => selFecha.innerHTML += `<option value="${f}">${f}</option>`);
 
   const equiposSet = new Set();
@@ -121,13 +117,13 @@ async function cargarFechasYEquipos() {
       fetch(CSV_PARTIDOS), fetch(CSV_EQUIPOS), fetch(CSV_JUGADORES),
       fetch(CSV_PARTICIPACIONES), fetch(CSV_EVENTOS)
     ]);
-    todosPartidos        = parseCSV(await resP.text());
+    todosPartidos        = NL7Juegos.correcciones(parseCSV(await resP.text()));
     todosEquipos         = parseCSV(await resE.text());
     todosJugadores       = parseCSV(await resJ.text());
     todasParticipaciones = parseCSV(await resPart.text());
     todosEventos         = parseCSV(await resEv.text());
 
-    DESCANSOS = calcularDescansos();
+    DESCANSOS = todosPartidos.some(p=>p.Jornada) ? calcularDescansos() : {};
     poblarSelectores();
     document.getElementById('statusMsg').textContent = 'Selecciona filtro y presiona Cargar Datos';
   } catch(e) {
@@ -216,7 +212,7 @@ function abrirPopupPartido(partido) {
   const idPartido = String(partido.ID_Partido).trim();
   const gL = partido.Goles_Local !== '' ? partido.Goles_Local : '-';
   const gV = partido.Goles_Visita !== '' ? partido.Goles_Visita : '-';
-  const jornada = partido.Jornada ? `Encuentro · Jornada ${partido.Jornada}` : 'Encuentro · Jornada ?';
+  const jornada = NL7Juegos.meta(partido);
   const partLocal  = todasParticipaciones.filter(p => String(p.Partido).trim() === idPartido && String(p.Equipo).trim() === String(partido.Equipo_Local).trim());
   const partVisita = todasParticipaciones.filter(p => String(p.Partido).trim() === idPartido && String(p.Equipo).trim() === String(partido.Equipo_Visita).trim());
   const eventosPartido = todosEventos.filter(e => String(e.Partido).trim() === idPartido);
@@ -269,18 +265,12 @@ async function cargarDatos() {
   try {
     const base = todosPartidos; // todos, sin filtro de vuelta
     let filtrados = [];
-    if (tipo === 'jornada') {
-      const jornada = document.getElementById('filterJornada').value;
-      if (!jornada) { statusEl.textContent = '⚠️ Selecciona una jornada'; return; }
-      filtrados = base.filter(p => p['Jornada'] && String(p['Jornada']).trim() === String(jornada));
-      if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para Jornada ${jornada}`; return; }
-      filtrados.sort((a,b) => Number(a.Jornada) - Number(b.Jornada) || Number(a.ID_Partido) - Number(b.ID_Partido));
-    } else if (tipo === 'fecha') {
+    if (tipo === 'fecha') {
       const fecha = document.getElementById('filterFecha').value;
       if (!fecha) { statusEl.textContent = '⚠️ Selecciona una fecha'; return; }
       filtrados = base.filter(p => p['Fecha'] && p['Fecha'].trim() === fecha);
       if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para el ${fecha}`; return; }
-      filtrados.sort((a,b) => parseFecha(b.Fecha) - parseFecha(a.Fecha));
+      filtrados = ordenarPorCampoHora(filtrados);
     } else if (tipo === 'equipo') {
       const equipoSel = document.getElementById('filterEquipo').value.trim().toUpperCase();
       if (!equipoSel) { statusEl.textContent = '⚠️ Selecciona un equipo'; return; }
@@ -290,11 +280,7 @@ async function cargarDatos() {
         return eqLocal === equipoSel || eqVisita === equipoSel;
       });
       if (!filtrados.length) { statusEl.textContent = `⚠️ No hay partidos para ${equipoSel}`; return; }
-      filtrados.sort((a,b) => {
-        const ja = a.Jornada ? Number(a.Jornada) : 999;
-        const jb = b.Jornada ? Number(b.Jornada) : 999;
-        return ja - jb;
-      });
+      filtrados.sort((a,b) => (parseFecha(a.Fecha)||9e15)-(parseFecha(b.Fecha)||9e15) || Number(a.ID_Partido)-Number(b.ID_Partido));
     } else {
       statusEl.textContent = '⚠️ Selecciona un tipo de filtro'; return;
     }
@@ -302,6 +288,7 @@ async function cargarDatos() {
     const _ok = x => { x = String(x || '').trim(); return !x || _act.has(x); };
     filtrados = filtrados.filter(p => (p['Estado']||'').trim() === 'Jugado' || (_ok(p['Equipo_Local']) && _ok(p['Equipo_Visita'])));
     if (!filtrados.length) { statusEl.textContent = '⚠️ No hay partidos vigentes con ese filtro (los pendientes contra equipos dados de baja ya no cuentan)'; return; }
+    filtrados = filtrados.filter(p=>!NL7Juegos.esCubierto(p,todosEquipos));
     ultimosFiltrados = filtrados;
     await Promise.all([cargarClavesEquipos(), cargarConfirmaciones()]);
     renderStack(filtrados);
@@ -323,6 +310,11 @@ function renderStack(filtrados) {
   todosEquipos.forEach(e => { eqMap[String(e['ID_Equipo']).trim()] = e; });
   const cont = document.getElementById('stackContainer');
   cont.innerHTML = bannerDescansoHTML(filtrados);
+  if(document.getElementById('filterTipo').value==='equipo'&&filtrados.length){
+    const nombre=document.getElementById('filterEquipo').value;
+    const equipo=todosEquipos.find(e=>String(e.Nombre).toUpperCase()===nombre);
+    if(equipo){const r=NL7Juegos.resumen(todosPartidos.filter(p=>!NL7Juegos.esCubierto(p,todosEquipos)&&(NL7Juegos.estado(p)==='jugado'||[p.Equipo_Local,p.Equipo_Visita].every(id=>todosEquipos.some(e=>String(e.ID_Equipo)===String(id)&&String(e.Status).toLowerCase()==='activo')))),equipo.ID_Equipo);cont.innerHTML+=`<div class="juego-resumen">${r.jugados} jugados · ${r.local} de local · ${r.visita} de visitante · ${r.programados} programados · ${r.pendientes} por programar · ${r.total} en total</div>`;}
+  }
   filtrados.forEach((p, idx) => {
     const eqL = eqMap[String(p['Equipo_Local']).trim()] || {};
     const eqV = eqMap[String(p['Equipo_Visita']).trim()] || {};
@@ -338,8 +330,8 @@ function renderStack(filtrados) {
     const hora = formatHora(p['Hora']);
     const cancha = p['Cancha'] || '';
     const fecha = p['Fecha'] || '';
-    const jornadaTxt = p['Jornada'] ? `Jornada ${p['Jornada']}` : 'Jornada ?';
-    const vueltaTxt = p['Vuelta'] === '2' ? 'SEGUNDA VUELTA' : 'PRIMERA VUELTA';
+    const jornadaTxt = 'Encuentro';
+    const vueltaTxt = p['Estado'] || '';
     const idPartido = p['ID_Partido'];
     const scoreHTML = estado === 'Jugado'
       ? `<div class="stack-score">${gL} - ${gV}</div>`
@@ -365,19 +357,18 @@ function renderStack(filtrados) {
     <div class="stack-card" style="top:${16 + idx * 4}px; z-index:${idx+1};">
       <div class="stack-card-inner ${estadoClass} ${bordeClass}" ${clickable ? `onclick="abrirPopupPartido(todosPartidos[${idxReal}])"` : ''}>
         <div class="stack-top-row">
-          <span class="stack-jornada-tag">${jornadaTxt}</span>
           <span class="stack-vuelta-tag">${vueltaTxt}</span>
           <span class="stack-id-tag">#${idPartido}</span>
         </div>
         <div class="stack-teams">
           <div class="stack-team">
             <img src="${urlL}" onerror="this.style.opacity='0.2'">
-            <div class="stack-team-name">${nomL}</div>
+            <div class="stack-team-name">${nomL}</div><div class="juego-numero">${NL7Juegos.etiqueta(p,'local')}</div>
           </div>
           ${scoreHTML}
           <div class="stack-team">
             <img src="${urlV}" onerror="this.style.opacity='0.2'">
-            <div class="stack-team-name">${nomV}</div>
+            <div class="stack-team-name">${nomV}</div><div class="juego-numero">${NL7Juegos.etiqueta(p,'visita')}</div>
           </div>
         </div>
         <div class="stack-bottom-row">
@@ -386,6 +377,7 @@ function renderStack(filtrados) {
           ${cancha ? `<span>📍 ${cancha}</span>` : ''}
           ${badgeHTML}
         </div>
+        ${NL7Juegos.tarjetasExtra(p)}
         ${confirmHTML}
       </div>
     </div>`;
@@ -611,7 +603,7 @@ function bannerDescansoHTML(filtrados) {
 function mostrarDescansos() {
   const st = document.getElementById('statusMsg');
   if (!todosEquipos.length || !todosPartidos.length) { st.textContent = '⚠️ Aún no cargan los datos de la hoja, intenta en un momento'; return; }
-  DESCANSOS = calcularDescansos();
+  DESCANSOS = todosPartidos.some(p=>p.Jornada) ? calcularDescansos() : {};
   if (!HAY_DESCANSOS) {
     const n = todosEquipos.filter(e => (e['Status'] || '').trim().toLowerCase() === 'activo').length;
     document.getElementById('stackContainer').classList.remove('con-tarjetas');
@@ -843,13 +835,13 @@ function paginasDescansosHTML() {
 
 async function downloadPNGDescansos() {
   if (!todosEquipos.length || !todosPartidos.length) { alert('Aún no cargan los datos de la hoja, intenta en un momento.'); return; }
-  DESCANSOS = calcularDescansos();
+  DESCANSOS = todosPartidos.some(p=>p.Jornada) ? calcularDescansos() : {};
   if (!HAY_DESCANSOS) { alert('Con un número par de equipos activos ya no descansa nadie, así que no hay reporte de descansos.'); return; }
   const btn = document.getElementById('dlBtnDesc');
   btn.textContent = '⏳ Generando...';
   btn.disabled = true;
   try {
-    DESCANSOS = calcularDescansos();
+    DESCANSOS = todosPartidos.some(p=>p.Jornada) ? calcularDescansos() : {};
     const paginas = paginasDescansosHTML();
     for (let i = 0; i < paginas.length; i++) {
       const temp = document.createElement('div');
@@ -1095,7 +1087,7 @@ function construirPaginaReporte(paginaPartidos, numPagina, totalPaginas, jornada
     const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
     const estado = (p['Estado'] || '').trim();
     const fecha = p['Fecha'] || '';
-    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}${p['Vuelta'] ? ' · Vuelta ' + (p['Vuelta']==='2'?'2':'1') : ''}` : '';
+    const jornadaFila = NL7Juegos.meta(p) + (NL7Juegos.prevista(p,'local').d ? ' · Prevista L: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'local').d) : '') + (NL7Juegos.prevista(p,'visita').d ? ' · Prevista V: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'visita').d) : '');
     const hora = p['Hora'] ? formatHora(p['Hora']) : '';
     const cancha = p['Cancha'] || '';
     const jugado = estado === 'Jugado' && gL !== null && gV !== null;
@@ -1177,7 +1169,7 @@ async function downloadPNG() {
   } else if (tipoFiltro === 'fecha') {
     jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
   } else {
-    jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+    jornadaTitulo = 'Partidos';
   }
   const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
 
@@ -1188,7 +1180,7 @@ async function downloadPNG() {
     equipoDescansa = descansoParaReporte(jornadaNum);
     equiposAtrasados = calcularEquiposAtrasados(jornadaNum);
   } else if (tipoFiltro === 'fecha') {
-    equiposAtrasados = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
+    equiposAtrasados = [];
   }
   const opcionesPng = tipoFiltro === 'fecha'
     ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
@@ -1290,7 +1282,7 @@ function construirPaginaReporteV2(paginaPartidos, numPagina, totalPaginas, jorna
     const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
     const estado = (p['Estado'] || '').trim();
     const fecha = p['Fecha'] || '';
-    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}${p['Vuelta'] ? ' · Vuelta ' + (p['Vuelta']==='2'?'2':'1') : ''}` : '';
+    const jornadaFila = NL7Juegos.meta(p) + (NL7Juegos.prevista(p,'local').d ? ' · Prevista L: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'local').d) : '') + (NL7Juegos.prevista(p,'visita').d ? ' · Prevista V: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'visita').d) : '');
     const hora = p['Hora'] ? formatHora(p['Hora']) : '';
     const cancha = p['Cancha'] || '';
     const jugado = estado === 'Jugado' && gL !== null && gV !== null;
@@ -1354,7 +1346,7 @@ async function downloadPNGv2() {
   } else if (tipoFiltro === 'fecha') {
     jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
   } else {
-    jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+    jornadaTitulo = 'Partidos';
   }
   const vueltaTitulo = firstP?.Vuelta === '2' ? 'Segunda Vuelta' : 'Primera Vuelta';
 
@@ -1365,7 +1357,7 @@ async function downloadPNGv2() {
     equipoDescansa = descansoParaReporte(jornadaNum);
     equiposAtrasadosV2 = calcularEquiposAtrasados(jornadaNum);
   } else if (tipoFiltro === 'fecha') {
-    equiposAtrasadosV2 = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
+    equiposAtrasadosV2 = [];
   }
   const opcionesPng = tipoFiltro === 'fecha'
     ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
@@ -1472,7 +1464,7 @@ function construirPaginaReporteV3(paginaPartidos, numPagina, totalPaginas, jorna
     const gV = p['Goles_Visita'] !== '' ? p['Goles_Visita'] : null;
     const estado = (p['Estado'] || '').trim();
     const fecha = p['Fecha'] || '';
-    const jornadaFila = p['Jornada'] ? `Jornada ${p['Jornada']}${p['Vuelta'] ? ' · Vuelta ' + (p['Vuelta']==='2'?'2':'1') : ''}` : '';
+    const jornadaFila = NL7Juegos.meta(p) + (NL7Juegos.prevista(p,'local').d ? ' · Prevista L: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'local').d) : '') + (NL7Juegos.prevista(p,'visita').d ? ' · Prevista V: ' + NL7Juegos.fmt(NL7Juegos.prevista(p,'visita').d) : '');
     const hora = p['Hora'] ? formatHora(p['Hora']) : '';
     const cancha = p['Cancha'] || '';
     const jugado = estado === 'Jugado' && gL !== null && gV !== null;
@@ -1528,7 +1520,7 @@ async function downloadPNGv3() {
   } else if (tipoFiltro === 'fecha') {
     jornadaTitulo = encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).titulo;
   } else {
-    jornadaTitulo = firstP?.Jornada ? `Jornada ${firstP.Jornada}` : 'Partidos';
+    jornadaTitulo = 'Partidos';
   }
 
   let equipoDescansa = null;
@@ -1538,7 +1530,7 @@ async function downloadPNGv3() {
     equipoDescansa = descansoParaReporte(jornadaNum);
     equiposAtrasadosV3 = calcularEquiposAtrasados(jornadaNum);
   } else if (tipoFiltro === 'fecha') {
-    equiposAtrasadosV3 = calcularEquiposAtrasados(encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).jornadaRef, partidosOrdenados);
+    equiposAtrasadosV3 = [];
   }
   const opcionesPng = tipoFiltro === 'fecha'
     ? { ocultarPagina: true, subtitulo: encabezadoPorFecha(firstP?.Fecha, partidosOrdenados).subtitulo }
@@ -1583,4 +1575,17 @@ async function downloadPNGv3() {
   if (btn) { btn.textContent = '⬇ Descargar (escudos 3d)'; btn.disabled = false; }
 }
 
+
+function bannerDescansoHTML(){ return ''; }
+function calcularPropuestas(){ return null; }
+function calcularEquiposAtrasados(){ return []; }
+function mostrarDescansos(){
+ const lista=todosPartidos.filter(p=>NL7Juegos.estado(p)==='pendiente'&&!NL7Juegos.esCubierto(p,todosEquipos)&&[p.Equipo_Local,p.Equipo_Visita].every(id=>todosEquipos.some(e=>String(e.ID_Equipo)===String(id)&&String(e.Status).toLowerCase()==='activo')));
+ document.getElementById('stackContainer').innerHTML=NL7Juegos.documento('Partidos pendientes',NL7Juegos.tabla(lista,todosEquipos));
+}
+async function downloadPNGDescansos(){
+ const el=document.createElement('div');el.innerHTML=NL7Juegos.documento('Partidos pendientes',NL7Juegos.tabla(todosPartidos.filter(p=>NL7Juegos.estado(p)==='pendiente'&&!NL7Juegos.esCubierto(p,todosEquipos)&&[p.Equipo_Local,p.Equipo_Visita].every(id=>todosEquipos.some(e=>String(e.ID_Equipo)===String(id)&&String(e.Status).toLowerCase()==='activo'))),todosEquipos));el.style.cssText='position:absolute;left:-12000px;top:0;width:1000px';document.body.append(el);
+ try{const c=await html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true});const a=document.createElement('a');a.download='partidos-pendientes.png';a.href=c.toDataURL('image/png');a.click();}finally{el.remove();}
+}
 cargarFechasYEquipos();
+
