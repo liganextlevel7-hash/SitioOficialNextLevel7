@@ -5,25 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tabla General | Liga Next Level 7</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+body.standings{--green:#a4e55f;--gold:#e0bb58;--text:#eef5e8;--muted:#a4b398;--line:#ffffff13;background:radial-gradient(ellipse at 50% 10%,#30451b44,transparent 65%),linear-gradient(#0a110af2,#0c120bf5),url('fondodominical.png') center/cover fixed;color:var(--text);font-family:'Segoe UI',Arial,sans-serif;}
+.standings *{box-sizing:border-box;}.standings a:focus-visible,.standings button:focus-visible{outline:3px solid var(--gold);outline-offset:4px;}
+.standings .standings-header{max-width:1160px;margin:auto;padding:26px 24px 20px;text-align:left;}
+.standings .brand-row{display:flex;align-items:center;justify-content:space-between;gap:20px;}
+.standings .brand-logos{display:flex;align-items:center;gap:16px;}.standings .brand-logos .logo-liga{width:65px;height:75px;max-width:none;object-fit:contain;filter:none;}
+.standings .brand-label strong{font-size:17px;display:block;letter-spacing:-.4px;}.standings .brand-label small{font-size:10px;letter-spacing:2px;color:#b1c79e;display:block;margin-top:6px;}
+.standings nav{margin:0;display:flex;gap:9px;flex-wrap:wrap;}.standings nav a{font-size:12px;border:1px solid #9fe75133;border-radius:9px;padding:11px 15px;background:#162113;color:#d0e0c2;margin:0;box-shadow:none;}.standings nav a:hover{transform:none;background:#263e18;color:#e3f8d0;box-shadow:none;}
+.standings .page-heading{margin-top:26px;border-top:1px solid var(--line);padding-top:24px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;}
+.standings .eyebrow{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);margin-bottom:9px;}
+.standings h1{font-size:clamp(30px,4vw,44px);line-height:1.1;letter-spacing:-1.4px;color:#f1f6eb;text-shadow:none;margin:0;}
+.standings .subtitulo{font-size:13px;color:var(--muted);font-weight:400;margin:10px 0 0;line-height:1.5;}
+.standings .season-label{font-size:11px;color:#bad59f;border:1px solid #b1db7333;background:#21341a;padding:8px 12px;border-radius:20px;white-space:nowrap;}
+.standings .contenedor{display:block;max-width:1160px;padding:0 24px 24px;margin:auto;}
+.standings .card{border:1px solid #9db97826;border-radius:15px;background:#111b10;box-shadow:0 15px 50px #0003;padding:20px;backdrop-filter:none;}.standings .card:hover{transform:none;box-shadow:0 15px 50px #0003;}
+.standings .panel-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}.standings .panel-heading h2{text-align:left;font-size:16px;letter-spacing:-.2px;color:#e9f3e0;margin:0;}
+.standings .zone-key{display:flex;gap:14px;font-size:11px;color:#b3c4a5;}.standings .zone-key span{display:flex;align-items:center;gap:6px;}.standings .zone-dot{width:6px;height:6px;display:inline-block;border-radius:50%;background:#91c65b;}.standings .zone-dot.gold{background:#e0bb58;}
+.standings .mobile-hint{font-size:12px;color:#a5b697;margin:12px 0 0;line-height:1.5;display:none;}
+.standings #tabla-general-completa{margin-top:16px;color:var(--muted);font-size:13px;}
+.standings .tbl-gn-bar{margin-bottom:14px;}.standings .btn-png-tabla{font-family:inherit;font-size:12px;background:#a4e55f;color:#18280e;border-radius:8px;padding:11px 15px;}.standings .btn-png-tabla:hover{background:#b9f17d;}
+.standings .tbl-gn-wrap{border:1px solid var(--line);border-radius:11px;overflow-x:auto;}
+.standings .tbl-gn{font-family:inherit;background:#121d11;}.standings .tbl-gn thead th{background:#1e2e18;font-size:10px;letter-spacing:1px;padding:14px 10px;color:#afc89a;white-space:nowrap;}.standings .tbl-gn thead tr{border-bottom:1px solid #9cc36c33;}
+.standings .tbl-gn td{padding:13px 10px;font-size:13px;color:#c6d4bb;font-variant-numeric:tabular-nums;}.standings .tbl-gn tbody tr{border-color:var(--line);}.standings .tbl-gn tbody tr:hover{background:#a4e55f06;}.standings .tbl-gn tbody tr.row-lider{background:#e0bb5809;border-left-color:#e0bb58;}.standings .tbl-gn tbody tr.row-clasificado{border-left-color:#88bb54;}
+.standings .tbl-gn tbody tr.sep-lider td,.standings .tbl-gn tbody tr.sep-clasificado td{border-top-color:#b0d67f33;}.standings .team-logo{width:44px;height:44px;}.standings .team-name{font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;color:#edf4e7;line-height:1.4;}.standings .team-inner{gap:12px;}.standings .tbl-gn .td-team{min-width:200px;}
+.standings .zone-label{font-size:9px;color:#91a780;letter-spacing:1px;}.standings .rank-circle{width:26px;height:26px;font-size:11px;}.standings .rank-1{background:#e0bb58;}.standings .rank-top{background:#8ec64a16;color:#b9df92;border-color:#9fce6c44;}.standings .rank-normal{color:#9eaf90;background:#ffffff07;}
+.standings .pill{background:#ffffff06;color:#b7c9a8;font-size:12px;border-radius:6px;min-width:29px;}.standings .tbl-gn .td-pts{color:#caf39e!important;font-size:19px!important;}.standings .tbl-gn .dg-pos{color:#d4df8b!important;}.standings .tbl-gn .dg-neg{color:#f69a8d!important;}
+.standings .stats-key{font-size:11px;line-height:1.8;color:#96aa87;margin:15px 0 0;}.standings .stats-key b{color:#c2d4b2;font-weight:600;}
+.standings .standings-footer{max-width:1112px;margin:0 auto;padding:0 0 25px;display:flex;justify-content:space-between;gap:14px;color:#869b78;font-size:11px;}.standings .standings-footer a{color:#b8d69e;text-decoration:none;}
+.standings .popup-card{background:#152010;border:1px solid #b6db7e66;box-shadow:0 20px 80px #0009;border-radius:16px;}.standings .popup-header{border-bottom-color:#9db97833;}.standings .popup-nombre{color:#edf5e7;text-transform:none;letter-spacing:0;font-size:17px;}.standings .popup-rank{color:#b9d89c;}.standings .popup-stat{background:#ffffff05;}.standings .popup-stat-lbl{color:#a6b999;font-size:10px;}.standings .popup-pts{background:#a4e55f0c;border-color:#a4e55f33;}.standings .popup-pts-val{color:#b8ea7a;}.standings .popup-close{color:#bacbad;min-width:32px;min-height:32px;}
+@media(max-width:700px){.standings .standings-header{padding:18px 16px;}.standings .brand-row{align-items:flex-start;flex-wrap:wrap;gap:14px;}.standings .brand-logos{gap:10px;}.standings .brand-logos .logo-liga{width:48px;height:56px;}.standings .brand-label strong{font-size:15px;}.standings .brand-label small{font-size:9px;letter-spacing:1.3px;}.standings .page-heading{margin-top:20px;padding-top:20px;}.standings .season-label{display:none;}.standings .contenedor{padding:0 12px 22px;}.standings .card{padding:15px 10px;border-radius:12px;}.standings .panel-heading{gap:10px;}.standings .zone-key{gap:10px;font-size:10px;}.standings .standings-footer{padding:0 16px 22px;}}
+@media(max-width:600px){.standings .mobile-hint{display:block;}.standings .tbl-gn thead th{font-size:10px;padding:12px 5px;letter-spacing:.5px;}.standings .tbl-gn td{padding:12px 5px;font-size:12px;}.standings .tbl-gn .td-team{min-width:0;}.standings .team-logo{width:35px;height:35px;flex-shrink:0;}.standings .team-inner{gap:7px;}.standings .team-name{font-size:12px;overflow-wrap:anywhere;}.standings .rank-circle{width:23px;height:23px;}.standings .tbl-gn .td-pts{font-size:17px!important;}.standings .tbl-gn-bar{justify-content:flex-start;}.standings .stats-key{font-size:11px;}.standings .standings-footer{flex-direction:column;}.standings .popup-card{width:calc(100% - 32px);}}
+</style>
 </head>
-<body>
-<header>
-<img src="logo-liga.png.png" class="logo-liga">
-<h1>TABLA GENERAL</h1>
-<p class="subtitulo">Liga Next Level 7</p>
-<nav>
+<body class="standings">
+<header class="standings-header"><div class="brand-row"><div class="brand-logos"><img src="logo-liga.png.png" class="logo-liga" alt="Liga Next Level 7"><img src="laregionallstars.png" class="logo-liga" alt="La Región All Stars"><div class="brand-label"><strong>Next Level 7</strong><small>TORNEO DOMINICAL</small></div></div><nav>
 <a href="index.html">Inicio</a>
 <a href="dashboard3d.html" title="Modo 3D interactivo"><svg viewBox="0 0 32 40" aria-hidden="true" style="height:1.15em;width:auto;vertical-align:-.2em;margin-right:6px"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg>Modo 3D</a>
-</nav>
-</header>
+</nav></div><div class="page-heading"><div><div class="eyebrow">CADA PARTIDO CUENTA</div><h1>Tabla General</h1><p class="subtitulo">Así marcha nuestra liga. Sigue la posición de tu equipo.</p></div><span class="season-label">Clasificación del torneo</span></div></header>
 <section class="contenedor">
 <div class="card">
-<h2>🏆 Tabla General Completa</h2>
+<div class="panel-heading"><h2>Posiciones del torneo</h2><div class="zone-key"><span><i class="zone-dot gold" aria-hidden="true"></i>Líder</span><span><i class="zone-dot" aria-hidden="true"></i>Clasificados</span></div></div><p class="mobile-hint">Da dos toques sobre un equipo para ver sus estadísticas completas.</p>
 <div id="tabla-general-completa">
 Cargando tabla...
 </div>
+<p class="stats-key"><b>JJ</b> jugados · <b>JG</b> ganados · <b>JE</b> empatados · <b>JP</b> perdidos · <b>GF</b> goles a favor · <b>GC</b> goles en contra · <b>+/-</b> diferencia de goles · <b>PTS</b> puntos</p>
 </div>
 </section>
+<footer class="standings-footer"><span>Liga Next Level 7 · Torneo Dominical</span><a href="index.html">Volver al inicio →</a></footer>
 <script src="tablaGeneral.js"></script>
 </body>
 </html>
+
