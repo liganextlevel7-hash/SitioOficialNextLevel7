@@ -267,7 +267,7 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
 </div>
 <div id="vista-wrap" hidden><div id="vista"></div></div>
 
-<script src="juegos-control.js?v=20261031"></script>
+<script src="juegos-control.js?v=20261031-cupo15"></script>
 <script>
 // ═══════════════════════════════════════════════
 //  CONFIGURACIÓN
@@ -1169,13 +1169,21 @@ function notaEspecialJuegos(){return `<p class="jg-nota">Se conserva la regla es
 function docEquipo(idE){
  const G=NL7Juegos,a=juegosValidos().filter(p=>G.involucra(p,idE)),r=G.resumen(a,idE),jug=a.filter(p=>estadoDe(p)==='jugado'),contado=idE===idSinJ1()?1:0;
  const resultados=jug.map(p=>resultado(p,idE)),n=k=>resultados.filter(x=>x.res===k).length;
- const resumen=`<div class="jg-resumen"><span>${r.jugados} jugados</span><span>${r.local} de local</span><span>${r.visita} de visitante</span><span>${r.programados} programados</span><span>${r.pendientes} por programar</span><span>${contado} contado por regla especial</span><span>${r.total+contado} en total</span></div><p>Ganados: ${n('g')} · Empatados: ${n('e')} · Perdidos: ${n('p')}. Los empates definidos en penales conservan el empate estadístico.</p>`;
+ const resumen=G.resumenHTML(r,EQUIPOS.find(e=>idDe(e)===idE),contado)+`<p>Ganados: ${n('g')} · Empatados: ${n('e')} · Perdidos: ${n('p')}. Los empates definidos en penales conservan el empate estadístico.</p>`;
+
  a.sort((x,y)=>(G.numero(x,String(x.Equipo_Local)===idE?'local':'visita')||999)-(G.numero(y,String(y.Equipo_Local)===idE?'local':'visita')||999)||(+x.ID_Partido)-(+y.ID_Partido));
  return G.documento('Reporte de '+nombreEq(idE),resumen+G.tabla(a,EQUIPOS,idE)+notaEspecialJuegos());
 }
-function docGeneral(){const G=NL7Juegos,a=juegosValidos();const rows=activosIds().map(t=>{const r=G.resumen(a,t),v=t===idSinJ1()?1:0;return `<tr><td>${esc(nombreEq(t))}</td><td>${r.jugados}</td><td>${r.local}</td><td>${r.visita}</td><td>${r.programados}</td><td>${r.pendientes}</td><td>${v}</td><td>${r.total+v}</td></tr>`;}).join('');return G.documento('Control por juegos y fechas',`<table class="jg-tabla"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Por programar</th><th>Contados</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table>`+G.tabla(a,EQUIPOS)+notaEspecialJuegos());}
+function docGeneral(){
+ const G=NL7Juegos,a=juegosValidos();
+ const rows=activosIds().map(t=>{const e=EQUIPOS.find(e=>idDe(e)===t),r=G.resumen(a,t),v=t===idSinJ1()?1:0,b=G.balance(r,e,v);return `<tr><td>${esc(nombreEq(t))}</td><td>${r.jugados}</td><td>${r.local}</td><td>${r.visita}</td><td>${r.programados}</td><td>${v}</td><td>${b.especial?'Por definir':b.faltan}</td><td>${b.excedentes||'—'}</td></tr>`;}).join('');
+ return G.documento('Control por juegos y fechas',`<table class="jg-tabla"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Contados</th><th>Faltan para 15</th><th>Cruces de más por revisar</th></tr></thead><tbody>${rows}</tbody></table>`+G.tabla(a,EQUIPOS)+notaEspecialJuegos());
+}
+
 function planJuegos(nFechas,doble,horarios){
  const G=NL7Juegos,validos=juegosValidos(),activos=activosIds(),hoy=contexto().hoy;
+ const saldo=t=>{const e=EQUIPOS.find(e=>idDe(e)===t),r=G.resumen(validos,t),b=G.balance(r,e,t===idSinJ1()?1:0);return b.cupoProgramar===null?Infinity:b.cupoProgramar;};
+ const propuestos={};
  let pendientes=validos.filter(p=>estadoDe(p)==='pendiente');const reservado=validos.filter(p=>['programado','jugado'].includes(estadoDe(p))&&G.fecha(p.Fecha)),salidas=[];
  const inicio=new Date(hoy);inicio.setHours(12,0,0,0);inicio.setDate(inicio.getDate()+(7-inicio.getDay())%7);
  for(let k=0;k<nFechas;k++){
@@ -1184,10 +1192,10 @@ function planJuegos(nFechas,doble,horarios){
   const minutos=h=>{const m=String(h||'').match(/(\d+):(\d+)/);return m?+m[1]*60+(+m[2]):null;};
   const veces=t=>ocupados.filter(x=>x.a===t||x.b===t).length;
   const deuda=t=>validos.filter(p=>G.involucra(p,t)&&estadoDe(p)!=='jugado'&&G.prevista(p,String(p.Equipo_Local)===t?'local':'visita').d<d&&G.prevista(p,String(p.Equipo_Local)===t?'local':'visita').d).length;
-  const libres=activos.filter(t=>veces(t)===0),edges=pendientes.filter(p=>libres.includes(String(p.Equipo_Local))&&libres.includes(String(p.Equipo_Visita))).map(p=>({a:String(p.Equipo_Local),b:String(p.Equipo_Visita),c:-(deuda(String(p.Equipo_Local))+deuda(String(p.Equipo_Visita))),p}));
+  const libres=activos.filter(t=>veces(t)===0&&(propuestos[t]||0)<saldo(t)),edges=pendientes.filter(p=>libres.includes(String(p.Equipo_Local))&&libres.includes(String(p.Equipo_Visita))).map(p=>({a:String(p.Equipo_Local),b:String(p.Equipo_Visita),c:-(deuda(String(p.Equipo_Local))+deuda(String(p.Equipo_Visita))),p}));
   let elegidos=mejorEmparejamiento(libres,edges).map(e=>e.p);
   if(doble)elegidos=elegidos.concat(pendientes.filter(p=>!elegidos.includes(p)&&(deuda(String(p.Equipo_Local))||deuda(String(p.Equipo_Visita)))));
-  for(const p of elegidos){if(existentes.length+slots.length>=8)break;const a=String(p.Equipo_Local),b=String(p.Equipo_Visita);if(veces(a)>=(doble?2:1)||veces(b)>=(doble?2:1))continue;
+  for(const p of elegidos){if(existentes.length+slots.length>=8)break;const a=String(p.Equipo_Local),b=String(p.Equipo_Visita);if((propuestos[a]||0)>=saldo(a)||(propuestos[b]||0)>=saldo(b))continue;if(veces(a)>=(doble?2:1)||veces(b)>=(doble?2:1))continue;
    let elegido=null;
    for(const hora of HORAS_LIGA){for(const campo of CAMPOS_LIGA){const min=hora*60,restr=t=>RESTRICCION_HORA[nombreEq(t)];if([a,b].some(t=>restr(t)&&!restr(t).includes(hora)))continue;
     const conflicto=ocupados.some(x=>{const mh=minutos(x.h);if((!x.c||x.c===campo)&&(mh===null||Math.abs(mh-min)<60))return true;return [a,b].some(t=>x.a===t||x.b===t)&&(mh===null||Math.abs(mh-min)<60)});
@@ -1197,11 +1205,11 @@ function planJuegos(nFechas,doble,horarios){
      if(!elegido||coste<elegido.coste)elegido={h:String(hora).padStart(2,'0')+':00',c:campo,coste};
     }}
    }
-   if(!elegido)continue;ocupados.push({a,b,...elegido});slots.push({...p,Fecha:f,Hora:elegido.h,Cancha:elegido.c,Estado:'Propuesta'});
+   if(!elegido)continue;ocupados.push({a,b,...elegido});propuestos[a]=(propuestos[a]||0)+1;propuestos[b]=(propuestos[b]||0)+1;slots.push({...p,Fecha:f,Hora:elegido.h,Cancha:elegido.c,Estado:'Propuesta'});
   }
   const ids=new Set(slots.map(p=>String(p.ID_Partido)));pendientes=pendientes.filter(p=>!ids.has(String(p.ID_Partido)));salidas.push({f,existentes,slots});
  }
- return G.documento('Propuesta por fechas',`<p class="jg-nota">Propuesta para revisar; no guarda cambios. Solo utiliza partidos pendientes con ID real, conserva local/visitante y evita cruces de equipo y campo durante 60 minutos. Respeta los horarios y restricciones existentes. Máximo 8 encuentros por fecha. Los programados se reservan aunque falte confirmar su publicación.</p>`+salidas.map(x=>`<h2 class="jg-title">${esc(x.f)}</h2>${G.tabla(x.existentes.concat(x.slots),EQUIPOS)}`).join('')+`<p>Pendientes sin colocar en estas fechas: ${pendientes.length}.</p>`+notaEspecialJuegos());
+ return G.documento('Propuesta por fechas',`<p class="jg-nota">Propuesta para revisar; no guarda cambios. Solo utiliza partidos pendientes con ID real, conserva local/visitante y evita cruces de equipo y campo durante 60 minutos. Respeta los horarios y restricciones existentes. Máximo 8 encuentros por fecha y 15 por equipo, contando los ya jugados contra bajas y los juegos especiales contados. Galácticos queda con formato por definir. Los programados se reservan aunque falte confirmar su publicación.</p>`+salidas.map(x=>`<h2 class="jg-title">${esc(x.f)}</h2>${G.tabla(x.existentes.concat(x.slots),EQUIPOS)}`).join('')+`<p>Pendientes sin colocar en estas fechas: ${pendientes.length}.</p>`+notaEspecialJuegos());
 }
 function docDomingo(){return planJuegos(1,false,false);}
 function docPropuesta(n,doble){return planJuegos(n,doble,false);}
@@ -1210,7 +1218,8 @@ function docTentativo(){const a=juegosValidos().filter(p=>estadoDe(p)==='program
 
 init();
 </script>
-<script src="reportes_imagenes.js?v=20261031-juegos"></script>
+<script src="reportes_imagenes.js?v=20261031-cupo15"></script>
 </body>
 </html>
+
 
