@@ -219,12 +219,6 @@ function tramoMalla(x1,z1,x2,z2){
 tramoMalla(-39,-26,39,-26);tramoMalla(-39,26,39,26);tramoMalla(-39,-26,-39,26);tramoMalla(39,-26,39,26);
 const netGeo=new THREE.BufferGeometry();netGeo.setAttribute('position',new THREE.Float32BufferAttribute(netPoints,3));entorno.add(new THREE.LineSegments(netGeo,new THREE.LineBasicMaterial({color:0x355443,transparent:true,opacity:.42})));
 let semilla=1287;function azar(){semilla=(semilla*1664525+1013904223)>>>0;return semilla/4294967296;}
-const arboles=[];for(let i=0;i<16;i++)arboles.push([-48+i*6.4,-35-azar()*5]);for(let i=0;i<14;i++)arboles.push([-47+i*7,36+azar()*6]);for(let i=0;i<9;i++)arboles.push([-48-azar()*3,-27+i*7]);for(let i=0;i<9;i++)arboles.push([49+azar()*3,-27+i*7]);
-const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.28,.44,1,7),madera,arboles.length);
-const foliage=new THREE.InstancedMesh(new THREE.SphereGeometry(1,10,8),new THREE.MeshStandardMaterial({color:0xffffff,roughness:1}),arboles.length*4);
-const dummy=new THREE.Object3D();let fidx=0;
-arboles.forEach(([x,z],i)=>{const h=6+azar()*6;dummy.position.set(x,h*.42,z);dummy.scale.set(1,h*.84,1);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
- for(let k=0;k<4;k++){dummy.position.set(x+(azar()-.5)*4,h*.75+azar()*3,z+(azar()-.5)*4);dummy.scale.set(3+azar()*2,2.7+azar()*2,3+azar()*2);dummy.updateMatrix();foliage.setMatrixAt(fidx,dummy.matrix);foliage.setColorAt(fidx,new THREE.Color().setHSL(.24+azar()*.08,.52,.075+azar()*.07));fidx++;}});entorno.add(trunks,foliage);
 // Carrizos altos detrás de una portería, como en la referencia.
 const canas=[];for(let i=0;i<190;i++){const z=-22+azar()*44,x=-43-azar()*2,h=4+azar()*4;canas.push(x,0,z,x+(azar()-.5),h,z+(azar()-.5));}
 const caneGeo=new THREE.BufferGeometry();caneGeo.setAttribute('position',new THREE.Float32BufferAttribute(canas,3));entorno.add(new THREE.LineSegments(caneGeo,new THREE.LineBasicMaterial({color:0xb0a260})));
@@ -283,11 +277,11 @@ function telaTorso(tex,col){
  // Se toma la zona de tela de la imagen de la playera, en vez de pegar su silueta completa.
  const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,512,256);
  if(tex?.image){const im=tex.image,w=im.width,h=im.height;for(let side=0;side<2;side++)x.drawImage(im,w*.27,h*.20,w*.46,h*.67,side*256,0,256,256);}
- const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=4;return new THREE.MeshStandardMaterial({map,roughness:.9});
+ const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=4;map.wrapS=THREE.RepeatWrapping;return new THREE.MeshStandardMaterial({map,roughness:.9});
 }
 function camisetaMesh(mat){
  const rings=[[1.18,.285,.17],[1.36,.30,.185],[1.62,.345,.195],[1.88,.39,.18],[2.02,.255,.135]],verts=[],uv=[],idx=[],N=20;
- rings.forEach(([y,rx,rz],r)=>{for(let a=0;a<=N;a++){const th=a/N*Math.PI*2;verts.push(Math.sin(th)*rx,y,Math.cos(th)*rz);uv.push(a/N,(y-1.18)/.84);}});
+ rings.forEach(([y,rx,rz],r)=>{for(let a=0;a<=N;a++){const th=a/N*Math.PI*2;verts.push(Math.sin(th)*rx,y,Math.cos(th)*rz);uv.push(a/N+.25,(y-1.18)/.84);}});
  for(let r=0;r<rings.length-1;r++)for(let a=0;a<N;a++){const i=r*(N+1)+a;idx.push(i,i+1,i+N+1,i+1,i+N+2,i+N+1);}
  const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();return new THREE.Mesh(geo,mat);
 }
@@ -342,7 +336,7 @@ async function crearJugador(t,i){
 function nuevoDestino(j){j.obj=new THREE.Vector3((Math.random()-.5)*62,0,(Math.random()-.5)*38)}
 const aro=new THREE.Mesh(new THREE.RingGeometry(1.4,1.8,48),new THREE.MeshBasicMaterial({color:0x5eb50d,transparent:true,opacity:.95,side:THREE.DoubleSide}));
 aro.rotation.x=-Math.PI/2;aro.position.y=.08;aro.visible=false;scene.add(aro);
-const balon=new THREE.Mesh(new THREE.SphereGeometry(.5,16,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5}));balon.castShadow=true;scene.add(balon);
+const balon=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5}));balon.castShadow=true;scene.add(balon);
 let pase={de:null,a:null,k:1,t:0};
 
 /* ---------- cámara y controles ---------- */
@@ -440,7 +434,7 @@ function animar(){
   if(jugadores.length>1){
     if(pase.k>=1){pase.de=pase.a||jugadores[0];do{pase.a=jugadores[Math.floor(Math.random()*jugadores.length)]}while(pase.a===pase.de);pase.k=0;pase.t=1.4+Math.random()*1.6;pase.i=pase.de.g.position.clone()}
     pase.k=Math.min(1,pase.k+dt/pase.t);const dst=pase.a.g.position;
-    balon.position.set(pase.i.x+(dst.x-pase.i.x)*pase.k,.5+Math.sin(pase.k*Math.PI)*2.2,pase.i.z+(dst.z-pase.i.z)*pase.k);balon.rotation.x+=dt*8;
+    balon.position.set(pase.i.x+(dst.x-pase.i.x)*pase.k,.17+Math.sin(pase.k*Math.PI)*2.2,pase.i.z+(dst.z-pase.i.z)*pase.k);balon.rotation.x+=dt*8;
   }
   if(sel){aro.position.x=sel.g.position.x;aro.position.z=sel.g.position.z;aro.scale.setScalar(1+Math.sin(t*4)*.08);goal.obj.copy(sel.g.position)}
   idle+=dt;if(!sel&&!reduce&&idle>3&&!ptr.size)goal.th+=dt*.08;
