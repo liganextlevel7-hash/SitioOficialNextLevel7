@@ -129,11 +129,12 @@
 .r15 table.dp td.jj{white-space:nowrap;font-weight:700}.r15 table.dp td.jj small{display:block;color:#5b6676;font-weight:400;font-size:9.5px}
 .r15 table.dp td.g{background:#dff3e0}.r15 table.dp td.e{background:#fff4cc}.r15 table.dp td.p{background:#fde3e1}.r15 table.dp td.q{background:#d4ebff}.r15 table.dp td.r{background:#f4f6f9;outline:1px dashed #b0bec5;outline-offset:-3px}.r15 table.dp td.c,.r15 table.dp td.d{background:#eceff1}
 .r15 table.dp td.v{background:#e6f9e6;color:#1b7a2b}
+.r15-carta .r15t .sticky{position:static}.r15-carta .r15t td.eq{min-width:0}.r15-carta .r15t th{font-size:9px;letter-spacing:0}.r15-carta .r15t td{font-size:10px}.r15-carta .r15t td.eq span{font-size:10px}.r15-carta .r15t td.eq img{width:26px;height:26px}.r15-carta .r15t td.rc img{width:24px;height:24px}.r15-carta .r15t td.rc{padding:3px 2px}.r15-carta .r15t td.rc .rn{min-height:18px;font-size:8px}.r15-carta .r15t td.rc b{font-size:12px!important}
 </style>
 </head>
 <body>
 <header>
-<img src="logo-liga.png.png" class="logo-liga">
+<img crossorigin="anonymous" src="logo-liga.png.png" class="logo-liga">
 <h1>REPORTE 15 JORNADAS</h1>
 <p class="subtitulo">Liga Next Level 7</p>
 <nav>
@@ -146,7 +147,7 @@
 <div id="r15" class="r15">Cargando reporte...</div>
 </div>
 </section>
-<script src="juegos-control.js?v=20261031-cupo15"></script>
+<script src="juegos-control.js?v=20261101-carta"></script>
 <script>
 const SHEET_ID='1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE',GID_EQ='1894947293',GID_PA='1362473459';
 const PUB='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?single=true&output=csv&gid=';
@@ -242,7 +243,7 @@ function armar(pa,eq,hoy){
 }
 if(typeof document!=='undefined'){
 function celdaHTML(c,D){
-  const nom=c.r?(D.E[c.r]?D.E[c.r].nombre:'Equipo '+c.r):'',logo=c.r&&D.E[c.r]&&D.E[c.r].logo?`<img src="${esc(D.E[c.r].logo)}" alt="" onerror="this.style.opacity=.2">`:'';
+  const nom=c.r?(D.E[c.r]?D.E[c.r].nombre:'Equipo '+c.r):'',logo=c.r&&D.E[c.r]&&D.E[c.r].logo?`<img crossorigin="anonymous" src="${esc(D.E[c.r].logo)}" alt="" onerror="this.style.opacity=.2">`:'';
   if(c.k=='v')return `<td class="rc v" title="${esc(c.why||'')}"><b>SIN RIVAL</b>${c.cand&&c.cand.length?`<small>le tocaba:</small>${c.cand.slice(0,3).map(x=>`<div class="cd">${x.libre?'✅':'🔒'} ${esc(D.E[x.r]?D.E[x.r].nombre:'Equipo '+x.r)}${x.id?' <i>#'+esc(x.id)+'</i>':''}</div>`).join('')}${c.cand.length>3?`<div class="cd">+${c.cand.length-3} más</div>`:''}<small class="lk">🔒 = esa jornada ya la tiene ocupada</small>`:`<small>${esc(c.corto||'ver motivo abajo')}</small>`}</td>`;
   if(c.k=='d')return `<td class="rc d" title="No jugó esta jornada: descanso fijado a mano. No hay partido ni ID."><b>DESCANSÓ</b><small>sin partido</small></td>`;
   if(c.k=='c')return `<td class="rc c" title="No jugó esta jornada, pero la liga la toma como jugada contra ${esc(nom)}. No hay partido ni ID.">${logo}<span class="rn">${esc(nom)}</span><b>CUBRE</b><small>sin partido</small></td>`;
@@ -277,7 +278,7 @@ function pintar(D){
   const cab=Array.from({length:D.NJ},(_,i)=>{const d=calJ(i+1),L=D.porFecha[fmt(d)]||[],np=L.filter(x=>x.k=='p'&&!x.baja).length,nr=L.filter(x=>x.k=='r').length;
     return `<th class="jh">J${i+1}<small>${p2(d.getDate())}/${p2(d.getMonth()+1)}</small>${np||nr?`<small class="cn">${np?np+' prog.':''}${np&&nr?' · ':''}${nr?nr+' rec.':''}</small>`:''}</th>`}).join('');
   let filas='';
-  D.act.forEach(t=>{const e=D.E[t];filas+=`<tr><td class="no sticky"><span class="rk">${esc(t)}</span></td><td class="eq sticky"><img src="${esc(e.logo||'')}" alt="" onerror="this.style.opacity=.2"><span>${esc(e.nombre)}</span></td>${D.celdas[t].map(c=>celdaHTML(c,D)).join('')}</tr>`});
+  D.act.forEach(t=>{const e=D.E[t];filas+=`<tr><td class="no sticky"><span class="rk">${esc(t)}</span></td><td class="eq sticky"><img crossorigin="anonymous" src="${esc(e.logo||'')}" alt="" onerror="this.style.opacity=.2"><span>${esc(e.nombre)}</span></td>${D.celdas[t].map(c=>celdaHTML(c,D)).join('')}</tr>`});
   const lst=a=>a.length?'<small>ID '+a.join(', ')+'</small>':'';
   const pie=`<tr><td class="no sticky"></td><td class="eq sticky ft">RESUMEN DE LA JORNADA</td>`+D.resumen.map(R=>{
     const nf=R.fa.length,np=R.fa.filter(x=>x.tipo=='pr').length,nr=nf-np,tot=R.f.length+R.ad.length+R.at.length+R.sf.length+nf;
@@ -318,11 +319,32 @@ function pintar(D){
   document.getElementById('dl').onclick=descargar;document.getElementById('act').onclick=()=>cargar(true);
   const sp=document.getElementById('selPart');if(sp){sp.onchange=()=>{PART_SEL=sp.value;mostrarPart(D)};if(PART_SEL&&[...sp.options].some(o=>o.value==PART_SEL))sp.value=PART_SEL;else PART_SEL='';mostrarPart(D)}
 }
-async function descargar(){
-  const w=document.getElementById('wrap'),ant=w.style.overflow,antH=w.style.maxHeight;w.style.overflow='visible';w.style.maxHeight='none';
-  try{const cv=await html2canvas(w,{scale:2,backgroundColor:'#ffffff',width:w.scrollWidth,windowWidth:w.scrollWidth+40});const a=document.createElement('a');a.download='control-juegos-fechas.png';a.href=cv.toDataURL('image/png');a.click()}
-  catch(e){alert('No se pudo generar la imagen: '+e.message)}finally{w.style.overflow=ant;w.style.maxHeight=antH}
+const escudosReporteCache=new Map();
+async function prepararEscudosReporte(doc){
+ const imgs=[...doc.querySelectorAll('img')];
+ await Promise.all(imgs.map(async im=>{const src=im.getAttribute('src');if(!src)throw Error('Falta la dirección de un escudo en el reporte.');const url=new URL(src,location.href).href;
+ if(!escudosReporteCache.has(url))escudosReporteCache.set(url,(async()=>{const r=await fetch(url,{mode:'cors',cache:'force-cache'});if(!r.ok)throw Error('No cargó un escudo ('+r.status+').');const b=await r.blob();return await new Promise((ok,no)=>{const rd=new FileReader();rd.onload=()=>ok(rd.result);rd.onerror=no;rd.readAsDataURL(b)});})().catch(e=>{escudosReporteCache.delete(url);throw e}));
+ im.src=await escudosReporteCache.get(url);await im.decode();
+ }));
 }
+let controlExportando=false;const controlUrls=[];
+async function descargar(){
+ if(controlExportando)return;controlExportando=true;const host=document.createElement('div');host.style.cssText='position:absolute;left:-12000px;top:0;width:816px;';document.body.append(host);
+ try{
+ const origen=document.querySelector('#wrap > table.r15t'),filas=[...origen.tBodies[0].rows],paginas=[];let page,body,tabla;
+ const nueva=()=>{page=document.createElement('div');page.className='r15-carta';page.style.cssText='width:816px;height:1056px;padding:24px;background:#fff;color:#1b2430;box-sizing:border-box;position:relative;overflow:hidden;';page.innerHTML='<div style="height:90px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #6bb12b"><img src="logo-liga.png.png" style="width:64px;height:64px;object-fit:contain"><div style="text-align:center"><b>Control de 15 juegos · Local y visitante</b><p style="font-size:11px">Los números JJL/JJV no equivalen a fechas fijas.</p></div><img src="laregionallstars.png" style="width:64px;height:64px;object-fit:contain"></div>';body=document.createElement('div');body.style.paddingTop='10px';page.append(body);host.append(page);paginas.push(page);};
+ for(let desde=0;desde<15;desde+=5){
+ const crearTabla=()=>{tabla=origen.cloneNode(false);tabla.style.cssText='width:768px;table-layout:fixed;';tabla.innerHTML='<colgroup><col style="width:24px"><col style="width:154px">'+'<col style="width:118px">'.repeat(5)+'</colgroup><thead><tr><th>ID</th><th>Equipo</th>'+Array.from({length:5},(_,i)=>'<th>Juego '+(desde+i+1)+'</th>').join('')+'</tr></thead><tbody></tbody>';body.append(tabla)};
+ nueva();crearTabla();
+ for(const f of filas){const r=f.cloneNode(false);[...f.cells].filter((_,i)=>i<2||i>=desde+2&&i<desde+7).forEach(c=>{const n=c.cloneNode(true);n.classList.remove('sticky');r.append(n)});tabla.tBodies[0].append(r);if(body.getBoundingClientRect().bottom-page.getBoundingClientRect().top>1000){r.remove();nueva();crearTabla();tabla.tBodies[0].append(r);}}
+ }
+ nueva();body.innerHTML='<h3>Resumen para completar 15 juegos</h3>'+document.querySelectorAll('#wrap > table.r15t')[1].outerHTML+'<p style="font-size:11px">Los jugados contra equipos en baja cuentan. Deportivo Azul conserva un juego contado; Galácticos tiene meta por definir. Los registros de más quedan señalados para revisión.</p>';
+ for(const t of body.querySelectorAll('table'))t.style.width='768px';
+ await prepararEscudosReporte(host);if(document.fonts)await document.fonts.ready;controlUrls.splice(0).forEach(u=>URL.revokeObjectURL(u));document.getElementById('control-descargas')?.remove();const links=document.createElement('div');links.id='control-descargas';links.style.cssText='display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;';document.getElementById('wrap').before(links);
+ for(let i=0;i<paginas.length;i++){const pie=document.createElement('div');pie.style.cssText='position:absolute;bottom:18px;left:24px;font-size:11px;';pie.textContent='Liga Next Level 7 · Hoja '+(i+1)+' de '+paginas.length;paginas[i].append(pie);const cv=await html2canvas(paginas[i],{scale:2,useCORS:true,backgroundColor:'#fff',logging:false});const blob=await NL7Juegos.pngCarta(cv);if(!blob)throw Error('No se pudo generar una hoja.');const u=URL.createObjectURL(blob);controlUrls.push(u);const a=document.createElement('a');a.href=u;a.download='control_15_juegos_carta_'+(i+1)+'.png';a.textContent='Descargar hoja '+(i+1)+' de '+paginas.length;a.className='dl';links.append(a);a.click();cv.width=cv.height=0;}
+ }catch(e){alert('No se pudo generar el control completo: '+e.message)}finally{host.remove();controlExportando=false}
+}
+
 async function leer(gid){
   try{const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}&t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('export');return csv(await r.text())}
   catch(e){const r=await fetch(PUB+gid+'&t='+Date.now(),{cache:'no-store'});return csv(await r.text())}
@@ -337,12 +359,18 @@ async function cargar(manual){
 }
 // Salida del control histórico adaptada al esquema JJL/JJV. No deduce fechas por ID.
 function controlFechas(pa,eq){
- const G=NL7Juegos,convert=r=>{const o={};for(const k in r)o[({'id_partido':'ID_Partido','equipo_local':'Equipo_Local','equipo_visita':'Equipo_Visita','goles_local':'Goles_Local','goles_visita':'Goles_Visita','ganado_por':'Ganado_Por','id_equipo':'ID_Equipo','jjl':'JJL','jjv':'JJV','fecha_original':'Fecha_Original','fecha_prevista':'Fecha_Prevista','fecha_correspondiente':'Fecha_Correspondiente','fecha_original_local':'Fecha_Original_Local','fecha_original_visitante':'Fecha_Original_Visitante'})[k]||k.charAt(0).toUpperCase()+k.slice(1)]=r[k];return o;};
+ const G=NL7Juegos,convert=r=>{const o={};for(const k in r)o[({'url':'URL','id_partido':'ID_Partido','equipo_local':'Equipo_Local','equipo_visita':'Equipo_Visita','goles_local':'Goles_Local','goles_visita':'Goles_Visita','ganado_por':'Ganado_Por','id_equipo':'ID_Equipo','jjl':'JJL','jjv':'JJV','fecha_original':'Fecha_Original','fecha_prevista':'Fecha_Prevista','fecha_correspondiente':'Fecha_Correspondiente','fecha_original_local':'Fecha_Original_Local','fecha_original_visitante':'Fecha_Original_Visitante'})[k]||k.charAt(0).toUpperCase()+k.slice(1)]=r[k];return o;};
  const E=eq.map(convert),P=G.correcciones(pa.map(convert));const activos=E.filter(e=>String(e.Status).toLowerCase()!=='baja'&&!BAJA_FORZADA.includes(String(e.ID_Equipo))),ids=new Set(activos.map(e=>String(e.ID_Equipo)));
  const a=P.filter(p=>!G.esCubierto(p,E)&&!G.estado(p).includes('cancel')&&(G.estado(p)==='jugado'||ids.has(String(p.Equipo_Local))&&ids.has(String(p.Equipo_Visita))));
- const filas=activos.map(e=>{const r=G.resumen(a,e.ID_Equipo),contado=String(e.ID_Equipo)==='17'?1:0;const b=G.balance(r,e,contado);return `<tr><td>${G.esc(e.Nombre)}</td><td>${r.jugados}</td><td>${r.local}</td><td>${r.visita}</td><td>${r.programados}</td><td>${contado}</td><td>${b.especial?'Por definir':b.faltan}</td><td>${b.excedentes||'—'}</td></tr>`}).join('');
- const contenido=`<table class="jg-tabla"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Contados</th><th>Faltan para 15</th><th>Cruces de más por revisar</th></tr></thead><tbody>${filas}</tbody></table>`+G.tabla(a,E)+`<p class="jg-nota">Se mantienen las correcciones ID 28 y 70, las bajas de Ballenitas y Dream team, el juego contado de Deportivo Azul contra Puebla 450 y el descanso inicial de Galácticos. El descanso no se suma a partidos jugados. Para propuestas con horarios y campos utiliza el reporte por equipo.</p>`;
- document.getElementById('r15').innerHTML=`<div class="r15-top"><button id="act" class="dl">Actualizar</button><button id="dl" class="dl">Descargar PNG</button><a href="reporte_por_equipo.html">Reportes y propuestas</a></div><p id="est"></p><div id="wrap" class="wrap">${G.documento('Control por juegos y fechas',contenido)}</div>`;
+ const D={E:Object.fromEntries(E.map(e=>[String(e.ID_Equipo),{nombre:e.Nombre,logo:e.URL,baja:!ids.has(String(e.ID_Equipo))}]))};
+ const filas=activos.map(e=>{const id=String(e.ID_Equipo),r=G.resumen(a,id),b=G.balance(r,e,id==='17'?1:0),part=a.filter(p=>G.involucra(p,id));
+ const celdas=Array.from({length:15},(_,i)=>{const juegos=part.filter(p=>G.numero(p,String(p.Equipo_Local)===id?'local':'visita')===i+1);if(!juegos.length)return '<td class="rc"><span class="tx">Sin registro</span></td>';
+ return '<td class="rc">'+juegos.map(p=>{const local=String(p.Equipo_Local)===id,rv=String(local?p.Equipo_Visita:p.Equipo_Local),jug=G.estado(p)==='jugado',gf=+(local?p.Goles_Local:p.Goles_Visita),gc=+(local?p.Goles_Visita:p.Goles_Local),k=jug?(gf>gc?'g':gf<gc?'p':'e'):'q';const cell=celdaHTML({k,id:p.ID_Partido,r:rv,txt:gf+' - '+gc,fecha:p.Fecha,hora:p.Hora,baja:D.E[rv]&&D.E[rv].baja},D);return '<table class="r15t" style="width:100%"><tbody><tr>'+cell.replace('</td>','<small>'+ (local?'Local':'Visitante') +'</small></td>')+'</tr></tbody></table>';}).join('')+'</td>';
+ }).join('');
+ return '<tr><td class="no sticky">'+G.esc(id)+'</td><td class="eq sticky"><img crossorigin="anonymous" src="'+G.esc(e.URL||'')+'" alt=""><span>'+G.esc(e.Nombre)+'</span><small style="display:block">'+r.jugados+' jugados · '+(b.especial?'Meta por definir':b.faltan+' por jugar')+(id==='17'?' · 1 contado':'')+'</small></td>'+celdas+'</tr>';
+ }).join('');
+ const resumen=activos.map(e=>{const r=G.resumen(a,e.ID_Equipo),c=String(e.ID_Equipo)==='17'?1:0,b=G.balance(r,e,c);return '<tr><td><img crossorigin="anonymous" style="width:30px;height:30px;object-fit:contain;vertical-align:middle" src="'+G.esc(e.URL||'')+'"> '+G.esc(e.Nombre)+'</td><td>'+r.jugados+'</td><td>'+r.local+'</td><td>'+r.visita+'</td><td>'+r.programados+'</td><td>'+c+'</td><td>'+(b.especial?'Por definir':b.faltan)+'</td><td>'+(b.excedentes||'—')+'</td></tr>';}).join('');
+ document.getElementById('r15').innerHTML=`<div class="r15-top"><button id="act" class="dl">Actualizar</button><button id="dl" class="dl">Descargar PNG</button><a href="reporte_por_equipo.html">Reportes y propuestas</a></div><p id="est"></p><div id="wrap" class="wrap"><h2>Control de 15 juegos · Local y visitante</h2><p class="nota">Cada columna conserva el número JJL/JJV registrado. Puede contener varios partidos; no representa una fecha fija. Los pendientes sin número aparecen en el listado inferior.</p><table class="r15t" style="table-layout:fixed;width:2030px"><colgroup><col style="width:40px"><col style="width:190px">${'<col style="width:120px">'.repeat(15)}</colgroup><thead><tr><th class="sticky">ID</th><th class="sticky">Equipo</th>${Array.from({length:15},(_,i)=>'<th>Juego '+(i+1)+'</th>').join('')}</tr></thead><tbody>${filas}</tbody></table><div class="leg">Verde: ganó · Amarillo: empató · Rojo: perdió · Azul: programado. Los juegos disputados contra bajas cuentan. Deportivo Azul tiene un juego contado adicional; Galácticos conserva su meta por definir.</div><table class="r15t"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Contados</th><th>Faltan para 15</th><th>Cruces de más por revisar</th></tr></thead><tbody>${resumen}</tbody></table></div><h2>Partidos y fechas registrados</h2>${G.tabla(a,E)}`;
  document.getElementById('dl').onclick=descargar;document.getElementById('act').onclick=()=>cargar(true);DATOS={P,E};
 }
 
@@ -351,4 +379,5 @@ cargar();setInterval(cargar,REFRESCO_MS);document.addEventListener('visibilitych
 </script>
 </body>
 </html>
+
 
