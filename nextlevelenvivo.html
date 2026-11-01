@@ -105,6 +105,10 @@ body{background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-hei
 .cancha-nombre{font-size:16px;font-weight:900;color:var(--text);margin-bottom:4px;}
 .cancha-status{font-size:12px;color:var(--text2);}
 .cancha-opcion.ocupada .cancha-status{color:#ef9090;}
+
+body{background:radial-gradient(ellipse at top,#143443,#091828 70%);background-attachment:fixed}.app{max-width:1000px;padding:18px 20px 40px}.admin-nav{position:relative;z-index:10001;display:flex;gap:8px;max-width:1000px;margin:auto;padding:12px 20px;flex-wrap:wrap}.admin-nav a{position:static;min-height:44px;padding:11px 14px;border-radius:12px;font-size:12px;color:#dce8c8;background:#132e2e;border:1px solid #708c4e;text-decoration:none;display:flex;align-items:center}.header{background:linear-gradient(125deg,#24432a,#152e42);border:1px solid #93af5d55;border-radius:20px;padding:24px}.header h1{font-size:27px}.header .live-badge{background:#213f32;border:1px solid #8ca65b;color:#d9e5b0}.cambiar-cancha-btn{min-height:44px;padding:11px 16px;border-radius:12px}.tab{min-height:48px;border-radius:12px}.tab.active{background:#79963c;border-color:#a4ba6d}.section{padding:20px;border-radius:18px;background:#102636;border-color:#617d4b44}.section h3{font-size:12px;color:#b7c9a8;line-height:1.5}.filtros-p{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.filtros-p .fcol.ancho{grid-column:auto}.psel{min-height:46px;border-radius:11px;font-size:13px;max-width:100%}.partido-item{padding:15px;border-radius:14px;min-height:82px}.pinfo{min-width:0}.pinfo strong{font-size:14px;line-height:1.4}.pinfo small{line-height:1.6;display:block;margin-top:5px;overflow-wrap:anywhere}.plogo{width:42px;height:42px;flex:none}.pbadge{flex:none;font-size:10px}.live-juegos{text-align:center;font-size:12px;color:#bfcea9;margin:12px 0;line-height:1.6}.scoreboard{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr);gap:12px;background:linear-gradient(130deg,#143c32,#122b40);padding:25px 16px;border:1px solid #a3b85a44;border-radius:20px}.team-card{width:auto;min-width:0}.tlogo-box{width:85px;height:85px;margin:auto}.tname{overflow-wrap:anywhere;line-height:1.4;font-size:14px}.score-box{width:auto;min-width:0}.snum{font-size:clamp(40px,5vw,65px)}.stime{font-variant-numeric:tabular-nums}.match-btns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:15px 0}.mbtn{min-height:48px;padding:12px 8px;font-size:12px}.match-btns .spill{grid-column:1 / -1;text-align:center;margin:0}.actions-grid{gap:16px}.act-col{background:#142e3b;padding:16px;border:1px solid #738c4a44;border-radius:15px}.act-title{font-size:13px;min-height:44px;line-height:1.4;margin-bottom:14px}.act-row{padding:8px 0 14px;margin-bottom:9px;border-bottom:1px solid #a6bc7322;gap:8px}.act-row>span{font-size:12px}.act-col .psel{margin:5px 0;background:#0c2030}.btn{min-height:46px;font-size:12px;padding:10px 14px}.event-help{font-size:12px;color:#b0c3a1;line-height:1.6;margin:-3px 0 15px}.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.stat-mini{width:auto;min-width:0}.asistencia-box{gap:14px}.asistencia-col{min-width:0}.asist-save-btn{min-height:46px;white-space:normal;line-height:1.5;margin-top:12px}.save-btn,.danger-btn{min-height:48px;border-radius:12px;line-height:1.5}.save-feedback{font-size:12px;text-align:left;color:#dfdba2;line-height:1.6;margin:15px auto;padding:0 12px;max-width:700px}.save-feedback:empty{display:none}.events-list{max-height:350px}.btn:disabled,.save-btn:disabled,.asist-save-btn:disabled{opacity:.5;cursor:wait}button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #c5d46c;outline-offset:3px}
+@media(max-width:650px){.admin-nav{padding:10px;gap:5px}.admin-nav a{font-size:10px;padding:10px}.app{padding:12px 10px 30px}.header{padding:22px 12px}.header h1{font-size:23px}.section{padding:14px}.filtros-p{gap:8px}.psel{font-size:12px}.partido-item{flex-wrap:wrap;padding:12px}.pinfo strong{font-size:12px}.pinfo small{font-size:10px}.pbadge{font-size:9px}.plogo{width:34px;height:34px}.scoreboard{padding:18px 8px;gap:5px}.tlogo-box{width:60px;height:60px}.tname{font-size:11px}.snum{font-size:40px}.ssep{font-size:23px}.score-nums{gap:4px}.live-juegos{font-size:10px}.actions-grid{grid-template-columns:1fr}.act-col{padding:14px}.btn{min-width:110px}.asistencia-box{grid-template-columns:1fr!important;display:grid;gap:12px}.asistencia-col{width:100%}.mbtn{font-size:10px;padding:10px 3px}.stat-mini{padding:10px 3px}.stat-lbl{font-size:10px}.save-btn,.danger-btn{width:100%;margin:8px 0}#login-screen>div{max-width:calc(100% - 24px)!important}#cancha-screen .cancha-wrap{padding:20px 12px;max-width:100%}}
+html{background:#091828}.save-feedback:not(:empty){background:#152e38;border:1px solid #82965b55;border-radius:12px;padding:14px}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -159,8 +163,9 @@ var db = firebase.database();
   </div>
 </div>
 
-<a href="index.html" class="inicio-btn">← Inicio</a>
+<nav class="admin-nav" aria-label="Navegación"><a href="index.html" class="inicio-btn">← Inicio</a>
 <a href="backfill-participaciones.html" class="asist-atrasadas-btn">📋 Asistencias Atrasadas</a>
+<a href="envivo-publico.html" target="_blank" rel="noopener">Ver público ↗</a></nav>
 <div class="app" id="main-app" style="display:none;">
   <div class="header">
     <div class="live-badge"><span class="live-dot"></span> PANEL CONTROL · CANCHA <span id="cancha-badge">-</span></div>
@@ -181,7 +186,6 @@ var db = firebase.database();
       <h3>Partidos programados — toca para transmitir</h3>
       <div class="filtros-p">
         <div class="fcol ancho"><label>📅 Fecha</label><select id="f-fecha" class="psel" onchange="aplicarFiltrosPartidos()"></select></div>
-        <div class="fcol"><label>🔢 Jornada</label><select id="f-jornada" class="psel" onchange="aplicarFiltrosPartidos()"></select></div>
         <div class="fcol"><label>🏟️ Campo</label><select id="f-campo" class="psel" onchange="aplicarFiltrosPartidos()"></select></div>
       </div>
       <div class="resumen-p"><span id="resumen-filtros"></span><button onclick="quitarFiltrosPartidos()">Ver todos</button></div>
@@ -192,6 +196,7 @@ var db = firebase.database();
   <div id="tab-live" class="hidden">
     <div class="active-bar" id="active-bar">Ningún partido seleccionado</div>
 
+    <div class="live-juegos" id="live-juegos"></div>
     <div class="scoreboard">
       <div class="team-card">
         <div class="tlogo-box"><img id="logo-local" src="" alt="local"></div>
@@ -231,29 +236,29 @@ var db = firebase.database();
             <div id="lista-asist-visita"></div>
          </div>
       </div>
-      <button class="asist-save-btn" onclick="enviarSoloAsistencia()">✔️ Confirmar y Ocultar Lista de Asistencia</button>
+      <button class="asist-save-btn" id="btn-guardar-asistencia" onclick="enviarSoloAsistencia()">Enviar asistencia a la hoja</button>
     </div>
 
     <div class="section">
-      <h3>Registrar evento</h3>
+      <h3>Registrar evento</h3><p class="event-help">Selecciona al jugador antes de registrar su gol o tarjeta. Si no lo eliges, se conserva como jugador anónimo.</p>
       <div class="actions-grid">
         <div class="act-col">
           <div class="act-title"><img id="act-logo-local" class="act-logo" src=""><span id="act-name-local">Local</span></div>
-          <div class="act-row"><span>⚽ Gol Local</span><div class="bpair"><button class="btn btn-goal" onclick="addEvent('goal','local')">+1 Gol</button></div></div>
           <select class="psel" id="sel-goal-local"><option value="">— Seleccionar Jugador —</option></select>
-          <div class="act-row" style="margin-top:4px"><span><span class="yb"></span>Amarilla</span><button class="btn btn-yellow" onclick="addEvent('yellow','local')">+1 Tarjeta</button></div>
+          <div class="act-row"><span>⚽ Gol Local</span><div class="bpair"><button class="btn btn-goal" onclick="addEvent('goal','local')">+1 Gol</button></div></div>
           <select class="psel" id="sel-yellow-local"><option value="">— Seleccionar Jugador —</option></select>
-          <div class="act-row" style="margin-top:4px"><span><span class="rb"></span>Roja</span><button class="btn btn-red" onclick="addEvent('red','local')">+1 Tarjeta</button></div>
+          <div class="act-row" style="margin-top:4px"><span><span class="yb"></span>Amarilla</span><button class="btn btn-yellow" onclick="addEvent('yellow','local')">+1 Tarjeta</button></div>
           <select class="psel" id="sel-red-local"><option value="">— Seleccionar Jugador —</option></select>
+          <div class="act-row" style="margin-top:4px"><span><span class="rb"></span>Roja</span><button class="btn btn-red" onclick="addEvent('red','local')">+1 Tarjeta</button></div>
         </div>
         <div class="act-col">
           <div class="act-title"><img id="act-logo-visita" class="act-logo" src=""><span id="act-name-visita">Visita</span></div>
-          <div class="act-row"><span>⚽ Gol Visita</span><div class="bpair"><button class="btn btn-goal" onclick="addEvent('goal','visita')">+1 Gol</button></div></div>
           <select class="psel" id="sel-goal-visita"><option value="">— Seleccionar Jugador —</option></select>
-          <div class="act-row" style="margin-top:4px"><span><span class="yb"></span>Amarilla</span><button class="btn btn-yellow" onclick="addEvent('yellow','visita')">+1 Tarjeta</button></div>
+          <div class="act-row"><span>⚽ Gol Visita</span><div class="bpair"><button class="btn btn-goal" onclick="addEvent('goal','visita')">+1 Gol</button></div></div>
           <select class="psel" id="sel-yellow-visita"><option value="">— Seleccionar Jugador —</option></select>
-          <div class="act-row" style="margin-top:4px"><span><span class="rb"></span>Roja</span><button class="btn btn-red" onclick="addEvent('red','visita')">+1 Tarjeta</button></div>
+          <div class="act-row" style="margin-top:4px"><span><span class="yb"></span>Amarilla</span><button class="btn btn-yellow" onclick="addEvent('yellow','visita')">+1 Tarjeta</button></div>
           <select class="psel" id="sel-red-visita"><option value="">— Seleccionar Jugador —</option></select>
+          <div class="act-row" style="margin-top:4px"><span><span class="rb"></span>Roja</span><button class="btn btn-red" onclick="addEvent('red','visita')">+1 Tarjeta</button></div>
         </div>
       </div>
     </div>
@@ -288,8 +293,8 @@ var db = firebase.database();
     </div>
 
     <div style="text-align:center;margin-top:10px;padding-bottom:20px;">
-      <button class="save-btn" onclick="guardarPartidoFirebase()">💾 Guardar Historial y Eventos</button>
-      <button class="danger-btn" onclick="resetLive()">🗑 Limpiar Transmisión Activa</button>
+      <button class="save-btn" id="btn-guardar-final" onclick="guardarPartidoFirebase()">💾 Guardar Historial y Eventos</button>
+      <p class="save-feedback" id="save-feedback" role="status"></p><button class="danger-btn" onclick="resetLive()">🗑 Limpiar Transmisión Activa</button>
     </div>
   </div>
 </div>
@@ -385,21 +390,13 @@ function cambiarCancha(){
   iniciarSelectorCancha();
 }
 
-function parseCSV(text){
-  var lines=text.trim().split('\n');
-  var headers=lines[0].split(',').map(function(h){return h.trim().replace(/^"|"$/g,'').replace(/\r/g,'');});
-  return lines.slice(1).filter(function(l){return l.trim();}).map(function(line){
-    var vals=[],cur='',inQ=false;
-    for(var i=0; i<line.length; i++){var c=line[line[i] === '"' ? i : i]; if(c==='"')inQ=!inQ;else if(c===','&&!inQ){vals.push(cur.trim());cur='';}else cur+=c;}
-    vals.push(cur.trim());
-    var obj={};
-    headers.forEach(function(h,i){
-      var v = (vals[i]||'').replace(/^"|"$/g,'').replace(/\r/g,'').trim();
-      obj[h]=v;
-    });
-    return obj;
-  });
-}
+// Reloj compatible: inicioTimestamp es el origen del tiempo total, incluso después de reanudar.
+function segundosEstado(d,ahora){d=d||{};var ts=Number(d.inicioTimestamp)||0;if(d.status==='inicio'&&ts>0)return Math.max(0,Math.floor(((ahora==null?Date.now():ahora)-ts)/1000));var s=Number(d.elapsedSeconds);if(d.elapsedSeconds!=null&&Number.isFinite(s))return Math.max(0,Math.floor(s));return Math.max(0,Math.floor((Number(d.minuto)||0)*60));}
+function relojTexto(s){s=Math.max(0,Math.floor(Number(s)||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
+function numeroJuego(v){var n=Number(v);return Number.isInteger(n)&&n>0?n:null;}
+function juegoLabel(n,lado){return (numeroJuego(n)?'Juego '+numeroJuego(n):'Juego sin número')+' · '+lado;}
+function escLive(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
+function parseCSV(text){var rows=[],row=[],f='',q=false;text=String(text||'');for(var i=0;i<text.length;i++){var c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}else if(c==='"')q=true;else if(c===','){row.push(f.trim());f='';}else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(f.trim());if(row.some(function(v){return v;}))rows.push(row);row=[];f='';}else f+=c;}if(f||row.length){row.push(f.trim());rows.push(row);}var h=(rows.shift()||[]).map(function(k){return k.replace(/^\uFEFF/,'').trim();});return rows.map(function(r){var o={};h.forEach(function(k,i){o[k]=r[i]||'';});return o;});}
 
 function inicializarAdmin(){
   Promise.all([
@@ -432,11 +429,12 @@ function engancharListenerCancha(){
   db.ref(CANCHA_PATH).on('value', snap => {
     liveState = snap.val();
     if(liveState && liveState.activo) {
+       var fuente=DB.rawPartidos.find(function(p){return String(p.ID_Partido||p.id_partido)===String(liveState.idPartidoReal);})||{};if(liveState.jjlReal==null)liveState.jjlReal=numeroJuego(fuente.JJL);if(liveState.jjvReal==null)liveState.jjvReal=numeroJuego(fuente.JJV);
        document.getElementById('active-bar').textContent = "Transmitiendo: " + liveState.nombreLocal + " vs " + liveState.nombreVisita;
        if(!partidoSeleccionado){
           partidoSeleccionado = DB.rawPartidos.find(p => (p.ID_Partido || p.id_partido || '') === liveState.idPartidoReal) || {
              ID_Partido: liveState.idPartidoReal,
-             Jornada: liveState.jornadaReal,
+             JJL: liveState.jjlReal, JJV: liveState.jjvReal,
              Fecha: liveState.fechaReal
           };
        }
@@ -455,9 +453,9 @@ function otraCanchaPath(){
 }
 
 // ════════════════════════════════
-//  FILTROS DE LA LISTA DE PARTIDOS (fecha · jornada · campo)
+//  FILTROS DE LA LISTA DE PARTIDOS (fecha · campo)
 // ════════════════════════════════
-var FILTRO = { fecha:'', jornada:'', campo:'', listo:false };
+var FILTRO = { fecha:'', campo:'', listo:false };
 var _otroIdCache = null;
 
 function fechaNumP(f){ var m = String(f||'').match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); return m ? (+m[3])*10000 + (+m[2])*100 + (+m[1]) : 0; }
@@ -467,52 +465,15 @@ function hora12P(h){ var m = String(h||'').match(/(\d+):(\d+)/); if(!m) return '
 function fechaTxtP(n){ var y = Math.floor(n/10000), mo = Math.floor(n/100)%100, d = n%100; return (d<10?'0':'')+d+'/'+(mo<10?'0':'')+mo+'/'+y; }
 function diaSemP(n){ var y = Math.floor(n/10000), mo = Math.floor(n/100)%100, d = n%100; return ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][new Date(y, mo-1, d).getDay()]; }
 
-// Arma las listas de fecha / jornada / campo con lo que hay programado, y deja una fecha por defecto
+// Arma las listas de fecha / campo con lo que hay programado, y deja una fecha por defecto
 function prepararFiltros(){
-  var fechas = {}, jornadas = {}, campos = {};
-  DB.partidos.forEach(function(p){
-    var fn = fechaNumP(p.Fecha || p.fecha); if(fn) fechas[fn] = (fechas[fn]||0) + 1;
-    var j = String(p.Jornada || p.jornada || '').trim(); if(j) jornadas[j] = (jornadas[j]||0) + 1;
-    var c = canchaNumP(p); if(c) campos[c] = (campos[c]||0) + 1;
-  });
-  var fechasOrd = Object.keys(fechas).map(Number).sort(function(x,y){return x-y;});
-  var jornadasOrd = Object.keys(jornadas).sort(function(x,y){return (+x)-(+y);});
-  var camposOrd = Object.keys(campos).sort();
-
-  if(!FILTRO.listo){
-    // fecha por defecto: la más cercana de hoy en adelante (si ya pasaron todas, se muestran todas)
-    var hoy = new Date(), hoyN = hoy.getFullYear()*10000 + (hoy.getMonth()+1)*100 + hoy.getDate();
-    var prox = fechasOrd.filter(function(f){ return f >= hoyN; })[0];
-    FILTRO.fecha = prox ? String(prox) : '';
-    FILTRO.jornada = '';
-    FILTRO.listo = true;
-  }
-  if(FILTRO.fecha && !fechas[FILTRO.fecha]) FILTRO.fecha = '';
-  if(FILTRO.jornada && !jornadas[FILTRO.jornada]) FILTRO.jornada = '';
-  if(FILTRO.campo && !campos[FILTRO.campo]) FILTRO.campo = '';
-
-  var selF = document.getElementById('f-fecha'), selJ = document.getElementById('f-jornada'), selC = document.getElementById('f-campo');
-  selF.innerHTML = '<option value="">Todas las fechas</option>' + fechasOrd.map(function(f){
-    return '<option value="'+f+'">'+fechaTxtP(f)+' · '+diaSemP(f)+' ('+fechas[f]+')</option>'; }).join('');
-  selJ.innerHTML = '<option value="">Todas las jornadas</option>' + jornadasOrd.map(function(j){
-    return '<option value="'+j+'">Jornada '+j+' ('+jornadas[j]+')</option>'; }).join('');
-  selC.innerHTML = '<option value="">Todos los campos</option>' + camposOrd.map(function(c){
-    return '<option value="'+c+'">Campo '+c+' ('+campos[c]+')</option>'; }).join('');
-  selF.value = FILTRO.fecha; selJ.value = FILTRO.jornada; selC.value = FILTRO.campo;
+ var fechas={},campos={};DB.partidos.forEach(function(p){var f=fechaNumP(p.Fecha||p.fecha),c=canchaNumP(p);if(f)fechas[f]=(fechas[f]||0)+1;if(c)campos[c]=(campos[c]||0)+1;});var fs=Object.keys(fechas).map(Number).sort(function(a,b){return a-b;});
+ if(!FILTRO.listo){var h=new Date(),n=h.getFullYear()*10000+(h.getMonth()+1)*100+h.getDate(),prox=fs.find(function(f){return f>=n;});FILTRO.fecha=prox?String(prox):'';FILTRO.listo=true;}
+ if(FILTRO.fecha&&!fechas[FILTRO.fecha])FILTRO.fecha='';if(FILTRO.campo&&!campos[FILTRO.campo])FILTRO.campo='';
+ var f=document.getElementById('f-fecha'),c=document.getElementById('f-campo');f.innerHTML='<option value="">Todas las fechas</option>'+fs.map(function(v){return '<option value="'+v+'">'+fechaTxtP(v)+' · '+diaSemP(v)+' ('+fechas[v]+')</option>';}).join('');c.innerHTML='<option value="">Todos los campos</option>'+Object.keys(campos).sort().map(function(v){return '<option value="'+escLive(v)+'">Campo '+escLive(v)+' ('+campos[v]+')</option>';}).join('');f.value=FILTRO.fecha;c.value=FILTRO.campo;
 }
-
-function aplicarFiltrosPartidos(){
-  FILTRO.fecha = document.getElementById('f-fecha').value;
-  FILTRO.jornada = document.getElementById('f-jornada').value;
-  FILTRO.campo = document.getElementById('f-campo').value;
-  pintarListaPartidos(_otroIdCache);
-}
-
-function quitarFiltrosPartidos(){
-  FILTRO.fecha = ''; FILTRO.jornada = ''; FILTRO.campo = '';
-  document.getElementById('f-fecha').value = ''; document.getElementById('f-jornada').value = ''; document.getElementById('f-campo').value = '';
-  pintarListaPartidos(_otroIdCache);
-}
+function aplicarFiltrosPartidos(){FILTRO.fecha=document.getElementById('f-fecha').value;FILTRO.campo=document.getElementById('f-campo').value;pintarListaPartidos(_otroIdCache);}
+function quitarFiltrosPartidos(){FILTRO.fecha='';FILTRO.campo='';document.getElementById('f-fecha').value='';document.getElementById('f-campo').value='';pintarListaPartidos(_otroIdCache);}
 
 function renderPartidosTab(){
   prepararFiltros();
@@ -536,7 +497,6 @@ function pintarListaPartidos(otroIdEnVivo){
   var lista = [];
   DB.partidos.forEach(function(p, idx){
     if(FILTRO.fecha && String(fechaNumP(p.Fecha || p.fecha)) !== FILTRO.fecha) return;
-    if(FILTRO.jornada && String(p.Jornada || p.jornada || '').trim() !== FILTRO.jornada) return;
     if(FILTRO.campo && canchaNumP(p) !== FILTRO.campo) return;
     lista.push({p:p, idx:idx});
   });
@@ -548,7 +508,7 @@ function pintarListaPartidos(otroIdEnVivo){
   });
   if(resumen) resumen.textContent = 'Mostrando ' + lista.length + ' de ' + DB.partidos.length + ' programados';
   if(!lista.length){
-    cont.innerHTML = '<div class="loading">No hay partidos con esos filtros.<br>Cambia la fecha, la jornada o el campo, o toca «Ver todos».</div>';
+    cont.innerHTML = '<div class="loading">No hay partidos con esos filtros.<br>Cambia la fecha o el campo, o toca «Ver todos».</div>';
     return;
   }
   var html = '';
@@ -564,11 +524,11 @@ function pintarListaPartidos(otroIdEnVivo){
       ? '<span class="pbadge" style="background:#5a2020;color:#ef9090">🔴 En vivo (otra cancha)</span>'
       : '<span class="pbadge">Transmitir</span>';
     var fn = fechaNumP(p.Fecha || p.fecha), cn = canchaNumP(p);
-    var detalle = 'Jornada ' + (p.Jornada || p.jornada || '-') + ' · ' + (fn ? fechaTxtP(fn).slice(0,5) + ' ' + diaSemP(fn) : 'sin fecha')
+    var detalle = 'ID ' + idReal + ' · ' + juegoLabel(p.JJL,'Local') + ' / ' + juegoLabel(p.JJV,'Visitante') + ' · ' + (fn ? fechaTxtP(fn).slice(0,5) + ' ' + diaSemP(fn) : 'sin fecha')
                 + ' · ' + hora12P(p.Hora || p.hora) + (cn ? ' · Campo ' + cn : '');
     html += `<div class="partido-item" onclick="seleccionarPartido(${idx})">
-      <img class="plogo" src="${el.logo}" onerror="this.style.opacity=0">
-      <div class="pinfo"><strong>${el.nombre} vs ${ev.nombre}</strong><small>${detalle}</small></div>
+      <img class="plogo" src="${escLive(el.logo)}" onerror="this.style.opacity=0">
+      <div class="pinfo"><strong>${escLive(el.nombre)} vs ${escLive(ev.nombre)}</strong><small>${escLive(detalle)}</small></div>
       ${badgeHtml}
     </div>`;
   });
@@ -576,11 +536,12 @@ function pintarListaPartidos(otroIdEnVivo){
 }
 
 function seleccionarPartido(idx){
-  partidoSeleccionado = DB.partidos[idx];
+  var candidato=DB.partidos[idx];if(!candidato)return;var cid=String(candidato.ID_Partido||candidato.id_partido||'');if(_otroIdCache&&cid===String(_otroIdCache)){alert('Este partido está activo en la otra cancha.');return;}if(liveState&&liveState.activo){if(cid===String(liveState.idPartidoReal)){showTab('live');return;}if(!confirm('Hay una transmisión activa en esta cancha. ¿Reemplazarla por el partido seleccionado?'))return;}
+  partidoSeleccionado = candidato;
   var idL = partidoSeleccionado.Equipo_Local || partidoSeleccionado.equipo_local;
   var idV = partidoSeleccionado.Equipo_Visita || partidoSeleccionado.equipo_visita;
   var idReal = partidoSeleccionado.ID_Partido || partidoSeleccionado.id_partido || (idL + "_" + idV);
-  var jReal = partidoSeleccionado.Jornada || partidoSeleccionado.jornada || "1";
+  var jReal = partidoSeleccionado.Jornada || partidoSeleccionado.jornada || ''; // Compatibilidad solo si existe en la fuente.
   var fReal = partidoSeleccionado.Fecha || partidoSeleccionado.fecha || "";
   
   var el = DB.equipos[idL] || {nombre: idL, logo:''};
@@ -597,12 +558,15 @@ function seleccionarPartido(idx){
     idVisita: idV,
     idPartidoReal: idReal,
     jornadaReal: jReal,
+    jjlReal: numeroJuego(partidoSeleccionado.JJL),
+    jjvReal: numeroJuego(partidoSeleccionado.JJV),
     fechaReal: fReal,
     scoreLocal: 0, scoreVisita: 0,
     yellowLocal: 0, redLocal: 0,
     yellowVisita: 0, redVisita: 0,
     minuto: 0,
     inicioTimestamp: 0,
+    elapsedSeconds: 0,
     metodoFin: "Normal",
     penalesGanador: "",
     events: []
@@ -749,16 +713,10 @@ function cargarJugadoresPorEquipo(){
 }
 
 function setStatus(st){
-  if(!liveState) return;
-  var updates = { status: st };
-  if(st === 'inicio') {
-     updates.inicioTimestamp = Date.now();
-  } else if(st === 'fin' || st === 'medio') {
-     if(liveState.inicioTimestamp){
-        updates.minuto = Math.floor((Date.now() - liveState.inicioTimestamp) / 60000);
-     }
-  }
-  db.ref(CANCHA_PATH).update(updates);
+ if(!liveState||!CANCHA_PATH)return;if(st==='inicio'&&liveState.status==='inicio')return;
+ var s=segundosEstado(liveState),updates={status:st,elapsedSeconds:s,minuto:Math.floor(s/60)};
+ if(st==='inicio')updates.inicioTimestamp=Date.now()-s*1000;
+ return db.ref(CANCHA_PATH).update(updates).catch(function(){alert('No se pudo cambiar el estado. Revisa la conexión.');});
 }
 
 function cambiarMetodoFin() {
@@ -821,11 +779,7 @@ function addEvent(type, team){
      if(checkObj) checkObj.checked = true;
   }
   
-  var min = 0;
-  if(liveState.inicioTimestamp) {
-     min = Math.floor((Date.now() - liveState.inicioTimestamp) / 60000);
-  }
-  if(min < 0) min = 0;
+  var min=Math.floor(segundosEstado(liveState)/60);
 
   var tName = team === 'local' ? liveState.nombreLocal : liveState.nombreVisita;
   var newEv = { type: type, team: team, teamName: tName, player: pName, playerId: jIdReal, idEquipo: String(idEq == null ? '' : idEq), minute: min };
@@ -858,11 +812,15 @@ function addEvent(type, team){
   });
 }
 
+var guardandoAsistencia=false,guardandoFinal=false;
+function informarGuardado(texto){document.getElementById('save-feedback').textContent=texto;}
+async function confirmacionEnvio(res){if(!res||res.type==='opaque')return false;if(!res.ok)throw Error('El servicio rechazó el envío');try{var d=await res.json();return d.ok===true||d.success===true||d.status==='ok';}catch(e){return false;}}
+
 function enviarSoloAsistencia() {
-  if(!liveState) return;
+  if(!liveState||guardandoAsistencia)return;
   
   var idPartidoActual = liveState.idPartidoReal || (liveState.idLocal + "_" + liveState.idVisita);
-  var jornadaPartido  = liveState.jornadaReal || "1";
+  var jornadaPartido=liveState.jornadaReal||'';
   
   var d = new Date();
   var fechaPartido = liveState.fechaReal || ((d.getDate()<10?'0':'')+d.getDate() + "/" + ((d.getMonth()+1)<10?'0':'')+(d.getMonth()+1) + "/" + d.getFullYear());
@@ -879,7 +837,9 @@ function enviarSoloAsistencia() {
         if(checkboxAsistencia && checkboxAsistencia.checked) {
             jugadoresAsistentes.push({
                idPartido: idPartidoActual,
-               jornada: jornadaPartido,
+               jornada: jornadaPartido, // Campo antiguo conservado sin inventar una jornada.
+               juego: eqField===String(liveState.idLocal)?liveState.jjlReal:liveState.jjvReal,
+               JJL: liveState.jjlReal, JJV: liveState.jjvReal,
                idEquipo: eqField,
                idJugador: jId,
                fecha: fechaPartido
@@ -888,6 +848,7 @@ function enviarSoloAsistencia() {
      }
   });
 
+  guardandoAsistencia=true;document.getElementById('btn-guardar-asistencia').disabled=true;
   fetch(SCRIPT_URL, {
     method: 'POST',
     mode: 'no-cors',
@@ -896,27 +857,28 @@ function enviarSoloAsistencia() {
       accion: 'guardar_asistencia',
       jugadores: jugadoresAsistentes
     })
-  }).then(() => {
-     alert("¡Asistencia guardada con éxito en Google Sheets!");
-     document.getElementById('seccion-asistencia').classList.add('hidden');
+  }).then(confirmacionEnvio).then(function(confirmado){
+     informarGuardado(confirmado?'Asistencia confirmada por el servicio.':'Asistencia enviada. El servicio no permite confirmar desde esta página si se guardó; comprueba la hoja antes de reenviar.');
+     if(confirmado)document.getElementById('seccion-asistencia').classList.add('hidden');
   }).catch(err => {
      console.error(err);
-     alert("Error al enviar la asistencia.");
-  });
+     informarGuardado('No se pudo enviar la asistencia. La selección se conserva.');
+  }).finally(function(){guardandoAsistencia=false;document.getElementById('btn-guardar-asistencia').disabled=false;});
 }
 
 function guardarPartidoFirebase(){
-  if(!liveState) return;
+  if(!liveState||guardandoFinal) return;
+  var estadoAGuardar=JSON.parse(JSON.stringify(liveState));
 
   // Revisión antes de guardar: que el marcador coincida con los goles registrados y que todos tengan jugador
-  var evsRev = liveState.events || [];
+  var evsRev = estadoAGuardar.events || [];
   var golesEvL = 0, golesEvV = 0, golesSinJugador = 0;
   evsRev.forEach(function(e) {
      if(e.type !== 'goal') return;
      if(e.team === 'local') golesEvL++; else golesEvV++;
-     if(!e.playerId && (!e.player || e.player === 'Jugador Anónimo' || !buscarJugadorEvento('', (e.player || '').split(' - ').slice(1).join(' - ') || e.player, e.team === 'local' ? liveState.idLocal : liveState.idVisita))) golesSinJugador++;
+     if(!e.playerId && (!e.player || e.player === 'Jugador Anónimo' || !buscarJugadorEvento('', (e.player || '').split(' - ').slice(1).join(' - ') || e.player, e.team === 'local' ? estadoAGuardar.idLocal : estadoAGuardar.idVisita))) golesSinJugador++;
   });
-  var scL = Number(liveState.scoreLocal) || 0, scV = Number(liveState.scoreVisita) || 0;
+  var scL = Number(estadoAGuardar.scoreLocal) || 0, scV = Number(estadoAGuardar.scoreVisita) || 0;
   var avisos = [];
   if(scL !== golesEvL || scV !== golesEvV) avisos.push("⚠️ El marcador dice " + scL + " - " + scV + " pero los goles registrados suman " + golesEvL + " - " + golesEvV + ".");
   if(golesSinJugador > 0) avisos.push("⚠️ Hay " + golesSinJugador + " gol(es) sin jugador identificado.");
@@ -925,15 +887,16 @@ function guardarPartidoFirebase(){
      : "¿Deseas guardar los eventos (Goles y Tarjetas) finales de este partido en Google Sheets?";
 
   if(confirm(textoConfirmar)){
-      var key = 'cancha' + canchaActual + '_' + liveState.idPartidoReal + "_" + Date.now();
+      guardandoFinal=true;document.getElementById('btn-guardar-final').disabled=true;
+      var key = 'cancha' + canchaActual + '_' + estadoAGuardar.idPartidoReal + "_" + Date.now();
       
-      var idPartidoActual = liveState.idPartidoReal || (liveState.idLocal + "_" + liveState.idVisita);
+      var idPartidoActual = estadoAGuardar.idPartidoReal || (estadoAGuardar.idLocal + "_" + estadoAGuardar.idVisita);
       var listaEventos = [];
-      var evs = liveState.events || [];
+      var evs = estadoAGuardar.events || [];
       
       evs.forEach(function(e) {
          var nombreLimpio = (e.player || '').split(' - ').slice(1).join(' - ') || e.player || '';
-         var idEqEvento = e.idEquipo || (e.team === 'local' ? liveState.idLocal : liveState.idVisita);
+         var idEqEvento = e.idEquipo || (e.team === 'local' ? estadoAGuardar.idLocal : estadoAGuardar.idVisita);
          var jugadorEncontrado = buscarJugadorEvento(e.playerId, nombreLimpio, idEqEvento);
          var idJugadorReal = jugadorEncontrado ? idDeJugadorObj(jugadorEncontrado) : "ANONIMO";
 
@@ -954,7 +917,7 @@ function guardarPartidoFirebase(){
          });
       });
 
-      db.ref('historial_partidos/' + key).set(liveState).then(() => {
+      db.ref('historial_partidos/' + key).set(estadoAGuardar).then(() => {
          return fetch(SCRIPT_URL, {
            method: 'POST',
            mode: 'no-cors',
@@ -965,33 +928,23 @@ function guardarPartidoFirebase(){
              idPartido: idPartidoActual, // <--- ESTA LÍNEA CONECTA CON EL SCRIPT
              golesLocal: scL,            // marcador final del tablero (para llenar Goles_Local en la hoja Partidos)
              golesVisita: scV,           // marcador final del tablero (para llenar Goles_Visita en la hoja Partidos)
-             idLocal: liveState.idLocal,
-             idVisita: liveState.idVisita,
-             guardadoPor: liveState.metodoFin || "Normal", // Método de finalización (Normal/Penales/Default)
-             penalesGanador: liveState.penalesGanador || "" // ID del equipo que ganó en penales (si aplica)
+             idLocal: estadoAGuardar.idLocal,
+             idVisita: estadoAGuardar.idVisita,
+             guardadoPor: estadoAGuardar.metodoFin || "Normal", // Método de finalización (Normal/Penales/Default)
+             penalesGanador: estadoAGuardar.penalesGanador || "" // ID del equipo que ganó en penales (si aplica)
            })
          });
-      }).then(() => {
-         alert("¡Eventos guardados e historial actualizado exitosamente!");
+      }).then(confirmacionEnvio).then(function(confirmado){
+         informarGuardado(confirmado?'Historial guardado en Firebase y eventos confirmados por el servicio.':'Historial guardado en Firebase. Eventos enviados a Google Sheets sin confirmación de guardado; verifica la hoja antes de volver a enviarlos.');
       }).catch(err => {
          console.error(err);
-         alert("Ocurrió un error.");
-      });
+         informarGuardado('No se completó el envío. Revisa Firebase y la hoja antes de reintentar.');
+      }).finally(function(){guardandoFinal=false;document.getElementById('btn-guardar-final').disabled=false;});
   }
 }
 
-function startTimer(ts){
-  if(localTimer) clearInterval(localTimer);
-  function tick(){
-    var s = Math.floor((Date.now() - ts) / 1000);
-    if(s<0) s=0;
-    var m = Math.floor(s/60), sc = s%60;
-    document.getElementById('match-time').textContent = m + ':' + (sc<10?'0':'') + sc;
-  }
-  tick();
-  localTimer = setInterval(tick, 1000);
-}
-function stopTimer(){ if(localTimer){clearInterval(localTimer); localTimer=null;} }
+function startTimer(d){stopTimer();function tick(){document.getElementById('match-time').textContent=relojTexto(segundosEstado(d));}tick();localTimer=setInterval(tick,1000);}
+function stopTimer(){if(localTimer){clearInterval(localTimer);localTimer=null;}}
 
 function showTab(tab) {
   if(tab === 'partidos') {
@@ -1020,6 +973,8 @@ function resetLive(){
 
 function actualizarUI(){
   var d = liveState;
+  document.getElementById('live-juegos').textContent='ID '+(d.idPartidoReal||'—')+' · '+juegoLabel(d.jjlReal,'Local')+' / '+juegoLabel(d.jjvReal,'Visitante')+(d.fechaReal?' · '+d.fechaReal:'');
+  document.getElementById('btn-inicio').textContent=d.status==='inicio'?'▶ En juego':segundosEstado(d)>0?'▶ Reanudar':'▶ Iniciar';
   document.getElementById('logo-local').src = d.logoLocal || '';
   document.getElementById('logo-visita').src = d.logoVisita || '';
   document.getElementById('name-local').textContent = d.nombreLocal || 'Local';
@@ -1043,9 +998,9 @@ function actualizarUI(){
   document.getElementById('btn-fin').classList.remove('active');
 
   var statusTxt = "Sin iniciar";
-  if(d.status==='inicio') { statusTxt="▶ En Vivo"; startTimer(d.inicioTimestamp); document.getElementById('btn-inicio').classList.add('active'); }
-  else if(d.status==='medio') { statusTxt="⏸ Medio Tiempo"; stopTimer(); document.getElementById('match-time').textContent = d.minuto+':00'; document.getElementById('btn-medio').classList.add('active'); }
-  else if(d.status==='fin') { statusTxt="🏁 Fin del Partido"; stopTimer(); document.getElementById('match-time').textContent = d.minuto+':00'; document.getElementById('btn-fin').classList.add('active'); }
+  if(d.status==='inicio') { statusTxt="▶ En Vivo"; startTimer(d); document.getElementById('btn-inicio').classList.add('active'); }
+  else if(d.status==='medio') { statusTxt="⏸ Medio Tiempo"; stopTimer(); document.getElementById('match-time').textContent = relojTexto(segundosEstado(d)); document.getElementById('btn-medio').classList.add('active'); }
+  else if(d.status==='fin') { statusTxt="🏁 Fin del Partido"; stopTimer(); document.getElementById('match-time').textContent = relojTexto(segundosEstado(d)); document.getElementById('btn-fin').classList.add('active'); }
   document.getElementById('spill').textContent = statusTxt;
   
   var evHtml = '';
@@ -1064,3 +1019,4 @@ function actualizarUI(){
 </script>
 </body>
 </html>
+
