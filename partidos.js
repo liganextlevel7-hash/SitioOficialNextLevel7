@@ -1095,28 +1095,28 @@ async function downloadPNGDescansos(){
 // Exportación acotada: cada equipo ocupa su propia columna y el centro no crece con sus etiquetas.
 function pngPagina(tipo,partidos,pagina,total,titulo,opciones){
  const G=NL7Juegos,E=Object.fromEntries(todosEquipos.map(e=>[String(e.ID_Equipo).trim(),e]));opciones=opciones||{};
- const root=document.createElement('div');root.className='png-pagina';root.style.cssText="position:relative;width:700px;min-height:900px;background:#071b10 url('fondonuevo.png') center top / cover no-repeat;padding:28px 24px 32px;box-sizing:border-box;color:#fff;font-family:Arial,sans-serif;";
+ const root=document.createElement('div');root.className='png-pagina';root.style.cssText="position:relative;width:816px;height:1056px;overflow:hidden;background-color:#071b10;background-image:linear-gradient(rgba(0,15,7,.25),rgba(0,15,7,.25)),url('fondonuevo.png');background-position:center bottom;background-size:100% 180%;padding:24px;box-sizing:border-box;color:#fff;font-family:Arial,sans-serif;";
  const content=document.createElement('div');content.style.cssText='position:relative;z-index:1;';
- const h=document.createElement('div');h.className='png-cabecera';h.style.cssText='padding-top:220px;text-align:center;margin-bottom:16px;';
- h.innerHTML=`<div style="font-size:32px;line-height:1.15;color:#8bd331;letter-spacing:2px;text-shadow:0 2px 4px #000">${G.esc(titulo)}</div>${opciones.subtitulo?`<div style="font-size:22px;margin-top:6px">${G.esc(opciones.subtitulo)}</div>`:''}<div style="font-size:12px;color:#d4e7be;margin-top:8px">Página ${pagina} de ${total}</div>`;content.append(h);
  const imagen=(url,w,h)=>`<img crossorigin="anonymous" src="${G.esc(url||'logo-liga.png.png')}" alt="" style="display:block;width:${w}px;height:${h}px;object-fit:contain;flex:none;" onerror="this.onerror=null;this.style.opacity='.25'">`;
+ const h=document.createElement('div');h.className='png-cabecera';h.style.cssText='height:112px;display:flex;align-items:center;justify-content:center;gap:20px;text-align:center;border-bottom:1px solid #7da632;background:#071b10;box-sizing:border-box;padding:8px;margin-bottom:8px;';
+ h.innerHTML=imagen('logo-liga.png.png',76,76)+`<div style="flex:1"><div style="font-size:25px;line-height:1.15;color:#a6dc53;font-weight:bold">${G.esc(titulo)}</div>${opciones.subtitulo?`<div style="font-size:19px;margin-top:5px">${G.esc(opciones.subtitulo)}</div>`:''}<div style="font-size:11px;color:#d4e7be;margin-top:5px">Página ${pagina} de ${total}</div></div>`+imagen('laregionallstars.png',76,76);content.append(h);
+ const rows=document.createElement('div');rows.style.cssText='height:620px;';
  for(const p of partidos){
-  const row=document.createElement('div');row.className='png-partido';row.dataset.id=String(p.ID_Partido);row.style.cssText=`display:grid;grid-template-columns:${tipo===3?'190px 252px 190px':'226px 180px 226px'};gap:10px;align-items:center;padding:${tipo===3?'12px 0':'14px 0'};min-height:${tipo===3?210:136}px;border-bottom:1px dotted #6d922b;box-sizing:border-box;width:652px;`;
-  const team=lado=>{const e=E[String(p[lado==='local'?'Equipo_Local':'Equipo_Visita']).trim()]||{},nom=e.Nombre||'Equipo por definir',num=G.numero(p,lado);const bloque=document.createElement('div');bloque.className='png-equipo';bloque.style.cssText='min-width:0;width:100%;text-align:center;box-sizing:border-box;';
+  const row=document.createElement('div');row.className='png-partido';row.dataset.id=String(p.ID_Partido);row.style.cssText='display:grid;grid-template-columns:270px 208px 270px;gap:10px;align-items:center;height:155px;border-bottom:1px dotted #6d922b;box-sizing:border-box;width:768px;';
+  const team=lado=>{const e=E[String(p[lado==='local'?'Equipo_Local':'Equipo_Visita']).trim()]||{},nom=e.Nombre||'Equipo por definir',num=G.numero(p,lado),bloque=document.createElement('div');bloque.className='png-equipo';bloque.style.cssText='width:100%;min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;';
    const juego=num?'Juego '+num+' · '+(lado==='local'?'Local':'Visitante'):(lado==='local'?'Local':'Visitante')+' · Sin número';
-   if(tipo===3){const logo=colEquipo(e,lado==='local'?'logo_local':'logo_visitante')||e.URL;bloque.innerHTML=`<div style="display:flex;justify-content:center">${imagen(logo,174,174)}</div><div class="png-numero" style="font-size:14px;line-height:1.3;color:#b9e879;margin-top:6px">${G.esc(juego)}</div>`;}
-   else if(tipo===2){bloque.innerHTML=`<div class="png-imagenes" style="display:flex;justify-content:center;align-items:center;gap:14px;height:88px;">${imagen(e.URL,68,76)}${e.Color_Playera?imagen(e.Color_Playera,82,88):''}</div><div class="png-nombre" style="font-size:14px;line-height:1.25;font-weight:700;white-space:normal;overflow-wrap:break-word;margin:6px 0 3px;">${G.esc(nom.toUpperCase())}</div><div style="font-size:11px;line-height:1.3;color:#b9e879">${G.esc(juego)}</div>`;}
-   else{bloque.innerHTML=`<div style="display:flex;gap:8px;align-items:center;justify-content:center;${lado==='local'?'flex-direction:row-reverse;':''}">${imagen(e.URL,80,88)}<div style="width:138px;min-width:0;"><div class="png-nombre" style="font-size:14px;line-height:1.25;font-weight:700;white-space:normal;overflow-wrap:break-word;">${G.esc(nom.toUpperCase())}</div><div style="font-size:11px;line-height:1.35;color:#b9e879;margin-top:6px">${G.esc(juego)}</div></div></div>`;}
-   return bloque;};
-  const mid=document.createElement('div');mid.className='png-centro';mid.style.cssText='width:100%;min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;line-height:1.25;';
+   const logo=tipo===3?(colEquipo(e,lado==='local'?'logo_local':'logo_visitante')||e.URL):e.URL;
+   const pics=tipo===2?`<div class="png-imagenes" style="display:flex;align-items:center;justify-content:center;gap:22px;${lado==='visita'?'flex-direction:row-reverse;':''}">${imagen(logo,86,92)}${e.Color_Playera?imagen(e.Color_Playera,86,92):''}</div>`:imagen(logo,tipo===3?108:96,96);
+   bloque.innerHTML=`<div class="png-numero" style="font-size:12px;color:#c8ef9a;line-height:16px">${G.esc(juego)}</div>${pics}<div class="png-nombre" style="font-size:14px;line-height:16px;font-weight:bold;white-space:normal;overflow-wrap:break-word;max-width:260px;">${G.esc(nom.toUpperCase())}</div>`;return bloque;};
+  const mid=document.createElement('div');mid.className='png-centro';mid.style.cssText='width:100%;min-width:0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1.2;';
   const jugado=G.estado(p)==='jugado'&&p.Goles_Local!==''&&p.Goles_Visita!=='';
-  mid.innerHTML=`<div style="font-size:${tipo===3?22:14}px;color:#f1f5ed">${G.esc(p.Fecha||'Fecha por definir')}</div><div style="width:24px;height:2px;background:#8bd331"></div><div style="font-size:${tipo===3?32:26}px;color:${jugado?'#ffd83d':'#d6dfd0'}">${jugado?G.esc(p.Goles_Local)+' – '+G.esc(p.Goles_Visita):'VS'}</div><div style="font-size:${tipo===3?29:20}px;font-weight:700;color:#ffd83d">${G.esc(formatHora(p.Hora)||'Horario por definir')}</div><div style="font-size:13px;color:#b9e879">${G.esc(p.Cancha||'Campo por definir')}</div><div style="font-size:10px;color:#c8d7bb">ID ${G.esc(p.ID_Partido)}</div>`;
-  row.append(team('local'),mid,team('visita'));content.append(row);
- }
- if(pagina===total&&opciones.fechaControl){const footer=document.createElement('div');footer.className='png-control-fechas';footer.style.cssText='margin-top:18px;padding:14px;background:rgba(0,12,6,.8);border:1px solid #5b7c2d;border-radius:10px;font-size:12px;line-height:1.5;box-sizing:border-box;';footer.innerHTML=G.leyendaFechas(todosPartidos,todosEquipos,opciones.fechaControl);content.append(footer);}
+  mid.innerHTML=`<div style="font-size:13px">${G.esc(p.Fecha||'Fecha por definir')}</div><div style="font-size:25px;color:#e1e8dc">${jugado?G.esc(p.Goles_Local)+' – '+G.esc(p.Goles_Visita):'VS'}</div><div style="font-size:24px;font-weight:bold;color:#ffd83d">${G.esc(formatHora(p.Hora)||'Por definir')}</div><div style="font-size:14px;color:#c8ef9a">${G.esc(p.Cancha||'Campo por definir')}</div><div style="font-size:10px;color:#c8d7bb">ID ${G.esc(p.ID_Partido)}</div>`;
+  row.append(team('local'),mid,team('visita'));rows.append(row);
+ }content.append(rows);
+ if(pagina===total&&opciones.fechaControl){const footer=document.createElement('div');footer.className='png-control-fechas';footer.style.cssText='margin-top:12px;padding:10px 12px;background:rgba(0,12,6,.92);border:1px solid #5b7c2d;border-radius:8px;font-size:11px;line-height:1.32;box-sizing:border-box;';footer.innerHTML=G.leyendaFechas(todosPartidos,todosEquipos,opciones.fechaControl);content.append(footer);}
  root.append(content);return root;
 }
-function pngAjustarPagina(root){const h=root.querySelector('.png-cabecera');for(let i=0;i<6;i++){const top=Math.max(220,Math.ceil(root.offsetHeight*.21)+10);if(Math.abs(parseFloat(h.style.paddingTop)-top)<2)break;h.style.paddingTop=top+'px';}}
+function pngAjustarPagina(root){if(root.firstElementChild.scrollHeight>1008)throw Error('El contenido excede la hoja carta. Reduce la selección.');}
 function construirPaginaReporte(p,n,total,t,v,d,a,o){return pngPagina(1,p,n,total,t,o);}
 function construirPaginaReporteV2(p,n,total,t,v,d,a,o){return pngPagina(2,p,n,total,t,o);}
 function construirPaginaReporteV3(p,n,total,t,d,a,o){return pngPagina(3,p,n,total,t,o);}
@@ -1128,7 +1128,7 @@ async function pngExportar(tipo){
   ultimosFiltrados=[];await cargarDatos();if(!ultimosFiltrados.length)throw Error(document.getElementById('statusMsg')?.textContent||'Selecciona fecha o equipo.');
   if(btn){btn.disabled=true;btn.textContent='Preparando imágenes…';}
   if(document.fonts?.ready)await document.fonts.ready;
-  const lista=document.getElementById('filterTipo').value==='equipo'?[...ultimosFiltrados]:ordenarPorCampoHora(ultimosFiltrados),porPagina=tipo===3?4:7,total=Math.ceil(lista.length/porPagina);
+  const lista=document.getElementById('filterTipo').value==='equipo'?[...ultimosFiltrados]:ordenarPorCampoHora(ultimosFiltrados),porPagina=4,total=Math.ceil(lista.length/porPagina);
   const fecha=document.getElementById('filterTipo').value==='fecha'?document.getElementById('filterFecha').value:'',titulo=fecha?encabezadoPorFecha(fecha,lista).titulo:document.getElementById('filterEquipo').value||'Partidos';
   pngDescargas.splice(0).forEach(u=>URL.revokeObjectURL(u));document.getElementById('png-descargas-listas')?.remove();
   box=document.createElement('div');box.id='png-descargas-listas';box.style.cssText='display:flex;gap:8px;flex-wrap:wrap;padding:14px;border:1px solid #6a913e;border-radius:10px;margin:12px 0;color:#e1f0cf;';box.setAttribute('aria-live','polite');const msg=document.createElement('div');msg.style.width='100%';box.append(msg);(document.getElementById('panel-imagenes')||document.getElementById('stackContainer')).prepend(box);
@@ -1137,8 +1137,8 @@ async function pngExportar(tipo){
    const temp=document.createElement('div');temp.style.cssText='position:absolute;left:-12000px;top:0;width:700px;';const page=pngPagina(tipo,lista.slice(i*porPagina,(i+1)*porPagina),i+1,total,titulo,{subtitulo:fecha,fechaControl:fecha});temp.append(page);document.body.append(temp);
    try{
     await esperarImagenesReporte(temp);pngAjustarPagina(page);
-    const canvas=await html2canvas(page,{useCORS:true,allowTaint:false,scale:window.__NL7_PNG_TEST_SCALE||4,backgroundColor:'#071b10',imageTimeout:20000,logging:false,windowWidth:1200,scrollX:0,scrollY:0});
-    const blob=await new Promise(ok=>canvas.toBlob(ok,'image/png'));if(!blob)throw Error('No se pudo preparar la imagen.');const url=URL.createObjectURL(blob);pngDescargas.push(url);canvas.width=canvas.height=0;
+    const canvas=await html2canvas(page,{useCORS:true,allowTaint:false,scale:window.__NL7_PNG_TEST_SCALE||2,backgroundColor:'#071b10',imageTimeout:20000,logging:false,windowWidth:1200,scrollX:0,scrollY:0});
+    const blob=await NL7Juegos.pngCarta(canvas);if(!blob)throw Error('No se pudo preparar la imagen.');const url=URL.createObjectURL(blob);pngDescargas.push(url);canvas.width=canvas.height=0;
     const a=document.createElement('a');a.href=url;a.download=`${tipo===3?'escudos_3d':tipo===2?'partidos_colores':'partidos_lista'}_pagina${i+1}.png`;a.textContent=`Descargar página ${i+1} de ${total}`;a.style.cssText='padding:11px;background:#25441a;color:#fff;border-radius:8px;text-decoration:none;';box.append(a);a.click();
    }finally{temp.remove();}
   }
