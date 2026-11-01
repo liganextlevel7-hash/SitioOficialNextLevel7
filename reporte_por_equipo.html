@@ -199,6 +199,8 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
  #stackContainer .stack-bottom-row{font-size:13px;gap:8px;margin-top:14px}
  #stackContainer .confirm-lado{min-width:0}#stackContainer .confirm-lado input{font-size:16px;min-height:44px}#stackContainer .confirm-lado button{min-height:44px;font-size:11px;letter-spacing:0}
 }
+
+.jg-tabla{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0;color:#1f2933}.jg-tabla th{background:#1d3d05;color:#fff;padding:9px 6px}.jg-tabla td{padding:9px 6px;border-bottom:1px solid #d6ddcf;vertical-align:middle}.jg-tabla small{display:block;margin-top:4px;font-size:10px;color:#6b7280}.jg-tabla .rq-rival img{width:32px;height:32px;object-fit:contain}.jg-resumen{display:flex;flex-wrap:wrap;gap:12px;padding:12px;background:#edf4e8}.jg-nota{font-size:12px;line-height:1.5;background:#f1f5ed;padding:12px}.jg-title{font-size:20px;color:#1d3d05}.rq-tabla .rq-rival span{white-space:normal;overflow-wrap:break-word}.rq-tabla small{display:block;margin-top:3px}.rq-body .juego-resumen{margin-bottom:18px}
 </style>
 </head>
 <body>
@@ -267,7 +269,7 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
 </div>
 <div id="vista-wrap" hidden><div id="vista"></div></div>
 
-<script src="juegos-control.js?v=20261031-png-reparado"></script>
+<script src="juegos-control.js?v=20261101-carta"></script>
 <script>
 // ═══════════════════════════════════════════════
 //  CONFIGURACIÓN
@@ -717,7 +719,7 @@ function encabezado(titulo, sub){
   const { hoy, fechaHoy } = contexto();
   return `<div class="rq-head">
     <div><div class="rq-liga">Liga Next Level 7 · Torneo Dominical</div><div class="rq-titulo">${esc(titulo)}</div><div class="rq-sub">${sub}</div></div>
-    <div class="rq-der"><div class="rq-logos"><img src="logo-liga.png.png" alt="" onerror="this.style.display='none'"><img src="laregionallstars.png" alt="" onerror="this.style.display='none'"></div>
+    <div class="rq-der"><div class="rq-logos"><img crossorigin="anonymous" src="logo-liga.png.png" alt="" onerror="this.style.display='none'"><img crossorigin="anonymous" src="laregionallstars.png" alt="" onerror="this.style.display='none'"></div>
       <div>Torneo iniciado el <b>${esc(FECHA_INICIO)}</b><br>Hoy: Fecha ${fechaHoy || '—'} · Emitido ${ahoraTxt()}</div></div></div>${notaRecordatorio()}`;
 }
 const PILL = {
@@ -789,10 +791,10 @@ function docEquipo(idE){
     const esp = `<b>F${f.fEsp}</b><small>${fmt(f.esperada)}</small>`;
     if (f.tipo === 'descanso') return `<tr class="fila-desc"><td class="n">—</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px">Descanso del rol</td><td><span class="rq-pill g">DESCANSO</span></td></tr>`;
     if (f.tipo === 'sinpartido') return `<tr class="fila-debe"><td class="n">—</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px"><b style="display:inline;color:#b42318">Sin partido asignado en el rol — debe jugar esta jornada</b></td><td><span class="rq-pill r">DEBE</span></td></tr>`;
-    if (f.tipo === 'cubierta'){ const rc = mapa[idRivalCub()] || {}; return `<tr class="fila-desc"><td class="n">${++nJuego}</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td>—</td><td><div class="rq-rival"><img src="${esc(rc['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rc['Nombre'] || RIVAL_CUBIERTA)}</span></div></td><td colspan="3" style="text-align:left;padding-left:10px">Se toma como jugado en la jornada ${f.j} (no se disputó); cuenta para estadísticas y jornadas</td><td><span class="rq-pill b">CONTADO</span></td></tr>`; }
+    if (f.tipo === 'cubierta'){ const rc = mapa[idRivalCub()] || {}; return `<tr class="fila-desc"><td class="n">${++nJuego}</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td>—</td><td><div class="rq-rival"><img crossorigin="anonymous" src="${esc(rc['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rc['Nombre'] || RIVAL_CUBIERTA)}</span></div></td><td colspan="3" style="text-align:left;padding-left:10px">Se toma como jugado en la jornada ${f.j} (no se disputó); cuenta para estadísticas y jornadas</td><td><span class="rq-pill b">CONTADO</span></td></tr>`; }
     if (f.tipo === 'sinasignar') return `<tr class="fila-desc"><td class="n">—</td><td class="j">J${f.j}</td><td class="idp">—</td><td>${esp}</td><td colspan="5" style="text-align:left;padding-left:14px">Aún sin partido asignado</td><td><span class="rq-pill g">SIN ASIGNAR</span></td></tr>`;
     const p = f.p, rid = rivalDe(p, idE), rv = mapa[rid] || {};
-    const rival = `<div class="rq-rival"><img src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + rid)}</span></div>`;
+    const rival = `<div class="rq-rival"><img crossorigin="anonymous" src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + rid)}</span></div>`;
     const real = f.fecha ? `<b>${fmt(f.fecha)}</b><small>${DIAS[f.fecha.getDay()]} · F${f.fReal}${hora12(p['Hora']) && f.tipo !== 'jugado' ? ' · ' + hora12(p['Hora']) : ''}</small>` : '—';
     if (f.tipo === 'jugado'){
       const m = (isNaN(f.r.gf) || isNaN(f.r.gc)) ? '—' : `${f.r.gf} - ${f.r.gc}`;
@@ -820,7 +822,7 @@ function docEquipo(idE){
     const k = PILL[x.tipo];
     const nota = x.baja ? 'Rival en baja' : x.tipo === 'tentativo' ? 'Se confirma el jueves anterior' : (x.tipo === 'debe' && x.fecha && x.cl === 'vencido') ? 'Fecha ya pasada' : '';
     return `<tr class="${x.tipo === 'debe' ? 'fila-debe' : ''}"><td class="n">${i + 1}</td><td class="j">${x.j != null ? 'J' + x.j : '—'}${x.j == null ? '<small>sin jornada</small>' : ''}</td><td class="idp">${idPartido(p)}</td><td>${fh}</td><td>${esc(p['Cancha'] || '—')}</td>
-      <td><div class="rq-rival"><img src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + x.rival)}</span></div></td>
+      <td><div class="rq-rival"><img crossorigin="anonymous" src="${esc(rv['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(rv['Nombre'] || 'Equipo ' + x.rival)}</span></div></td>
       <td><span class="rq-pill ${k[0]}">${k[1]}</span>${nota ? `<small style="display:block;margin-top:3px;color:#8a6100;font-weight:700">${nota}</small>` : ''}</td></tr>`;
   };
   const seccion = (titulo, arr, vacio) => `<div class="rq-tit">${titulo} (${arr.length})</div>` + (arr.length ? hdrPend + arr.map(filaPend).join('') + '</tbody></table>' : `<div style="padding:10px 14px;border:1px solid #a9d9b3;background:#e3f4e6;border-radius:6px;color:#1b6e2e;font-weight:700;font-size:13px">${vacio}</div>`);
@@ -828,7 +830,7 @@ function docEquipo(idE){
   return `<div class="rq-doc" style="width:900px">
     ${encabezado('Reporte de equipo', `Jornadas, fechas y resultados${eq['Descripción'] ? ' · ' + esc(eq['Descripción']) : ''}`)}
     <div class="rq-body">
-      <div class="rq-equipo"><img src="${esc(eq['URL'] || '')}" onerror="this.style.opacity='.15'"><div><h1>${esc(eq['Nombre'] || '')}</h1><small>${esBaja(eq) ? 'Equipo dado de baja' : 'Equipo activo'} · ${r.jugados} partido(s) jugado(s)</small></div></div>
+      <div class="rq-equipo"><img crossorigin="anonymous" src="${esc(eq['URL'] || '')}" onerror="this.style.opacity='.15'"><div><h1>${esc(eq['Nombre'] || '')}</h1><small>${esBaja(eq) ? 'Equipo dado de baja' : 'Equipo activo'} · ${r.jugados} partido(s) jugado(s)</small></div></div>
       <div class="rq-kpis">${kpis}</div>
       ${calendario}
       <div class="rq-situacion ${clase}"><div class="chips">${chips}</div>${textos.map(t => `<p>${t.replace(/\.\.(?=\s*$)/, '.')}</p>`).join('')}</div>
@@ -857,7 +859,7 @@ function docGeneral(){
     const est = r.debe.length ? `<span class="rq-pill r">DEBE ${r.debe.map(x => 'J' + x.j).join(', ')}</span>`
       : r.progDeuda.length ? `<span class="rq-pill b">A DISPUTAR ${r.progDeuda.map(x => 'J' + x.j).join(', ')}</span>`
       : r.adelanto.length ? `<span class="rq-pill b">ADELANTADO</span>` : '<span class="rq-pill v">AL CORRIENTE</span>';
-    return `<tr><td class="eq"><div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'])}</span></div></td>${celdas}<td><b>${r.jugados}</b></td><td>${r.g}-${r.e}-${r.p}</td><td><b>${disp}</b></td><td><b>${prog}</b></td><td>${est}</td></tr>`;
+    return `<tr><td class="eq"><div class="rq-rival"><img crossorigin="anonymous" src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'])}</span></div></td>${celdas}<td><b>${r.jugados}</b></td><td>${r.g}-${r.e}-${r.p}</td><td><b>${disp}</b></td><td><b>${prog}</b></td><td>${est}</td></tr>`;
   }).join('');
   const nDebe = datos.filter(d => d.r.debe.length).length, nProg = datos.filter(d => !d.r.debe.length && d.r.progDeuda.length).length;
   const nAdel = datos.filter(d => !d.r.debe.length && !d.r.progDeuda.length && d.r.adelanto.length).length, nOk = datos.length - nDebe - nProg - nAdel;
@@ -903,7 +905,7 @@ function docDomingo(){
   const pub = P.domingoPublicado ? fmt(P.domingoPublicado) : null;
   const eqCel = id => {
     const e = mapa[id] || {}, q = jug[id] || { jugados: 0, conf: 0 };
-    return `<div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><div><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span><small style="display:block;text-align:left;color:#6b7280;font-size:11px;margin-top:1px">Lleva ${q.jugados} jugados${q.conf && pub ? ' + ' + q.conf + ' el ' + pub.slice(0, 5) : ''}${previosTent.map(d => { const n = d.filas.filter(r => r.a === id || r.b === id).length; return n ? ' + ' + n + ' el ' + fmt(d.fecha).slice(0, 5) : ''; }).join('')}</small></div></div>`;
+    return `<div class="rq-rival"><img crossorigin="anonymous" src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><div><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span><small style="display:block;text-align:left;color:#6b7280;font-size:11px;margin-top:1px">Lleva ${q.jugados} jugados${q.conf && pub ? ' + ' + q.conf + ' el ' + pub.slice(0, 5) : ''}${previosTent.map(d => { const n = d.filas.filter(r => r.a === id || r.b === id).length; return n ? ' + ' + n + ' el ' + fmt(d.fecha).slice(0, 5) : ''; }).join('')}</small></div></div>`;
   };
   const efecto = { corriente: ['v', 'PONE AL CORRIENTE'], tiempo: ['g', 'EN TIEMPO'], adelanto: ['b', 'ADELANTA'] };
   const obs = r => {
@@ -942,7 +944,7 @@ const RESTRICCION_HORA = {};
 function docHorarios(nFechas){
   const P = planProgramacion(nFechas, false);
   const mapa = {}; EQUIPOS.forEach(e => mapa[idDe(e)] = e);
-  const eqCel = id => { const e = mapa[id] || {}; return `<div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span></div>`; };
+  const eqCel = id => { const e = mapa[id] || {}; return `<div class="rq-rival"><img crossorigin="anonymous" src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span></div>`; };
   const vacio = msgTxt => `<div class="rq-doc" style="width:900px">${encabezado('Propuesta con horarios y campos', msgTxt)}<div class="rq-body"><p>${msgTxt}</p></div></div>`;
   if (!P || !P.dias.length) return vacio('No hay domingos por proponer.');
 
@@ -1031,7 +1033,7 @@ function docHorarios(nFechas){
 function docTentativo(){
   const P = planProgramacion(1, false);
   const mapa = {}; EQUIPOS.forEach(e => mapa[idDe(e)] = e);
-  const eqCel = id => { const e = mapa[id] || {}; return `<div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span></div>`; };
+  const eqCel = id => { const e = mapa[id] || {}; return `<div class="rq-rival"><img crossorigin="anonymous" src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span></div>`; };
   if (!P) return `<div class="rq-doc" style="width:900px">${encabezado('Rol tentativo', 'Sin datos suficientes')}<div class="rq-body"><p>No hay equipos activos.</p></div></div>`;
   const porFecha = {};
   P.tentativos.forEach(g => { if (!g.fecha) return; const k = fmt(g.fecha); (porFecha[k] = porFecha[k] || { fecha: g.fecha, items: [] }).items.push(g); });
@@ -1064,7 +1066,7 @@ function docTentativo(){
 function docPropuesta(nFechas, doble){
   const P = planProgramacion(nFechas, doble);
   const mapa = {}; EQUIPOS.forEach(e => mapa[idDe(e)] = e);
-  const eqCel = id => { const e = mapa[id] || {}; return `<div class="rq-rival"><img src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span></div>`; };
+  const eqCel = id => { const e = mapa[id] || {}; return `<div class="rq-rival"><img crossorigin="anonymous" src="${esc(e['URL'] || '')}" onerror="this.style.opacity='.15'"><span>${esc(e['Nombre'] || 'Equipo ' + id)}</span></div>`; };
   if (!P) return `<div class="rq-doc" style="width:900px">${encabezado('Propuesta de programación', 'Sin datos suficientes')}<div class="rq-body"><p>No hay equipos activos.</p></div></div>`;
   const nProp = P.dias.reduce((n, d) => n + d.filas.length, 0);
   const alCorr = P.resumenEq.filter(x => !x.debeDespues.length).length;
@@ -1132,20 +1134,39 @@ async function ver(){
   const wrap = $('vista-wrap'), v = $('vista'); wrap.hidden = false; v.innerHTML = r.html;
   const doc = v.firstElementChild, ancho = parseInt(doc.style.width, 10) || 900, k = Math.min(1, wrap.clientWidth / ancho);
   doc.style.transform = ''; doc.style.transformOrigin = ''; wrap.style.height = ''; wrap.style.overflowX = 'auto';
+  try{await prepararEscudosReporte(doc);}catch(e){msg('No cargaron todos los escudos: '+e.message,true);}
 }
+const escudosReporteCache=new Map();
+async function prepararEscudosReporte(doc){
+ const imgs=[...doc.querySelectorAll('img')];
+ await Promise.all(imgs.map(async im=>{const src=im.getAttribute('src');if(!src)throw Error('Falta la dirección de un escudo en el reporte.');const url=new URL(src,location.href).href;
+ if(!escudosReporteCache.has(url))escudosReporteCache.set(url,(async()=>{const r=await fetch(url,{mode:'cors',cache:'force-cache'});if(!r.ok)throw Error('No cargó un escudo ('+r.status+').');const b=await r.blob();return await new Promise((ok,no)=>{const rd=new FileReader();rd.onload=()=>ok(rd.result);rd.onerror=no;rd.readAsDataURL(b)});})().catch(e=>{escudosReporteCache.delete(url);throw e}));
+ im.src=await escudosReporteCache.get(url);await im.decode();
+ }));
+}
+function paginasCartaReporte(doc,host){
+ const paginas=[],alto=1000*11/8.5;let page,body;
+ const nueva=()=>{page=document.createElement('div');page.className='rq-doc rq-carta';page.style.cssText='width:1000px;height:'+alto+'px;overflow:hidden;background:#fff;position:relative;';const head=doc.querySelector('.rq-head');if(head)page.append(head.cloneNode(true));body=document.createElement('div');body.className='rq-body';page.append(body);host.append(page);paginas.push(page);};
+ const cabe=()=>body.getBoundingClientRect().bottom-page.getBoundingClientRect().top<alto-52;
+ nueva();
+ for(const original of doc.querySelector('.rq-body').children){
+  if(original.tagName==='TABLE'){
+   let tabla=original.cloneNode(true);const filas=[...tabla.querySelectorAll('tbody > tr')];for(const t of tabla.tBodies)t.replaceChildren();if(!tabla.tBodies.length)tabla.createTBody();body.append(tabla);
+   for(const fila of filas){tabla.tBodies[0].append(fila);if(!cabe()){fila.remove();if(!tabla.tBodies[0].rows.length)tabla.remove();nueva();tabla=original.cloneNode(true);for(const t of tabla.tBodies)t.replaceChildren();if(!tabla.tBodies.length)tabla.createTBody();body.append(tabla);tabla.tBodies[0].append(fila);if(!cabe())throw Error('Una fila no cabe en tamaño carta.');}}
+  }else{const c=original.cloneNode(true);body.append(c);if(!cabe()){c.remove();nueva();body.append(c);if(!cabe())throw Error('Un bloque del reporte excede la hoja carta.');}}
+ }
+ paginas.forEach((p,i)=>{const f=document.createElement('div');f.className='rq-pie';f.style.cssText='position:absolute;bottom:0;left:0;width:100%;';f.innerHTML='<span>Liga Next Level 7 · Juegos y fechas</span><span>Página '+(i+1)+' de '+paginas.length+'</span>';p.append(f)});return paginas;
+}
+let exportandoReporte=false;const urlsReporte=[];
 async function descargar(){
-  if(!await asegurarDatosReporte())return;
-  const r = construir(); if (!r) return; msg('Generando PNG...');
-  const t = document.createElement('div'); t.style.cssText = 'position:fixed;left:-99999px;top:0'; t.innerHTML = r.html; document.body.appendChild(t);
-  try {
-    const doc = t.firstElementChild;
-    await Promise.all([...doc.querySelectorAll('img')].map(i => i.complete ? 1 : new Promise(x => { i.onload = i.onerror = x; })));
-    await new Promise(x => setTimeout(x, 150));
-    const canvas = await html2canvas(doc, { backgroundColor: '#ffffff', scale: 2, useCORS: true, allowTaint: true, imageTimeout: 20000, logging: false });
-    const a = document.createElement('a'); a.download = r.nombre + '.png'; a.href = canvas.toDataURL('image/png'); a.click(); msg('✅ PNG generado.');
-  } catch (e){ console.error(e); msg('No se pudo generar el PNG.', true); }
-  finally { document.body.removeChild(t); }
+ if(exportandoReporte)return;if(!await asegurarDatosReporte())return;const r=construir();if(!r)return;exportandoReporte=true;msg('Preparando escudos y hojas carta…');
+ const t=document.createElement('div');t.style.cssText='position:absolute;left:-12000px;top:0;width:1000px;';t.innerHTML=r.html;document.body.append(t);
+ try{const doc=t.firstElementChild;await prepararEscudosReporte(doc);if(document.fonts)await document.fonts.ready;const paginas=paginasCartaReporte(doc,t);doc.remove();urlsReporte.splice(0).forEach(u=>URL.revokeObjectURL(u));document.getElementById('descargas-equipo')?.remove();const enlaces=document.createElement('div');enlaces.id='descargas-equipo';enlaces.style.cssText='display:flex;gap:10px;flex-wrap:wrap;padding:12px;';$('vista-wrap').before(enlaces);
+ for(let i=0;i<paginas.length;i++){const cv=await html2canvas(paginas[i],{backgroundColor:'#fff',scale:1.632,useCORS:true,allowTaint:false,imageTimeout:20000,logging:false});const blob=await NL7Juegos.pngCarta(cv);if(!blob)throw Error('No se pudo generar una hoja.');const url=URL.createObjectURL(blob);urlsReporte.push(url);const a=document.createElement('a');a.href=url;a.download=r.nombre+'_pagina'+(i+1)+'.png';a.textContent='Descargar hoja '+(i+1)+' de '+paginas.length;a.className='btn';enlaces.append(a);a.click();cv.width=cv.height=0;}
+ msg('✅ PNG generado: '+paginas.length+' hojas carta con escudos. Usa los enlaces si el navegador bloquea alguna descarga.');
+ }catch(e){console.error(e);msg('No se pudo generar el PNG completo: '+e.message,true)}finally{t.remove();exportandoReporte=false}
 }
+
 async function imprimir(){
   if(!await asegurarDatosReporte())return;
   const r = construir(); if (!r) return; msg('');
@@ -1176,12 +1197,12 @@ function docEquipo(idE){
  const resumen=G.resumenHTML(r,EQUIPOS.find(e=>idDe(e)===idE),contado)+`<p>Ganados: ${n('g')} · Empatados: ${n('e')} · Perdidos: ${n('p')}. Los empates definidos en penales conservan el empate estadístico.</p>`;
 
  a.sort((x,y)=>(G.numero(x,String(x.Equipo_Local)===idE?'local':'visita')||999)-(G.numero(y,String(y.Equipo_Local)===idE?'local':'visita')||999)||(+x.ID_Partido)-(+y.ID_Partido));
- return G.documento('Reporte de '+nombreEq(idE),resumen+G.tabla(a,EQUIPOS,idE)+notaEspecialJuegos());
+ return documentoConFormato('Reporte de '+nombreEq(idE),resumen+G.tabla(a,EQUIPOS,idE)+notaEspecialJuegos());
 }
 function docGeneral(){
  const G=NL7Juegos,a=juegosValidos();
- const rows=activosIds().map(t=>{const e=EQUIPOS.find(e=>idDe(e)===t),r=G.resumen(a,t),v=t===idSinJ1()?1:0,b=G.balance(r,e,v);return `<tr><td>${esc(nombreEq(t))}</td><td>${r.jugados}</td><td>${r.local}</td><td>${r.visita}</td><td>${r.programados}</td><td>${v}</td><td>${b.especial?'Por definir':b.faltan}</td><td>${b.excedentes||'—'}</td></tr>`;}).join('');
- return G.documento('Control por juegos y fechas',`<table class="jg-tabla"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Contados</th><th>Faltan para 15</th><th>Cruces de más por revisar</th></tr></thead><tbody>${rows}</tbody></table>`+G.tabla(a,EQUIPOS)+notaEspecialJuegos());
+ const rows=activosIds().map(t=>{const e=EQUIPOS.find(e=>idDe(e)===t),r=G.resumen(a,t),v=t===idSinJ1()?1:0,b=G.balance(r,e,v);return `<tr><td><div class="rq-rival"><img crossorigin="anonymous" src="${esc(e.URL||'')}" alt=""><span>${esc(nombreEq(t))}</span></div></td><td>${r.jugados}</td><td>${r.local}</td><td>${r.visita}</td><td>${r.programados}</td><td>${v}</td><td>${b.especial?'Por definir':b.faltan}</td><td>${b.excedentes||'—'}</td></tr>`;}).join('');
+ return documentoConFormato('Control por juegos y fechas',`<table class="jg-tabla"><thead><tr><th>Equipo</th><th>Jugados</th><th>Local</th><th>Visitante</th><th>Programados</th><th>Contados</th><th>Faltan para 15</th><th>Cruces de más por revisar</th></tr></thead><tbody>${rows}</tbody></table>`+G.tabla(a,EQUIPOS)+notaEspecialJuegos());
 }
 
 function planJuegos(nFechas,doble,horarios){
@@ -1213,12 +1234,31 @@ function planJuegos(nFechas,doble,horarios){
   }
   const ids=new Set(slots.map(p=>String(p.ID_Partido)));pendientes=pendientes.filter(p=>!ids.has(String(p.ID_Partido)));salidas.push({f,existentes,slots});
  }
- return G.documento('Propuesta por fechas',`<p class="jg-nota">Propuesta para revisar; no guarda cambios. Solo utiliza partidos pendientes con ID real, conserva local/visitante y evita cruces de equipo y campo durante 60 minutos. Respeta los horarios y restricciones existentes. Máximo 8 encuentros por fecha y 15 por equipo, contando los ya jugados contra bajas y los juegos especiales contados. Galácticos queda con formato por definir. Los programados se reservan aunque falte confirmar su publicación.</p>`+salidas.map(x=>`<h2 class="jg-title">${esc(x.f)}</h2>${G.tabla(x.existentes.concat(x.slots),EQUIPOS)}`).join('')+`<p>Pendientes sin colocar en estas fechas: ${pendientes.length}.</p>`+notaEspecialJuegos());
+ return documentoConFormato('Propuesta por fechas',`<p class="jg-nota">Propuesta para revisar; no guarda cambios. Solo utiliza partidos pendientes con ID real, conserva local/visitante y evita cruces de equipo y campo durante 60 minutos. Respeta los horarios y restricciones existentes. Máximo 8 encuentros por fecha y 15 por equipo, contando los ya jugados contra bajas y los juegos especiales contados. Galácticos queda con formato por definir. Los programados se reservan aunque falte confirmar su publicación.</p>`+salidas.map(x=>`<h2 class="jg-title">${esc(x.f)}</h2>${G.tabla(x.existentes.concat(x.slots),EQUIPOS)}`).join('')+`<p>Pendientes sin colocar en estas fechas: ${pendientes.length}.</p>`+notaEspecialJuegos());
 }
 function docDomingo(){return planJuegos(1,false,false);}
 function docPropuesta(n,doble){return planJuegos(n,doble,false);}
 function docHorarios(n){return planJuegos(n,false,true);}
-function docTentativo(){const a=juegosValidos().filter(p=>estadoDe(p)==='programado');return NL7Juegos.documento('Partidos programados',NL7Juegos.tabla(a,EQUIPOS)+`<p class="jg-nota">Se conserva la distinción de publicación: la fecha se considera confirmada desde el jueves anterior; antes es tentativa.</p>`+notaEspecialJuegos());}
+function docTentativo(){const a=juegosValidos().filter(p=>estadoDe(p)==='programado');return documentoConFormato('Partidos programados',NL7Juegos.tabla(a,EQUIPOS)+`<p class="jg-nota">Se conserva la distinción de publicación: la fecha se considera confirmada desde el jueves anterior; antes es tentativa.</p>`+notaEspecialJuegos());}
+
+// Presentación recuperada del reporte original: encabezado, logos, ficha, KPIs y tablas.
+function encabezado(titulo,sub){const {fechaHoy}=contexto();return `<div class="rq-head"><div><div class="rq-liga">Liga Next Level 7 · Torneo Dominical</div><div class="rq-titulo">${esc(titulo)}</div><div class="rq-sub">${esc(sub||'Juegos, fechas y resultados')}</div></div><div class="rq-der"><div class="rq-logos"><img crossorigin="anonymous" src="logo-liga.png.png" alt="Liga Next Level 7"><img crossorigin="anonymous" src="laregionallstars.png" alt="La Regional All Stars"></div><div>Torneo iniciado el <b>${esc(FECHA_INICIO)}</b><br>Fecha de control ${fechaHoy||'—'} · Emitido ${ahoraTxt()}</div></div></div>`;}
+function documentoConFormato(titulo,contenido){return `<div class="rq-doc" style="width:1000px">${encabezado(titulo)}<div class="rq-body">${contenido}</div><div class="rq-pie"><span>Liga Next Level 7 · Reporte de juegos y fechas</span><span>${ahoraTxt()}</span></div></div>`;}
+function tablaEquipoConFormato(partidos,idE){
+ const G=NL7Juegos,E=Object.fromEntries(EQUIPOS.map(e=>[idDe(e),e]));
+ const filas=partidos.map((p,i)=>{const local=String(p.Equipo_Local)===idE,lado=local?'local':'visita',rv=E[rivalDe(p,idE)]||{},jug=estadoDe(p)==='jugado',r=resultado(p,idE),ctrl=G.control(p,lado),n=G.numero(p,lado);
+ const pc=ctrl.clase==='enfecha'?'v':ctrl.clase==='recuperado'?'p':ctrl.clase==='adelantado'?'b':ctrl.clase==='atrasado'?'r':'g';
+ return `<tr><td class="n">${i+1}</td><td class="j">${n||'—'}<small>${local?'Local':'Visitante'}</small></td><td class="idp">${esc(p.ID_Partido)}</td><td>${ctrl.d?esc(fmt(ctrl.d)):'<small>Sin referencia</small>'}</td><td><b>${esc(p.Fecha||'Por definir')}</b><small>${esc(hora12(p.Hora))}${p.Cancha?' · '+esc(p.Cancha):''}</small></td><td><div class="rq-rival"><img crossorigin="anonymous" src="${esc(rv.URL||'')}" alt=""><span>${esc(rv.Nombre||'Por definir')}</span></div></td><td class="rq-marc">${jug?r.gf+' - '+r.gc:'—'}</td><td>${jug?`<span class="rq-pill ${RES[r.res][0]}">${RES[r.res][1]}</span>${r.pen?`<small>${r.pen==='g'?'Ganó':'Perdió'} en penales</small>`:''}`:`<span class="rq-pill a">${esc(p.Estado)}</span>`}</td><td>${jug?TIPO[r.tipo]:'—'}</td><td><span class="rq-pill ${pc}">${esc(ctrl.texto)}</span></td></tr>`;
+ }).join('');
+ return `<table class="rq-tabla"><thead><tr><th style="width:34px">No.</th><th style="width:65px">Juego</th><th style="width:48px">ID</th><th style="width:85px">Le correspondía</th><th style="width:110px">Se jugó / programado</th><th>Rival</th><th style="width:65px">Marcador</th><th style="width:90px">Resultado</th><th style="width:60px">Tipo</th><th style="width:110px">Control</th></tr></thead><tbody>${filas||'<tr><td colspan="10">Sin partidos.</td></tr>'}</tbody></table>`;
+}
+function docEquipo(idE){
+ const G=NL7Juegos,eq=EQUIPOS.find(e=>idDe(e)===idE)||{},a=juegosValidos().filter(p=>G.involucra(p,idE)),r=G.resumen(a,idE),contado=idE===idSinJ1()?1:0;
+ a.sort((x,y)=>(G.numero(x,String(x.Equipo_Local)===idE?'local':'visita')||999)-(G.numero(y,String(y.Equipo_Local)===idE?'local':'visita')||999)||(+x.ID_Partido)-(+y.ID_Partido));
+ const resultados=a.filter(p=>estadoDe(p)==='jugado').map(p=>resultado(p,idE)),n=k=>resultados.filter(x=>x.res===k).length,gf=resultados.reduce((t,x)=>t+(isNaN(x.gf)?0:x.gf),0),gc=resultados.reduce((t,x)=>t+(isNaN(x.gc)?0:x.gc),0);
+ const kpis=[['',r.jugados,'Jugados'],['v',n('g'),'Ganados'],['a',n('e'),'Empatados'],['r',n('p'),'Perdidos'],['',gf,'Goles a favor'],['',gc,'Goles en contra']].map(([c,v,t])=>`<div class="rq-kpi ${c}"><b>${v}</b><span>${t}</span></div>`).join('');
+ return documentoConFormato('Reporte de equipo',`<div class="rq-equipo"><img crossorigin="anonymous" src="${esc(eq.URL||'')}" alt="Escudo"><div><h1>${esc(eq.Nombre||'')}</h1><small>${esBaja(eq)?'Equipo dado de baja':'Equipo activo'} · ${r.jugados} partidos jugados</small></div></div><div class="rq-kpis">${kpis}</div>${G.resumenHTML(r,eq,contado)}<div class="rq-tit">Juegos, fechas y resultados</div>${tablaEquipoConFormato(a,idE)}<div class="rq-tit">Programados</div>${tablaEquipoConFormato(a.filter(p=>estadoDe(p)==='programado'),idE)}<div class="rq-tit">Pendientes registrados</div>${tablaEquipoConFormato(a.filter(p=>estadoDe(p)==='pendiente'),idE)}<div class="rq-leyenda">Se conserva el resultado y el desempate por penales. Los juegos contra equipos en baja que ya se disputaron cuentan. Los pendientes registrados de más no se borran automáticamente. La fecha original solo se muestra si está registrada o conserva la referencia anterior.</div>${notaEspecialJuegos()}`);
+}
 
 let cargaReporte=null;
 async function asegurarDatosReporte(){
@@ -1231,7 +1271,7 @@ async function asegurarDatosReporte(){
 
 cargaReporte=init().finally(()=>cargaReporte=null);
 </script>
-<script src="reportes_imagenes.js?v=20261031-png-reparado"></script>
+<script src="reportes_imagenes.js?v=20261101-carta"></script>
 </body>
 </html>
 
