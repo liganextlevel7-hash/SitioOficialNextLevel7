@@ -1,181 +1,26 @@
-// ==================== liguilla.js ====================
-
-const URL_LIGUILLA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1783955716&single=true&output=csv";
-
-async function cargarLiguilla() {
-    const respuesta = await fetch(URL_LIGUILLA);
-    const texto = await respuesta.text();
-    const filas = texto.trim().split("\n");
-    const partidos = [];
-    for (let i = 1; i < filas.length; i++) {
-        const c = filas[i].split(",");
-        partidos.push({
-            id:c[0],ronda:c[1],idLocal:c[2],equipoLocal:c[3],
-            golesLocal:c[4],idVisita:c[5],equipoVisita:c[6],
-            golesVisita:c[7],ganador:c[8],urlLocal:c[9],
-            urlVisita:c[10],rankingLocal:c[11],rankingVisita:c[12],
-            estado:c[13],fecha:c[14]
-        });
-    }
-    const selector = document.getElementById("selector-ronda");
-    selector.innerHTML = `
-        <option value="Completa">Liguilla Completa</option>
-        <option value="Cuartos">Cuartos</option>
-        <option value="Semifinal">Semifinales</option>
-        <option value="Final">Final</option>
-    `;
-    selector.addEventListener("change", () => renderBracket(partidos, selector.value));
-    renderBracket(partidos, "Completa");
+/* Los cruces, marcadores y ganadores se leen de la hoja de Liguilla; no se calculan ni se escriben. */
+(()=>{
+'use strict';
+const URL_LIGUILLA='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1783955716&single=true&output=csv';
+const $=id=>document.getElementById(id),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),norm=v=>String(v??'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const esPD=v=>!norm(v)||['tbd','por definir','por confirmar','pendiente','-'].includes(norm(v))||/^p+or\s+definir$/.test(norm(v));
+function csv(text){const rows=[];let f='',row=[],q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){row.push(f);f=''}else if(c==='\r'||c==='\n'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(f);if(row.some(x=>x.trim()))rows.push(row);row=[];f=''}else f+=c}if(f||row.length){row.push(f);rows.push(row)}const h=(rows.shift()||[]).map(k=>norm(k.replace(/^\uFEFF/,'')));return rows.map(r=>Object.fromEntries(h.map((k,i)=>[k,(r[i]||'').trim()])));}
+function adaptar(r){return {id:r.id_liguilla,ronda:r.ronda,idLocal:r.id_local,equipoLocal:r.equipo_local,golesLocal:r.goles_local,idVisita:r.id_visita,equipoVisita:r.equipo_visita,golesVisita:r.goles_visita,ganador:r.ganador,urlLocal:r.url_local,urlVisita:r.url_visita,rankingLocal:r.ranking_local,rankingVisita:r.ranking_lvisita||r.ranking_visita,estado:r.estado,fecha:r.fecha};}
+let partidos=[],solicitud=0;
+const nombre=v=>esPD(v)?'Por definir':String(v).trim();
+function urlSegura(v){try{const u=new URL(String(v||'').trim());return ['http:','https:'].includes(u.protocol)?u.href:'';}catch(e){return '';}}
+function escudo(nom,url){const src=!esPD(nom)&&urlSegura(url);return src?`<img class="lg-crest" src="${esc(src)}" alt="Escudo de ${esc(nombre(nom))}" loading="lazy" decoding="async">`:'<span class="lg-crest lg-placeholder" aria-label="Equipo por definir">?</span>';}
+function ganador(p){if(!p||esPD(p.ganador))return null;const g=norm(p.ganador);if(!esPD(p.equipoLocal)&&(g===norm(p.equipoLocal)||g===norm(p.idLocal)&&g!==''))return {nombre:p.equipoLocal,url:p.urlLocal,lado:'local'};if(!esPD(p.equipoVisita)&&(g===norm(p.equipoVisita)||g===norm(p.idVisita)&&g!==''))return {nombre:p.equipoVisita,url:p.urlVisita,lado:'visita'};return {nombre:p.ganador,url:'',lado:null};}
+function equipo(p,lado,w,jugado){const local=lado==='local',nom=local?p.equipoLocal:p.equipoVisita,url=local?p.urlLocal:p.urlVisita,r=local?p.rankingLocal:p.rankingVisita,gl=local?p.golesLocal:p.golesVisita;const hayGol=jugado&&String(gl??'').trim()!=='';return `<div class="lg-team ${w?.lado===lado?'winner':''}"><span class="lg-rank" title="Posición registrada">${!esPD(nom)&&String(r||'').trim()?'#'+esc(r):'—'}</span>${escudo(nom,url)}<span class="lg-team-name">${esc(nombre(nom))}</span><span class="lg-score" aria-label="${hayGol?'Goles':'Sin marcador'}">${hayGol?esc(gl):'—'}</span></div>`;}
+function card(p){const jugado=norm(p.estado)==='jugado',programado=norm(p.estado)==='programado',w=ganador(p),estado=jugado?'Jugado':programado?'Programado':p.estado||'Por programar';return `<article class="lg-match" data-id="${esc(p.id)}" aria-label="${esc(nombre(p.equipoLocal))} contra ${esc(nombre(p.equipoVisita))}"><div class="lg-match-top"><span>ID ${esc(p.id||'—')}</span><span class="lg-badge ${jugado?'played':programado?'scheduled':''}">${esc(estado)}</span></div>${equipo(p,'local',w,jugado)}${equipo(p,'visita',w,jugado)}<div class="lg-match-bottom"><span>${esc(p.fecha||'Fecha por definir')}</span><span>Local / Visitante</span></div>${w?'<p class="lg-winner-note">Ganador registrado: '+esc(w.nombre)+'</p>':''}</article>`;}
+const copaSVG='<svg class="lg-cup" viewBox="0 0 80 88" fill="none" aria-hidden="true"><path d="M22 8h36v24c0 16-8 25-18 25S22 48 22 32V8Z" fill="currentColor"/><path d="M22 15H9v12c0 13 10 19 19 19M58 15h13v12c0 13-10 19-19 19" stroke="currentColor" stroke-width="5"/><path d="M40 56v15M25 79h30M30 71h20v8H30z" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="m40 17 3 7 8 1-6 5 2 8-7-4-7 4 2-8-6-5 8-1z" fill="#fff1b9"/></svg>';
+function copa(p){const w=ganador(p);return `<section class="lg-champion" aria-label="Campeón del torneo">${copaSVG}<div class="lg-champion-label">CAMPEÓN</div>${w?escudo(w.nombre,w.url):'<span class="lg-crest lg-placeholder" aria-label="Campeón por definir">?</span>'}<h3>${w?esc(w.nombre):'Por definir'}</h3><p>${w?'Ganador registrado en la final':'El campeón se mostrará cuando esté registrado.'}</p></section>`;}
+function ronda(v){const n=norm(v);return ['cuartos','cuartos de final'].includes(n)?'Cuartos':['semifinal','semifinales'].includes(n)?'Semifinal':n==='final'?'Final':null;}
+function renderBracket(lista,vista='Completa'){
+ const defs=[['Cuartos','Cuartos de final','01','lg-quarter'],['Semifinal','Semifinales','02','lg-semi'],['Final','Final','03','lg-final']],seleccionadas=defs.filter(([k])=>vista==='Completa'||k===vista);
+ let html='';for(const [k,titulo,n,cl] of seleccionadas){const a=lista.filter(p=>ronda(p.ronda)===k);let contenido;if(k==='Cuartos'){contenido='';for(let i=0;i<a.length;i+=2)contenido+='<div class="lg-pair">'+a.slice(i,i+2).map(p=>'<div class="lg-cell">'+card(p)+'</div>').join('')+'</div>';}else contenido=a.map(p=>'<div class="lg-cell">'+card(p)+'</div>').join('');if(!a.length)contenido='<p class="lg-empty">Todavía no hay encuentros registrados en esta ronda.</p>';if(k==='Final')contenido+=copa(a[0]);html+=`<section class="lg-round ${cl}" aria-label="${titulo}"><div class="lg-round-head"><span>${n}</span><h3>${titulo}</h3></div><div class="lg-games">${contenido}</div></section>`;}
+ $('contenedor-bracket').innerHTML='<div class="lg-bracket '+(vista!=='Completa'?'lg-single':'')+'">'+html+'</div>';
 }
-
-const CQ = [
-    {border:"#ffd700",glow:"rgba(255,215,0,0.7)"},
-    {border:"#c0c0c0",glow:"rgba(192,192,192,0.7)"},
-    {border:"#b87333",glow:"rgba(184,115,51,0.7)"},
-    {border:"#29b6f6",glow:"rgba(41,182,246,0.7)"},
-];
-const CS = {border:"rgba(255,255,255,0.5)",glow:"rgba(255,255,255,0.2)"};
-const CF = {border:"#ff9800",glow:"rgba(255,152,0,0.6)"};
-
-function esPD(v){return !v||v.trim().toLowerCase().replace(/p+or/,"por")==="por definir";}
-
-function equipo(nom,url,col){
-    nom = esPD(nom)?"Por Definir":nom.trim();
-    const lg = (url&&url.trim().startsWith("http"))
-        ?`<img src="${url.trim()}" style="width:48px;height:48px;object-fit:contain;border-radius:50%;flex-shrink:0;filter:drop-shadow(0 0 6px ${col.border});" onerror="this.style.display='none'">`
-        :`<div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">⚽</div>`;
-    return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0;">${lg}
-        <div style="border:2px solid ${col.border};border-radius:25px;padding:6px 14px;box-shadow:0 0 10px ${col.glow};background:transparent;flex:1;min-width:140px;">
-        <span style="color:#fff;font-weight:800;font-size:12px;text-transform:uppercase;white-space:nowrap;display:block;">${nom}</span></div></div>`;
-}
-
-function vs(p){
-    const j=(p.estado||"").trim().toLowerCase()==="jugado";
-    return `<div style="text-align:center;padding:3px 0 3px 56px;font-weight:900;font-size:13px;color:${j?'#ffd700':'rgba(255,255,255,0.25)'};">${j?`${(p.golesLocal||0).toString().trim()} - ${(p.golesVisita||0).toString().trim()}`:"VS"}</div>`;
-}
-
-function card(p,col,sub){
-    const d=document.createElement("div");
-    d.style.cssText=`background:rgba(0,0,0,0.3);border:2px solid ${col.border};border-radius:14px;padding:10px 12px;box-shadow:0 0 16px ${col.glow};`;
-    if(sub){const s=document.createElement("div");s.style.cssText="color:rgba(255,255,255,0.4);font-size:9px;letter-spacing:2px;text-align:center;margin-bottom:5px;font-weight:700;font-style:italic;";s.textContent=sub;d.appendChild(s);}
-    d.innerHTML+=equipo(p.equipoLocal,p.urlLocal,col);
-    d.innerHTML+=vs(p);
-    d.innerHTML+=equipo(p.equipoVisita,p.urlVisita,col);
-    return d;
-}
-
-function copa(ganador,urlG){
-    const hay=!esPD(ganador);
-    const lg=(hay&&urlG&&urlG.trim().startsWith("http"))
-        ?`<img src="${urlG.trim()}" style="width:60px;height:60px;object-fit:contain;border-radius:50%;border:2px solid #ffd700;box-shadow:0 0 14px rgba(255,215,0,0.8);" onerror="this.style.display='none'">`
-        :`<div style="width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px dashed rgba(255,215,0,0.4);display:flex;align-items:center;justify-content:center;font-size:26px;">⚽</div>`;
-    return `<div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:0 10px;">
-        <div style="font-size:120px;line-height:1;filter:drop-shadow(0 0 28px rgba(255,215,0,0.95));">🏆</div>
-        ${lg}
-        <div style="color:${hay?'#ffd700':'rgba(255,255,255,0.4)'};font-weight:900;font-size:15px;letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 12px rgba(255,215,0,0.7);">${hay?ganador.trim():'Por Definir'}</div>
-        <div style="color:#fff;font-weight:900;font-size:30px;letter-spacing:3px;text-shadow:0 0 12px rgba(255,255,255,0.4);">CAMPEÓN</div>
-    </div>`;
-}
-
-function renderBracket(partidos, vista){
-    const cont = document.getElementById("contenedor-bracket");
-    cont.innerHTML = "";
-
-    const Q = partidos.filter(p=>p.ronda.toLowerCase().trim()==="cuartos");
-    const S = partidos.filter(p=>p.ronda.toLowerCase().trim()==="semifinal");
-    const F = partidos.filter(p=>p.ronda.toLowerCase().trim()==="final");
-
-    const oQ = (vista==="Semifinal"||vista==="Final")?"0.15":"1";
-    const oS = (vista==="Final")?"0.15":"1";
-
-    const scroll=document.createElement("div");
-    scroll.style.cssText="overflow-x:auto;padding:10px 0 30px;";
-
-    // TABLA con estructura exacta:
-    // Row 1: Q[0]  | borde-abajo  | S[0] rowspan=2 | borde-abajo  | F rowspan=4 + copa
-    // Row 2: Q[1]  | borde-arriba |                | borde-arriba |
-    // Row 3: Q[2]  | borde-abajo  | S[1] rowspan=2 | borde-abajo  |
-    // Row 4: Q[3]  | borde-arriba |                | borde-arriba |
-
-    const tbl=document.createElement("table");
-    tbl.style.cssText="border-collapse:collapse;";
-
-    function tdEl(content,style,rowspan){
-        const c=document.createElement("td");
-        c.style.cssText=style||"";
-        if(rowspan)c.rowSpan=rowspan;
-        if(content instanceof HTMLElement)c.appendChild(content);
-        else c.innerHTML=content||"";
-        return c;
-    }
-
-    const linW="rgba(255,255,255,0.28)";
-    const linO="rgba(255,152,0,0.55)";
-    const connH="50px"; // altura mínima de cada celda conector
-
-    // Fila títulos
-    const rTit=document.createElement("tr");
-    rTit.append(
-        tdEl(`<div style="color:#ffd700;font-weight:900;font-size:11px;letter-spacing:3px;text-align:center;padding-bottom:6px;opacity:${oQ};">CUARTOS DE FINAL</div>`,"padding:0 8px;"),
-        tdEl("","width:32px;"),
-        tdEl(`<div style="color:#ffd700;font-weight:900;font-size:11px;letter-spacing:3px;text-align:center;padding-bottom:6px;font-style:italic;opacity:${oS};">SEMIFINALES</div>`,"padding:0 8px;"),
-        tdEl("","width:32px;"),
-        tdEl(`<div style="color:#fff;font-weight:900;font-size:17px;letter-spacing:4px;text-align:center;padding-bottom:6px;font-style:italic;">FINAL</div>`,"padding:0 8px;")
-    );
-    tbl.appendChild(rTit);
-
-    // Fila Q[0] — conector baja hacia centro
-    const r0=document.createElement("tr");
-    const f=F[0];
-    const urlG=f&&!esPD(f.ganador)?(f.urlLocal||""):"";
-
-    r0.append(
-        tdEl(Q[0]?card(Q[0],CQ[0]):null,`padding:4px 8px;vertical-align:bottom;opacity:${oQ};transition:opacity 0.4s;width:280px;`),
-        tdEl(`<div style="display:flex;flex-direction:column;min-height:calc(${connH} * 2);height:100%;opacity:${oQ};transition:opacity 0.4s;"><div style="flex:1;border-right:2px solid ${linW};border-bottom:2px solid ${linW};border-radius:0 0 8px 0;"></div><div style="flex:1;border-right:2px solid ${linW};border-top:2px solid ${linW};border-radius:0 8px 0 0;"></div></div>`,"padding:0;width:32px;",2),
-        tdEl(S[0]?card(S[0],CS,"SEMIFINAL 1"):null,`padding:4px 8px;vertical-align:middle;opacity:${oS};transition:opacity 0.4s;width:260px;`,2),
-        tdEl(`<div style="display:flex;flex-direction:column;min-height:calc(${connH} * 2);height:100%;opacity:${oS};transition:opacity 0.4s;"><div style="flex:1;border-right:2px solid ${linO};border-bottom:2px solid ${linO};border-radius:0 0 8px 0;"></div><div style="flex:1;border-right:2px solid ${linO};border-top:2px solid ${linO};border-radius:0 8px 0 0;"></div></div>`,"padding:0;width:32px;",2),
-        (()=>{const c=document.createElement("td");c.rowSpan=4;c.style.cssText="padding:8px;vertical-align:middle;text-align:center;";
-            if(f){const w=document.createElement("div");w.style.cssText="display:flex;flex-direction:row;align-items:center;gap:16px;justify-content:center;";
-                w.appendChild(card(f,CF));
-                w.innerHTML+=`<div style="width:2px;height:70px;background:rgba(255,152,0,0.5);flex-shrink:0;"></div>`;
-                const dc=document.createElement("div");dc.innerHTML=copa(f.ganador,urlG);w.appendChild(dc);c.appendChild(w);}
-            return c;})()
-    );
-    tbl.appendChild(r0);
-
-    // Fila Q[1] — conector sube al centro
-    const r1=document.createElement("tr");
-    r1.append(
-        tdEl(Q[1]?card(Q[1],CQ[1]):null,`padding:4px 8px;vertical-align:top;opacity:${oQ};transition:opacity 0.4s;`)
-        // conector Q col (rowspan 2) ya insertado
-        // S[0] (rowspan 2) ya insertado
-        // conector S col (rowspan 2) ya insertado
-        // Final (rowspan 4) ya insertado
-    );
-    // Agregar celda que "sube" (border-top + border-right)
-    // connQ y connS tienen rowspan=2, no agregar más celdas
-    tbl.appendChild(r1);
-
-    // Fila Q[2]
-    const r2=document.createElement("tr");
-    r2.append(
-        tdEl(Q[2]?card(Q[2],CQ[2]):null,`padding:4px 8px;vertical-align:bottom;opacity:${oQ};transition:opacity 0.4s;`),
-        tdEl(`<div style="display:flex;flex-direction:column;min-height:calc(${connH} * 2);height:100%;opacity:${oQ};transition:opacity 0.4s;"><div style="flex:1;border-right:2px solid ${linW};border-bottom:2px solid ${linW};border-radius:0 0 8px 0;"></div><div style="flex:1;border-right:2px solid ${linW};border-top:2px solid ${linW};border-radius:0 8px 0 0;"></div></div>`,"padding:0;width:32px;",2),
-        tdEl(S[1]?card(S[1],CS,"SEMIFINAL 2"):null,`padding:4px 8px;vertical-align:middle;opacity:${oS};transition:opacity 0.4s;`,2),
-        tdEl(`<div style="display:flex;flex-direction:column;min-height:calc(${connH} * 2);height:100%;opacity:${oS};transition:opacity 0.4s;"><div style="flex:1;border-right:2px solid ${linO};border-bottom:2px solid ${linO};border-radius:0 0 8px 0;"></div><div style="flex:1;border-right:2px solid ${linO};border-top:2px solid ${linO};border-radius:0 8px 0 0;"></div></div>`,"padding:0;width:32px;",2)
-    );
-    tbl.appendChild(r2);
-
-    // Fila Q[3]
-    const r3=document.createElement("tr");
-    r3.append(
-        tdEl(Q[3]?card(Q[3],CQ[3]):null,`padding:4px 8px;vertical-align:top;opacity:${oQ};transition:opacity 0.4s;`)
-    );
-    // connQ y connS tienen rowspan=2, no agregar más celdas en r3
-    tbl.appendChild(r3);
-
-    scroll.appendChild(tbl);
-    cont.appendChild(scroll);
-}
-
-cargarLiguilla();
+async function cargarLiguilla(){const id=++solicitud;$('lg-status').textContent='Cargando la liguilla…';try{const r=await fetch(URL_LIGUILLA,{cache:'no-store'});if(!r.ok)throw Error('Respuesta '+r.status);const rows=csv(await r.text());if(rows.length&&!('ronda' in rows[0]))throw Error('Formato de hoja no reconocido');if(id!==solicitud)return;partidos=rows.filter(r=>r.id_liguilla||r.ronda).map(adaptar);renderBracket(partidos,$('selector-ronda').value);const extras=partidos.filter(p=>!ronda(p.ronda));$('lg-status').textContent=extras.length?'Hay '+extras.length+' registro(s) con una ronda no reconocida; revisa su nombre en la hoja.':partidos.length?'':'Todavía no hay encuentros registrados.';}catch(e){if(id!==solicitud)return;$('lg-status').innerHTML='No se pudo cargar la liguilla. <button class="lg-retry" id="lg-retry">Reintentar</button>';$('lg-retry').onclick=cargarLiguilla;}}
+$('selector-ronda').addEventListener('change',e=>renderBracket(partidos,e.target.value));window.cargarLiguilla=cargarLiguilla;window.renderBracket=renderBracket;cargarLiguilla();
+})();
