@@ -6,108 +6,23 @@
 <title>La Familia Futbolera - Next Level 7</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <style>
-* { box-sizing: border-box; }
-body {
-  background: #142702; color: #fff; font-family: 'Roboto', Arial, sans-serif;
-  margin: 0; padding: 16px; display: flex; flex-direction: column; align-items: center;
-}
-.nav-top { width: 100%; max-width: 620px; margin: 0 auto 14px auto; display: flex; align-items: center; justify-content: space-between; }
-.nav-top a {
-  display: inline-block; padding: 8px 22px; background: rgba(0,0,0,.75); border: 1px solid #5eb50d;
-  border-radius: 12px; color: white; text-decoration: none; font-weight: bold; font-size: 13px; transition: .3s;
-}
-.nav-top a:hover { background: #5eb50d; color: black; }
-.nav-top .nav-admin-link { padding: 8px 12px; font-size: 13px; background: transparent; border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); }
-.nav-top .nav-admin-link:hover { background: rgba(255,255,255,0.08); color: #fff; }
 
-h1 { color: #5eb50d; font-size: 24px; letter-spacing: 1px; text-align: center; margin: 6px 0 2px; font-family: 'Bebas Neue', sans-serif; }
-.sub { color: rgba(255,255,255,0.5); font-size: 12px; margin-bottom: 18px; text-align: center; }
+:root{--verde:#377d24;--acento:#8fcf4c;--fondo:#f0f2f5;--texto:#20282b;--suave:#65716f;--borde:#e2e7e4;--panel:#fff}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:84px}body{background:var(--fondo);color:var(--texto);font-family:'Roboto',Arial,sans-serif;margin:0}a{color:inherit}button,input,textarea,select{font:inherit}button,a,input,textarea{touch-action:manipulation}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #8fcf4c;outline-offset:3px}button{cursor:pointer;min-height:44px;border:0;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;background:#eaf0e7;color:#31572b}button:hover{filter:brightness(.97)}button:disabled{opacity:.55;cursor:wait}.hidden{display:none!important}.ff-top{position:sticky;top:0;z-index:10;height:72px;background:#fff;border-bottom:1px solid var(--borde);box-shadow:0 2px 8px #172e1c0a;display:flex;align-items:center;gap:18px;padding:10px max(18px,calc((100vw - 1280px)/2))}.ff-brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}.ff-brand img{width:48px;height:48px;object-fit:contain}.ff-brand strong{display:block;font-size:17px;line-height:1.2;color:#294526}.ff-brand small{color:#71816b;font-size:10px;letter-spacing:1px}.ff-search{position:relative;flex:1;max-width:390px}.ff-search input{width:100%;height:44px;border:1px solid transparent;border-radius:25px;background:#f0f3ef;padding:10px 18px;font-size:13px;color:var(--texto)}.ff-topnav{display:flex;gap:8px;margin-left:auto;align-items:center}.ff-topnav a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:10px 13px;border-radius:11px;text-decoration:none;font-size:12px;font-weight:700;background:#f1f5ef}.ff-topnav a.ff-admin{background:none;color:#687660}.ff-topnav button{font-size:11px;background:#f9eded;color:#934444;padding:8px}.ff-layout{max-width:1280px;margin:auto;display:grid;grid-template-columns:230px minmax(0,650px) 260px;gap:24px;padding:24px 18px 50px;align-items:start}.ff-left,.ff-right{position:sticky;top:96px}.ff-side-title{font-size:10px;font-weight:700;color:#788571;letter-spacing:1.5px;margin:14px 12px}.ff-side-nav{display:flex;flex-direction:column;gap:4px}.ff-side-nav a,.ff-side-nav button{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;text-decoration:none;font-size:13px;color:#354931;min-height:48px;background:transparent;text-align:left}.ff-side-nav a:hover,.ff-side-nav button:hover,.ff-side-nav a.on{background:#e3ebdc}.ff-side-icon{width:32px;height:32px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:16px}.ff-identity{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:14px;border-bottom:1px solid #d9e0d5}.ff-identity img{width:44px;height:44px;object-fit:contain}.ff-identity b{font-size:13px}.ff-identity p{font-size:11px;color:#73816d;margin:5px 0}.ff-main{min-width:0}.ff-cover{position:relative;overflow:hidden;border-radius:18px;background:radial-gradient(circle at 100% 0,#a7c56a88,transparent 50%),linear-gradient(115deg,#123d26,#396e32);color:#fff;padding:27px 25px;margin-bottom:18px;min-height:174px}.ff-cover:after{content:'';position:absolute;width:200px;height:125px;border:1px solid #d3ebad44;right:-60px;bottom:-20px;transform:rotate(-20deg);border-radius:2px;pointer-events:none}.ff-cover .ff-eyebrow{color:#c5e6a5;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700}.ff-cover h1{font-size:clamp(25px,4vw,33px);letter-spacing:-.4px;margin:9px 0 10px;line-height:1.1}.ff-cover p{font-size:13px;line-height:1.5;color:#e0ecd7;max-width:420px;margin:0}.ff-cover-tags{display:flex;gap:7px;margin-top:14px}.ff-cover-tags span{font-size:10px;border:1px solid #e9f5dc44;padding:4px 8px;border-radius:20px;color:#e8f3db}.panel,.post,.ff-side-card{background:var(--panel);border:1px solid var(--borde);border-radius:16px;box-shadow:0 3px 12px #132d1904}.panel{padding:18px;margin-bottom:18px}.panel label{display:block;font-size:12px;color:#53634b;font-weight:700;margin:0 0 8px}.panel h2{font-size:16px;color:#294526;margin:0 0 8px}.panel p.ff-help{font-size:12px;color:var(--suave);line-height:1.5;margin:6px 0 14px}.panel input[type=text],.panel input[type=password],.panel textarea{width:100%;color:var(--texto);border:1px solid var(--borde);background:#f6f8f5;border-radius:11px;padding:12px;font-size:14px}.panel textarea{resize:vertical;min-height:95px;line-height:1.5}.primario{background:var(--verde);color:#fff;width:100%;margin-top:12px}.msg{font-size:12px;min-height:16px;margin-top:8px;text-align:center;line-height:1.45}.msg.error{color:#b63a3a}.msg.ok{color:#307531}.ff-publish-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}.ff-publish-head img{width:42px;height:42px;object-fit:contain;border-radius:50%;background:#f3f7ed;padding:3px}.ff-publish-head p{font-size:11px;color:#7c8775;margin:3px 0 0}.equipo-actual-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;font-size:12px;color:#607156}.equipo-actual-bar b{color:#326e24}.equipo-actual-bar a{color:#637c53;font-size:11px}.foto-zona{border:1px dashed #a0b894;border-radius:12px;background:#f5f8f2;padding:14px;text-align:center;color:#65775d;font-size:12px;margin-top:12px;cursor:pointer}.foto-zona img{max-width:100%;max-height:240px;border-radius:8px;display:none}.ff-remove-photo{display:block;margin:7px auto 0;background:none;color:#9e5050;min-height:36px;padding:5px 10px;font-size:11px}.ff-filterbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:20px 0 12px}.ff-filter-tabs{display:flex;gap:5px;flex-wrap:wrap}.ff-filter-tabs button{min-height:38px;padding:8px 12px;border-radius:20px;background:transparent;color:#6d7c64;font-size:12px}.ff-filter-tabs button[aria-pressed=true]{background:#dfebd6;color:#355729}.ff-feed-title{font-size:13px;font-weight:700;color:#425738}.ff-feed-meta{font-size:11px;color:#7c8874}.post{padding:17px 18px 12px;margin-bottom:16px;overflow:hidden;scroll-margin-top:90px}.post.destacado{outline:3px solid #94bf66}.post-header{display:flex;align-items:center;gap:11px;margin-bottom:13px}.post-header img{width:43px;height:43px;border-radius:50%;object-fit:contain;border:1px solid #e3e9da;background:#f5f8ef;padding:4px}.post-equipo{font-size:14px;font-weight:700;color:#2c4230;line-height:1.3}.post-meta{font-size:11px;color:#7f8b77;margin-top:4px}.ff-post-tag{margin-left:auto;font-size:10px;color:#527744;background:#eff5e9;border-radius:7px;padding:4px 7px;white-space:nowrap}.post-texto{font-size:14px;line-height:1.65;color:#344035;white-space:pre-wrap;overflow-wrap:anywhere;margin-bottom:13px}.ff-photo-btn{display:block;width:calc(100% + 36px);margin:0 -18px 12px;padding:0;background:#f0f2ef;border-radius:0;min-height:0;cursor:zoom-in}.post-foto{width:100%;height:auto;max-height:700px;object-fit:contain;display:block}.post-yt{position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin-bottom:12px;background:#14201a}.post-yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.post-link-card{display:flex;align-items:center;gap:10px;border:1px solid #e0e9d8;border-radius:12px;padding:15px;color:#446c34;text-decoration:none;background:#f6f9f2;font-size:13px;margin-bottom:12px;overflow-wrap:anywhere}.ff-post-counts{display:flex;justify-content:space-between;color:#7b8972;font-size:11px;padding:2px 0 10px}.post-acciones{display:flex;align-items:center;gap:5px;flex-wrap:wrap;border-top:1px solid #edf0e9;padding-top:6px}.post-acciones button{flex:1;background:none;color:#6d7c62;font-size:12px;padding:10px 5px;min-width:80px}.post-acciones button.activo{color:#3e812a;background:#f0f7e8}.post-acciones .btn-borrar-post{color:#a34a46;font-size:10px;flex-basis:100%;background:#fcf5f4}.comentarios{padding-top:12px;border-top:1px solid #edf0e9;margin-top:7px}.comentario{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px;font-size:12px;line-height:1.5}.ff-comment-avatar{background:#e8efdf;border-radius:50%;width:28px;height:28px;flex:none;display:grid;place-items:center;color:#72885e;font-weight:700}.ff-comment-bubble{flex:1;min-width:0;background:#f0f3ed;padding:9px 12px;border-radius:12px;overflow-wrap:anywhere}.comentario b{display:block;color:#3f5435;font-size:11px;margin-bottom:2px}.comentario .borrar-coment{background:none;color:#a35a4d;font-size:11px;padding:3px;min-height:32px;min-width:30px}.form-comentario{display:grid;grid-template-columns:100px minmax(0,1fr) 46px;gap:7px;margin-top:12px;align-items:center}.form-comentario input{width:100%;min-width:0;border:1px solid #e1e6da;background:#f4f6f0;border-radius:20px;padding:11px 12px;font-size:12px;color:#34402f;min-height:44px}.form-comentario button{padding:8px;font-size:18px;border-radius:50%;color:#53853b;background:#eaf2df;min-width:44px}.ff-comment-msg{font-size:11px;color:#a34b42;padding:6px 0;min-height:0}.ff-side-card{padding:18px;margin-bottom:16px}.ff-side-card h2{font-size:13px;color:#415e35;margin:0 0 12px}.ff-side-card p,.ff-side-card li{font-size:12px;color:#78866d;line-height:1.6}.ff-side-card ul{padding-left:17px;margin:0}.ff-side-card a{display:block;text-decoration:none;color:#4e713b;border-top:1px solid #eef1e9;padding:12px 0;font-size:12px}.ff-side-foot{font-size:10px;color:#85917c;line-height:1.6;padding:3px 10px}.vacio{text-align:center;padding:32px 20px;background:white;border:1px solid var(--borde);border-radius:16px;color:#74836a;font-size:13px;line-height:1.6}.ff-empty-icon{font-size:28px;display:block;margin-bottom:10px}.ff-lightbox{padding:12px;background:#071009;border:1px solid #a9c18466;border-radius:15px;max-width:96vw;max-height:94dvh;color:#fff}.ff-lightbox::backdrop{background:#061108df}.ff-lightbox img{display:block;max-width:90vw;max-height:80dvh;object-fit:contain}.ff-lightbox button{display:block;margin:0 0 8px auto;background:#254123;color:#fff}.ff-notice{font-size:12px;color:#486b35;padding:8px 0;min-height:0}.ff-mobile-short{display:none}
+@media(max-width:1150px){.ff-layout{grid-template-columns:200px minmax(0,650px);max-width:950px}.ff-right{display:none}.ff-brand strong{font-size:15px}.ff-top{padding:10px 18px}.ff-topnav a{padding:10px}.ff-search{max-width:330px}}
+@media(max-width:760px){html{scroll-padding-top:115px}.ff-top{height:auto;min-height:66px;flex-wrap:wrap;padding:9px 12px;gap:8px}.ff-brand img{width:38px;height:38px}.ff-brand strong{font-size:14px}.ff-brand small{display:none}.ff-topnav{gap:4px}.ff-topnav a{font-size:11px;min-height:40px;padding:8px}.ff-search{order:3;max-width:none;flex-basis:100%}.ff-search input{height:36px;font-size:12px}.ff-layout{display:block;padding:14px 10px 35px}.ff-left,.ff-right{display:none}.ff-cover{padding:22px 18px;min-height:159px;border-radius:15px}.ff-cover h1{font-size:26px}.ff-cover p{font-size:12px}.ff-cover-tags{margin-top:12px}.panel{padding:15px;border-radius:14px}.ff-publish-head{gap:9px}.post{padding:15px 13px 10px;border-radius:14px}.post-header{gap:8px}.post-header img{width:39px;height:39px}.post-equipo{font-size:13px}.post-texto{font-size:14px}.ff-photo-btn{width:calc(100% + 26px);margin-left:-13px;margin-right:-13px}.ff-post-tag{font-size:9px}.ff-filterbar{gap:6px}.ff-feed-title{font-size:12px}.ff-filter-tabs{gap:2px}.ff-filter-tabs button{font-size:11px;padding:8px 9px}.post-acciones button{font-size:11px;min-width:70px}.form-comentario{grid-template-columns:85px minmax(0,1fr) 42px;gap:5px}.form-comentario input{padding:10px 9px;font-size:11px}.form-comentario button{min-width:40px;font-size:16px}.ff-full-label{display:none}.ff-mobile-short{display:inline}.ff-topnav button{font-size:10px;padding:7px}.post{scroll-margin-top:125px}}
+@media(max-width:360px){.ff-brand strong{font-size:12px}.ff-brand small{display:none}.ff-brand img{width:32px;height:32px}.ff-topnav a{font-size:10px;padding:8px 7px}.form-comentario{grid-template-columns:minmax(0,1fr) 42px}.form-comentario input:first-child{grid-column:1 / -1;border-radius:10px;max-width:140px;min-height:36px}.post-acciones button{padding:8px 2px;min-width:65px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 
-.wrap { width: 100%; max-width: 620px; }
-.panel { background: rgba(0,0,0,0.88); border: 1px solid #7f5f0d; border-radius: 14px; padding: 18px; margin-bottom: 16px; }
-.panel label { display:block; color:#d5a610; font-size:11px; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
-input[type=text], input[type=password], textarea, select {
-  width: 100%; background: rgba(255,255,255,0.07); border: 1px solid #7f5f0d; border-radius: 6px;
-  color: #fff; font-size: 14px; padding: 10px; outline: none; font-family: inherit;
-}
-textarea { resize: vertical; min-height: 70px; }
-select option { background:#111; }
-button {
-  background: linear-gradient(135deg, #7f5f0d, #d5a610); border: none; border-radius: 8px;
-  color: #fff; cursor: pointer; font-size: 13px; font-weight: 700; letter-spacing: 1px;
-  padding: 10px 16px; text-transform: uppercase; touch-action: manipulation;
-}
-button.primario { background: linear-gradient(135deg, #5eb50d, #8fe89a); color:#0a1206; width:100%; margin-top: 10px; }
-button:disabled { opacity:.5; cursor:default; }
-.msg { font-size:12px; text-align:center; min-height:16px; margin-top:8px; }
-.msg.error { color:#ff8a8a; }
-.msg.ok { color:#8fe89a; }
-.hidden { display:none !important; }
-
-/* ---- Login de capitán ---- */
-#login-equipo { text-align:center; }
-#login-equipo input { margin-bottom: 10px; }
-.equipo-actual-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; }
-.equipo-actual-bar b { color:#5eb50d; }
-.equipo-actual-bar a { color: rgba(255,255,255,0.4); text-decoration: underline; font-size:11px; }
-
-/* ---- Foto ---- */
-.foto-zona {
-  border: 2px dashed rgba(94,181,13,0.4); border-radius: 10px; padding: 14px; text-align:center;
-  cursor: pointer; margin-bottom: 10px; color: rgba(255,255,255,0.5); font-size:12px;
-}
-.foto-zona img { max-width:100%; max-height:180px; border-radius:8px; display:none; }
-
-/* ---- Feed ---- */
-.post { background: rgba(0,0,0,0.75); border: 1px solid rgba(94,181,13,0.3); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
-.post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.post-header img { width:36px; height:36px; border-radius:50%; object-fit:cover; background:#000; border:1px solid #5eb50d; }
-.post-equipo { font-weight:900; color:#5eb50d; font-size:13px; text-transform:uppercase; }
-.post-meta { font-size:11px; color:rgba(255,255,255,0.4); }
-.post-texto { font-size:14px; line-height:1.5; margin-bottom:10px; white-space:pre-wrap; }
-.post-foto { width:100%; border-radius:10px; margin-bottom:10px; display:block; }
-.post-yt { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:10px; margin-bottom:10px; }
-.post-yt iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; }
-.post-acciones { display:flex; align-items:center; gap:14px; border-top:1px solid rgba(255,255,255,0.08); padding-top:10px; }
-.btn-like {
-  background: rgba(94,181,13,0.12); border:1px solid #5eb50d; border-radius: 20px; color:#5eb50d;
-  font-size:12px; font-weight:700; padding:6px 14px; cursor:pointer; display:flex; align-items:center; gap:5px;
-}
-.btn-like.activo { background:#5eb50d; color:#0a1206; }
-.btn-borrar-post { background:none; border:1px solid rgba(255,80,80,0.5); color:#ff8a8a; border-radius:20px; font-size:11px; padding:6px 12px; margin-left:auto; }
-
-.comentarios { margin-top:12px; }
-.comentario { font-size:12px; padding:6px 0; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; gap:8px; }
-.comentario b { color:#d5a610; }
-.comentario .borrar-coment { color:rgba(255,80,80,0.6); cursor:pointer; font-size:11px; white-space:nowrap; }
-.form-comentario { display:flex; gap:6px; margin-top:10px; }
-.form-comentario input[type=text]:first-child { max-width:90px; flex-shrink:0; }
-.form-comentario button { padding:8px 12px; font-size:11px; }
-
-.vacio { text-align:center; color:rgba(255,255,255,0.3); font-size:13px; padding:30px 10px; }
-.post-link-card {
-  display:flex; align-items:center; gap:10px; background:rgba(94,181,13,0.08); border:1px solid rgba(94,181,13,0.35);
-  border-radius:10px; padding:12px 14px; margin-bottom:10px; text-decoration:none; color:#8fe89a; font-size:13px; font-weight:700;
-}
-.post-link-card:hover { background:rgba(94,181,13,0.16); }
 </style>
 </head>
 <body>
 
-<div class="nav-top">
-  <a href="index.html">← Inicio</a>
-  <a href="#" id="link-admin" class="nav-admin-link">⚙️ Admin</a>
-</div>
-
-<h1>⚽ La Familia Futbolera</h1>
-<div class="sub">Next Level 7 — el muro de la liga</div>
-
-<div class="wrap">
-
+<header class="ff-top"><a class="ff-brand" href="familia-futbolera.html"><img src="logo-liga.png.png" alt="Next Level 7"><span><strong>Familia Futbolera</strong><small>LA COMUNIDAD DE NEXT LEVEL 7</small></span></a><label class="ff-search"><input id="ff-search" type="search" placeholder="Buscar publicaciones o equipos" aria-label="Buscar publicaciones o equipos"></label><nav class="ff-topnav" aria-label="Navegación"><a href="index.html">Inicio</a><a href="#panel-capitan" id="ff-publicar">Publicar</a><a href="#" id="link-admin" class="ff-admin">Admin</a><button id="ff-admin-out" class="hidden">Salir admin</button></nav></header>
+<div class="ff-layout"><aside class="ff-left"><div class="ff-identity"><img src="logo-liga.png.png" alt=""><div><b>Next Level 7</b><p>Nuestra familia, nuestra liga.</p></div></div><div class="ff-side-title">TU COMUNIDAD</div><nav class="ff-side-nav"><a class="on" href="familia-futbolera.html"><span class="ff-side-icon">⚽</span>Muro de la liga</a><a href="equipos.html"><span class="ff-side-icon">♧</span>Equipos</a><a href="partidos.html"><span class="ff-side-icon">▤</span>Partidos</a><a href="tablaGeneral.html"><span class="ff-side-icon">▥</span>Tabla general</a><a href="liguilla.html"><span class="ff-side-icon">☆</span>Liguilla</a></nav><p class="ff-side-foot">Comparte el fútbol con respeto.<br>Dentro y fuera de la cancha.</p></aside><main class="ff-main"><section class="ff-cover"><span class="ff-eyebrow">La comunidad de la liga</span><h1>La Familia Futbolera</h1><p>Las fotos, las jugadas y los momentos que nos unen. Aquí también se vive el fútbol.</p><div class="ff-cover-tags"><span>Equipos</span><span>Afición</span><span>Buenos momentos</span></div></section>
   <!-- LOGIN DE ADMIN (oculto, se abre con el link de arriba) -->
   <div class="panel hidden" id="panel-admin-login">
     <label>Contraseña de administrador</label>
-    <input type="password" id="pass-admin" placeholder="Contraseña">
+    <input type="password" autocomplete="current-password" id="pass-admin" placeholder="Contraseña">
     <button class="primario" onclick="intentarLoginAdmin()">Entrar como admin</button>
     <div class="msg" id="admin-msg"></div>
   </div>
@@ -115,9 +30,10 @@ button:disabled { opacity:.5; cursor:default; }
   <!-- LOGIN / COMPOSER DE CAPITÁN -->
   <div class="panel" id="panel-capitan">
     <div id="login-equipo">
-      <label>Contraseña de tu equipo (para publicar)</label>
-      <input type="password" id="input-codigo" placeholder="Contraseña de tu equipo">
-      <button class="primario" onclick="entrarConCodigo(document.getElementById('input-codigo').value)">Entrar y publicar</button>
+      <div class="ff-publish-head"><img src="logo-liga.png.png" alt=""><div><h2>¿Qué pasa en la cancha?</h2><p>Entra como capitán para compartir con la comunidad.</p></div></div>
+      <label for="input-codigo">Contraseña de tu equipo (para publicar)</label>
+      <input type="password" autocomplete="current-password" id="input-codigo" placeholder="Contraseña de tu equipo">
+      <button id="btn-entrar" class="primario" onclick="entrarConCodigo(document.getElementById('input-codigo').value)">Entrar y publicar</button>
       <div class="msg" id="login-msg"></div>
     </div>
 
@@ -126,12 +42,13 @@ button:disabled { opacity:.5; cursor:default; }
         <span>Publicando como <b id="equipo-actual-nombre"></b></span>
         <a href="#" id="link-cambiar-equipo">Cambiar equipo</a>
       </div>
-      <label>¿Qué quieres compartir?</label>
+      <label for="input-texto">Comparte un momento con la comunidad</label>
       <textarea id="input-texto" placeholder="Cuéntale algo a la Familia Futbolera..."></textarea>
-      <div class="foto-zona" id="foto-zona">
+      <div class="foto-zona" id="foto-zona" role="button" tabindex="0" aria-label="Agregar una foto">
         <span id="foto-placeholder">📷 Toca para agregar una foto (opcional)</span>
-        <img id="foto-preview">
+        <img id="foto-preview" alt="Vista previa de tu foto">
       </div>
+      <button class="ff-remove-photo hidden" id="ff-remove-photo" type="button">Quitar foto</button>
       <input type="file" id="input-foto" accept="image/*" class="hidden">
       <label style="margin-top:10px">Link de red social (opcional)</label>
       <input type="text" id="input-link" placeholder="Pega aquí un link de YouTube, TikTok, Instagram, Facebook...">
@@ -140,11 +57,9 @@ button:disabled { opacity:.5; cursor:default; }
     </div>
   </div>
 
-  <!-- FEED -->
-  <div id="feed"><div class="vacio">Cargando publicaciones...</div></div>
-
-</div>
-
+<div class="ff-filterbar"><span class="ff-feed-title">Publicaciones</span><div class="ff-filter-tabs" role="group" aria-label="Filtrar publicaciones"><button data-filtro="todos" aria-pressed="true">Todas</button><button data-filtro="fotos" aria-pressed="false">Fotos</button><button data-filtro="enlaces" aria-pressed="false">Videos y enlaces</button></div></div><div id="ff-feed-meta" class="ff-feed-meta"></div><div id="ff-notice" class="ff-notice" role="status"></div><div id="feed" aria-label="Publicaciones de la comunidad"><div class="vacio">Cargando publicaciones…</div></div>
+</main><aside class="ff-right"><section class="ff-side-card"><h2>Una comunidad, muchos equipos</h2><p>Comparte fotos del domingo, celebra las buenas jugadas y acompaña a tu equipo.</p><a href="equipos.html">Conoce a los equipos →</a><a href="partidos.html">Consulta los próximos partidos →</a></section><section class="ff-side-card"><h2>Así cuidamos el ambiente</h2><ul><li>Respeto para jugadores, árbitros y familias.</li><li>Comparte fotos que puedas publicar.</li><li>Hablemos de fútbol sin insultos.</li></ul></section><p class="ff-side-foot">Familia Futbolera · Next Level 7<br>Hecho para vivir la liga juntos.</p></aside></div>
+<dialog id="ff-lightbox" class="ff-lightbox" aria-label="Foto de la publicación"><button id="ff-close-photo" aria-label="Cerrar foto">Cerrar ×</button><img id="ff-large-photo" alt="Foto de la comunidad"></dialog>
 <script>
 const FB = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
 const CAR_CAPITANES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1768443342&single=true&output=csv";
@@ -158,15 +73,17 @@ let esAdmin = false;
 let miId = localStorage.getItem('nl7_ff_visitante_id');
 if(!miId){ miId = 'v' + Date.now() + Math.random().toString(36).slice(2); localStorage.setItem('nl7_ff_visitante_id', miId); }
 
-function parseCSVLinea(linea){ return linea.split(',').map(c=>c.trim()); }
+function filasCSV(text){const rows=[];let f='',row=[],q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c}else if(c==='"')q=true;else if(c===','){row.push(f.trim());f=''}else if(c==='\r'||c==='\n'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(f.trim());if(row.some(x=>x))rows.push(row);row=[];f=''}else f+=c}if(f||row.length){row.push(f.trim());rows.push(row)}return rows;}
 
+async function leerTexto(url){const r=await fetch(url);if(!r.ok)throw Error('No se pudo cargar');return r.text();}
 async function cargarEquipos(){
+  const btnEntrar=document.getElementById('btn-entrar');btnEntrar.disabled=true;
   try{
-    const texto = await (await fetch(CAR_CAPITANES)).text();
-    const filas = texto.trim().split('\n');
+    const texto = await leerTexto(CAR_CAPITANES);
+    const filas = filasCSV(texto);
     const encontrados = [];
     for(let i=1;i<filas.length;i++){
-      const c = parseCSVLinea(filas[i]);
+      const c = filas[i];
       const id = Number(c[0]);
       const nombre = (c[1]||'').trim();
       const codigo = (c[3]||'').trim();
@@ -185,16 +102,18 @@ async function cargarEquipos(){
     document.getElementById('login-msg').className = 'msg error';
   }
 
+  btnEntrar.disabled=false;
+  if(!EQUIPOS.length){document.getElementById('login-msg').textContent='No se pudo cargar el acceso de los equipos. Actualiza para reintentar.';document.getElementById('login-msg').className='msg error';}
   const guardado = localStorage.getItem('nl7_ff_codigo_equipo');
   if(guardado) entrarConCodigo(guardado);
 }
 
 async function cargarLogos(){
   try{
-    const texto = await (await fetch(CAR_EQUIPOS)).text();
-    const filas = texto.trim().split('\n');
+    const texto = await leerTexto(CAR_EQUIPOS);
+    const filas = filasCSV(texto);
     for(let i=1;i<filas.length;i++){
-      const c = filas[i].split(',');
+      const c = filas[i];
       const nombre = (c[1]||'').trim();
       const logo = (c[4]||c[3]||'').trim();
       if(nombre) LOGOS[nombre] = logo;
@@ -245,14 +164,15 @@ function intentarLoginAdmin(){
   if(val === ADMIN_PASS){
     esAdmin = true;
     document.getElementById('panel-admin-login').classList.add('hidden');
-    document.getElementById('link-admin').textContent = '⚙️ Admin ✅';
+    document.getElementById('link-admin').textContent = 'Admin activo';
     if(!equipoActual){
       equipoActual = { id: 'admin', nombre: 'Liga Next Level 7', codigo: '' };
       document.getElementById('login-equipo').classList.add('hidden');
       document.getElementById('composer').classList.remove('hidden');
       document.getElementById('equipo-actual-nombre').textContent = equipoActual.nombre;
     }
-    renderFeed();
+    document.getElementById('ff-admin-out').classList.remove('hidden');
+    renderFeed(true);
   } else {
     msg.textContent = 'Contraseña incorrecta.';
     msg.className = 'msg error';
@@ -269,6 +189,7 @@ fotoZona.addEventListener('click', ()=>inputFoto.click());
 inputFoto.addEventListener('change', ()=>{
   const archivo = inputFoto.files[0];
   if(!archivo) return;
+  if(archivo.type&&!archivo.type.startsWith('image/')){document.getElementById('publicar-msg').textContent='Selecciona un archivo de imagen.';return;}
   const lector = new FileReader();
   lector.onload = (e)=>{
     const img = new Image();
@@ -283,8 +204,9 @@ inputFoto.addEventListener('change', ()=>{
       fotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
       fotoPreview.src = fotoBase64;
       fotoPreview.style.display = 'block';
-      fotoPlaceholder.style.display = 'none';
+      fotoPlaceholder.style.display = 'none';document.getElementById('ff-remove-photo').classList.remove('hidden');
     };
+    img.onerror=()=>{document.getElementById('publicar-msg').textContent='No se pudo abrir esta imagen. Prueba con una foto JPG o PNG.';document.getElementById('publicar-msg').className='msg error';};
     img.src = e.target.result;
   };
   lector.readAsDataURL(archivo);
@@ -292,7 +214,8 @@ inputFoto.addEventListener('change', ()=>{
 
 function youtubeEmbedId(url){
   if(!url) return '';
-  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  const segura=urlWeb(url);if(!segura)return '';const host=new URL(segura).hostname.replace(/^www\./,'');if(!['youtube.com','m.youtube.com','youtu.be','youtube-nocookie.com'].includes(host))return '';
+  const m = segura.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
   return m ? m[1] : '';
 }
 
@@ -307,165 +230,67 @@ function datosDelLink(url){
   return { tipo:'otro', etiqueta:'enlace', icono:'🔗' };
 }
 
-// ---- Publicar ----
+// Datos y acciones del muro: se conservan las rutas existentes de Firebase.
+let postsGuardados=[],filtroMuro='todos',busquedaMuro='',peticionFeed=0,ultimaLectura='',actualizandoFeed=false;
+const comentariosAbiertos=new Set(),borradoresComentarios=new Map(),accionesPendientes=new Set();
+function urlWeb(v){try{const u=new URL(String(v||'').trim());return ['https:','http:'].includes(u.protocol)?u.href:'';}catch(e){return '';}}
+function fotoValida(v){const s=String(v||'');return /^data:image\/(?:jpeg|jpg|png|webp|gif);base64,[a-zA-Z0-9+/=\s]+$/.test(s)?s:urlWeb(s);}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function avisoMuro(texto,error=false){const n=document.getElementById('ff-notice');n.textContent=texto;n.style.color=error?'#ad4141':'';}
+async function escribir(url,opciones){const r=await fetch(url,opciones);if(!r.ok)throw Error('No se guardaron los cambios ('+r.status+').');return r;}
+function tiempoRelativo(ts){const n=Number(ts);if(!Number.isFinite(n)||n<=0)return 'Fecha no disponible';const seg=Math.max(0,Math.floor((Date.now()-n)/1000));if(seg<60)return 'Justo ahora';const min=Math.floor(seg/60);if(min<60)return `Hace ${min} min`;const hr=Math.floor(min/60);if(hr<24)return `Hace ${hr} h`;const d=Math.floor(hr/24);return d<7?`Hace ${d} d`:new Date(n).toLocaleDateString('es-MX',{day:'numeric',month:'short',year:'numeric'});}
 async function publicar(){
-  const texto = document.getElementById('input-texto').value.trim();
-  const link = document.getElementById('input-link').value.trim();
-  const msg = document.getElementById('publicar-msg');
-  msg.className = 'msg';
-
-  if(!texto && !fotoBase64 && !link){
-    msg.textContent = 'Escribe algo, sube una foto o pega un link antes de publicar.';
-    msg.className = 'msg error';
-    return;
-  }
-  if(link && !/^https?:\/\//i.test(link)){
-    msg.textContent = 'Ese link no se ve válido — debe empezar con http:// o https://';
-    msg.className = 'msg error';
-    return;
-  }
-
-  const btn = document.getElementById('btn-publicar');
-  btn.disabled = true; btn.textContent = 'Publicando...';
-
-  const post = {
-    equipoId: equipoActual.id,
-    equipo: equipoActual.nombre,
-    texto: texto,
-    foto: fotoBase64 || '',
-    link: link || '',
-    fecha: Date.now()
-  };
-
-  try{
-    await fetch(FB + '/familiaFutbolera/posts.json', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(post)
-    });
-    msg.textContent = '✅ Publicado.';
-    msg.className = 'msg ok';
-    document.getElementById('input-texto').value = '';
-    document.getElementById('input-link').value = '';
-    fotoBase64 = '';
-    fotoPreview.style.display = 'none';
-    fotoPlaceholder.style.display = 'block';
-    inputFoto.value = '';
-    await renderFeed();
-  }catch(e){
-    msg.textContent = 'No se pudo publicar, revisa tu conexión.';
-    msg.className = 'msg error';
-  }
-  btn.disabled = false; btn.textContent = '📣 Publicar';
+ const texto=document.getElementById('input-texto').value.trim(),link=document.getElementById('input-link').value.trim(),msg=document.getElementById('publicar-msg');msg.className='msg';
+ if(!equipoActual){msg.textContent='Entra con tu equipo antes de publicar.';msg.className='msg error';return;}
+ if(!texto&&!fotoBase64&&!link){msg.textContent='Escribe algo, agrega una foto o pega un enlace antes de publicar.';msg.className='msg error';return;}
+ if(link&&!urlWeb(link)){msg.textContent='El enlace debe comenzar con https:// o http:// y tener una dirección válida.';msg.className='msg error';return;}
+ const btn=document.getElementById('btn-publicar');if(btn.disabled)return;btn.disabled=true;btn.textContent='Publicando…';
+ const post={equipoId:equipoActual.id,equipo:equipoActual.nombre,texto,foto:fotoBase64||'',link:link||'',fecha:Date.now()};
+ try{await escribir(FB+'/familiaFutbolera/posts.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(post)});msg.textContent='Publicado. Ya forma parte del muro.';msg.className='msg ok';document.getElementById('input-texto').value='';document.getElementById('input-link').value='';quitarFoto();filtroMuro='todos';busquedaMuro='';document.getElementById('ff-search').value='';await renderFeed(true);}
+ catch(e){msg.textContent='No se pudo publicar. Tu texto y foto se conservaron; vuelve a intentarlo.';msg.className='msg error';}
+ finally{btn.disabled=false;btn.textContent='Publicar';}
 }
-
-// ---- Feed ----
-function tiempoRelativo(ts){
-  const seg = Math.floor((Date.now()-ts)/1000);
-  if(seg < 60) return 'justo ahora';
-  const min = Math.floor(seg/60);
-  if(min < 60) return `hace ${min} min`;
-  const hr = Math.floor(min/60);
-  if(hr < 24) return `hace ${hr} h`;
-  const dias = Math.floor(hr/24);
-  return `hace ${dias} d`;
+function guardarBorradores(){document.querySelectorAll('.form-comentario').forEach(form=>{const id=form.dataset.post;borradoresComentarios.set(id,{nombre:form.querySelector('[data-nombre]').value,texto:form.querySelector('[data-texto]').value});});}
+async function toggleLike(postId,yaLeDiLike){if(accionesPendientes.has('like-'+postId))return;accionesPendientes.add('like-'+postId);const b=document.querySelector(`[data-like="${CSS.escape(postId)}"]`);if(b)b.disabled=true;try{await escribir(`${FB}/familiaFutbolera/posts/${encodeURIComponent(postId)}/likes/${encodeURIComponent(miId)}.json`,yaLeDiLike?{method:'DELETE'}:{method:'PUT',headers:{'Content-Type':'application/json'},body:'true'});await renderFeed(true);}catch(e){avisoMuro('No se pudo guardar el Me gusta. Inténtalo de nuevo.',true);}finally{accionesPendientes.delete('like-'+postId);if(b?.isConnected)b.disabled=false;}}
+async function enviarComentario(postId){const nombreInput=document.getElementById(`coment-nombre-${postId}`),textoInput=document.getElementById(`coment-texto-${postId}`);if(!nombreInput||!textoInput)return;const nombre=nombreInput.value.trim()||'Afición',texto=textoInput.value.trim();if(!texto||accionesPendientes.has('coment-'+postId))return;const m=document.getElementById('coment-msg-'+postId);accionesPendientes.add('coment-'+postId);try{await escribir(`${FB}/familiaFutbolera/posts/${encodeURIComponent(postId)}/comentarios.json`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,texto,fecha:Date.now()})});textoInput.value='';borradoresComentarios.set(postId,{nombre:nombreInput.value,texto:''});comentariosAbiertos.add(postId);await renderFeed(true);}catch(e){m.textContent='No se pudo enviar. Tu comentario se conserva.';}finally{accionesPendientes.delete('coment-'+postId);}}
+async function borrarPost(postId){if(!esAdmin)return;if(!confirm('¿Borrar esta publicación?'))return;try{await escribir(`${FB}/familiaFutbolera/posts/${encodeURIComponent(postId)}.json`,{method:'DELETE'});await renderFeed(true);}catch(e){avisoMuro('No se pudo borrar la publicación.',true);}}
+async function borrarComentario(postId,comentId){if(!esAdmin)return;if(!confirm('¿Borrar este comentario?'))return;try{await escribir(`${FB}/familiaFutbolera/posts/${encodeURIComponent(postId)}/comentarios/${encodeURIComponent(comentId)}.json`,{method:'DELETE'});comentariosAbiertos.add(postId);await renderFeed(true);}catch(e){avisoMuro('No se pudo borrar el comentario.',true);}}
+function postHTML(id,p){
+ const logo=p.equipoId==='admin'?'logo-liga.png.png':urlWeb(LOGOS[p.equipo])||'logo-liga.png.png',likes=p.likes&&typeof p.likes==='object'?p.likes:{},numLikes=Object.keys(likes).length,ya=!!likes[miId];
+ const comentarios=p.comentarios&&typeof p.comentarios==='object'?Object.entries(p.comentarios).filter(([,c])=>c&&typeof c==='object').sort((a,b)=>(a[1].fecha||0)-(b[1].fecha||0)):[];
+ const link=urlWeb(p.link||p.youtube||''),yt=link?youtubeEmbedId(link):'',info=link&&!yt?datosDelLink(link):null,foto=fotoValida(p.foto),b=borradoresComentarios.get(id)||{},abierto=comentariosAbiertos.has(id);
+ return `<article class="post" id="post-${esc(id)}" data-post="${esc(id)}"><div class="post-header"><img src="${esc(logo)}" alt="Escudo de ${esc(p.equipo||'la liga')}" loading="lazy"><div><div class="post-equipo">${esc(p.equipo||'Familia Futbolera')}</div><div class="post-meta">${esc(tiempoRelativo(p.fecha))} · Comunidad</div></div>${p.equipoId==='admin'?'<span class="ff-post-tag">Liga</span>':''}</div>${p.texto?'<div class="post-texto">'+esc(p.texto)+'</div>':''}${foto?`<button class="ff-photo-btn" data-foto="${esc(id)}" aria-label="Ampliar foto de ${esc(p.equipo||'la comunidad')}"><img class="post-foto" src="${esc(foto)}" alt="Foto compartida por ${esc(p.equipo||'la comunidad')}" loading="lazy" decoding="async"></button>`:''}${yt?`<div class="post-yt"><iframe loading="lazy" src="https://www.youtube.com/embed/${yt}" title="Video compartido por ${esc(p.equipo||'la comunidad')}" allowfullscreen></iframe></div>`:''}${info?`<a class="post-link-card" href="${esc(link)}" target="_blank" rel="noopener noreferrer">${info.icono} Ver en ${esc(info.etiqueta)} ↗</a>`:''}<div class="ff-post-counts"><span>${numLikes?'⚽ '+numLikes+' Me gusta':'Sé el primero en reaccionar'}</span><span>${comentarios.length} comentario${comentarios.length===1?'':'s'}</span></div><div class="post-acciones"><button class="btn-like ${ya?'activo':''}" data-like="${esc(id)}" data-liked="${ya}" aria-pressed="${ya}">⚽ Me gusta</button><button data-comentar="${esc(id)}" aria-expanded="${abierto}" aria-controls="comentarios-${esc(id)}">Comentar</button><button data-copiar="${esc(id)}">Copiar enlace</button>${esAdmin?`<button class="btn-borrar-post" data-borrar-post="${esc(id)}">Borrar publicación</button>`:''}</div><section class="comentarios ${abierto?'':'hidden'}" id="comentarios-${esc(id)}" aria-label="Comentarios"><div>${comentarios.map(([cid,c])=>`<div class="comentario"><span class="ff-comment-avatar" aria-hidden="true">${esc((String(c.nombre||'Afición').trim()[0]||'A').toUpperCase())}</span><div class="ff-comment-bubble"><b>${esc(c.nombre||'Afición')}</b>${esc(c.texto||'')}</div>${esAdmin?`<button class="borrar-coment" data-borrar-coment="${esc(cid)}" data-en-post="${esc(id)}" aria-label="Borrar comentario">×</button>`:''}</div>`).join('')}</div><form class="form-comentario" data-post="${esc(id)}"><input type="text" id="coment-nombre-${esc(id)}" data-nombre placeholder="Tu nombre" aria-label="Tu nombre" value="${esc(b.nombre||'')}" maxlength="80"><input type="text" id="coment-texto-${esc(id)}" data-texto placeholder="Escribe un comentario…" aria-label="Escribe un comentario" value="${esc(b.texto||'')}" maxlength="3000"><button type="submit" aria-label="Enviar comentario">➤</button></form><div class="ff-comment-msg" id="coment-msg-${esc(id)}" role="status"></div></section></article>`;
 }
-
-async function toggleLike(postId, yaLeDiLike){
-  const path = `${FB}/familiaFutbolera/posts/${postId}/likes/${miId}.json`;
-  if(yaLeDiLike) await fetch(path, {method:'DELETE'});
-  else await fetch(path, {method:'PUT', body: JSON.stringify(true)});
-  renderFeed();
+function pintarFeed(){
+ guardarBorradores();const activo=document.activeElement,idActivo=activo?.id,desde=activo?.selectionStart,hasta=activo?.selectionEnd;const texto=busquedaMuro.toLocaleLowerCase('es');
+ const lista=postsGuardados.filter(([,p])=>(filtroMuro==='todos'||filtroMuro==='fotos'&&p.foto||filtroMuro==='enlaces'&&(p.link||p.youtube))&&(!texto||`${p.equipo||''} ${p.texto||''}`.toLocaleLowerCase('es').includes(texto)));
+ document.querySelectorAll('[data-filtro]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.filtro===filtroMuro)));document.getElementById('ff-feed-meta').textContent=lista.length?lista.length+' publicación'+(lista.length===1?'':'es')+' · Más recientes primero':'';
+ document.getElementById('feed').innerHTML=lista.length?lista.map(([id,p])=>postHTML(id,p)).join(''):`<div class="vacio"><span class="ff-empty-icon">⚽</span>${postsGuardados.length?'No hay publicaciones que coincidan con esta búsqueda.':'Todavía no hay publicaciones. ¡Comparte el primer momento de la liga!'}</div>`;
+ if(idActivo){const nuevo=document.getElementById(idActivo);if(nuevo&&nuevo.matches('input')){nuevo.focus({preventScroll:true});if(desde!=null)nuevo.setSelectionRange(desde,hasta);}}
 }
-
-async function enviarComentario(postId){
-  const nombreInput = document.getElementById(`coment-nombre-${postId}`);
-  const textoInput = document.getElementById(`coment-texto-${postId}`);
-  const nombre = nombreInput.value.trim() || 'Afición';
-  const texto = textoInput.value.trim();
-  if(!texto) return;
-  await fetch(`${FB}/familiaFutbolera/posts/${postId}/comentarios.json`, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ nombre, texto, fecha: Date.now() })
-  });
-  textoInput.value = '';
-  renderFeed();
+async function renderFeed(forzar=false){
+ if(!forzar&&document.activeElement?.closest('.form-comentario'))return;const req=++peticionFeed;try{const r=await fetch(FB+'/familiaFutbolera/posts.json',{cache:'no-store'});if(!r.ok)throw Error('No se pudo leer');const data=await r.json();if(req!==peticionFeed)return;const clave=JSON.stringify(data);if(!forzar&&ultimaLectura===clave)return;ultimaLectura=clave;postsGuardados=Object.entries(data||{}).filter(([,p])=>p&&typeof p==='object').sort((a,b)=>(Number(b[1].fecha)||0)-(Number(a[1].fecha)||0));pintarFeed();}
+ catch(e){if(req!==peticionFeed)return;if(postsGuardados.length)avisoMuro('No se pudo actualizar el muro. Las publicaciones anteriores siguen visibles.',true);else document.getElementById('feed').innerHTML='<div class="vacio">No se pudo cargar el muro. <button data-reintentar>Reintentar</button></div>';}
 }
+function quitarFoto(){fotoBase64='';fotoPreview.removeAttribute('src');fotoPreview.style.display='none';fotoPlaceholder.style.display='block';inputFoto.value='';document.getElementById('ff-remove-photo').classList.add('hidden');}
+document.getElementById('ff-remove-photo').onclick=quitarFoto;fotoZona.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();inputFoto.click();}});
+document.querySelectorAll('[data-filtro]').forEach(b=>b.onclick=()=>{filtroMuro=b.dataset.filtro;pintarFeed()});document.getElementById('ff-search').addEventListener('input',e=>{busquedaMuro=e.target.value.trim();pintarFeed()});
+document.getElementById('feed').addEventListener('submit',e=>{const f=e.target.closest('.form-comentario');if(f){e.preventDefault();enviarComentario(f.dataset.post)}});
+document.getElementById('feed').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.hasAttribute('data-like'))return toggleLike(b.dataset.like,b.dataset.liked==='true');
+ if(b.hasAttribute('data-comentar')){const id=b.dataset.comentar,box=document.getElementById('comentarios-'+id);const mostrar=box.classList.contains('hidden');box.classList.toggle('hidden',!mostrar);b.setAttribute('aria-expanded',String(mostrar));if(mostrar){comentariosAbiertos.add(id);document.getElementById('coment-texto-'+id).focus({preventScroll:true});}else comentariosAbiertos.delete(id);}
+ if(b.hasAttribute('data-borrar-post'))return borrarPost(b.dataset.borrarPost);
+ if(b.hasAttribute('data-borrar-coment'))return borrarComentario(b.dataset.enPost,b.dataset.borrarComent);
+ if(b.hasAttribute('data-reintentar'))return renderFeed(true);
+ if(b.hasAttribute('data-foto')){const p=postsGuardados.find(([id])=>id===b.dataset.foto)?.[1],src=fotoValida(p?.foto);if(src){document.getElementById('ff-large-photo').src=src;document.getElementById('ff-lightbox').showModal();}}
+ if(b.hasAttribute('data-copiar')){const url=new URL(location.href);url.searchParams.set('pub',b.dataset.copiar);url.hash='';try{await navigator.clipboard.writeText(url.href);avisoMuro('Enlace de la publicación copiado.');}catch(err){avisoMuro('No se pudo copiar automáticamente. Mantén pulsado el enlace:',false);const a=document.createElement('a');a.href=url.href;a.textContent=' Abrir publicación';document.getElementById('ff-notice').append(a);}}
+});
+document.getElementById('ff-close-photo').onclick=()=>document.getElementById('ff-lightbox').close();document.getElementById('ff-lightbox').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+document.getElementById('ff-admin-out').onclick=()=>{esAdmin=false;document.getElementById('link-admin').textContent='Admin';document.getElementById('ff-admin-out').classList.add('hidden');document.getElementById('pass-admin').value='';if(equipoActual?.id==='admin'){equipoActual=null;document.getElementById('composer').classList.add('hidden');document.getElementById('login-equipo').classList.remove('hidden');}pintarFeed();};
+cargarEquipos();cargarLogos().then(()=>{if(postsGuardados.length)pintarFeed()});
+(async()=>{await renderFeed(true);const id=new URL(location.href).searchParams.get('pub'),p=id&&document.getElementById('post-'+id);if(p){p.classList.add('destacado');p.scrollIntoView({block:'start'});}})();
+setInterval(()=>{if(!document.hidden)renderFeed()},20000);
 
-async function borrarPost(postId){
-  if(!confirm('¿Borrar esta publicación?')) return;
-  await fetch(`${FB}/familiaFutbolera/posts/${postId}.json`, {method:'DELETE'});
-  renderFeed();
-}
-async function borrarComentario(postId, comentId){
-  if(!confirm('¿Borrar este comentario?')) return;
-  await fetch(`${FB}/familiaFutbolera/posts/${postId}/comentarios/${comentId}.json`, {method:'DELETE'});
-  renderFeed();
-}
-
-function postHTML(id, p){
-  const logo = p.equipoId === 'admin' ? 'logo-liga.png.png' : (LOGOS[p.equipo] || '');
-  const likes = p.likes || {};
-  const numLikes = Object.keys(likes).length;
-  const yaLeDiLike = !!likes[miId];
-  const comentarios = p.comentarios ? Object.entries(p.comentarios).sort((a,b)=>(a[1].fecha||0)-(b[1].fecha||0)) : [];
-  const linkPost = p.link || p.youtube || ''; // p.youtube queda por compatibilidad con publicaciones viejas
-  const ytId = youtubeEmbedId(linkPost);
-  const infoLink = !ytId ? datosDelLink(linkPost) : null;
-
-  return `
-    <div class="post">
-      <div class="post-header">
-        <img src="${logo}" onerror="this.style.opacity='.2'">
-        <div>
-          <div class="post-equipo">${esc(p.equipo||'')}</div>
-          <div class="post-meta">${tiempoRelativo(p.fecha||0)}</div>
-        </div>
-      </div>
-      ${p.texto ? `<div class="post-texto">${esc(p.texto)}</div>` : ''}
-      ${p.foto ? `<img class="post-foto" src="${p.foto}">` : ''}
-      ${ytId ? `<div class="post-yt"><iframe src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe></div>` : ''}
-      ${(!ytId && infoLink) ? `<a class="post-link-card" href="${esc(linkPost)}" target="_blank" rel="noopener">${infoLink.icono} Ver en ${infoLink.etiqueta}</a>` : ''}
-      <div class="post-acciones">
-        <button class="btn-like ${yaLeDiLike?'activo':''}" onclick="toggleLike('${id}', ${yaLeDiLike})">⚽ Me gusta ${numLikes>0?('('+numLikes+')'):''}</button>
-        ${esAdmin ? `<button class="btn-borrar-post" onclick="borrarPost('${id}')">🗑 Borrar publicación</button>` : ''}
-      </div>
-      <div class="comentarios">
-        ${comentarios.map(([cid,c])=>`
-          <div class="comentario">
-            <div><b>${esc(c.nombre||'Afición')}:</b> ${esc(c.texto||'')}</div>
-            ${esAdmin ? `<span class="borrar-coment" onclick="borrarComentario('${id}','${cid}')">🗑</span>` : ''}
-          </div>
-        `).join('')}
-        <div class="form-comentario">
-          <input type="text" id="coment-nombre-${id}" placeholder="Tu nombre">
-          <input type="text" id="coment-texto-${id}" placeholder="Escribe un comentario..." onkeydown="if(event.key==='Enter')enviarComentario('${id}')">
-          <button onclick="enviarComentario('${id}')">Enviar</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-async function renderFeed(){
-  const cont = document.getElementById('feed');
-  try{
-    const data = await (await fetch(FB + '/familiaFutbolera/posts.json')).json();
-    if(!data){ cont.innerHTML = '<div class="vacio">Todavía no hay publicaciones. ¡Sé el primero!</div>'; return; }
-    const posts = Object.entries(data).sort((a,b)=>(b[1].fecha||0)-(a[1].fecha||0));
-    cont.innerHTML = posts.map(([id,p])=>postHTML(id,p)).join('');
-  }catch(e){
-    cont.innerHTML = '<div class="vacio">No se pudo cargar el muro. Revisa tu conexión.</div>';
-  }
-}
-
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-cargarEquipos();
-cargarLogos();
-renderFeed();
-setInterval(renderFeed, 20000);
 </script>
 </body>
 </html>
