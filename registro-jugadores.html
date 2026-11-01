@@ -1407,5 +1407,37 @@ const zonaFoto=document.getElementById('foto-zona');zonaFoto.tabIndex=0;zonaFoto
  function pintar(){const img=document.getElementById('rg-escudo-equipo');const src=logos.get(rvNorm(document.getElementById('equipo-actual-nombre').textContent));img.hidden=!src;if(src)img.src=src;}
  new MutationObserver(pintar).observe(document.getElementById('equipo-actual-nombre'),{childList:true});document.getElementById('rg-escudo-equipo').onerror=e=>e.currentTarget.hidden=true;pintar();
 }catch(e){/* El escudo no bloquea el registro. */}})();
-</script></body>
+</script><script>
+// Los accesos de administración abren los paneles originales antes de navegar.
+const accesosRegistro = {
+  '#btn-toggle-agregar': ['form-agregar-wrap', 'add-nombre'],
+  '#btn-toggle-reportes': ['panel-reportes', 'rv-min'],
+  '#btn-toggle-pass': ['panel-contrasenas', null]
+};
+document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
+  const destino = enlace.getAttribute('href');
+  const config = accesosRegistro[destino];
+  if (config) {
+    enlace.setAttribute('aria-controls', config[0]);
+    const panel = document.getElementById(config[0]);
+    const actualizar = () => enlace.setAttribute('aria-expanded', String(getComputedStyle(panel).display !== 'none'));
+    new MutationObserver(actualizar).observe(panel, {attributes:true, attributeFilter:['style']});
+    actualizar();
+  }
+  enlace.addEventListener('click', evento => {
+    evento.preventDefault();
+    if (config) {
+      const panel = document.getElementById(config[0]);
+      if (getComputedStyle(panel).display === 'none') document.querySelector(destino).click();
+      document.querySelector(destino).scrollIntoView({block:'start', behavior:'auto'});
+      if (config[1]) document.getElementById(config[1]).focus({preventScroll:true});
+    } else {
+      const filtro = document.getElementById('filtro-equipo-admin');
+      filtro.scrollIntoView({block:'center', behavior:'auto'});
+      filtro.focus({preventScroll:true});
+    }
+  });
+});
+</script>
+</body>
 </html>
