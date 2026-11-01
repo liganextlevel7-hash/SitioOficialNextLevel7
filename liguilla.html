@@ -2,97 +2,19 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Liguilla | Liga Next Level 7</title>
 <link rel="stylesheet" href="styles.css">
 <style>
-  .contenedor-liguilla { padding: 10px 6px 40px; }
-
-  .card-liguilla {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    margin-bottom: 10px;
-  }
-
-  .card-liguilla h2 {
-    font-size: clamp(18px,4vw,26px);
-    letter-spacing: 3px;
-    color: #ffd700;
-    text-align: center;
-  }
-
-  #selector-ronda {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,215,0,0.4);
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 25px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    cursor: pointer;
-    outline: none;
-    text-align: center;
-  }
-
-  #selector-ronda option { background: #0d1b30; color: #fff; }
-
-  #contenedor-bracket {
-    overflow-x: auto;
-    padding-bottom: 10px;
-  }
-
-  .btn-3d {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: linear-gradient(135deg, #7f5f0d, #ddc530);
-    color: #04100a;
-    font-weight: 800;
-    font-size: 14px;
-    letter-spacing: 1px;
-    text-decoration: none;
-    padding: 10px 22px;
-    border-radius: 25px;
-    box-shadow: 0 0 14px rgba(221,197,48,0.45);
-  }
-  .btn-3d:hover { filter: brightness(1.12); }
-
-  .pildora-equipo + .pildora-equipo { margin-top: 8px; }
-
-  @media (max-width: 600px) {
-    #contenedor-bracket > div { flex-direction: column !important; align-items: center !important; }
-  }
+html,body{background-color:#071420}*{box-sizing:border-box}.lg-header{max-width:1250px;margin:auto;padding:26px 22px 18px;display:flex;align-items:center;gap:20px;text-align:left}.lg-brand{width:88px;height:88px;object-fit:contain}.lg-header h1{color:#f6f5e8;text-shadow:none;font-size:clamp(28px,5vw,45px);letter-spacing:2px;margin:0}.lg-header p{color:#c5d3bb;font-size:13px;margin:5px 0}.lg-nav{margin:0 0 0 auto;display:flex;gap:8px}.lg-nav a{margin:0;min-height:44px;padding:12px 16px;font-size:13px;white-space:nowrap;border-radius:12px;box-shadow:none}.lg-nav a:last-child{color:#ead681;border-color:#baa14b}.lg-main{max-width:1250px;margin:auto;padding:8px 22px 40px}.lg-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border:1px solid #93ad6644;border-radius:18px;background:#0b2029eb;margin-bottom:20px}.lg-toolbar h2{color:#ead681;font-size:20px;margin:0 0 6px}.lg-toolbar p{font-size:12px;color:#bdcbae;margin:0;line-height:1.4}.lg-selector{display:flex;flex-direction:column;gap:5px;font-size:11px;color:#c5d3b6;flex:none}#selector-ronda{min-width:200px;min-height:44px;background:#142f32;color:#fff;border:1px solid #9ab96777;border-radius:12px;padding:10px 14px;font-size:13px;font-weight:bold;cursor:pointer}#selector-ronda option{background:#10252d}#lg-status{font-size:13px;color:#d1ddc3;line-height:1.5}#lg-status:empty{display:none}.lg-retry{min-height:44px;margin-left:12px;padding:8px 16px;border-radius:10px;border:1px solid #a3c571;background:#214229;color:#fff;cursor:pointer}#contenedor-bracket{width:auto;padding:0;overflow:visible}.lg-bracket{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px}.lg-round{min-width:0}.lg-round-head{display:flex;align-items:center;gap:10px;margin:0 0 15px;padding:12px 0;border-bottom:1px solid #bbc77d44}.lg-round-head span{font-size:11px;color:#15290e;background:#b4dc74;border-radius:8px;padding:5px 8px;font-weight:bold}.lg-round-head h3{font-size:15px;color:#e9edda;margin:0;letter-spacing:.6px}.lg-games{height:850px;position:relative;display:grid;gap:16px}.lg-quarter .lg-games{grid-template-rows:repeat(2,minmax(0,1fr))}.lg-pair{display:grid;grid-template-rows:repeat(2,minmax(0,1fr));gap:16px;position:relative}.lg-cell{position:relative;align-self:center;min-width:0}.lg-quarter .lg-pair:after,.lg-semi .lg-games:after{content:'';position:absolute;right:-18px;top:25%;bottom:25%;border-right:1px solid #aab97877;pointer-events:none}.lg-quarter .lg-pair:before,.lg-semi .lg-games:before{content:'';position:absolute;right:-36px;width:18px;top:50%;border-top:1px solid #aab97877;pointer-events:none}.lg-quarter .lg-cell:after,.lg-semi .lg-cell:after{content:'';position:absolute;right:-18px;top:50%;width:18px;border-top:1px solid #aab97877;pointer-events:none}.lg-semi .lg-games{grid-template-rows:repeat(2,minmax(0,1fr))}.lg-final .lg-games{display:flex;flex-direction:column;justify-content:center;gap:20px}.lg-match{border:1px solid #93ad6655;border-radius:17px;background:linear-gradient(145deg,#102b2aee,#0a1b2aee);padding:13px 14px;box-shadow:0 7px 20px #0002;min-width:0}.lg-final .lg-match{border-color:#c5a74c99;background:linear-gradient(140deg,#343018d9,#10242bee)}.lg-match-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px;font-size:10px;color:#adbf9f}.lg-badge{border:1px solid #9aaf6c66;border-radius:20px;padding:3px 7px;white-space:nowrap}.lg-badge.played{color:#b8e681}.lg-badge.scheduled{color:#ecd47c}.lg-team{display:grid;grid-template-columns:26px 42px minmax(0,1fr) 25px;gap:8px;align-items:center;min-height:48px;padding:3px 0}.lg-team.winner{color:#d4ed9a}.lg-rank{font-size:10px;color:#bbc7a9;text-align:center}.lg-crest{width:42px;height:42px;object-fit:contain}.lg-placeholder{display:grid;place-items:center;border:1px dashed #7b966466;border-radius:50%;font-size:15px;color:#c8d1ba}.lg-team-name{font-size:12px;font-weight:bold;line-height:1.35;overflow-wrap:anywhere}.lg-score{font-size:21px;font-weight:bold;text-align:center;font-variant-numeric:tabular-nums;color:#e1cb70}.lg-match-bottom{display:flex;justify-content:space-between;gap:8px;border-top:1px solid #a0b67c22;margin-top:8px;padding-top:8px;color:#bdcaaa;font-size:10px;line-height:1.4}.lg-winner-note{margin:9px 0 0;font-size:10px;color:#c5e297;line-height:1.4}.lg-champion{padding:22px 16px;text-align:center;border:1px solid #d8b24866;border-radius:20px;background:radial-gradient(ellipse at top,#65521b88,#0b2028 80%)}.lg-cup{width:74px;height:80px;display:block;margin:0 auto 10px;color:#e6c65d;filter:drop-shadow(0 3px 14px #eac95533)}.lg-champion .lg-crest{width:62px;height:62px;margin:8px auto}.lg-champion .lg-placeholder{display:grid}.lg-champion-label{font-size:10px;color:#dfd39f;letter-spacing:2px;margin:8px 0}.lg-champion h3{font-size:19px;line-height:1.35;color:#f0e8be;margin:5px 0;overflow-wrap:anywhere}.lg-champion p{font-size:11px;color:#bfcca8;margin:7px 0 0;line-height:1.4}.lg-single{display:block;max-width:700px;margin:auto}.lg-single .lg-games{height:auto;display:grid;gap:16px}.lg-single .lg-pair{display:grid}.lg-single .lg-pair:after,.lg-single .lg-pair:before,.lg-single .lg-games:after,.lg-single .lg-games:before,.lg-single .lg-cell:after{display:none}.lg-empty{padding:18px;border:1px dashed #879a6355;border-radius:16px;color:#c5cbb7;font-size:13px;line-height:1.5}.lg-footnote{color:#aabb9c;font-size:11px;line-height:1.5;margin:22px 0 0}.lg-nav a:focus-visible,#selector-ronda:focus-visible,.lg-retry:focus-visible{outline:3px solid #e5ce76;outline-offset:3px}
+.lg-final .lg-cell{width:100%}.lg-bracket:not(.lg-single) .lg-final .lg-games{display:block}.lg-bracket:not(.lg-single) .lg-final .lg-cell{position:absolute;top:50%;transform:translateY(-50%)}.lg-bracket:not(.lg-single) .lg-final .lg-champion{position:absolute;top:calc(50% + 125px);width:100%}
+@media(max-width:950px){.lg-bracket:not(.lg-single) .lg-final .lg-cell,.lg-bracket:not(.lg-single) .lg-final .lg-champion{position:static;transform:none}.lg-bracket{display:block;max-width:700px;margin:auto}.lg-round{margin-bottom:26px}.lg-games,.lg-quarter .lg-games,.lg-semi .lg-games{height:auto;display:grid;gap:14px;grid-template-rows:auto}.lg-pair{grid-template-rows:auto;gap:14px}.lg-pair:after,.lg-pair:before,.lg-games:after,.lg-games:before,.lg-cell:after{display:none}.lg-final .lg-games{height:auto}.lg-bracket:not(.lg-single) .lg-final .lg-champion{margin-top:20px}.lg-team-name{font-size:14px}.lg-match{padding:15px}.lg-champion{margin-top:0}}
+@media(max-width:600px){.lg-header{padding:18px 14px;gap:12px;flex-wrap:wrap}.lg-brand{width:62px;height:62px}.lg-header h1{font-size:29px}.lg-header p{font-size:11px}.lg-nav{width:100%;margin:0;justify-content:center}.lg-nav a{flex:1;text-align:center;padding:11px;font-size:12px}.lg-main{padding:4px 12px 30px}.lg-toolbar{display:block;padding:15px}.lg-toolbar h2{font-size:18px}.lg-selector{margin-top:14px}#selector-ronda{width:100%;min-width:0}.lg-round-head{margin-bottom:12px}.lg-team{grid-template-columns:23px 44px minmax(0,1fr) 25px;gap:8px}.lg-team-name{font-size:13px}.lg-crest{width:44px;height:44px}.lg-champion h3{font-size:21px}.lg-match-bottom{font-size:11px}}
 </style>
 </head>
 <body>
-<header>
-  <img src="logo-liga.png.png" class="logo-liga">
-  <h1>LIGUILLA</h1>
-  <p class="subtitulo">Liga Next Level 7</p>
-  <nav>
-    <a href="index.html">Inicio</a>
-    <a href="liguilla3d.html">🏟️ Liguilla 3D</a>
-  </nav>
-</header>
-
-<section class="contenedor-liguilla">
-  <div class="card card-liguilla">
-    <h2>🏆 Fase Final</h2>
-    <select id="selector-ronda">
-      <option value="Completa" selected>Liguilla Completa</option>
-      <option value="Cuartos">Cuartos de Final</option>
-      <option value="Semifinal">Semifinales</option>
-      <option value="Final">Final</option>
-    </select>
-    <a class="btn-3d" href="liguilla3d.html" title="Ver la liguilla en 3D">🏟️ Liguilla 3D</a>
-  </div>
-  <div id="contenedor-bracket"></div>
-</section>
-
-<script src="liguilla.js"></script>
+<header class="lg-header"><img src="logo-liga.png.png" alt="Liga Next Level 7" class="lg-brand"><div><h1>LIGUILLA</h1><p>Liga Next Level 7 · Torneo dominical</p></div><nav class="lg-nav" aria-label="Navegación"><a href="index.html">Inicio</a><a href="liguilla3d.html">Liguilla 3D</a></nav></header>
+<main class="lg-main"><div class="lg-toolbar"><div><h2>El camino al campeonato</h2><p>Cuartos de final · Semifinales · Final</p></div><label class="lg-selector" for="selector-ronda">Mostrar ronda<select id="selector-ronda"><option value="Completa">Liguilla completa</option><option value="Cuartos">Cuartos de final</option><option value="Semifinal">Semifinales</option><option value="Final">Final</option></select></label></div><p id="lg-status" role="status">Cargando la liguilla…</p><div id="contenedor-bracket"></div><p class="lg-footnote">Los cruces, resultados y ganadores se muestran según lo registrado por la liga. Los lugares por definir se actualizarán cuando estén asignados.</p></main>
+<script src="liguilla.js?v=20261031-liguilla"></script>
 </body>
 </html>
