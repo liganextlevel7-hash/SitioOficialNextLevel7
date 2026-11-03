@@ -113,8 +113,14 @@ html{background:#091828}.save-feedback:not(:empty){background:#152e38;border:1px
 .check-item .ver-ficha {background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;padding:8px;text-decoration:underline}
 #ficha-asistencia {background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:16px;padding:24px;width:min(320px,90vw);text-align:center}
 #ficha-asistencia::backdrop {background:#0009}
-#ficha-asistencia img {width:110px;height:110px;object-fit:contain;border-radius:12px}
-#ficha-asistencia .playera {margin:12px auto;width:110px;height:80px;display:grid;place-items:center;background:#79963c;color:white;font-size:26px;font-weight:bold;clip-path:polygon(25% 0,40% 0,50% 12%,60% 0,75% 0,100% 22%,85% 45%,75% 36%,75% 100%,25% 100%,25% 36%,15% 45%,0 22%)}
+#ficha-asistencia img {width:100%;height:min(265px,40vh);object-fit:contain;border-radius:12px}
+#ficha-asistencia .ficha-datos {background:#142239;border-radius:10px;padding:10px;margin:8px 0}
+#ficha-posicion {color:#b9df91}
+#ficha-equipo {color:#f3d583}
+#ficha-asistencia dl {display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+#ficha-asistencia dl div {background:#1b2a41;padding:8px;border-radius:7px}
+#ficha-asistencia dt {font-size:11px}
+#ficha-asistencia dd {margin:3px 0 0;font-weight:bold}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -232,12 +238,33 @@ var db = firebase.database();
     <dialog id="ficha-asistencia" aria-labelledby="ficha-nombre">
       <img id="ficha-foto" alt="Foto del jugador" hidden>
       <p id="ficha-sin-foto">Foto no disponible</p>
-      <div class="playera" id="ficha-dorsal"></div>
-      <h3 id="ficha-nombre"></h3>
+      <div class="ficha-datos">
+        <h3 id="ficha-nombre"></h3>
+        <div id="ficha-posicion"></div>
+        <div id="ficha-equipo"></div>
+        <dl aria-live="polite">
+          <div><dt id="ficha-goles-label">⚽ Goles</dt><dd id="ficha-goles"></dd></div>
+          <div><dt>Asistencia</dt><dd id="ficha-asistencia-pct"></dd></div>
+          <div><dt>🟨 Amarillas</dt><dd id="ficha-amarillas"></dd></div>
+          <div><dt>🟥 Rojas</dt><dd id="ficha-rojas"></dd></div>
+          <div><dt>⛔ Suspendido</dt><dd id="ficha-suspension"></dd></div>
+        </dl>
+        <p id="ficha-estado"></p>
+      </div>
       <form method="dialog"><button class="btn" type="submit">Cerrar</button></form>
     </dialog>
 
     <!-- SECCIÓN DE ASISTENCIA -->
+    <div class="section">
+      <h3>Árbitro y capitanes</h3>
+      <label for="nombre-arbitro">Nombre del árbitro</label>
+      <input id="nombre-arbitro" class="psel" type="text" maxlength="120" autocomplete="off">
+      <label for="capitan-local">Capitán local</label>
+      <select id="capitan-local" class="psel"></select>
+      <label for="capitan-visita">Capitán visitante</label>
+      <select id="capitan-visita" class="psel"></select>
+    </div>
+
     <div class="section" id="seccion-asistencia" onclick="abrirFichaAsistencia(event)">
       <h3>Asistencia de Jugadores (Desmarca al que NO llegó)</h3>
       <div class="asistencia-box">
@@ -612,7 +639,7 @@ function cargarJugadoresPorEquipo(){
 
   // Si cambió el partido, las listas de jugadores (goles, tarjetas, asistencia) se vuelven a armar con los equipos NUEVOS.
   // Antes solo se armaban si estaban vacías, y quedaban con los jugadores del partido anterior.
-  var clavePartido = idL + '|' + idV + '|' + (liveState?.idPartidoReal || '');
+  var clavePartido = CANCHA_PATH + '|' + idL + '|' + idV + '|' + (liveState?.idPartidoReal || '');
   var cambioPartido = clavePartido !== _clavePartidoCargado;
   var escAttr = function(v){ return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); };
   var idDeJugador = function(j){ return (j.ID_Jugador || j.id_jugador || j.ID || j.id || '').toString().trim(); };
@@ -718,6 +745,17 @@ function cargarJugadoresPorEquipo(){
      divAsistV.innerHTML = htmlAsistVisita;
   }
 
+  if (cambioPartido) {
+    document.getElementById('nombre-arbitro').value = liveState.nombreArbitro || '';
+    [['local', jL], ['visita', jV]].forEach(function([lado, jugadores]) {
+      var selector = document.getElementById('capitan-' + lado);
+      selector.replaceChildren(new Option('Seleccionar capitán', ''));
+      jugadores.forEach(function(j) {
+        var id = idDeJugador(j);
+        if (id) selector.add(new Option(obtenerTextoEstructurado(j), id));
+      });
+    });
+  }
   _clavePartidoCargado = clavePartido;
 
   if(document.getElementById('asist-title-local')) document.getElementById('asist-title-local').textContent = "Asistencia: " + nombreL;
@@ -754,12 +792,57 @@ function abrirFichaAsistencia(evento) {
   foto.onload = function(){ foto.hidden = false; sinFoto.hidden = true; };
   foto.onerror = function(){ foto.hidden = true; sinFoto.hidden = false; };
   foto.removeAttribute('src');
-  var url = columna && String(jugador[columna]).trim();
+  var url = String(Object.values(jugador)[6] || Object.values(jugador)[7] || jugador[columna] || '').trim();
   if (url && /^https?:\/\//i.test(url)) foto.src = url;
   document.getElementById('ficha-nombre').textContent = jugador.Nombre || jugador.nombre || 'Jugador';
-  var dorsal = boton.textContent.match(/^# (.*?) - /);
-  document.getElementById('ficha-dorsal').textContent = dorsal ? dorsal[1] : '—';
+  var id = idDeJugadorObj(jugador);
+  var datosJugador = Object.values(jugador);
+  var equipo = String(jugador.ID_Equipo || jugador.id_equipo || datosJugador[2] || '').trim();
+  var posicion = jugador.Posición || jugador.Posicion || datosJugador[4] || '';
+  var portero = posicion === 'Portero';
+  document.getElementById('ficha-posicion').textContent = posicion;
+  document.getElementById('ficha-equipo').textContent = DB.equipos[equipo]?.nombre || equipo;
+  document.getElementById('ficha-goles-label').textContent = portero ? '🥅 Goles recibidos' : '⚽ Goles';
+  var campos = ['goles', 'asistencia-pct', 'amarillas', 'rojas', 'suspension'];
+  campos.forEach(k => document.getElementById('ficha-' + k).textContent = '…');
+  var estado = document.getElementById('ficha-estado');
+  estado.textContent = boton.parentElement.querySelector('input').checked ? 'Lista actual: presente' : 'Lista actual: ausente';
+  var consulta = Symbol();
+  dialogo.consultaFicha = consulta;
   dialogo.showModal();
+
+  // Mismas hojas y reglas que la ficha «Por equipo» de Jugadores.
+  Promise.all([
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=645868286&single=true&output=csv",
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=626975401&single=true&output=csv"
+  ].map(async function(url) {
+    var respuesta = await fetch(url);
+    if (!respuesta.ok) throw new Error('No se pudo leer la hoja');
+    var csv = await respuesta.text();
+    if (!csv.trim() || csv.trimStart().startsWith('<')) throw new Error('CSV no disponible');
+    return parseCSV(csv).map(Object.values);
+  })).then(function([eventos, participaciones]) {
+    if (!dialogo.open || dialogo.consultaFicha !== consulta) return;
+    var propios = eventos.filter(e => e[2] === id);
+    var goles = propios.filter(e => e[3] === 'Gol').length;
+    var amarillas = propios.filter(e => e[3] === 'Amarilla').length;
+    var rojas = propios.filter(e => e[3] === 'Roja').length;
+    var asistencias = participaciones.filter(p => p[4] === id && p[5] === 'TRUE').length;
+    if (portero) {
+      goles = DB.rawPartidos.map(Object.values).reduce(function(total, p) {
+        if (p[6] !== 'Jugado') return total;
+        if (p[2] === equipo) return total + (parseInt(p[5], 10) || 0);
+        if (p[3] === equipo) return total + (parseInt(p[4], 10) || 0);
+        return total;
+      }, 0);
+    }
+    var valores = [goles, Math.round(asistencias / 15 * 100) + '%', amarillas, rojas, rojas > 0 ? 'Sí' : 'No'];
+    campos.forEach((k, i) => document.getElementById('ficha-' + k).textContent = valores[i]);
+  }).catch(function() {
+    if (!dialogo.open || dialogo.consultaFicha !== consulta) return;
+    campos.forEach(k => document.getElementById('ficha-' + k).textContent = '—');
+    estado.textContent += ' · Estadísticas no disponibles';
+  });
 }
 
 function setStatus(st){
@@ -805,7 +888,7 @@ function buscarJugadorEvento(playerId, nombre, idEq){
 }
 
 function addEvent(type, team){
-  if(!liveState) return;
+  if(!liveState || guardandoFinal) return;
   var selectId = 'sel-' + type + '-' + team;
   var selectElem = document.getElementById(selectId);
   var pName = "Jugador Anónimo";
@@ -834,32 +917,55 @@ function addEvent(type, team){
   var tName = team === 'local' ? liveState.nombreLocal : liveState.nombreVisita;
   var newEv = { type: type, team: team, teamName: tName, player: pName, playerId: jIdReal, idEquipo: String(idEq == null ? '' : idEq), minute: min };
   
-  if (type === 'goal') {
-     var caminoScore = team === 'local' ? 'scoreLocal' : 'scoreVisita';
-     db.ref(CANCHA_PATH + '/' + caminoScore).transaction(function(valorActual) {
-        return (Number(valorActual) || 0) + 1;
-     });
-  } else if (type === 'yellow') {
-     var caminoYel = team === 'local' ? 'yellowLocal' : 'yellowVisita';
-     db.ref(CANCHA_PATH + '/' + caminoYel).transaction(function(valorActual) {
-        return (Number(valorActual) || 0) + 1;
-     });
-  } else if (type === 'red') {
-     var caminoRed = team === 'local' ? 'redLocal' : 'redVisita';
-     db.ref(CANCHA_PATH + '/' + caminoRed).transaction(function(valorActual) {
-        return (Number(valorActual) || 0) + 1;
-     });
-  }
-
-  // El evento se agrega de forma atómica: si dos toques seguidos llegan antes de que la pantalla se actualice,
-  // ya no se pisan entre sí (antes se reescribía toda la lista y un gol podía perderse).
-  db.ref(CANCHA_PATH + '/events').transaction(function(actual) {
-     var lista = Array.isArray(actual) ? actual.slice() : (actual ? Object.values(actual) : []);
-     lista.push(newEv);
-     return lista;
-  }).then(function() {
-     if(selectElem) selectElem.value = "";
+  cambiarEvento(newEv).then(function(guardado) {
+    if (guardado && selectElem) selectElem.value = '';
   });
+}
+
+var cambiosEventosPendientes = 0;
+function quitarEvento(indice) {
+  if (!liveState || guardandoFinal) return;
+  var evento = (liveState.events || [])[indice];
+  if (evento && confirm('¿Quitar el evento de ' + evento.player + '?')) {
+    cambiarEvento(evento, indice);
+  }
+}
+
+async function cambiarEvento(evento, indice) {
+  var partido = liveState;
+  var ruta = CANCHA_PATH;
+  var quitar = indice !== undefined;
+  var contador = {goal:'score', yellow:'yellow', red:'red'}[evento.type] +
+    (evento.team === 'local' ? 'Local' : 'Visita');
+  cambiosEventosPendientes++;
+  try {
+    var resultado = await db.ref(ruta).transaction(function(actual) {
+      if (actual === null) return null;
+      if (!actual.activo || actual.idPartidoReal !== partido.idPartidoReal ||
+          actual.idLocal !== partido.idLocal || actual.idVisita !== partido.idVisita) return;
+      var lista = Object.values(actual.events || {}).filter(Boolean);
+      if (quitar) {
+        var previo = lista[indice];
+        if (!previo || Object.keys(evento).some(k => previo[k] !== evento[k])) return;
+        lista.splice(indice, 1);
+      } else {
+        lista.push(evento);
+      }
+      actual.events = lista;
+      actual[contador] = Math.max(0, (Number(actual[contador]) || 0) + (quitar ? -1 : 1));
+      return actual;
+    }, undefined, true);
+    var guardado = resultado.committed && resultado.snapshot.exists();
+    if (guardado && CANCHA_PATH === ruta && liveState &&
+        liveState.idPartidoReal === partido.idPartidoReal) actualizarUI();
+    if (!guardado) alert('El partido o el evento cambió. Revisa la lista e inténtalo de nuevo.');
+    return guardado;
+  } catch (error) {
+    alert('No se pudo actualizar el evento. Revisa la conexión.');
+    return false;
+  } finally {
+    cambiosEventosPendientes--;
+  }
 }
 
 var guardandoAsistencia=false,guardandoFinal=false;
@@ -921,7 +1027,16 @@ function enviarSoloAsistencia() {
 
 function guardarPartidoFirebase(){
   if(!liveState||guardandoFinal) return;
+  if (cambiosEventosPendientes) { alert('Espera a que terminen de guardarse los cambios de eventos.'); return; }
   var estadoAGuardar=JSON.parse(JSON.stringify(liveState));
+  estadoAGuardar.nombreArbitro = document.getElementById('nombre-arbitro').value.trim();
+  [['local', 'capitanLocal'], ['visita', 'capitanVisita']].forEach(function([lado, campo]) {
+    var selector = document.getElementById('capitan-' + lado);
+    estadoAGuardar[campo] = selector.value ? {
+      idJugador: selector.value,
+      nombre: selector.selectedOptions[0].textContent.replace(/^# .*? - /, '')
+    } : null;
+  });
 
   // Revisión antes de guardar: que el marcador coincida con los goles registrados y que todos tengan jugador
   var evsRev = estadoAGuardar.events || [];
@@ -1061,10 +1176,10 @@ function actualizarUI(){
   if(!evs.length) {
     document.getElementById('events-list').innerHTML = '<div class="no-ev">Los eventos aparecerán aquí</div>';
   } else {
-    evs.forEach(e => {
+    evs.forEach((e, indice) => {
       var badge = e.type==='goal'?'⚽':(e.type==='yellow'?'🟨':'🟥');
       var nombreTipo = e.type==='goal'?'Gol':(e.type==='yellow'?'Amarilla':'Roja');
-      evHtml += `<div class="ev ${e.type}"><span class="ev-min">${e.minute}'</span> ${badge} <span class="ev-txt"><strong>${e.player}</strong> (${nombreTipo})</span><span class="ev-team">${e.teamName}</span></div>`;
+      evHtml += `<div class="ev ${e.type}"><span class="ev-min">${e.minute}'</span> ${badge} <span class="ev-txt"><strong>${escLive(e.player)}</strong> (${nombreTipo})</span><span class="ev-team">${escLive(e.teamName)}</span><button type="button" class="btn" onclick="quitarEvento(${indice})">Quitar</button></div>`;
     });
     document.getElementById('events-list').innerHTML = evHtml;
   }
