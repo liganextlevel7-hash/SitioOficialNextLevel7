@@ -1315,8 +1315,12 @@ function clCardHTML(m, renglones, rowH, idx, total, emision, sello){
         <div class="guion">–</div>
         <div><span>${esc(tname(m.visita))}</span><div class="box"></div></div>
       </div>
-      <div class="cl-obs-t">Observaciones</div><div class="cl-obs"></div>
-      <div class="cl-firmas"><div class="cl-firma">Árbitro</div><div class="cl-firma">Capitán local</div><div class="cl-firma">Capitán visitante</div></div>
+      <div class="cl-obs-t">Observaciones</div><div class="cl-obs">${esc(m.oficiales?.observacionesArbitro || '')}</div>
+      <div class="cl-firmas">
+        <div class="cl-firma">Árbitro<br><b>${esc(m.oficiales?.nombreArbitro || '')}</b></div>
+        <div class="cl-firma">Capitán local<br><b>${esc(m.oficiales?.capitanLocal?.nombre || '')}</b></div>
+        <div class="cl-firma">Capitán visitante<br><b>${esc(m.oficiales?.capitanVisita?.nombre || '')}</b></div>
+      </div>
     </div>
     <div class="cl-pie"><span>${CA_LEYENDA}</span><span>Hoja ${idx+1} de ${total} · Partido ${esc(m.id)}</span></div>
   </div>`;
@@ -1358,6 +1362,25 @@ async function generarCedulaJornada(modo){
   let partidos=S.allMatches.filter(m=>esAgendado(m) && String(m.fecha||'').trim()===f);
   const nombreArchivo='cedula_fecha_'+f.replace(/\//g,'-');
   if(!partidos.length){ aviso.textContent = 'No hay encuentros programados en esa selección.'; return; }
+  let avisoHistorial = '';
+  aviso.textContent = 'Consultando árbitro y capitanes…';
+  try {
+    const respuesta = await fetch(CF_FB + '/historial_partidos.json');
+    if (!respuesta.ok) throw new Error('Historial no disponible');
+    const historial = Object.entries(await respuesta.json() || {}).sort(
+      ([a], [b]) => Number(b.split('_').pop()) - Number(a.split('_').pop())
+    );
+    partidos = partidos.map(m => ({
+      ...m,
+      oficiales: historial.find(([, h]) => h &&
+        String(h.idPartidoReal) === String(m.id) &&
+        String(h.idLocal) === String(m.local) &&
+        String(h.idVisita) === String(m.visita)
+      )?.[1]
+    }));
+  } catch (error) {
+    avisoHistorial = ' No se pudo consultar el historial de árbitros y capitanes.';
+  }
   partidos = cedulaOrdenarPartidos(partidos);
   const totalPartidos = partidos.length;
   // se arman parejas dentro de cada campo (así un árbitro/campo no se mezcla con otro)
@@ -1366,7 +1389,7 @@ async function generarCedulaJornada(modo){
   const pares = [];
   Object.keys(porCampo).forEach(c => { for(let i=0;i<porCampo[c].length;i+=2) pares.push(porCampo[c].slice(i,i+2)); });
   const total = pares.length;
-  const advertencia = S.playersError ? ' ⚠️ No se pudo leer la hoja "Jugadores": los renglones salen en blanco.' : '';
+  const advertencia = avisoHistorial + (S.playersError ? ' ⚠️ No se pudo leer la hoja "Jugadores": los renglones salen en blanco.' : '');
 
   try{
     if(modo === 'imprimir'){
@@ -1497,7 +1520,7 @@ const CA_CSS = `
   .cl-marcador .box{width:62px;height:32px;border:2px solid #1f2933;border-radius:5px;}
   .cl-marcador .guion{font-size:22px;font-weight:800;color:#1d3d05;padding-bottom:3px;}
   .cl-obs-t{font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;font-weight:800;margin-top:6px;}
-  .cl-obs{border:1px solid #b9c4ae;border-radius:5px;height:28px;margin-top:2px;}
+  .cl-obs{border:1px solid #b9c4ae;border-radius:5px;min-height:28px;margin-top:2px;padding:3px 5px;font-size:9px;white-space:pre-wrap;overflow-wrap:anywhere;}
   .cl-firmas{display:flex;gap:10px;margin-top:12px;}
   .cl-firma{flex:1;text-align:center;border-top:1.4px solid #1f2933;padding-top:3px;font-size:9px;color:#444;}
   .cl-pie{display:flex;justify-content:space-between;gap:8px;padding:4px 10px;border-top:1px solid #cfd8c5;font-size:8px;color:#6b7280;white-space:nowrap;}
