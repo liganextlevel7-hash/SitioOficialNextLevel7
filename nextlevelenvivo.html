@@ -263,6 +263,8 @@ var db = firebase.database();
       <select id="capitan-local" class="psel"></select>
       <label for="capitan-visita">Capitán visitante</label>
       <select id="capitan-visita" class="psel"></select>
+      <label for="observaciones-arbitro">Observaciones del árbitro</label>
+      <textarea id="observaciones-arbitro" class="psel" rows="3" maxlength="500"></textarea>
     </div>
 
     <div class="section" id="seccion-asistencia" onclick="abrirFichaAsistencia(event)">
@@ -746,6 +748,7 @@ function cargarJugadoresPorEquipo(){
   }
 
   if (cambioPartido) {
+    document.getElementById('observaciones-arbitro').value = liveState.observacionesArbitro || '';
     document.getElementById('nombre-arbitro').value = liveState.nombreArbitro || '';
     [['local', jL], ['visita', jV]].forEach(function([lado, jugadores]) {
       var selector = document.getElementById('capitan-' + lado);
@@ -1029,6 +1032,7 @@ function guardarPartidoFirebase(){
   if(!liveState||guardandoFinal) return;
   if (cambiosEventosPendientes) { alert('Espera a que terminen de guardarse los cambios de eventos.'); return; }
   var estadoAGuardar=JSON.parse(JSON.stringify(liveState));
+  estadoAGuardar.observacionesArbitro = document.getElementById('observaciones-arbitro').value.trim();
   estadoAGuardar.nombreArbitro = document.getElementById('nombre-arbitro').value.trim();
   [['local', 'capitanLocal'], ['visita', 'capitanVisita']].forEach(function([lado, campo]) {
     var selector = document.getElementById('capitan-' + lado);
