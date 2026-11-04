@@ -121,6 +121,10 @@ html{background:#091828}.save-feedback:not(:empty){background:#152e38;border:1px
 #ficha-asistencia dl div {background:#1b2a41;padding:8px;border-radius:7px}
 #ficha-asistencia dt {font-size:11px}
 #ficha-asistencia dd {margin:3px 0 0;font-weight:bold}
+.ev{flex-wrap:wrap}
+.ev-txt{min-width:100px;overflow-wrap:anywhere}
+.btn.quitar-evento{background:#792c36;color:#fff;border:1px solid #dc7882;min-width:0;margin-left:auto}
+.enlace-bitacora{display:inline-flex;align-items:center;color:var(--text);background:var(--bg3);border:1px solid var(--border)}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -255,8 +259,8 @@ var db = firebase.database();
     </dialog>
 
     <!-- SECCIÓN DE ASISTENCIA -->
-    <div class="section">
-      <h3>Árbitro y capitanes</h3>
+    <details class="section">
+      <summary>Árbitro, capitanes y observaciones</summary>
       <label for="nombre-arbitro">Nombre del árbitro</label>
       <input id="nombre-arbitro" class="psel" type="text" maxlength="120" autocomplete="off">
       <label for="capitan-local">Capitán local</label>
@@ -265,7 +269,7 @@ var db = firebase.database();
       <select id="capitan-visita" class="psel"></select>
       <label for="observaciones-arbitro">Observaciones del árbitro</label>
       <textarea id="observaciones-arbitro" class="psel" rows="3" maxlength="500"></textarea>
-    </div>
+    </details>
 
     <div class="section" id="seccion-asistencia" onclick="abrirFichaAsistencia(event)">
       <h3>Asistencia de Jugadores (Desmarca al que NO llegó)</h3>
@@ -284,6 +288,7 @@ var db = firebase.database();
 
     <div class="section">
       <h3>Registrar evento</h3><p class="event-help">Selecciona al jugador antes de registrar su gol o tarjeta. Si no lo eliges, se conserva como jugador anónimo.</p>
+      <p><a class="btn enlace-bitacora" href="#bitacora-partido">Ver o quitar goles y tarjetas ↓</a></p>
       <div class="actions-grid">
         <div class="act-col">
           <div class="act-title"><img id="act-logo-local" class="act-logo" src=""><span id="act-name-local">Local</span></div>
@@ -331,7 +336,8 @@ var db = firebase.database();
     </div>
 
     <div class="section">
-      <h3>Bitácora del partido</h3>
+      <h3 id="bitacora-partido">Bitácora del partido</h3>
+      <p class="event-help">Cada gol o tarjeta registrada tiene su propio botón para quitarlo.</p>
       <div class="events-list" id="events-list"><div class="no-ev">Los eventos aparecerán aquí</div></div>
     </div>
 
@@ -1183,7 +1189,7 @@ function actualizarUI(){
     evs.forEach((e, indice) => {
       var badge = e.type==='goal'?'⚽':(e.type==='yellow'?'🟨':'🟥');
       var nombreTipo = e.type==='goal'?'Gol':(e.type==='yellow'?'Amarilla':'Roja');
-      evHtml += `<div class="ev ${e.type}"><span class="ev-min">${e.minute}'</span> ${badge} <span class="ev-txt"><strong>${escLive(e.player)}</strong> (${nombreTipo})</span><span class="ev-team">${escLive(e.teamName)}</span><button type="button" class="btn" onclick="quitarEvento(${indice})">Quitar</button></div>`;
+      evHtml += `<div class="ev ${e.type}"><span class="ev-min">${e.minute}'</span> ${badge} <span class="ev-txt"><strong>${escLive(e.player)}</strong> (${nombreTipo})</span><span class="ev-team">${escLive(e.teamName)}</span><button type="button" class="btn quitar-evento" onclick="quitarEvento(${indice})">Quitar ${nombreTipo.toLowerCase()}</button></div>`;
     });
     document.getElementById('events-list').innerHTML = evHtml;
   }
