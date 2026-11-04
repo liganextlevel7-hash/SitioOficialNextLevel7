@@ -1061,7 +1061,22 @@ function pngPagina(tipo,partidos,pagina,total,titulo,opciones){
  if(pagina===total&&opciones.fechaControl){const footer=document.createElement('div');footer.className='png-control-fechas';footer.style.cssText='margin-top:12px;padding:10px 12px;background:rgba(0,12,6,.92);border:1px solid #5b7c2d;border-radius:8px;font-size:11px;line-height:1.32;box-sizing:border-box;';footer.innerHTML=G.leyendaFechas(todosPartidos,todosEquipos,opciones.fechaControl);content.append(footer);}
  root.append(content);return root;
 }
-function pngAjustarPagina(root){if(root.firstElementChild.scrollHeight>1008)throw Error('El contenido excede la hoja carta. Reduce la selección.');}
+function pngAjustarPagina(root){
+ // Medir después de cargar imágenes; el control de fechas puede crecer en la última hoja.
+ // Reservar el área carta completa y reducir uniformemente sin ocultar contenido.
+ const content=root.firstElementChild;
+ content.style.transform='';content.style.transformOrigin='top left';
+ const ancho=root.clientWidth-48,alto=root.clientHeight-48;
+ const rect=content.getBoundingClientRect();
+ let w=Math.max(ancho,content.scrollWidth),h=content.scrollHeight;
+ for(const el of content.querySelectorAll('*')){
+  const r=el.getBoundingClientRect();w=Math.max(w,r.right-rect.left);h=Math.max(h,r.bottom-rect.top);
+ }
+ const escala=Math.min(1,ancho/w,alto/h);
+ if(!Number.isFinite(escala)||escala<=0)throw Error('No se pudo medir el contenido de la hoja.');
+ if(escala<1)content.style.transform='scale('+escala+')';
+ root.dataset.escala=String(escala);
+}
 function construirPaginaReporte(p,n,total,t,v,d,a,o){return pngPagina(1,p,n,total,t,o);}
 function construirPaginaReporteV2(p,n,total,t,v,d,a,o){return pngPagina(2,p,n,total,t,o);}
 function construirPaginaReporteV3(p,n,total,t,d,a,o){return pngPagina(3,p,n,total,t,o);}
@@ -1079,7 +1094,7 @@ async function pngExportar(tipo){
   box=document.createElement('div');box.id='png-descargas-listas';box.style.cssText='display:flex;gap:8px;flex-wrap:wrap;padding:14px;border:1px solid #6a913e;border-radius:10px;margin:12px 0;color:#e1f0cf;';box.setAttribute('aria-live','polite');const msg=document.createElement('div');msg.style.width='100%';box.append(msg);(document.getElementById('panel-imagenes')||document.getElementById('stackContainer')).prepend(box);
   for(let i=0;i<total;i++){
    msg.textContent=`Generando página ${i+1} de ${total}…`;
-   const temp=document.createElement('div');temp.style.cssText='position:absolute;left:-12000px;top:0;width:700px;';const page=pngPagina(tipo,lista.slice(i*porPagina,(i+1)*porPagina),i+1,total,titulo,{subtitulo:fecha,fechaControl:fecha});temp.append(page);document.body.append(temp);
+   const temp=document.createElement('div');temp.style.cssText='position:absolute;left:-12000px;top:0;width:816px;';const page=pngPagina(tipo,lista.slice(i*porPagina,(i+1)*porPagina),i+1,total,titulo,{subtitulo:fecha,fechaControl:fecha});temp.append(page);document.body.append(temp);
    try{
     await esperarImagenesReporte(temp);pngAjustarPagina(page);
     const canvas=await html2canvas(page,{useCORS:true,allowTaint:false,scale:window.__NL7_PNG_TEST_SCALE||2,backgroundColor:'#071b10',imageTimeout:20000,logging:false,windowWidth:1200,scrollX:0,scrollY:0});
