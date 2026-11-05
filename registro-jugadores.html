@@ -1150,16 +1150,18 @@
     const filas = rvParseCSV(await rSh.text());
     const hoja = filas.slice(1).map(c => ({ nombre: rvNorm(c[1]), equipo: String(c[2] || '').trim() })).filter(h => h.nombre);
 
-    const equipos = {};
-    const idPorNombre = {};
+    const equipos = { 18: { id: "18", nombre: "Galácticos", regs: [] } };
+    const idPorNombre = { galacticos: "18", "atletico ballenitas": "11" };
     EQUIPOS.forEach(e => {
+      if (String(e.id) === "11" || String(e.id) === "18") return;
       equipos[String(e.id)] = { id: String(e.id), nombre: e.nombre, regs: [] };
       idPorNombre[rvNorm(e.nombre)] = String(e.id);
     });
 
-    const registros = Object.entries(data).map(([id, j]) => {
+    const registros = Object.entries(data).flatMap(([id, j]) => {
       let eqId = String(j.equipoId == null ? '' : j.equipoId).trim();
       if (!eqId || eqId === 'NaN') eqId = idPorNombre[rvNorm(j.equipo)] || '';
+      if (eqId === "11") return [];
       const reg = {
         id, nombre: (j.nombre || '').trim(), apodo: (j.apodo || '').trim(),
         numero: j.numero, posicion: j.posicion || '', fecha: j.fecha || 0,
