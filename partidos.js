@@ -219,7 +219,14 @@ function abrirPopupPartido(partido) {
   function getJugador(id) { return todosJugadores.find(j => String(j.ID_Jugador).trim() === String(id).trim()) || {}; }
   function renderJugadores(participaciones) {
     if (!participaciones.length) return '<div style="color:rgba(255,255,255,0.3);font-size:11px;text-align:center;padding:8px;">Sin registro</div>';
-    return participaciones.map(p => {
+    const jugadoresVistos = new Set();
+    const participacionesUnicas = participaciones.filter(p => {
+      const idJugador = String(p.Jugador).trim();
+      if (jugadoresVistos.has(idJugador)) return false;
+      jugadoresVistos.add(idJugador);
+      return true;
+    });
+    return participacionesUnicas.map(p => {
       const jug = getJugador(p.Jugador);
       const nombre = jug.Nombre || `#${p.Jugador}`;
       const numero = jug.Numero || '';
