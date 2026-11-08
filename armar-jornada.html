@@ -283,7 +283,7 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
     <!-- CÉDULA DE JORNADA -->
     <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
       <div class="mod-section-title" style="color:var(--neon)">📋 Cédula arbitral (para el árbitro)</div>
-      <div class="mod-hint">Formato oficial de la liga, en hoja carta horizontal con dos encuentros por hoja (los dos del mismo campo). Trae de la hoja "Jugadores" el N°, nombre, apodo y posición de cada equipo, y incluye una casilla Asistió para marcar y deja en blanco G / A / R para que el árbitro anote a mano, más resultado final, observaciones y firmas. Salen primero los encuentros del Campo 1 y luego los del Campo 2 (solo encuentros ya programados). Puedes elegirla por fecha, imprimirla o descargarla en PNG.</div>
+      <div class="mod-hint">Formato oficial de la liga, en hoja carta vertical con un encuentro por hoja. Trae de la hoja "Jugadores" el N°, nombre, apodo y posición de cada equipo, y incluye una casilla Asistió para marcar y deja en blanco G / A / R para que el árbitro anote a mano, más resultado final, observaciones y firmas. Salen primero los encuentros del Campo 1 y luego los del Campo 2 (solo encuentros ya programados). Puedes elegirla por fecha, imprimirla o descargarla en PNG.</div>
       <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
         <select id="cedula-fecha" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona fecha —</option></select>
       </div>
@@ -386,7 +386,8 @@ async function cargarJugadores(){
         nombre,
         numero: pick(r,['numero','número','n°','no','num']),
         posicion: pick(r,['posicion','posición']),
-        apodo: pick(r,['apodo'])
+        apodo: pick(r,['apodo']),
+        foto: pick(r,['foto','foto_url','url_foto','foto url','url foto','foto del jugador','foto_jugador','imagen','photo'])
       });
     });
     Object.values(S.players).forEach(l=>l.sort((a,b)=>{
@@ -1224,7 +1225,7 @@ async function descargarCartelPNG(){
 // ════════════════════════════════
 const CA_MIN_RENGLONES = 14;   // renglones mínimos por equipo (los sobrantes quedan en blanco para altas de último momento)
 const CA_LEYENDA = 'Asistió = marcar ✔ · G = Goles · A = Amarillas · R = Rojas';
-const CL_AREA_FILAS = 417;   // alto (px) disponible para los renglones de jugadores en la hoja horizontal
+const CL_AREA_FILAS = 690;
 
 function fechaNumSheet(f){ // dd/mm/yyyy -> yyyymmdd (para ordenar)
   const p = String(f||'').split('/').map(n=>parseInt(n,10));
@@ -1256,7 +1257,12 @@ function abreviaPosicion(p){
   return t.slice(0,3).toUpperCase();
 }
 
-// ── Cédula horizontal: DOS encuentros por hoja carta (uno junto al otro), con casilla "Asistió" ──
+function clRetratoHTML(j){
+  const playera = `<svg viewBox="0 0 32 32" aria-label="Playera"><path fill="#496635" d="M10 4l4 3h4l4-3 9 6-4 7-5-2v13H10V15l-5 2-4-7z"/><text x="16" y="21" text-anchor="middle" fill="#fff" font-size="8">${esc(j.numero)}</text></svg>`;
+  const foto = /^https?:\/\//i.test(j.foto || '') ? j.foto : '';
+  return foto ? `<img src="${esc(foto).replace(/"/g,'&quot;')}" alt="" onerror="this.remove()" onload="this.nextElementSibling.hidden=true"><span>${playera}</span>` : playera;
+}
+
 function clTablaHTML(equipoId, rol, renglones, rowH){
   const jugadores = S.players[String(equipoId)] || [];
   let filas = '';
@@ -1264,16 +1270,16 @@ function clTablaHTML(equipoId, rol, renglones, rowH){
     const j = jugadores[i];
     if(j){
       const largo = (String(j.nombre||'') + String(j.apodo||'')).length > 30 ? ' largo' : '';
-      filas += `<tr><td class="num">${esc(j.numero)}</td><td class="jug${largo}"><b>${esc(j.nombre)}</b>${j.apodo ? ` <i>&quot;${esc(j.apodo)}&quot;</i>` : ''}</td><td class="pos">${esc(abreviaPosicion(j.posicion))}</td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
+      filas += `<tr><td class="num">${esc(j.numero)}</td><td class="cl-foto">${clRetratoHTML(j)}</td><td class="jug${largo}"><b>${esc(j.nombre)}</b>${j.apodo ? ` <i>&quot;${esc(j.apodo)}&quot;</i>` : ''}</td><td class="pos">${esc(abreviaPosicion(j.posicion))}</td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
     } else {
-      filas += `<tr><td class="num"></td><td class="jug"></td><td class="pos"></td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
+      filas += `<tr><td class="num"></td><td class="cl-foto"></td><td class="jug"></td><td class="pos"></td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
     }
   }
   return `<div class="cl-col">
     <div class="cl-teamhead"><span>${esc(rol)}</span><b>${esc(tname(equipoId))}</b></div>
     <table class="cl-tabla" style="--rowh:${rowH}px">
-      <colgroup><col style="width:8%"><col><col style="width:10%"><col style="width:18%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup>
-      <thead><tr><th>N°</th><th>Jugador</th><th>Pos.</th><th>Asistió</th><th>G</th><th class="a">A</th><th class="r">R</th></tr></thead>
+      <colgroup><col style="width:7%"><col style="width:12%"><col><col style="width:9%"><col style="width:13%"><col style="width:7%"><col style="width:7%"><col style="width:7%"></colgroup>
+      <thead><tr><th>N°</th><th>Foto</th><th>Jugador</th><th>Pos.</th><th>Asistió</th><th>G</th><th class="a">A</th><th class="r">R</th></tr></thead>
       <tbody>${filas}</tbody>
     </table>
     ${jugadores.length ? '' : '<div class="cl-sinjug">Sin jugadores registrados en la hoja — anotar a mano.</div>'}
@@ -1326,24 +1332,16 @@ function clCardHTML(m, renglones, rowH, idx, total, emision, sello){
   </div>`;
 }
 
-function caHojaDobleHTML(par, idx, total){
+function caHojaHTML(m, idx, total){
   const p2 = n => String(n).padStart(2,'0');
   const ahora = new Date();
   const emision = `${p2(ahora.getDate())}/${p2(ahora.getMonth()+1)}/${ahora.getFullYear()} ${p2(ahora.getHours())}:${p2(ahora.getMinutes())}`;
   const sello = `${ahora.getFullYear()}${p2(ahora.getMonth()+1)}${p2(ahora.getDate())}`;
-  const tamanos = par.flatMap(m => [(S.players[String(m.local)]||[]).length, (S.players[String(m.visita)]||[]).length]);
-  const renglones = Math.max(CA_MIN_RENGLONES, ...tamanos);           // ambos encuentros usan el mismo número de renglones
-  const rowH = Math.max(17, Math.min(30, Math.floor(CL_AREA_FILAS / renglones)));
-  // Cada encuentro lleva su propio encabezado verde y su propio pie (se pueden separar por partido)
-  return `<div class="cl-hoja">
-    <div class="cl-cards">
-      ${par.map(m => clCardHTML(m, renglones, rowH, idx, total, emision, sello)).join('')}
-      ${par.length < 2 ? '<div class="cl-card vacia"></div>' : ''}
-    </div>
-  </div>`;
+  const renglones = Math.max(CA_MIN_RENGLONES, (S.players[String(m.local)] || []).length, (S.players[String(m.visita)] || []).length);
+  const rowH = Math.min(44, Math.floor(CL_AREA_FILAS / renglones));
+  return `<div class="cl-hoja">${clCardHTML(m, renglones, rowH, idx, total, emision, sello)}</div>`;
 }
 
-// Dos encuentros por hoja (horizontal). Se agrupa por campo (Campo 1 primero, luego Campo 2...) y dentro de cada campo por hora; las parejas nunca mezclan campos.
 function cedulaOrdenarPartidos(partidos){
   return [...partidos].sort((a,b)=>{
     const ca = String(a.cancha||'').trim() || 'zzz';
@@ -1382,21 +1380,15 @@ async function generarCedulaJornada(modo){
     avisoHistorial = ' No se pudo consultar el historial de árbitros y capitanes.';
   }
   partidos = cedulaOrdenarPartidos(partidos);
-  const totalPartidos = partidos.length;
-  // se arman parejas dentro de cada campo (así un árbitro/campo no se mezcla con otro)
-  const porCampo = {};
-  partidos.forEach(m => { const c = String(m.cancha||'').trim() || '—'; (porCampo[c] = porCampo[c] || []).push(m); });
-  const pares = [];
-  Object.keys(porCampo).forEach(c => { for(let i=0;i<porCampo[c].length;i+=2) pares.push(porCampo[c].slice(i,i+2)); });
-  const total = pares.length;
+  const total = partidos.length;
   const advertencia = avisoHistorial + (S.playersError ? ' ⚠️ No se pudo leer la hoja "Jugadores": los renglones salen en blanco.' : '');
 
   try{
     if(modo === 'imprimir'){
       aviso.textContent = 'Preparando hojas...';
-      const html = pares.map((par,i)=>caHojaDobleHTML(par,i,total)).join('');
+      const html = partidos.map((m,i)=>caHojaHTML(m,i,total)).join('');
       await cfImprimir(html, CA_CSS);
-      aviso.textContent = `✅ ${total} hoja(s) horizontales con ${totalPartidos} encuentro(s), listas para imprimir (también puedes elegir "Guardar como PDF").` + advertencia;
+      aviso.textContent = `✅ ${total} hoja(s) carta vertical, un encuentro por hoja, listas para imprimir (también puedes elegir "Guardar como PDF").` + advertencia;
       return;
     }
 
@@ -1406,19 +1398,19 @@ async function generarCedulaJornada(modo){
     document.body.appendChild(temp);
     try{
       for(let i=0;i<total;i++){
-        temp.innerHTML = `<style>${CF_CSS}${CA_CSS}</style>${caHojaDobleHTML(pares[i], i, total)}`;
+        temp.innerHTML = `<style>${CF_CSS}${CA_CSS}</style>${caHojaHTML(partidos[i], i, total).replaceAll('<td class="cl-foto"><img ', '<td class="cl-foto"><img crossorigin="anonymous" ')}`;
         const hoja = temp.querySelector('.cl-hoja');
         await esperarImagenes(hoja);
         const canvas = await html2canvas(hoja, { backgroundColor:'#ffffff', scale:3, useCORS:true });
         const link = document.createElement('a');
-        const idsPar = pares[i].map(m=>m.id).join('-');
-        link.download = total>1 ? `${nombreArchivo}_hoja${i+1}_partidos${idsPar}.png` : `${nombreArchivo}_partidos${idsPar}.png`;
+        const idPartido = partidos[i].id;
+        link.download = total>1 ? `${nombreArchivo}_hoja${i+1}_partido${idPartido}.png` : `${nombreArchivo}_partido${idPartido}.png`;
         link.href = canvas.toDataURL('image/png');
         link.click();
         await new Promise(r=>setTimeout(r,400));
       }
     } finally { document.body.removeChild(temp); }
-    aviso.textContent = `✅ Se generaron ${total} hoja(s) PNG con ${totalPartidos} encuentro(s).` + advertencia;
+    aviso.textContent = `✅ Se generaron ${total} hoja(s) PNG, un encuentro por hoja.` + advertencia;
   }catch(err){
     console.error(err);
     aviso.textContent = 'No se pudo generar la cédula.';
@@ -1477,13 +1469,12 @@ const CF_CSS = `
 
 // Estilos extra de la cédula arbitral (se suman a CF_CSS: mismo encabezado, pie, firmas y paleta verde oficial)
 const CA_CSS = `
-  @page{size:letter landscape;margin:5mm}
-  .cl-hoja{width:1000px;height:760px;box-sizing:border-box;background:#fff;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;position:relative;overflow:hidden;display:flex;flex-direction:column;margin:0 auto;page-break-after:always;break-after:page;}
+  @page{size:letter portrait;margin:5mm}
+  .cl-hoja{width:8.5in;height:11in;padding:5mm;box-sizing:border-box;background:#fff;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;position:relative;overflow:hidden;display:flex;flex-direction:column;margin:0 auto;page-break-after:always;break-after:page;}
   .cl-hoja:last-child{page-break-after:auto;break-after:auto;}
   .cl-hoja *{box-sizing:border-box;}
-  .cl-cards{flex:1;display:flex;gap:14px;padding:8px 14px;min-height:0;}
+  @media print{.cl-hoja{width:auto;height:269mm;padding:0;break-inside:avoid;}}
   .cl-card{flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid #cfd8c5;border-radius:8px;overflow:hidden;}
-  .cl-card.vacia{border:none;}
   .cl-head{background:#1d3d05;color:#fff;border-bottom:5px solid #5eb50d;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   .cl-liga{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:#b9d8a0;font-weight:600;}
   .cl-titulo{font-size:16px;font-weight:800;line-height:1.15;margin-top:2px;}
@@ -1508,11 +1499,13 @@ const CA_CSS = `
   .cl-tabla th.a{background:#fff4d6;color:#8a6100;} .cl-tabla th.r{background:#fde8e8;color:#b42318;}
   .cl-tabla td{border:1px solid #b9c4ae;padding:0 3px;text-align:center;vertical-align:middle;overflow:hidden;height:var(--rowh,22px);}
   .cl-tabla tr{page-break-inside:avoid;break-inside:avoid;}
+  .cl-foto img,.cl-foto svg{display:block;width:100%;height:min(36px,calc(var(--rowh) - 2px));margin:auto;object-fit:contain;}
+  .cl-foto span[hidden]{display:none;}
   .cl-tabla td.num{font-weight:800;font-size:10.5px;}
   .cl-tabla td.jug{text-align:left;line-height:1.05;font-size:9px;}
   .cl-tabla td.jug i{color:#5b6b4d;font-size:8.5px;}
   .cl-tabla td.pos{font-size:8.5px;color:#4b5563;font-weight:700;}
-  .chk{display:inline-block;width:13px;height:13px;border:1.6px solid #1f2933;border-radius:2px;background:#fff;vertical-align:middle;}
+  .chk{display:inline-block;width:13px;height:13px;border:1.6px solid #1f2933;border-radius:2px;background:#fff;vertical-align:middle;max-height:calc(var(--rowh) - 2px);}
   .cl-sinjug{font-size:9px;color:#8a6100;margin-top:3px;}
   .cl-marcador{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-top:auto;padding-top:6px;}
   .cl-marcador > div:not(.guion){display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 1 150px;}
