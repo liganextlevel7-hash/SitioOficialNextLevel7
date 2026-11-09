@@ -285,11 +285,13 @@
 <!-- ===== MIS JUGADORES REGISTRADOS (solo de mi equipo, se pueden editar, no borrar) ===== -->
 <div id="mis-jugadores-wrap" style="display:none; margin-top:30px;">
 <h2 style="font-size:1rem; color:#5eb50d; text-align:center; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">📋 Mis Jugadores Registrados</h2>
+<button type="button" class="btn-editar-jg" id="abrir-correcciones-equipo">Correcciones de mi equipo</button>
+<p id="estado-correcciones-equipo" role="status"></p>
 <div class="rg-search"><label for="rg-buscar-mis">Buscar en mi plantel</label><input id="rg-buscar-mis" placeholder="Nombre, apodo o número" type="search"/><p aria-live="polite" id="rg-cuenta-mis"></p></div><div id="mis-jugadores-lista"></div>
 </div>
 <!-- ===== PANEL DE ADMINISTRADOR (ver todos, agregar, editar, borrar) ===== -->
 <div id="admin-panel-wrap" style="display:none;">
-<div aria-live="polite" class="rg-resumen" id="rg-resumen"></div><nav aria-label="Administración" class="rg-admin-nav"><a href="#filtro-equipo-admin">Jugadores</a><a href="#btn-toggle-agregar">Agregar</a><a href="#btn-toggle-reportes">Reportes PNG</a><a href="#btn-toggle-pass">Contraseñas</a></nav><div style="text-align:center; margin-bottom:16px;">
+<div aria-live="polite" class="rg-resumen" id="rg-resumen"></div><nav aria-label="Administración" class="rg-admin-nav"><a href="#filtro-equipo-admin">Jugadores</a><a href="#btn-toggle-agregar">Agregar</a><a href="#btn-toggle-reportes">Reportes PNG</a><a href="#btn-toggle-pass">Contraseñas</a><a href="./correcciones-jugadores.html" target="_blank" rel="noopener">Correcciones de jugadores</a></nav><div style="text-align:center; margin-bottom:16px;">
 <div style="font-size:1.1rem; font-weight:900; color:#5eb50d;">🔑 Panel de Administrador</div>
 <a href="#" id="link-cerrar-admin" style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-decoration:underline;">Cerrar sesión de admin</a>
 </div>
@@ -1144,6 +1146,35 @@
     return 'pendiente';
   }
 
+  document.getElementById('abrir-correcciones-equipo').addEventListener('click', async (event) => {
+    const equipo = equipoActual;
+    if (!equipo) return;
+    const button = event.currentTarget;
+    const status = document.getElementById('estado-correcciones-equipo');
+    button.disabled = true;
+    status.textContent = 'Cargando tu plantel…';
+    try {
+      const response = await fetch(RV_URL_JUGADORES);
+      if (!response.ok) throw Error('No se pudo leer Jugadores.');
+      const filas = rvParseCSV(await response.text());
+      const columnas = ['ID_Jugador','Nombre','Equipo','Numero','Posicion','Logo','Foto','URL_Foto','Apodo'];
+      const encabezado = filas.shift() || [];
+      if (!columnas.every((col,i) => encabezado[i]?.replace(/^\uFEFF/,'').trim() === col)) {
+        throw Error('La hoja Jugadores tiene encabezados distintos a los esperados.');
+      }
+      const plantel = filas.filter(r => r[0]?.trim() && r[2]?.trim() === String(equipo.id))
+        .map(r => columnas.map((_,i) => r[i]?.trim() || ''));
+      if (equipoActual !== equipo) return;
+      if (!plantel.length) throw Error('Tu equipo aún no tiene jugadores en la hoja Jugadores.');
+      sessionStorage.setItem('nl7_plantel_correcciones', JSON.stringify(plantel));
+      location.assign('./correcciones-jugadores.html#mi-equipo');
+    } catch (error) {
+      status.textContent = error.message || 'No se pudo cargar el plantel.';
+    } finally {
+      button.disabled = false;
+    }
+  });
+
   async function rvCargarDatos(){
     const [rFb, rSh] = await Promise.all([ fetch(FB + '/jugadoresRegistro.json'), fetch(RV_URL_JUGADORES) ]);
     const data = (await rFb.json()) || {};
@@ -1416,7 +1447,7 @@ const accesosRegistro = {
   '#btn-toggle-reportes': ['panel-reportes', 'rv-min'],
   '#btn-toggle-pass': ['panel-contrasenas', null]
 };
-document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
+document.querySelectorAll('.rg-admin-nav a[href^="#"]').forEach(enlace => {
   const destino = enlace.getAttribute('href');
   const config = accesosRegistro[destino];
   if (config) {
