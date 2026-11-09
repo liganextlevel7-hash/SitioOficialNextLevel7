@@ -7,6 +7,7 @@
 <title>Registro de Jugadores — Next Level 7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
+.mi-edicion label{display:block}.mi-edicion input{max-width:100%}
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -285,13 +286,11 @@
 <!-- ===== MIS JUGADORES REGISTRADOS (solo de mi equipo, se pueden editar, no borrar) ===== -->
 <div id="mis-jugadores-wrap" style="display:none; margin-top:30px;">
 <h2 style="font-size:1rem; color:#5eb50d; text-align:center; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">📋 Mis Jugadores Registrados</h2>
-<button type="button" class="btn-editar-jg" id="abrir-correcciones-equipo">Correcciones de mi equipo</button>
-<p id="estado-correcciones-equipo" role="status"></p>
 <div class="rg-search"><label for="rg-buscar-mis">Buscar en mi plantel</label><input id="rg-buscar-mis" placeholder="Nombre, apodo o número" type="search"/><p aria-live="polite" id="rg-cuenta-mis"></p></div><div id="mis-jugadores-lista"></div>
 </div>
 <!-- ===== PANEL DE ADMINISTRADOR (ver todos, agregar, editar, borrar) ===== -->
 <div id="admin-panel-wrap" style="display:none;">
-<div aria-live="polite" class="rg-resumen" id="rg-resumen"></div><nav aria-label="Administración" class="rg-admin-nav"><a href="#filtro-equipo-admin">Jugadores</a><a href="#btn-toggle-agregar">Agregar</a><a href="#btn-toggle-reportes">Reportes PNG</a><a href="#btn-toggle-pass">Contraseñas</a><a href="./correcciones-jugadores.html" target="_blank" rel="noopener">Correcciones de jugadores</a></nav><div style="text-align:center; margin-bottom:16px;">
+<div aria-live="polite" class="rg-resumen" id="rg-resumen"></div><nav aria-label="Administración" class="rg-admin-nav"><a href="#filtro-equipo-admin">Jugadores</a><a href="#btn-toggle-agregar">Agregar</a><a href="#btn-toggle-reportes">Reportes PNG</a><a href="#btn-toggle-pass">Contraseñas</a></nav><div style="text-align:center; margin-bottom:16px;">
 <div style="font-size:1.1rem; font-weight:900; color:#5eb50d;">🔑 Panel de Administrador</div>
 <a href="#" id="link-cerrar-admin" style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-decoration:underline;">Cerrar sesión de admin</a>
 </div>
@@ -745,6 +744,8 @@
             <div class="datos-adm">
               <div class="nombre-adm">${j.nombre || '(sin nombre)'}${badge}</div>
               <div class="campo-adm"><b>Equipo:</b> ${j.equipo || '-'}</div>
+              ${j.observaciones ? `<div class="campo-adm"><b>Observaciones:</b> ${escaparRegistro(j.observaciones)}</div>` : ''}
+              ${j.actualizadoEn ? `<div class="campo-adm" style="color:#a4db52;font-weight:700">Actualizado ${fechaRegistro(j.actualizadoEn)}</div>` : ''}
               <div class="campo-adm"><b>Número:</b> ${j.numero || '-'} &nbsp; <b>Posición:</b> ${j.posicion || '-'}</div>
               ${j.apodo ? `<div class="campo-adm"><b>Apodo:</b> ${j.apodo}</div>` : ''}
               <div class="quien-adm">Registrado por ${j.registradoPor || '-'} · ${fecha}</div>
@@ -982,70 +983,137 @@
   // ===================== MIS JUGADORES REGISTRADOS (solo mi equipo) =====================
   let misJugadoresCache = {};
 
-  async function cargarMisJugadores() {
+  const escaparRegistro = value => rvEsc(value).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const fechaRegistro = ms => new Date(ms).toLocaleString('es-MX', {
+    dateStyle:'short', timeStyle:'short', timeZone:'America/Mexico_City'
+  });
+
+  async function cargarMisJugadores(aviso = '') {
+    const equipo = equipoActual;
     const lista = document.getElementById('mis-jugadores-lista');
-    lista.innerHTML = '<div class="nota">Cargando...</div>';
+    lista.textContent = 'Cargando…';
     try {
-      const resp = await fetch(FB + '/jugadoresRegistro.json');
-      const data = await resp.json();
-      if (!data) { misJugadoresCache = {}; filtrarMisRegistros(); lista.innerHTML = '<div class="nota">Aún no has registrado a nadie.</div>'; return; }
-
-      const misEntradas = Object.entries(data).filter(([id, j]) => Number(j.equipoId) === equipoActual.id);
-      if (!misEntradas.length) { misJugadoresCache = {}; filtrarMisRegistros(); lista.innerHTML = '<div class="nota">Aún no has registrado a nadie.</div>'; return; }
-
-      misEntradas.sort((a, b) => (b[1].fecha || 0) - (a[1].fecha || 0));
-      misJugadoresCache = Object.fromEntries(misEntradas);
-
-      lista.innerHTML = misEntradas.map(([id, j]) => `
-        <div class="tarjeta-jg" id="mi-card-${id}">
-          <img src="${j.foto || ''}" alt="">
-          <div class="datos-jg">
-            <div class="nombre-jg">${j.nombre || '(sin nombre)'}</div>
-            <div class="campo-jg"><b>Número:</b> ${j.numero || '-'} &nbsp; <b>Posición:</b> ${j.posicion || '-'}</div>
-            ${j.apodo ? `<div class="campo-jg"><b>Apodo:</b> ${j.apodo}</div>` : ''}
-            <button class="btn-editar-jg" onclick="editarMiJugador('${id}')">✏️ Editar</button>
-          </div>
-        </div>
-      `).join('');
+      const [registro, hoja] = await Promise.all([
+        fetch(FB + '/jugadoresRegistro.json', {cache:'no-store'}),
+        fetch(RV_URL_JUGADORES, {cache:'no-store'}).catch(() => null)
+      ]);
+      if (!registro.ok) throw Error();
+      const data = await registro.json();
+      const entradas = Object.entries(data || {}).filter(([,j]) => Number(j.equipoId) === equipo.id);
+      const filas = hoja?.ok ? rvParseCSV(await hoja.text()) : [];
+      const encabezado = (filas.shift() || []).map(v => v.replace(/^\uFEFF/,'').trim());
+      const hojaDisponible = ['ID_Jugador','Nombre','Equipo'].every((c,i) => encabezado[i] === c);
+      const ids = new Set(entradas.map(([,j]) => j.idJugador).filter(Boolean));
+      for (const r of hojaDisponible ? filas : []) {
+        const [id,nombre,grupo,numero,posicion,,foto,,apodo] = r;
+        if (!id?.trim() || String(grupo).trim() !== String(equipo.id) || ids.has(id.trim())) continue;
+        const clave = 'hoja_' + Array.from(new TextEncoder().encode(id.trim()), byte => byte.toString(16).padStart(2,'0')).join('');
+        const iguales = entradas.filter(([,j]) => !j.idJugador && rvNorm(j.nombre) === rvNorm(nombre));
+        const repetidos = filas.filter(f => f[2]?.trim() === String(equipo.id) && rvNorm(f[1]) === rvNorm(nombre));
+        if (iguales.length === 1 && repetidos.length === 1) {
+          iguales[0][1] = {...iguales[0][1], idJugador:id.trim(), foto:iguales[0][1].foto ?? foto ?? ''};
+          continue;
+        }
+        entradas.push([clave,{idJugador:id.trim(),nombre,numero,posicion,foto,apodo,equipo:equipo.nombre,equipoId:equipo.id}]);
+        ids.add(id.trim());
+      }
+      if (equipoActual !== equipo) return;
+      entradas.sort((a,b) => (b[1].actualizadoEn || b[1].fecha || 0) - (a[1].actualizadoEn || a[1].fecha || 0));
+      misJugadoresCache = Object.fromEntries(entradas);
+      lista.innerHTML = [
+        aviso && `<p role="status" style="color:#a4db52;font-weight:700">${escaparRegistro(aviso)}</p>`,
+        !hojaDisponible && '<p class="nota">No se pudo leer la hoja de jugadores. Se muestran los datos del registro.</p>',
+        !entradas.length && '<p class="nota">Aún no hay jugadores para este equipo.</p>',
+        ...entradas.map(([id,j]) => {
+          const foto = /^(https?:\/\/|data:image\/(jpeg|png|webp);base64,)/i.test(j.foto || '') ? j.foto : '';
+          return `<div class="tarjeta-jg" id="mi-card-${escaparRegistro(id)}">
+            ${foto ? `<img src="${escaparRegistro(foto)}" alt="Foto del jugador">` : ''}
+            <div class="datos-jg">
+              <div class="nombre-jg">${escaparRegistro(j.nombre || '(sin nombre)')}</div>
+              <div class="campo-jg">Número ${escaparRegistro(j.numero ?? '—')} · ${escaparRegistro(j.posicion || 'Sin posición')}</div>
+              ${j.apodo ? `<div class="campo-jg">Apodo ${escaparRegistro(j.apodo)}</div>` : ''}
+              ${j.actualizadoEn ? `<div class="campo-jg" style="color:#a4db52">Actualizado ${fechaRegistro(j.actualizadoEn)}</div>` : ''}
+              <button type="button" class="btn-editar-jg">✏️ Editar</button>
+            </div>
+          </div>`;
+        })
+      ].filter(Boolean).join('');
+      for (const [id] of entradas) document.getElementById('mi-card-'+id).querySelector('button').onclick = () => editarMiJugador(id);
       filtrarMisRegistros();
-    } catch (e) {
-      lista.innerHTML = '<div class="nota">No se pudo cargar. Revisa tu conexión.</div>';
+    } catch {
+      if (equipoActual === equipo) lista.textContent = 'No se pudo cargar. Revisa tu conexión.';
     }
   }
 
   function editarMiJugador(id) {
-    const j = misJugadoresCache[id];
-    const card = document.getElementById(`mi-card-${id}`);
-    const opciones = ['Portero', 'Defensa', 'Mediocampista', 'Delantero'];
-    card.querySelector('.datos-jg').innerHTML = `
-      <input type="text" id="mi-edit-nombre-${id}" value="${(j.nombre || '').replace(/"/g, '&quot;')}" placeholder="Nombre" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.82rem; margin-bottom:6px; box-sizing:border-box;">
-      <div style="display:flex; gap:6px;">
-        <input type="number" id="mi-edit-numero-${id}" value="${j.numero || ''}" placeholder="Número" style="flex:1; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.82rem; box-sizing:border-box;">
-        <select id="mi-edit-posicion-${id}" style="flex:1; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.82rem;">
-          ${opciones.map(o => `<option value="${o}" ${o === j.posicion ? 'selected' : ''}>${o}</option>`).join('')}
-        </select>
-      </div>
-      <input type="text" id="mi-edit-apodo-${id}" value="${(j.apodo || '').replace(/"/g, '&quot;')}" placeholder="Apodo" style="width:100%; padding:7px 8px; border-radius:8px; border:1px solid rgba(94,181,13,0.4); background:#071019; color:#fff; font-size:0.82rem; margin-top:6px; box-sizing:border-box;">
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <button class="btn-editar-jg" style="border-color:#5eb50d; color:#5eb50d;" onclick="guardarMiEdicion('${id}')">💾 Guardar</button>
-        <button class="btn-editar-jg" style="border-color:#ff6b6b; color:#ff6b6b;" onclick="cargarMisJugadores()">Cancelar</button>
-      </div>
-    `;
-  }
-
-  async function guardarMiEdicion(id) {
-    const actualizado = {
-      nombre: document.getElementById(`mi-edit-nombre-${id}`).value.trim(),
-      numero: document.getElementById(`mi-edit-numero-${id}`).value,
-      posicion: document.getElementById(`mi-edit-posicion-${id}`).value,
-      apodo: document.getElementById(`mi-edit-apodo-${id}`).value.trim()
+    const jugador = misJugadoresCache[id];
+    const equipo = equipoActual;
+    const card = document.getElementById('mi-card-'+id);
+    const editor = card.querySelector('.datos-jg');
+    editor.innerHTML = `<form class="mi-edicion">
+      <label>Nombre<input name="nombre" type="text" required value="${escaparRegistro(jugador.nombre)}"></label>
+      <label>Número<input name="numero" type="number" min="0" max="99" value="${escaparRegistro(jugador.numero)}"></label>
+      <label>Posición<input name="posicion" type="text" list="posiciones-registro" value="${escaparRegistro(jugador.posicion)}"></label>
+      <datalist id="posiciones-registro"><option>Portero</option><option>Defensa</option><option>Mediocampista</option><option>Delantero</option></datalist>
+      <label>Apodo<input name="apodo" type="text" value="${escaparRegistro(jugador.apodo)}"></label>
+      <label>Observaciones<textarea name="observaciones" rows="3" maxlength="500" style="display:block;width:100%">${escaparRegistro(jugador.observaciones)}</textarea></label>
+      ${jugador.foto ? '<label><input name="quitarFoto" type="checkbox"> Quitar foto actual</label>' : ''}
+      <label>${jugador.foto ? 'Cambiar foto' : 'Subir foto'} <input name="foto" type="file" accept="image/*"></label>
+      <button class="btn-editar-jg" type="submit">Actualizar</button>
+      <button class="btn-editar-jg" type="button">Cancelar</button>
+      <p role="status"></p></form>`;
+    const form = editor.querySelector('form');
+    const quitarFoto = form.elements.namedItem('quitarFoto');
+    const fotoActual = card.querySelector('img');
+    if (quitarFoto && fotoActual) {
+      quitarFoto.onchange = () => { fotoActual.hidden = quitarFoto.checked; };
+    }
+    form.querySelector('[type=button]').onclick = () => cargarMisJugadores();
+    form.onsubmit = async event => {
+      event.preventDefault();
+      const boton = form.querySelector('[type=submit]');
+      const estado = form.querySelector('[role=status]');
+      boton.disabled = true;
+      estado.textContent = 'Guardando…';
+      try {
+        const campos = new FormData(form);
+        const actualizado = {
+          nombre:String(campos.get('nombre')).trim(), numero:campos.get('numero'),
+          posicion:String(campos.get('posicion')).trim(), apodo:String(campos.get('apodo')).trim(),
+          observaciones:String(campos.get('observaciones')).trim(),
+          equipo:equipo.nombre, equipoId:equipo.id, actualizadoEn:{'.sv':'timestamp'}
+        };
+        if (!actualizado.nombre) throw Error('Escribe el nombre del jugador.');
+        if (jugador.idJugador) actualizado.idJugador = jugador.idJugador;
+        const archivo = campos.get('foto');
+        if (archivo?.size) {
+          const url = URL.createObjectURL(archivo);
+          try {
+            const imagen = new Image(); imagen.src = url; await imagen.decode();
+            const escala = Math.min(1,480/Math.max(imagen.naturalWidth,imagen.naturalHeight));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1,Math.round(imagen.naturalWidth*escala));
+            canvas.height = Math.max(1,Math.round(imagen.naturalHeight*escala));
+            canvas.getContext('2d').drawImage(imagen,0,0,canvas.width,canvas.height);
+            actualizado.foto = canvas.toDataURL('image/jpeg',0.75);
+          } finally { URL.revokeObjectURL(url); }
+        } else if (campos.has('quitarFoto')) {
+          actualizado.foto = '';
+        } else if (jugador.foto) {
+          actualizado.foto = jugador.foto;
+        }
+        if (equipoActual !== equipo) return;
+        const respuesta = await fetch(`${FB}/jugadoresRegistro/${encodeURIComponent(id)}.json`,{
+          method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(actualizado)
+        });
+        if (!respuesta.ok) throw Error('El registro rechazó los cambios. Intenta de nuevo.');
+        const guardado = await respuesta.json();
+        if (equipoActual === equipo) cargarMisJugadores('✓ Actualizado el '+fechaRegistro(guardado.actualizadoEn || Date.now()));
+      } catch (error) {
+        estado.style.color='#ff9b9b';
+        estado.textContent=error.message || 'No se pudo actualizar.';
+      } finally { boton.disabled=false; }
     };
-    await fetch(`${FB}/jugadoresRegistro/${id}.json`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(actualizado)
-    });
-    cargarMisJugadores();
   }
 
   // ════════════════════════════════════════════
@@ -1145,35 +1213,6 @@
     if (hoja.some(h => h.nombre === n || ordenado(h.nombre) === ordenado(n))) return 'hoja_otro';
     return 'pendiente';
   }
-
-  document.getElementById('abrir-correcciones-equipo').addEventListener('click', async (event) => {
-    const equipo = equipoActual;
-    if (!equipo) return;
-    const button = event.currentTarget;
-    const status = document.getElementById('estado-correcciones-equipo');
-    button.disabled = true;
-    status.textContent = 'Cargando tu plantel…';
-    try {
-      const response = await fetch(RV_URL_JUGADORES);
-      if (!response.ok) throw Error('No se pudo leer Jugadores.');
-      const filas = rvParseCSV(await response.text());
-      const columnas = ['ID_Jugador','Nombre','Equipo','Numero','Posicion','Logo','Foto','URL_Foto','Apodo'];
-      const encabezado = filas.shift() || [];
-      if (!columnas.every((col,i) => encabezado[i]?.replace(/^\uFEFF/,'').trim() === col)) {
-        throw Error('La hoja Jugadores tiene encabezados distintos a los esperados.');
-      }
-      const plantel = filas.filter(r => r[0]?.trim() && r[2]?.trim() === String(equipo.id))
-        .map(r => columnas.map((_,i) => r[i]?.trim() || ''));
-      if (equipoActual !== equipo) return;
-      if (!plantel.length) throw Error('Tu equipo aún no tiene jugadores en la hoja Jugadores.');
-      sessionStorage.setItem('nl7_plantel_correcciones', JSON.stringify(plantel));
-      location.assign('./correcciones-jugadores.html#mi-equipo');
-    } catch (error) {
-      status.textContent = error.message || 'No se pudo cargar el plantel.';
-    } finally {
-      button.disabled = false;
-    }
-  });
 
   async function rvCargarDatos(){
     const [rFb, rSh] = await Promise.all([ fetch(FB + '/jugadoresRegistro.json'), fetch(RV_URL_JUGADORES) ]);
@@ -1447,7 +1486,7 @@ const accesosRegistro = {
   '#btn-toggle-reportes': ['panel-reportes', 'rv-min'],
   '#btn-toggle-pass': ['panel-contrasenas', null]
 };
-document.querySelectorAll('.rg-admin-nav a[href^="#"]').forEach(enlace => {
+document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
   const destino = enlace.getAttribute('href');
   const config = accesosRegistro[destino];
   if (config) {
