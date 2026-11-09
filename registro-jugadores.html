@@ -340,6 +340,7 @@
 <option value="">Todos los equipos</option>
 </select>
 <div class="contador" id="contador" style="text-align:center; font-size:0.78rem; color:rgba(238,247,230,0.5); margin-bottom:16px;"></div>
+<button type="button" class="btn-editar-adm" id="rg-recargar-admin">Actualizar lista</button>
 <div id="lista-admin"></div>
 </div>
 <p class="nota">Los datos se guardan directo en la base de la liga. Puedes registrar varios jugadores uno tras otro desde este mismo formulario.</p>
@@ -682,7 +683,8 @@
     const contador = document.getElementById('contador');
     lista.innerHTML = '<div class="nota">Cargando registros...</div>';
     try {
-      const resp = await fetch(FB + '/jugadoresRegistro.json');
+      const resp = await fetch(FB + '/jugadoresRegistro.json', {cache:'no-store'});
+      if (!resp.ok) throw Error('No se pudo leer el registro');
       const data = await resp.json();
       if (!data) {
         registrosAdminCache = {}; actualizarResumenRegistro();
@@ -702,9 +704,10 @@
 
       // Compara contra la hoja "Jugadores" para saber cuáles son nuevos (faltan por capturar) y cuáles ya están
       try {
-        const rh = await fetch(RV_URL_JUGADORES);
+        const rh = await fetch(RV_URL_JUGADORES, {cache:'no-store'});
+        if (!rh.ok) throw Error();
         const filasH = rvParseCSV(await rh.text());
-        hojaAdminCache = filasH.slice(1).map(c => ({ nombre: rvNorm(c[1]), equipo: String(c[2] || '').trim() })).filter(h => h.nombre);
+        hojaAdminCache = filasH.slice(1).map(c => ({ id: String(c[0] || '').trim(), nombre: rvNorm(c[1]), equipo: String(c[2] || '').trim() })).filter(h => h.nombre);
       } catch (e) { hojaAdminCache = null; }
 
       pintarListaAdmin();
@@ -721,6 +724,7 @@
       const e = EQUIPOS.find(q => rvNorm(q.nombre) === rvNorm(j.equipo));
       eqId = e ? String(e.id) : '';
     }
+    if (j.idJugador && hojaAdminCache.some(h => h.id === j.idJugador && h.equipo === eqId)) return 'hoja';
     return rvEstado({ nombre: j.nombre || '', eqId }, hojaAdminCache);
   }
 
@@ -783,10 +787,12 @@
 
     // Separa: nuevos (faltan por capturar) y ya capturados en la hoja
     const conEstado = entradas.map(([id, j]) => [id, j, estadoRegistroAdm(j)]);
-    const nuevos = conEstado.filter(([, , e]) => e === 'pendiente' || e === 'desconocido' || e === 'hoja_otro');
-    const capturados = conEstado.filter(([, , e]) => e === 'hoja');
+    const actualizados = conEstado.filter(([,j]) => j.actualizadoEn)
+      .sort((a,b) => b[1].actualizadoEn - a[1].actualizadoEn);
+    const nuevos = conEstado.filter(([,j,e]) => !j.actualizadoEn && e !== 'hoja');
+    const capturados = conEstado.filter(([,j,e]) => !j.actualizadoEn && e === 'hoja');
 
-    contador.textContent = (filtro ? filtro + ': ' : '') + `${nuevos.length} por capturar · ${capturados.length} ya capturados`;
+    contador.textContent = (filtro ? filtro + ': ' : '') + `${nuevos.length} por capturar · ${capturados.length} ya capturados · ${actualizados.length} actualizados`;
 
     // Si no se eligió equipo, se agrupa por equipo; si se eligió uno, va la lista directa
     const pintaItems = (items) => {
@@ -822,7 +828,11 @@
            ${capturados.length ? pintaItems(capturados) : '<div class="nota">Todavía no hay jugadores registrados que estén en la hoja.</div>'}
          </details>` : '';
 
-    lista.innerHTML = seccionNuevos + seccionCapturados;
+    const seccionActualizados = actualizados.length
+      ? `<div class="sec-titulo-adm hechos">Jugadores actualizados · ${actualizados.length}</div>`
+        + actualizados.map(([id,j,e]) => tarjetaAdm(id,j,e)).join('')
+      : '';
+    lista.innerHTML = seccionActualizados + seccionNuevos + seccionCapturados;
   }
 
   function copiarDatosAdm(btn, texto) {
@@ -1479,6 +1489,12 @@ document.getElementById('form-registro').addEventListener('input',actualizarVist
 new MutationObserver(actualizarVistaRegistro).observe(document.getElementById('foto-preview'),{attributes:true,attributeFilter:['src','style']});
 new MutationObserver(actualizarVistaRegistro).observe(document.getElementById('equipo-actual-nombre'),{childList:true});
 document.getElementById('rg-buscar-mis').addEventListener('input',filtrarMisRegistros);
+document.getElementById('rg-recargar-admin').addEventListener('click', async event => {
+  const boton = event.currentTarget;
+  boton.disabled = true;
+  try { await cargarRegistrosAdmin(); }
+  finally { boton.disabled = false; }
+});
 document.getElementById('rg-buscar-admin').addEventListener('input',pintarListaAdmin);
 const zonaFoto=document.getElementById('foto-zona');zonaFoto.tabIndex=0;zonaFoto.setAttribute('role','button');zonaFoto.setAttribute('aria-label','Tomar o subir foto del jugador');zonaFoto.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();document.getElementById('input-foto').click();}});
 // Escudo visual: el catálogo no interviene en el acceso, los registros ni los reportes.
