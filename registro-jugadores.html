@@ -236,7 +236,7 @@
 <!-- ===== FORMULARIO (oculto hasta que entra con su código) ===== -->
 <div class="card" id="form-card" style="display:none;">
 <div style="text-align:center; margin-bottom:16px;">
-<div style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-transform:uppercase;">Registrando jugadores de</div>
+<div style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-transform:uppercase;">Plantel de</div>
 <img alt="Escudo del equipo" class="rg-escudo" hidden="" id="rg-escudo-equipo"/><div id="equipo-actual-nombre" style="font-size:1.2rem; font-weight:900; color:#5eb50d;"></div>
 <div style="display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:4px;">
 <a href="#" id="link-cambiar-equipo" style="font-size:0.7rem; color:rgba(238,247,230,0.5); text-decoration:underline;">¿No eres tú? Cambiar equipo</a>
@@ -253,6 +253,8 @@
 <button class="btn-enviar" id="btn-cambiar-pass" style="margin-top:14px;" type="button">Guardar nueva contraseña</button>
 <div aria-live="polite" class="msg" id="cambiar-pass-msg" role="status"></div>
 </div>
+<details id="nuevo-jugador"><summary style="cursor:pointer;padding:12px 16px;border-radius:12px;background:#a4db52;color:#17230e;font-weight:700">Nuevo jugador</summary>
+<div style="padding-top:18px">
 <form id="form-registro"><div class="rg-section-title"><span>02</span><div><h2>Ficha del jugador</h2><p>Completa los datos y revisa la vista previa.</p></div></div>
 <label>Foto del jugador</label>
 <div class="foto-zona" id="foto-zona">
@@ -282,6 +284,7 @@
 <section aria-label="Vista previa de la ficha" class="rg-preview"><span class="rg-kicker">VISTA PREVIA</span><div class="rg-preview-row"><img alt="" hidden="" id="rg-prev-foto"/><span aria-hidden="true" id="rg-prev-inicial">?</span><div><b id="rg-prev-nombre">Nombre del jugador</b><p id="rg-prev-equipo">Tu equipo</p><small id="rg-prev-posicion">Selecciona su posición</small></div><strong id="rg-prev-numero">—</strong></div></section><button class="btn-enviar" id="btn-enviar" type="submit">Registrar Jugador</button>
 <div aria-live="polite" class="msg" id="msg" role="status"></div>
 </form>
+</div></details>
 </div>
 <!-- ===== MIS JUGADORES REGISTRADOS (solo de mi equipo, se pueden editar, no borrar) ===== -->
 <div id="mis-jugadores-wrap" style="display:none; margin-top:30px;">
@@ -489,6 +492,7 @@
     e.preventDefault();
     localStorage.removeItem('nl7_codigo_equipo');
     equipoActual = null;
+    document.getElementById('nuevo-jugador').open = false;
     formCard.style.display = 'none';
     cambiarPassZona.style.display = 'none';
     document.getElementById('mis-jugadores-wrap').style.display = 'none';
@@ -1057,8 +1061,15 @@
       <datalist id="posiciones-registro"><option>Portero</option><option>Defensa</option><option>Mediocampista</option><option>Delantero</option></datalist>
       <label>Apodo<input name="apodo" type="text" value="${escaparRegistro(jugador.apodo)}"></label>
       <label>Observaciones<textarea name="observaciones" rows="3" maxlength="500" style="display:block;width:100%">${escaparRegistro(jugador.observaciones)}</textarea></label>
-      ${jugador.foto ? '<label><input name="quitarFoto" type="checkbox"> Quitar foto actual</label>' : ''}
-      <label>${jugador.foto ? 'Cambiar foto' : 'Subir foto'} <input name="foto" type="file" accept="image/*"></label>
+      <fieldset style="margin:14px 0;padding:12px;border:1px solid #ffffff35;border-radius:10px">
+        <legend>Foto del jugador</legend>
+        <p class="nota">${jugador.foto
+          ? 'Para reemplazar la foto, selecciona otra imagen y pulsa Actualizar. Para dejar al jugador sin foto, marca Quitar foto actual y pulsa Actualizar con el selector de imagen vacío.'
+          : 'Este jugador está sin foto. Selecciona una imagen y pulsa Actualizar para guardarla.'}</p>
+        ${jugador.foto ? '<label><input name="quitarFoto" type="checkbox"> Quitar foto actual</label>' : ''}
+        <label>${jugador.foto ? 'Seleccionar foto nueva' : 'Subir foto'} <input name="foto" type="file" accept="image/*"></label>
+        <p class="nota">Si seleccionas una imagen nueva, se guardará esa imagen. Si no haces cambios en esta sección, se conserva la foto que ya tiene el jugador.</p>
+      </fieldset>
       <button class="btn-editar-jg" type="submit">Actualizar</button>
       <button class="btn-editar-jg" type="button">Cancelar</button>
       <p role="status"></p></form>`;
