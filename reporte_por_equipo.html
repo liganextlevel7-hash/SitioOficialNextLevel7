@@ -219,6 +219,7 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
     <label class="campo"><span>Tipo de reporte</span>
       <select id="tipo" onchange="cambiarTipo()">
         <option value="equipo">Por equipo</option>
+        <option value="historial-horarios">Historial de horarios por equipo</option>
         <option value="domingo">Rol propuesto del próximo domingo</option>
         <option value="general">Control general (todos los equipos)</option>
         <option value="propuesta">Propuesta de programación (varias fechas)</option>
@@ -226,7 +227,7 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
         <option value="horarios">Propuesta con horarios y campos (varias fechas)</option>
       </select></label>
     <label class="campo" id="campo-equipo"><span>Equipo</span>
-      <select id="sel-equipo"><option value="">Cargando equipos...</option></select></label>
+      <select id="sel-equipo" onchange="actualizarHistorialHorarios()"><option value="">Cargando equipos...</option></select></label>
     <label class="campo" id="campo-fechas" style="display:none"><span>Fechas a proponer</span>
       <select id="sel-fechas"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label>
     <label class="campo" id="campo-doble" style="display:none"><span>Partidos dobles</span>
@@ -367,9 +368,22 @@ async function init(){
 function msg(t, err){ $('msg').textContent = t; $('msg').className = err ? 'err' : ''; }
 function cambiarTipo(){
   const t = $('tipo').value;
-  $('campo-equipo').style.display = t === 'equipo' ? '' : 'none';
+  $('campo-equipo').style.display = (t === 'equipo' || t === 'historial-horarios') ? '' : 'none';
   $('campo-fechas').style.display = (t === 'propuesta' || t === 'horarios') ? '' : 'none';
   $('campo-doble').style.display = t === 'propuesta' ? '' : 'none';
+  actualizarHistorialHorarios();
+}
+function actualizarHistorialHorarios(){
+  if ($('tipo').value !== 'historial-horarios') {
+    if ($('vista').querySelector('.rq-historial-horarios')) $('vista-wrap').hidden = true;
+    return;
+  }
+  if ($('sel-equipo').value) {
+    ver();
+  } else {
+    $('vista-wrap').hidden = true;
+    if (EQUIPOS.length) msg('Selecciona un equipo para ver su historial de horarios.');
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1125,8 +1139,11 @@ function construir(){
   if ($('tipo').value === 'tentativo') return { html: docTentativo(), nombre: 'rol_tentativo' };
   if ($('tipo').value === 'propuesta') return { html: docPropuesta(parseInt($('sel-fechas').value, 10) || 3, $('sel-doble').value === 'si'), nombre: 'propuesta_programacion' };
   const id = $('sel-equipo').value; if (!id){ msg('Selecciona un equipo primero.', true); return null; }
-  const eq = EQUIPOS.find(e => idDe(e) === id);
-  return { html: docEquipo(id), nombre: 'reporte_' + (eq['Nombre'] || id).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase() };
+  const archivoEquipo = nombreEq(id).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]+/g, '_').toLowerCase();
+  if ($('tipo').value === 'historial-horarios') {
+    return { html: docHistorialHorarios(id), nombre: 'historial_horarios_' + archivoEquipo };
+  }
+  return { html: docEquipo(id), nombre: 'reporte_' + archivoEquipo };
 }
 async function ver(){
   if(!await asegurarDatosReporte())return;
@@ -1258,6 +1275,58 @@ function docEquipo(idE){
  const resultados=a.filter(p=>estadoDe(p)==='jugado').map(p=>resultado(p,idE)),n=k=>resultados.filter(x=>x.res===k).length,gf=resultados.reduce((t,x)=>t+(isNaN(x.gf)?0:x.gf),0),gc=resultados.reduce((t,x)=>t+(isNaN(x.gc)?0:x.gc),0);
  const kpis=[['',r.jugados,'Jugados'],['v',n('g'),'Ganados'],['a',n('e'),'Empatados'],['r',n('p'),'Perdidos'],['',gf,'Goles a favor'],['',gc,'Goles en contra']].map(([c,v,t])=>`<div class="rq-kpi ${c}"><b>${v}</b><span>${t}</span></div>`).join('');
  return documentoConFormato('Reporte de equipo',`<div class="rq-equipo"><img crossorigin="anonymous" src="${esc(eq.URL||'')}" alt="Escudo"><div><h1>${esc(eq.Nombre||'')}</h1><small>${esBaja(eq)?'Equipo dado de baja':'Equipo activo'} · ${r.jugados} partidos jugados</small></div></div><div class="rq-kpis">${kpis}</div>${G.resumenHTML(r,eq,contado)}<div class="rq-tit">Juegos, fechas y resultados</div>${tablaEquipoConFormato(a,idE)}<div class="rq-tit">Programados</div>${tablaEquipoConFormato(a.filter(p=>estadoDe(p)==='programado'),idE)}<div class="rq-tit">Pendientes registrados</div>${tablaEquipoConFormato(a.filter(p=>estadoDe(p)==='pendiente'),idE)}<div class="rq-leyenda">Se conserva el resultado y el desempate por penales. Los juegos contra equipos en baja que ya se disputaron cuentan. Los pendientes registrados de más no se borran automáticamente. La fecha original solo se muestra si está registrada o conserva la referencia anterior.</div>${notaEspecialJuegos()}`);
+}
+
+function horaHistorial(hora){
+  const m = String(hora || '').trim().match(/^(\d{1,2}):(\d{2})(?::[0-5]\d)?(?:\s*([ap])\.?\s*m\.?)?$/i);
+  if (!m) return null;
+  const h = Number(m[1]), min = Number(m[2]);
+  if (min > 59 || (m[3] ? h < 1 || h > 12 : h > 23)) return null;
+  return (m[3] ? h % 12 + (m[3].toLowerCase() === 'p' ? 12 : 0) : h) * 60 + min;
+}
+
+function docHistorialHorarios(id){
+  const eq = EQUIPOS.find(e => idDe(e) === id);
+  const partidos = juegosValidos().filter(p => estadoDe(p) === 'jugado' && involucra(p, id));
+  const grupos = new Map(HORAS_LIGA.map(h => [h * 60, []]));
+  for (const p of partidos) {
+    const hora = horaHistorial(p.Hora);
+    const r = resultado(p, id);
+    const conMarcador = Number.isFinite(r.gf) && Number.isFinite(r.gc);
+    if (!grupos.has(hora)) grupos.set(hora, []);
+    grupos.get(hora).push({ p, r, conMarcador });
+  }
+
+  const labelHora = min => min === null ? 'Sin hora registrada' : hora12(`${Math.floor(min / 60)}:${p2(min % 60)}`);
+  const horarios = [...grupos].sort(([a], [b]) => (a ?? Infinity) - (b ?? Infinity));
+  const resumen = horarios.map(([min, juegos]) => {
+    const contar = res => juegos.filter(j => j.conMarcador && j.r.res === res).length;
+    const sinMarcador = juegos.filter(j => !j.conMarcador).length;
+    return `<tr><th scope="row">${labelHora(min)}</th><td><b>${juegos.length}</b></td><td>${contar('g')}</td><td>${contar('e')}</td><td>${contar('p')}</td><td>${sinMarcador}</td></tr>`;
+  }).join('');
+
+  const filas = horarios.flatMap(([min, juegos]) => {
+    juegos.sort((a, b) => (parseFecha(b.p.Fecha)?.getTime() || 0) - (parseFecha(a.p.Fecha)?.getTime() || 0));
+    return juegos.map(({ p, r, conMarcador }) => {
+      const marcador = conMarcador ? `${r.gf} - ${r.gc}` : '—';
+      const resultadoTxt = conMarcador ? `<span class="rq-pill ${RES[r.res][0]}">${RES[r.res][1]}</span>` : 'Sin marcador';
+      const detalle = r.tipo === 'default' ? '<small>Por default</small>'
+        : conMarcador && r.pen ? `<small>${r.pen === 'g' ? 'Ganó' : 'Perdió'} en penales</small>` : '';
+      return `<tr><td><b>${labelHora(min)}</b></td><td>${esc(p.Fecha || '—')}</td><td>${esc(p.Jornada || '—')}</td>
+        <td>${esc(p.Cancha || '—')}</td><td>${esc(nombreEq(r.rival))}<small>${p.Equipo_Local === id ? 'Local' : 'Visitante'}</small></td>
+        <td class="rq-marc">${marcador}</td><td>${resultadoTxt}${detalle}</td></tr>`;
+    });
+  }).join('');
+
+  const escudo = eq?.URL ? `<img crossorigin="anonymous" src="${esc(eq.URL)}" alt="Escudo">` : '';
+  return documentoConFormato('Historial de horarios por equipo', `
+    <div class="rq-equipo rq-historial-horarios">${escudo}<div><h1>${esc(nombreEq(id))}</h1><small>Partidos jugados registrados: ${partidos.length}</small></div></div>
+    <div class="rq-tit">Resumen por horario</div>
+    <table class="rq-tabla"><thead><tr><th>Horario</th><th>Jugados</th><th>Ganados</th><th>Empatados</th><th>Perdidos</th><th>Sin marcador</th></tr></thead><tbody>${resumen}</tbody></table>
+    <div class="rq-tit">Detalle de partidos</div>
+    <table class="rq-tabla"><thead><tr><th>Horario</th><th>Fecha</th><th>Jornada</th><th>Cancha</th><th>Rival</th><th>Marcador</th><th>Resultado</th></tr></thead>
+      <tbody>${filas || '<tr><td colspan="7">Este equipo aún no tiene partidos jugados registrados.</td></tr>'}</tbody></table>
+    <div class="rq-leyenda">El marcador muestra primero los goles del equipo seleccionado. Los partidos definidos en penales cuentan como empate en el resumen.</div>`);
 }
 
 let cargaReporte=null;
