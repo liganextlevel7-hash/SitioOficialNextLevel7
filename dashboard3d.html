@@ -260,12 +260,28 @@ const fbTex=(txt,col)=>{const c=document.createElement('canvas');c.width=c.heigh
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t};
 const cargar=(url,fb)=>new Promise(ok=>{if(!url)return ok(fb());loader.load(url,t=>{t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>ok(fb()))});
 function promedio(tex,def){
-  // Color dominante de la playera (el que más se repite), para que la tela salga del color real y no lavada por el escudo.
-  try{const N=32,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');x.drawImage(tex.image,0,0,N,N);
-    const d=x.getImageData(0,0,N,N).data,B={};let n=0;
-    for(let i=0;i<d.length;i+=4)if(d[i+3]>200){const k=(d[i]>>4)+','+(d[i+1]>>4)+','+(d[i+2]>>4),o=B[k]||(B[k]={r:0,g:0,b:0,n:0});o.r+=d[i];o.g+=d[i+1];o.b+=d[i+2];o.n++;n++}
-    let best=null;for(const k in B)if(!best||B[k].n>best.n)best=B[k];
-    return n>8&&best?new THREE.Color(best.r/best.n/255,best.g/best.n/255,best.b/best.n/255):def}catch(e){return def}
+  // Lee los colores reales del uniforme: cuerpo (zona del pecho/vientre, evitando escudos) y mangas. Devuelve {col, manga}.
+  try{
+    const im=tex.image,N=128,sc=N/Math.max(im.width,im.height),W=Math.max(8,Math.round(im.width*sc)),H=Math.max(8,Math.round(im.height*sc));
+    const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(im,0,0,W,H);
+    const d=x.getImageData(0,0,W,H).data,px=(i,j)=>(j*W+i)*4;
+    const cs=[[0,0],[W-1,0],[0,H-1],[W-1,H-1]].map(([i,j])=>{const k=px(i,j);return [d[k],d[k+1],d[k+2],d[k+3]]});
+    const bg=cs.every(q=>q[3]>240&&Math.abs(q[0]-cs[0][0])+Math.abs(q[1]-cs[0][1])+Math.abs(q[2]-cs[0][2])<30)?cs[0]:null; // fondo opaco uniforme, si lo hay
+    const es=(i,j)=>{const k=px(i,j);if(d[k+3]<60)return false;return !(bg&&Math.abs(d[k]-bg[0])+Math.abs(d[k+1]-bg[1])+Math.abs(d[k+2]-bg[2])<40)};
+    let x0=W,x1=-1,y0=H,y1=-1;
+    for(let j=0;j<H;j++)for(let i=0;i<W;i++)if(es(i,j)){if(i<x0)x0=i;if(i>x1)x1=i;if(j<y0)y0=j;if(j>y1)y1=j}
+    if(x1-x0<10||y1-y0<10)return {col:def,manga:def};
+    const bw=x1-x0,bh=y1-y0;
+    const modo=rects=>{const B={};let n=0;
+      rects.forEach(([ax,ay,bx,by])=>{for(let j=Math.round(y0+ay*bh);j<=Math.round(y0+by*bh);j++)for(let i=Math.round(x0+ax*bw);i<=Math.round(x0+bx*bw);i++){
+        if(i<0||j<0||i>=W||j>=H||!es(i,j))continue;const k=px(i,j),key=(d[k]>>4)+','+(d[k+1]>>4)+','+(d[k+2]>>4),o=B[key]||(B[key]={r:0,g:0,b:0,n:0});o.r+=d[k];o.g+=d[k+1];o.b+=d[k+2];o.n++;n++}});
+      let best=null;for(const k in B)if(!best||B[k].n>best.n)best=B[k];
+      return best&&n>=12?new THREE.Color(best.r/best.n/255,best.g/best.n/255,best.b/best.n/255):null};
+    const col=modo([[.28,.58,.40,.80],[.60,.58,.72,.80]])||modo([[0,0,1,1]])||def;
+    const manga=modo([[.08,.18,.17,.30],[.83,.18,.92,.30]])||col;
+    const cx=Math.max(0,Math.floor(x0/sc)),cy=Math.max(0,Math.floor(y0/sc));
+    return {col,manga,caja:{x:cx,y:cy,w:Math.min(im.width-cx,Math.ceil((bw+1)/sc)),h:Math.min(im.height-cy,Math.ceil((bh+1)/sc))}};
+  }catch(e){return {col:def,manga:def}}
 }
 function placa(txt){
   const c=document.createElement('canvas');c.width=512;c.height=96;const x=c.getContext('2d');
@@ -290,11 +306,17 @@ const esfera=()=>geo('sph',()=>new THREE.SphereGeometry(1,14,10));
 function lathe(r0,r1,len){return geo('l'+[r0,r1,len],()=>{const p=[];for(let k=0;k<=4;k++){const a=k/4*Math.PI/2;p.push(new THREE.Vector2(Math.max(.0001,r1*Math.sin(a)),-len-r1*Math.cos(a)))}for(let k=0;k<=4;k++){const a=k/4*Math.PI/2;p.push(new THREE.Vector2(Math.max(.0001,r0*Math.cos(a)),r0*Math.sin(a)))}return new THREE.LatheGeometry(p,12)})}
 function volumen(parent,mat,x,y,z,sx,sy,sz){const m=new THREE.Mesh(esfera(),mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;parent.add(m);return m;}
 function miembro(parent,mat,r0,r1,len,x,y,z){const m=new THREE.Mesh(lathe(r0,r1,len),mat);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m;}
-function telaTorso(tex,col){
- // Se toma la zona de tela de la imagen de la playera, en vez de pegar su silueta completa.
- const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,512,256);
- if(tex?.image){const im=tex.image,w=im.width,h=im.height;for(let side=0;side<2;side++)x.drawImage(im,w*.20,h*.15,w*.60,h*.82,side*256,48,256,208);}
- const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=4;map.wrapS=THREE.RepeatWrapping;return new THREE.MeshStandardMaterial({map,roughness:.9});
+function telaTorso(tex,col,caja){
+ // La playera del equipo tal cual, recortada a su silueta y ajustada al torso. Atrás va la misma tela sin el escudo ni el patrocinador del centro.
+ const K=innerWidth<=760?.5:1,W=1024*K,H=512*K,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ x.fillStyle='#'+col.getHexString();x.fillRect(0,0,W,H);
+ if(tex?.image){const im=tex.image,cj=caja||{x:0,y:0,w:im.width,h:im.height},fw=W/2,y0=H*.04,fh=H-y0;
+  x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+  x.drawImage(im,cj.x,cj.y,cj.w,cj.h,0,y0,fw,fh);
+  x.drawImage(im,cj.x,cj.y,cj.w,cj.h,fw,y0,fw,fh);
+  x.fillStyle='#'+col.getHexString();x.fillRect(fw+fw*.24,0,fw*.52,H);
+ }
+ const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=8;map.wrapS=THREE.RepeatWrapping;return new THREE.MeshStandardMaterial({map,roughness:.9});
 }
 function camisetaMesh(mat){
  const rings=[[1.16,.30,.18],[1.32,.285,.172],[1.48,.30,.18],[1.64,.345,.195],[1.80,.385,.19],[1.92,.37,.165],[2.00,.25,.13],[2.06,.14,.105]],verts=[],uv=[],idx=[],N=24;
@@ -307,13 +329,13 @@ function numTex(n,claro){const k=n+(claro?'c':'o');return numCache[k]||(numCache
 const cacheTex={};
 function textura(t,i){return cacheTex[t.id]||(cacheTex[t.id]=(async()=>{const def=new THREE.Color().setHSL((i*.137)%1,.55,.42);
   const [escudo,pla]=await Promise.all([cargar(t.URL,()=>fbTex((t.Nombre||'?').charAt(0),'#'+def.getHexString())),cargar(t.Color_Playera,()=>null)]);
-  return {escudo,pla,col:pla?promedio(pla,def):def}})())}
+  const an=pla?promedio(pla,def):{col:def,manga:def};return {escudo,pla,col:an.col,manga:an.manga,caja:an.caja}})())}
 async function crearJugador(t,i){
- const {escudo,pla,col:color}=await textura(t,i),g=new THREE.Group();
+ const {escudo,pla,col:color,manga:mcol,caja}=await textura(t,i),g=new THREE.Group(),L=c=>c.clone().convertSRGBToLinear();
  const h=((i+1)*2654435761+(parseInt(t.id,10)||0)*40503)>>>0,estilo=(h>>>4)%6,pCol=peloCol[(h>>>9)%6],alto=.95+((h>>>13)%11)*.01,ancho=.93+((h>>>17)%12)*.012;
  const piel=new THREE.MeshStandardMaterial({color:pieles[(h>>>2)%6],roughness:.85});
- const tela=new THREE.MeshStandardMaterial({color,roughness:.9}),shortMat=new THREE.MeshStandardMaterial({color:color.clone().multiplyScalar(.48),roughness:.9});
- const sock=new THREE.MeshStandardMaterial({color:color.clone().lerp(new THREE.Color(0xffffff),.45),roughness:.95});
+ const tela=new THREE.MeshStandardMaterial({color:L(color),roughness:.9}),mangaMat=new THREE.MeshStandardMaterial({color:L(mcol),roughness:.9}),shortMat=new THREE.MeshStandardMaterial({color:L(color).multiplyScalar(.5),roughness:.9});
+ const sock=new THREE.MeshStandardMaterial({color:L(color.clone().lerp(new THREE.Color(0xffffff),.45)),roughness:.95});
  const boot=new THREE.MeshStandardMaterial({color:[0x1b1f1f,0xeeeecc,0xd8412a,0x2a6fd8][(h>>>6)%4],roughness:.55});
  const pelo=new THREE.MeshStandardMaterial({color:pCol,roughness:.95}),ojo=new THREE.MeshBasicMaterial({color:0x1a1210});
  const guante=piel;
@@ -321,9 +343,9 @@ async function crearJugador(t,i){
  volumen(cuerpo,shortMat,0,1.12,0,.30,.20,.18);
  // Torso y todo lo de arriba cuelga de "up", que gira desde la cadera (inclinación al caminar).
  const up=new THREE.Group();up.position.y=1.15;cuerpo.add(up);
- const torso=camisetaMesh(tela);torso.castShadow=true;torso.position.y=-1.15;up.add(torso);
+ const torso=camisetaMesh(pla?telaTorso(pla,color,caja):tela);torso.castShadow=true;torso.position.y=-1.15;up.add(torso);
  const cuello=new THREE.Mesh(geo('cuello',()=>new THREE.CylinderGeometry(.07,.085,.17,12)),piel);cuello.position.y=.92;up.add(cuello);
- const collar=new THREE.Mesh(geo('collar',()=>new THREE.TorusGeometry(.135,.027,6,18)),new THREE.MeshStandardMaterial({color:0xe6e8d9,roughness:.8}));collar.rotation.x=Math.PI/2;collar.scale.set(1,.8,1);collar.position.y=.89;up.add(collar);
+ const collar=new THREE.Mesh(geo('collar',()=>new THREE.TorusGeometry(.135,.027,6,18)),new THREE.MeshStandardMaterial({color:L(color.clone().lerp(new THREE.Color(0xffffff),.3)),roughness:.8}));collar.rotation.x=Math.PI/2;collar.scale.set(1,.8,1);collar.position.y=.89;up.add(collar);
  const lum=color.r*.3+color.g*.59+color.b*.11,num=2+(h>>>3)%9;
  const nm=new THREE.Mesh(geo('num',()=>new THREE.PlaneGeometry(.24,.3)),new THREE.MeshBasicMaterial({map:numTex(num,lum<.55),transparent:true}));nm.position.set(0,.5,-.2);nm.rotation.y=Math.PI;up.add(nm);
  const rodillas=[],codos=[];
@@ -337,7 +359,7 @@ async function crearJugador(t,i){
  }
  const piernaI=pierna(-1),piernaD=pierna(1);
  function brazo(sign){const shoulder=new THREE.Group();shoulder.position.set(sign*.37,.76,0);shoulder.rotation.z=sign*.16;up.add(shoulder);
-  volumen(shoulder,tela,0,0,0,.125,.125,.125);miembro(shoulder,tela,.12,.1,.15,sign*.01,-.04,0);miembro(shoulder,piel,.083,.068,.22,sign*.02,-.2,0);
+  volumen(shoulder,mangaMat,0,0,0,.125,.125,.125);miembro(shoulder,mangaMat,.12,.1,.15,sign*.01,-.04,0);miembro(shoulder,piel,.083,.068,.22,sign*.02,-.2,0);
   const elbow=new THREE.Group();elbow.position.set(sign*.025,-.45,0);shoulder.add(elbow);volumen(elbow,piel,0,0,0,.075,.078,.075);
   miembro(elbow,piel,.07,.05,.2,0,-.03,0);volumen(elbow,guante,0,-.34,.03,.058,.088,.04);volumen(elbow,guante,-sign*.05,-.3,.045,.022,.045,.022);
   elbow.rotation.x=-.18;codos.push(elbow);return shoulder;
@@ -353,8 +375,7 @@ async function crearJugador(t,i){
  if(estilo==0)cap(.172,.222,.182,.045,0,1.1);
  else if(estilo==1||estilo==2){cap(.18,.23,.19,.06,-.005,1.28);if(estilo==2){volumen(cabeza,pelo,0,-.05,-.11,.15,.21,.1);volumen(cabeza,pelo,-.14,-.02,-.04,.04,.15,.09);volumen(cabeza,pelo,.14,-.02,-.04,.04,.15,.09)}}
  else if(estilo==3){cap(.2,.235,.205,.085,-.01,1.38);}
- // Escudo cosido al pecho cuando no existe una imagen de uniforme.
- {const badge=new THREE.Mesh(new THREE.PlaneGeometry(.115,.135),new THREE.MeshStandardMaterial({map:escudo,transparent:true,roughness:.8}));badge.position.set(-.16,.62,.2);up.add(badge);}
+ if(!pla){const badge=new THREE.Mesh(new THREE.PlaneGeometry(.115,.135),new THREE.MeshStandardMaterial({map:escudo,transparent:true,roughness:.8}));badge.position.set(-.16,.62,.2);up.add(badge);}
  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:escudo,transparent:true,depthTest:false}));sp.scale.set(.95,.95,1);sp.position.y=3.25;sp.renderOrder=2;g.add(sp);
  const nom=placa(t.Nombre);nom.scale.set(3.6,.67,1);nom.position.y=4;nom.renderOrder=3;g.add(nom);
  const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,4.4,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.1;g.add(hit);
