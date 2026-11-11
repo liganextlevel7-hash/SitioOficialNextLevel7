@@ -2,1712 +2,496 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Armar Jornada - Next Level 7</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Partidos 3D · Liga Next Level 7</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --neon:#5eb50d;--neon-dim:rgba(94,181,13,0.15);
-  --mod:#7c3aed;--mod-dim:rgba(124,58,237,0.15);--mod-border:#a78bfa;
-  --g400:#94a3b8;--g500:#64748b;
-  --dark:#142702;--dark2:#1c3204;--dark3:#2f5606;
-  --w:#fff;--r:12px;--rs:8px;
-  --font:'Segoe UI',system-ui,-apple-system,sans-serif;
+:root{--lime:#5eb50d;--gold:#ddc530;--ink:#04100a;--panel:rgba(4,16,10,.86);--line:rgba(94,181,13,.38)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--ink);color:#f3f5ee;font-family:Roboto,Arial,sans-serif;overflow:hidden}
+canvas{display:block;position:fixed;inset:0;touch-action:none}
+h1,h2,b.n{font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;margin:0}
+#top{position:fixed;left:16px;top:calc(10px + env(safe-area-inset-top,0px));pointer-events:none;text-shadow:0 2px 8px #000}
+#top h1{font-size:30px;letter-spacing:3px;color:var(--lime);line-height:1}
+#top p{margin:2px 0 0;font-size:12px;color:#cfe3b9}
+#fechas{position:fixed;left:16px;right:16px;top:calc(62px + env(safe-area-inset-top,0px));display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+#fechas button{flex:none;background:var(--panel);color:#f3f5ee;border:1px solid var(--line);border-radius:999px;padding:7px 14px;font:700 13px Roboto,Arial;cursor:pointer}
+#fechas button small{display:block;font-weight:400;font-size:10px;color:#9db38c}
+#fechas button.on{background:var(--lime);color:#04100a}#fechas button.on small{color:#10300a}
+#fechas button.pen{border-color:var(--gold)}
+.panel{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:14px;backdrop-filter:blur(6px)}
+#lado{left:16px;top:calc(112px + env(safe-area-inset-top,0px));bottom:16px;width:310px;display:flex;flex-direction:column;overflow:hidden}
+#tabs{display:flex;border-bottom:1px solid var(--line)}
+#tabs button{flex:1;background:none;border:0;color:#9db38c;padding:11px 2px;font:700 12px Roboto,Arial;cursor:pointer;border-bottom:3px solid transparent}
+#tabs button.on{color:var(--gold);border-color:var(--gold)}
+#cont{flex:1;overflow-y:auto;padding:6px 8px 10px}
+.fila{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px;font-size:13px;cursor:pointer}
+.fila:hover{background:rgba(94,181,13,.14)}
+.fila img{width:24px;height:24px;object-fit:contain;flex:none}
+.fila .m{flex:1;min-width:0;line-height:1.25}.fila .m small{display:block;color:#9db38c;font-size:11px}
+.sc{font-family:'Bebas Neue';font-size:20px;color:var(--gold);min-width:48px;text-align:center}
+.chip{font-size:10px;font-weight:700;border-radius:999px;padding:2px 8px;border:1px solid;white-space:nowrap}
+.c1{color:#9db38c;border-color:#9db38c}.c2{color:var(--gold);border-color:var(--gold)}.c3{color:#6fb4ff;border-color:#6fb4ff}.c4{color:var(--lime);border-color:var(--lime)}
+.tit{font-family:'Bebas Neue';font-size:17px;letter-spacing:1.5px;color:var(--lime);margin:10px 6px 2px}
+#card{right:16px;top:calc(112px + env(safe-area-inset-top,0px));width:330px;padding:16px;display:none;max-height:calc(100% - 130px);overflow-y:auto}
+body.sel #card{display:block}
+#card .cab{display:flex;gap:12px;align-items:center}#card .cab img{width:70px;height:70px;object-fit:contain}
+#card h2{font-size:28px;letter-spacing:1.5px;line-height:1}
+#card .ds{font-size:12px;color:var(--gold)}
+#x{position:absolute;right:8px;top:6px;background:none;border:0;color:#cfe3b9;font-size:24px;cursor:pointer;padding:6px}
+.desc{margin:10px 0;padding:8px 10px;border-radius:10px;background:rgba(94,181,13,.14);font-size:13px;line-height:1.4}
+#btnL{display:none}
+#msg{position:fixed;inset:0;display:grid;place-items:center;background:var(--ink);font-family:'Bebas Neue';font-size:28px;letter-spacing:3px;color:var(--lime);z-index:5;text-align:center;padding:20px}
+#nav{position:fixed;right:16px;top:calc(10px + env(safe-area-inset-top,0px));display:flex;gap:8px;z-index:3}
+body.sim #nav{display:none}
+.nb{display:flex;align-items:center;gap:7px;padding:6px 14px 6px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line);color:#f3f5ee;text-decoration:none;font:700 13px Roboto,Arial;backdrop-filter:blur(6px);transition:background .15s,transform .15s}
+.nb:hover,.nb:focus-visible{background:rgba(94,181,13,.35);transform:translateY(-1px);outline:none}
+.nb svg{width:20px;height:25px;flex:none}
+@media(max-width:760px){
+ #nav{right:122px;top:calc(12px + env(safe-area-inset-top,0px))}.nb{padding:6px 10px}.nb .t{display:none}
+ #top h1{font-size:24px}
+ #lado{left:8px;right:8px;top:auto;bottom:8px;width:auto;height:46vh;display:none}
+ body.ab #lado{display:flex}body.sel #lado{display:none}
+ #card{left:8px;right:8px;top:auto;bottom:8px;width:auto;max-height:60vh}
+ #btnL{display:block;position:fixed;right:12px;top:calc(12px + env(safe-area-inset-top,0px));background:var(--panel);color:var(--gold);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font:700 14px Roboto,Arial}
+ body.sel #btnL{display:none}
 }
-body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c3204 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:20px 16px}
+#marc,#simbar,#gol{display:none}
+body.sim #fechas,body.sim #lado,body.sim #card,body.sim #btnL,body.sim #top{display:none!important}
+body.sim #marc{display:flex;position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));align-items:center;gap:14px;padding:8px 18px;max-width:calc(100% - 16px)}
+#marc img{width:38px;height:38px;object-fit:contain}
+#marc .eq{display:flex;align-items:center;gap:8px;font-family:'Bebas Neue',Impact,sans-serif;font-size:20px;letter-spacing:1px}
+#marc .mid{text-align:center;min-width:84px}#marc .mid b{display:block;font-size:40px;color:var(--gold);line-height:1;font-weight:400}#marc small{font-size:11px;color:#9db38c}
+body.sim #simbar{display:flex;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));gap:8px}
+#simbar button{background:var(--panel);color:#f3f5ee;border:1px solid var(--line);border-radius:999px;padding:10px 18px;font:700 13px Roboto,Arial;cursor:pointer}
+body.sim #gol.on{display:block;position:fixed;left:50%;top:34%;transform:translate(-50%,-50%);font-family:'Bebas Neue',Impact,sans-serif;font-size:clamp(44px,11vw,96px);letter-spacing:3px;color:var(--gold);text-align:center;line-height:1;text-shadow:0 4px 18px #000;pointer-events:none;animation:pop .45s ease-out}
+#gol small{display:block;font-size:.4em;color:#f3f5ee;letter-spacing:2px;margin-top:6px}
+@keyframes pop{from{transform:translate(-50%,-50%) scale(.4);opacity:0}to{transform:translate(-50%,-50%) scale(1);opacity:1}}
+@media(max-width:520px){#marc .eq b{display:none}#marc{gap:10px}}
 
-#loading-screen{background:var(--dark);border:1px solid rgba(94,181,13,.2);border-radius:20px;padding:48px 32px;width:100%;max-width:400px;margin-top:40px;text-align:center}
-.load-ball{font-size:40px;margin-bottom:14px}
-.load-title{font-size:18px;font-weight:800;color:var(--neon);margin-bottom:6px}
-.load-sub{font-size:12px;color:var(--g400)}
-
-#login-screen{display:none;background:var(--dark);border:1px solid rgba(94,181,13,.2);border-radius:20px;width:100%;max-width:420px;margin-top:20px;overflow:hidden}
-.login-hero{background:linear-gradient(135deg,#142702,#1c3204);padding:28px;text-align:center;border-bottom:1px solid rgba(94,181,13,.15)}
-.login-hero-icon{font-size:38px;margin-bottom:10px}
-.login-hero-title{font-size:20px;font-weight:800;color:var(--neon);margin-bottom:4px;letter-spacing:1px}
-.login-hero-sub{font-size:12px;color:var(--g400)}
-.login-body{padding:24px 28px 28px}
-.field{margin-bottom:16px}
-.field label{display:block;font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
-.field input{width:100%;padding:11px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark2);outline:none}
-.field input:focus{border-color:var(--neon)}
-.btn-enter{width:100%;padding:14px;background:var(--neon);color:#122400;border:none;border-radius:var(--r);font-size:15px;font-weight:800;cursor:pointer}
-.btn-enter:hover{filter:brightness(1.1)}
-.login-msg{font-size:12px;color:var(--g400);text-align:center;margin-top:10px;min-height:18px}
-.login-msg.err{color:#f87171}
-
-#app-screen{display:none;width:100%;max-width:760px;background:var(--dark);border:1px solid rgba(94,181,13,.15);border-radius:20px;overflow:hidden;margin-top:20px}
-.app-header{background:linear-gradient(135deg,#142702,#1c3204);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(94,181,13,.15)}
-.app-header-title{font-size:15px;font-weight:800;color:var(--neon)}
-.app-header-sub{font-size:11px;color:var(--g400);margin-top:1px}
-.btn-logout{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:var(--g400);padding:7px 14px;border-radius:20px;font-size:12px;text-decoration:none;white-space:nowrap}
-.btn-logout:hover{color:var(--w)}
-
-.panel{padding:20px;display:flex;flex-direction:column;gap:22px}
-.mod-section-title{font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
-.mod-hint{font-size:11px;color:var(--g500);margin-bottom:12px;margin-top:-6px}
-
-.msg-input{flex:1;padding:10px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark);outline:none}
-.msg-input:focus{border-color:var(--neon)}
-
-.vbtn{flex:1;padding:9px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--dark3);background:var(--dark2);color:var(--g500)}
-.vbtn.active{border-color:var(--neon);background:var(--neon-dim);color:var(--neon)}
-
-.mod-match-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--dark3);border-radius:var(--rs);border:1px solid rgba(255,255,255,.05);margin-bottom:10px}
-.mod-match-row img{width:32px;height:32px;border-radius:50%;object-fit:cover}
-.mod-match-name{flex:1;font-size:13px;font-weight:700;color:var(--w);min-width:0}
-.mod-match-meta{font-size:11px;color:var(--g500)}
-.mod-preview-empty{font-size:13px;color:var(--g500);text-align:center;padding:16px 0;background:var(--dark2);border:1px solid rgba(255,255,255,.06);border-radius:var(--r)}
-
-.programar-box{background:var(--dark2);border:1px solid rgba(94,181,13,.25);border-radius:var(--r);padding:16px}
-.programar-box label{display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
-.programar-hint{font-size:12px;color:var(--neon);background:var(--neon-dim);border:1px solid rgba(94,181,13,.25);border-radius:var(--rs);padding:10px 12px}
-
-.btn-anunciar{width:100%;padding:12px;background:var(--mod);color:white;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer}
-.btn-anunciar:hover{background:#6d28d9}
-.btn-anunciar:disabled{background:var(--dark3);color:var(--g500);cursor:not-allowed}
-
-.cartel-wrap-scroll{overflow-x:auto;padding:6px 0;-webkit-overflow-scrolling:touch}
-.cartel-poster{position:relative;width:760px;min-height:983px;margin:0 auto;border-radius:10px;overflow:hidden;
-  background-image:url('fondonuevo.png');background-size:cover;background-position:center;
-  font-family:'Arial Black',Arial,sans-serif;padding:300px 40px 0;box-sizing:border-box;}
-.cartel-header{position:absolute;top:16px;left:0;right:0;z-index:2;text-align:center}
-.cartel-h1{font-size:26px;font-weight:900;letter-spacing:.5px;color:#f3c94a;text-shadow:0 2px 0 #6b4c0a,0 0 16px rgba(243,201,74,.35);text-transform:uppercase;line-height:1.15}
-.cartel-matches{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center}
-.cartel-pagina-tag{position:absolute;bottom:10px;right:18px;z-index:2;font-size:12px;color:rgba(255,255,255,.4);font-weight:700}
-.cartel-row{display:flex;align-items:center;gap:6px;padding:11px 0}
-.cartel-sep{border:none;border-top:2px dotted rgba(243,201,74,.55);margin:0}
-.cartel-team{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-.cartel-team.local{flex-direction:row-reverse;justify-content:flex-start;text-align:right}
-.cartel-team.visita{flex-direction:row;justify-content:flex-start;text-align:left}
-.cartel-crest{width:88px;height:88px;object-fit:contain;flex-shrink:0}
-.cartel-name{font-size:18px;font-weight:900;color:#f5f5f0;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
-.cartel-center{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:90px;text-align:center;gap:2px}
-.cartel-jv{font-size:12px;color:#5eb50d;font-weight:800;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1px}
-.cartel-fecha{font-size:11px;color:#d9d9d9;font-weight:700}
-.cartel-hora{font-size:18px;color:#fff;font-weight:900;white-space:nowrap}
-.cartel-campo{font-size:12px;color:#5eb50d;font-weight:700}
-.cartel-linea{width:24px;height:3px;background:#5eb50d;border-radius:2px;margin:2px 0}
-.btn-descargar-cartel{width:100%;padding:12px;background:#f3c94a;color:#1a1200;border:none;border-radius:var(--r);font-size:14px;font-weight:800;cursor:pointer;margin-top:10px}
-.btn-descargar-cartel:hover{filter:brightness(1.08)}
-
-@media(max-width:580px){
-  .cartel-poster{min-width:760px}
-  body{padding:0;align-items:flex-start}
-  #login-screen,#app-screen{border-radius:0;margin-top:0}
-}
+.ver-partido{flex:none;min-height:36px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#284b15;color:#fff;font:700 11px Roboto,Arial;cursor:pointer}.fila{flex-wrap:wrap}.fila .m{flex-basis:100px}.fila .sc{font-size:18px;min-width:35px}.vacio{font-size:12px;color:#aac49a;margin:8px}.recreacion{display:block;color:#ddc530!important;font-size:10px!important}#vistaGeneral{right:16px;bottom:16px;color:#fff;padding:12px;cursor:pointer;min-height:44px}body.sim #vistaGeneral{display:none}#sP{min-width:80px}#simbar{max-width:calc(100% - 16px);flex-wrap:wrap;justify-content:center;width:max-content}.nb{min-height:44px}#fechas button{min-height:44px}
+@media(max-width:760px){#top h1{font-size:19px;letter-spacing:1px;max-width:170px}#top p{display:none}#fechas{left:8px;right:8px;top:62px}#tabs button{min-height:44px}#lado{height:43dvh;bottom:calc(8px + env(safe-area-inset-bottom,0px))}#card{max-height:52dvh;bottom:calc(8px + env(safe-area-inset-bottom,0px))}#vistaGeneral{top:118px;bottom:auto;right:8px;padding:8px;font-size:11px}body.sel #vistaGeneral,body.ab #vistaGeneral{display:none}#simbar button{padding:10px 12px;min-height:44px}#nav{right:115px}.nb{padding:6px 9px}.fila{padding:8px 4px}.fila .m{font-size:12px}.fila .m small{font-size:11px}#marc .mid b{font-size:32px}#marc img{width:32px;height:32px}}
+@media(max-width:520px){#marc .eq{flex-direction:column;gap:3px;min-width:70px}#marc .eq b{display:block;font:700 10px Roboto,Arial;max-width:95px;letter-spacing:0;text-align:center;line-height:1.2}#marc .mid{min-width:82px}}
 </style>
 </head>
 <body>
-
-<div id="loading-screen">
-  <div class="load-ball">⚽</div>
-  <div class="load-title">ARMAR JORNADA</div>
-  <div class="load-sub" id="load-msg">Conectando con Google Sheets...</div>
-</div>
-
-<div id="login-screen">
-  <div class="login-hero">
-    <div class="login-hero-icon">🛠️</div>
-    <div class="login-hero-title">ARMAR JORNADA</div>
-    <div class="login-hero-sub">Liga Next Level 7 · Panel de administración</div>
-  </div>
-  <div class="login-body">
-    <div class="field">
-      <label>Contraseña de moderador</label>
-      <input type="password" id="mod-password" placeholder="Ingresa la contraseña..." onkeydown="if(event.key==='Enter')entrarPanel()">
-    </div>
-    <button class="btn-enter" onclick="entrarPanel()">Entrar →</button>
-    <div class="login-msg" id="login-msg"></div>
-  </div>
-</div>
-
-<div id="app-screen">
-  <div class="app-header">
-    <div>
-      <div class="app-header-title">🛠️ Armar Jornada</div>
-      <div class="app-header-sub">Liga Next Level 7</div>
-    </div>
-    <a href="partidos.html" class="btn-logout">← Partidos</a>
-  </div>
-
-  <div class="panel">
-
-    <!-- EDITAR / PROGRAMAR PARTIDO -->
-    <div>
-      <div class="mod-section-title" style="color:var(--neon)">🔁 Editar / Programar un partido</div>
-      <div class="mod-hint">Trae el partido por su ID, o elige los dos equipos que se enfrentan, y confirma los nombres antes de guardar — así no se mueve el partido equivocado.</div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
-        <div>
-          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🗓️ Jornada (opcional)</label>
-          <input type="number" id="armando-jornada" class="msg-input" style="width:100%" min="1" placeholder="Ej. 2" oninput="actualizarSelectsPorJornada()">
-        </div>
-        <div>
-          <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">📆 Fecha (sombrea equipos que ya juegan ese día)</label>
-          <input type="date" id="armando-fecha" class="msg-input" style="width:100%" oninput="actualizarSelectsPorJornada()">
-        </div>
-      </div>
-      <div id="armando-descansa" style="font-size:12px;color:var(--neon);margin-bottom:12px;min-height:16px"></div>
-      <div id="armando-confirmaciones" style="font-size:12px;margin-bottom:12px"></div>
-
-      <div style="margin-bottom:12px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
-        <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🔢 Traer partido por ID (el que sale en el reporte)</label>
-        <div style="display:flex;gap:8px">
-          <input type="text" id="buscar-id-partido" list="lista-ids-partido" class="msg-input" style="flex:1" inputmode="numeric" autocomplete="off" placeholder="Escribe o elige el ID. Ej. 26" onkeydown="if(event.key==='Enter'){event.preventDefault();buscarPartidoPorId();}" onchange="buscarPartidoPorId()">
-          <button type="button" onclick="buscarPartidoPorId()" style="padding:10px 16px;background:var(--dark);border:1px solid rgba(94,181,13,.35);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">Traer →</button>
-        </div>
-        <datalist id="lista-ids-partido"></datalist>
-        <div class="mod-hint" style="margin:6px 0 0">Trae el partido directo para programarlo. Si arriba pones Jornada y Fecha, se usan como sugerencia. Con el mismo ID puedes volver a programar uno ya programado.</div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-        <div>
-          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo A</label>
-          <select id="buscar-equipo-a" class="msg-input" style="width:100%" onchange="actualizarSelectsPorJornada(); buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
-        </div>
-        <div>
-          <label style="display:block;font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">Equipo B</label>
-          <select id="buscar-equipo-b" class="msg-input" style="width:100%" onchange="buscarPartidoEntreEquipos()"><option value="">— Selecciona —</option></select>
-        </div>
-      </div>
-      <div id="buscar-resultado"></div>
-    </div>
-
-    <!-- ARMAR ROL DEL DOMINGO -->
-    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
-      <div class="mod-section-title" style="color:var(--neon)">📋 Armar Rol del Domingo (cartel)</div>
-
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <button class="vbtn active" id="vbtn1" onclick="setVuelta(1)">🔜 Vuelta 1</button>
-        <button class="vbtn" id="vbtn2" onclick="setVuelta(2)">🔄 Vuelta 2</button>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-        <label style="font-size:12px;color:var(--g400);white-space:nowrap">📆 Fecha:</label>
-        <input type="date" id="rol-fecha" class="msg-input" style="flex:1;padding:8px 12px;font-size:13px">
-      </div>
-
-      <div id="rol-slots" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="addSlot()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(94,181,13,0.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:600;cursor:pointer">+ Agregar horario</button>
-        <button onclick="autoRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(167,139,250,0.3);border-radius:var(--rs);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer">⚡ Auto-proponer rol</button>
-      </div>
-
-      <div id="rol-preview-wrap" style="display:none;margin-top:16px">
-        <div class="mod-section-title">👁️ Vista previa</div>
-        <div id="rol-preview" style="background:var(--dark2);border:1px solid rgba(94,181,13,0.2);border-radius:var(--r);padding:14px"></div>
-
-        <div class="mod-section-title" style="margin-top:16px">🖼️ Cartel de la jornada</div>
-        <div class="cartel-wrap-scroll">
-          <div class="cartel-poster" id="cartel-poster"></div>
-        </div>
-        <div id="cartel-paginas-aviso" style="font-size:11px;color:var(--neon);margin-top:8px;text-align:center"></div>
-
-        <button class="btn-descargar-cartel" onclick="descargarCartelPNG()">📥 Descargar cartel PNG</button>
-      </div>
-    </div>
-
-    <!-- CÉDULA DE JORNADA -->
-    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px">
-      <div class="mod-section-title" style="color:var(--neon)">📋 Cédula arbitral (para el árbitro)</div>
-      <div class="mod-hint">Formato oficial de la liga, en hoja carta horizontal con dos encuentros por hoja (los dos del mismo campo). Trae de la hoja "Jugadores" el N°, nombre, apodo y posición de cada equipo, y incluye una casilla Asistió para marcar y deja en blanco G / A / R para que el árbitro anote a mano, más resultado final, observaciones y firmas. Salen primero los encuentros del Campo 1 y luego los del Campo 2 (solo encuentros ya programados). Puedes elegirla por jornada o por fecha, imprimirla o descargarla en PNG.</div>
-      <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <select id="cedula-tipo" class="msg-input" style="flex:0 0 130px" onchange="cambiarCedulaTipo()"><option value="jornada">Por jornada</option><option value="fecha">Por fecha</option></select>
-        <select id="cedula-jornada" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona jornada —</option></select>
-        <select id="cedula-fecha" class="msg-input" style="flex:1;min-width:140px;display:none"><option value="">— Selecciona fecha —</option></select>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:10px">
-        <button onclick="generarCedulaJornada('imprimir')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>
-        <button onclick="generarCedulaJornada('png')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">📥 Generar PNG</button>
-      </div>
-      <div id="cedula-aviso" style="font-size:12px;color:var(--g500);text-align:center;min-height:16px"></div>
-    </div>
-
-    <!-- REPORTE DE CONFIRMACIÓN DE ENCUENTROS -->
-    <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:20px;margin-top:20px">
-      <div class="mod-section-title" style="color:var(--neon)">📑 Reporte de Confirmación de Encuentros</div>
-      <div class="mod-hint">Documento formal con cada encuentro programado y si cada equipo ya confirmó su asistencia (lee las confirmaciones en el momento). Puedes imprimirlo o descargarlo como PNG, por jornada o por fecha.</div>
-      <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-        <select id="cf-tipo" class="msg-input" style="flex:0 0 130px" onchange="cambiarCfTipo()"><option value="jornada">Por jornada</option><option value="fecha">Por fecha</option></select>
-        <select id="cf-jornada" class="msg-input" style="flex:1;min-width:140px"><option value="">— Selecciona jornada —</option></select>
-        <select id="cf-fecha" class="msg-input" style="flex:1;min-width:140px;display:none"><option value="">— Selecciona fecha —</option></select>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:10px">
-        <button onclick="cfReporte('imprimir')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">🖨️ Imprimir</button>
-        <button onclick="cfReporte('png')" style="flex:1;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:700;cursor:pointer">📥 Generar PNG</button>
-      </div>
-      <div id="cf-aviso" style="font-size:12px;color:var(--g500);text-align:center;min-height:16px"></div>
-    </div>
-
-  </div>
-</div>
-
+<div id="msg">Cargando los partidos…</div>
+<div id="top"><h1>Partidos Next Level 7</h1><p>Elige una fecha · selecciona un equipo o pulsa Ver partido</p></div>
+<div id="fechas"></div>
+<div id="marc" class="panel"><div class="eq"><img id="mL" alt=""><b id="nL"></b></div><div class="mid"><b id="mS">0 - 0</b><small id="mT">Min 0'</small><small class="recreacion">Recreación del resultado</small></div><div class="eq"><b id="nV"></b><img id="mV" alt=""></div></div>
+<div id="gol"></div>
+<div id="simbar"><button id="sV">← Volver</button><button id="sR">↻ Repetir</button><button id="sP">Pausar</button><button id="sX">×1</button></div>
+<nav id="nav"><a class="nb" href="partidos.html" title="Volver a Partidos"><span aria-hidden="true">←</span><svg viewBox="0 0 32 40" aria-hidden="true"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg><span class="t">Partidos</span></a><a class="nb" href="index.html" title="Ir al inicio del portal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11L12 3l9 8M5 10v11h14V10M9 21v-8h6v8"/></svg><span class="t">Inicio</span></a></nav>
+<button id="btnL">Partidos</button><button id="vistaGeneral" class="panel">↺ Vista general</button>
+<aside id="lado" class="panel"><div id="tabs"></div><div id="cont"></div></aside>
+<aside id="card" class="panel"></aside>
+<script src="juegos-control.js?v=20261101-carta"></script>
 <script>
-// ════════════════════════════════
-//  CONFIG
-// ════════════════════════════════
-const SHEET_ID     = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
-const GID_EQUIPOS  = '1894947293';
-const GID_PARTIDOS = '1362473459';
-const MOD_PASS     = 'nl7admin';
-const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyeetNFUe2aur35_Dd1NDZg1IY2_y_VGc5xX7b_pmV85PE69c_10Aw58vG8mFPO79K2/exec'; // mismo Apps Script de nextlevelenvivo.html y chat-next-level-7.html
+const SHEET='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?single=true&output=csv&gid=';
+const GID_EQ='1894947293',GID_PA='1362473459';
+/* Reglas de descanso: Galácticos descansó en la jornada 1; Deportivo Azul no jugó la J1 pero se toma como jugada (no es descanso). */
 
-// ════════════════════════════════
-//  ESTADO LOCAL
-// ════════════════════════════════
-let S = {
-  teams: {},
-  allMatches: [],  // TODOS los partidos (pendiente/programado/jugado)
-  matches: [],     // solo los pendientes (para el Rol del Domingo)
-  vuelta: 1,
-  matchToProgram: null,
-  players: {},       // jugadores por id de equipo (hoja "Jugadores"), ordenados por número
-  playersError: false
-};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function csv(t){const r=[];let f='',row=[],q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);f='';if(row.length>1||row[0])r.push(row);row=[]}else f+=c}if(f||row.length){row.push(f);r.push(row)}const h=r.shift().map(x=>x.trim());return r.map(a=>Object.fromEntries(h.map((k,i)=>[k,(a[i]||'').trim()])))}
+const tf=s=>{const p=(s||'').split('/');return p.length==3?new Date(+p[2],+p[1]-1,+p[0]).getTime():0};
+const hora=h=>h?h.replace(/:00$/,''):'';
+const horaMin=h=>{const m=String(h||'').match(/^(\d{1,2}):(\d{2})/);return m?Number(m[1])*60+Number(m[2]):1440};
+let teams=[],P=[],T={},R={},fechas=[],cur=null,tab='dom',HAY_DESC=true;
 
-// ════════════════════════════════
-//  GOOGLE SHEETS
-// ════════════════════════════════
-async function fetchCSV(gid){
-  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`);
-  if(!r.ok) throw new Error('No se pudo leer el Sheet (gid='+gid+'). Asegúrate de que sea público.');
-  return parseCSV(await r.text());
+/* Solo se conserva el descanso inicial explícito de Galácticos. */
+function calcDescansos(){R={};HAY_DESC=false;}
+const resumenEquipo=t=>{const r=NL7Juegos.resumen(P,t.id),contado=t.id==='17'?1:0;return {r,contado,b:NL7Juegos.balance(r,t,contado)}};
+const juegoTexto=(p,t)=>NL7Juegos.etiqueta(p,p.Equipo_Local===t.id?'local':'visita');
+const resumenTexto=t=>{const {r,contado,b}=resumenEquipo(t);return `${r.jugados} jugados${contado?' + 1 contado':''} · ${b.especial?'Meta por definir':b.faltan+' por jugar para completar 15'}`};
+
+/* ---------- escena ---------- */
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<=760?1.5:2));renderer.setSize(innerWidth,innerHeight);
+renderer.outputEncoding=THREE.sRGBEncoding;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x81b9df);scene.fog=new THREE.Fog(0x81b9df,100,230);
+const camera=new THREE.PerspectiveCamera(innerWidth<=760?65:46,innerWidth/innerHeight,.5,400);
+scene.add(new THREE.HemisphereLight(0xbfe8c0,0x0a1d10,.9));
+const sun=new THREE.DirectionalLight(0xfff4d6,.95);sun.position.set(-25,55,25);sun.castShadow=true;sun.shadow.mapSize.set(innerWidth<=760?512:1024,innerWidth<=760?512:1024);
+Object.assign(sun.shadow.camera,{left:-45,right:45,top:35,bottom:-35,near:10,far:130});scene.add(sun);
+const PW=74,PH=48.6;
+(function(){
+  const K=1.5,c=document.createElement('canvas');c.width=1400*K;c.height=920*K;const x=c.getContext('2d');x.scale(K,K);
+  for(let i=0;i<14;i++){const gr=x.createLinearGradient(0,0,0,920);const a1=i%2?'#2a7a2d':'#348a3a',a2=i%2?'#276f2a':'#30823a';gr.addColorStop(0,a1);gr.addColorStop(.5,a2);gr.addColorStop(1,a1);x.fillStyle=gr;x.fillRect(i*100,0,100,920)}
+  let sd=7;const rr=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  for(let n=0;n<9000;n++){x.fillStyle=rr()<.5?'rgba(255,255,255,.05)':'rgba(0,30,0,.08)';x.fillRect(rr()*1400,rr()*920,1+rr()*2,3+rr()*7)}
+  x.strokeStyle='rgba(255,255,255,.92)';x.fillStyle='rgba(255,255,255,.95)';x.lineWidth=5;x.lineJoin='round';const m=40;
+  x.strokeRect(m,m,1320,840);x.beginPath();x.moveTo(700,m);x.lineTo(700,880);x.stroke();x.beginPath();x.arc(700,460,95,0,7);x.stroke();
+  x.beginPath();x.arc(700,460,7,0,7);x.fill();
+  [[m,1],[1360,-1]].forEach(([px,s])=>{x.strokeRect(s>0?px:px-230,250,230,420);x.strokeRect(s>0?px:px-95,360,95,200);
+    const cx=s>0?m+165:1360-165;x.beginPath();x.arc(cx,460,6,0,7);x.fill();
+    x.beginPath();if(s>0)x.arc(cx,460,95,-.82,.82);else x.arc(cx,460,95,Math.PI-.82,Math.PI+.82);x.stroke()});
+  [[m,m,0],[1360,m,Math.PI/2],[1360,880,Math.PI],[m,880,Math.PI*1.5]].forEach(([cx,cy,a0])=>{x.beginPath();x.arc(cx,cy,14,a0,a0+Math.PI/2);x.stroke()});
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;
+  const f=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),new THREE.MeshStandardMaterial({map:t,roughness:.95}));f.rotation.x=-Math.PI/2;f.receiveShadow=true;scene.add(f);
+  const s=new THREE.Mesh(new THREE.CircleGeometry(230,48),new THREE.MeshStandardMaterial({color:0x08170d,roughness:1}));s.rotation.x=-Math.PI/2;s.position.y=-.05;scene.add(s);
+  const netC=document.createElement('canvas');netC.width=netC.height=32;const nx=netC.getContext('2d');nx.strokeStyle='rgba(255,255,255,.9)';nx.lineWidth=2;nx.strokeRect(0,0,32,32);
+  const netT=new THREE.CanvasTexture(netC);netT.wrapS=netT.wrapT=THREE.RepeatWrapping;netT.anisotropy=4;
+  const netMat=new THREE.MeshBasicMaterial({map:netT,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false});
+  const netGeo=(()=>{const D=2.4,H=3.8,B=2.6,Z=4.2,P=[],U=[],I=[];
+    const q=(A,B2,C,E,w,h)=>{const n=P.length/3;[A,B2,C,E].forEach(p=>P.push(p[0],p[1],p[2]));U.push(0,0,w,0,w,h,0,h);I.push(n,n+1,n+2,n,n+2,n+3)};
+    q([0,H,-Z],[0,H,Z],[D,B,Z],[D,B,-Z],18.7,5.3);q([D,B,-Z],[D,B,Z],[D,0,Z],[D,0,-Z],18.7,5.8);
+    q([0,H,-Z],[D,B,-Z],[D,0,-Z],[0,0,-Z],5.3,8.4);q([0,H,Z],[D,B,Z],[D,0,Z],[0,0,Z],5.3,8.4);
+    const gm=new THREE.BufferGeometry();gm.setAttribute('position',new THREE.Float32BufferAttribute(P,3));gm.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));gm.setIndex(I);return gm})();
+  const postGeo=new THREE.CylinderGeometry(.13,.13,3.8,12),barGeo=new THREE.CylinderGeometry(.13,.13,8.7,12);
+  [-1,1].forEach(d=>{const g=new THREE.Group(),m=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5});
+    [-4.2,4.2].forEach(z=>{const p=new THREE.Mesh(postGeo,m);p.position.set(0,1.9,z);p.castShadow=true;g.add(p)});
+    const bar=new THREE.Mesh(barGeo,m);bar.rotation.x=Math.PI/2;bar.position.y=3.8;bar.castShadow=true;g.add(bar);
+    const net=new THREE.Mesh(netGeo,netMat);net.renderOrder=1;g.add(net);
+    g.position.x=d*(PW/2-1.6);g.scale.x=d;scene.add(g)});
+  /* banca para los equipos sin partido */
+  const ban=new THREE.Mesh(new THREE.BoxGeometry(60,.6,1.4),new THREE.MeshStandardMaterial({color:0x5a3b1c}));ban.position.set(0,.5,PH/2+3.4);scene.add(ban);
+})();
+
+/* Entorno aproximado inspirado en la foto: vegetación, mallas, luminarias y juegos. */
+const entorno=new THREE.Group();scene.add(entorno);
+const madera=new THREE.MeshStandardMaterial({color:0x65513b,roughness:1});
+function cilindro(r,h,material,x,y,z){const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,7),material);m.position.set(x,y,z);entorno.add(m);return m;}
+const metal=new THREE.MeshStandardMaterial({color:0x798a83,roughness:.65});
+// Malla perimetral: líneas compartidas para mantener ligero el modelo.
+const netPoints=[];
+function tramoMalla(x1,z1,x2,z2){
+ const w=Math.hypot(x2-x1,z2-z1),h=5.2,dx=(x2-x1)/w,dz=(z2-z1)/w;
+ for(let q=0;q<=w;q+=.9)netPoints.push(x1+dx*q,0,z1+dz*q,x1+dx*q,h,z1+dz*q);
+ for(let y=0;y<=h;y+=.75)netPoints.push(x1,y,z1,x2,y,z2);
+ for(let q=0;q<=w;q+=6)cilindro(.07,h,metal,x1+dx*q,h/2,z1+dz*q);
+ netPoints.push(x1,h,z1,x2,h,z2);
 }
-async function fetchCSVHoja(nombreHoja){
-  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(nombreHoja)}`);
-  if(!r.ok) throw new Error('No se pudo leer la hoja "'+nombreHoja+'".');
-  return parseCSV(await r.text());
-}
-function normTxt(t){ return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
-function pick(r, keys){ for(const k of keys){ if(r[k]!==undefined && String(r[k]).trim()!=='') return String(r[k]).trim(); } return ''; }
+tramoMalla(-39,-26,39,-26);tramoMalla(-39,26,39,26);tramoMalla(-39,-26,-39,26);tramoMalla(39,-26,39,26);
+const netGeo=new THREE.BufferGeometry();netGeo.setAttribute('position',new THREE.Float32BufferAttribute(netPoints,3));entorno.add(new THREE.LineSegments(netGeo,new THREE.LineBasicMaterial({color:0x355443,transparent:true,opacity:.42})));
+let semilla=1287;function azar(){semilla=(semilla*1664525+1013904223)>>>0;return semilla/4294967296;}
+// Carrizos altos detrás de una portería, como en la referencia.
+const canas=[];for(let i=0;i<190;i++){const z=-22+azar()*44,x=-43-azar()*2,h=4+azar()*4;canas.push(x,0,z,x+(azar()-.5),h,z+(azar()-.5));}
+const caneGeo=new THREE.BufferGeometry();caneGeo.setAttribute('position',new THREE.Float32BufferAttribute(canas,3));entorno.add(new THREE.LineSegments(caneGeo,new THREE.LineBasicMaterial({color:0xb0a260})));
+// Postes rectos con dos reflectores.
+[[-35,-27],[0,-27],[35,-27],[-35,27],[0,27],[35,27]].forEach(([x,z])=>{
+ cilindro(.12,10,metal,x,5,z);
+ for(const a of [-1,1]){const box=new THREE.Mesh(new THREE.BoxGeometry(.85,.65,.2),new THREE.MeshStandardMaterial({color:0x45554e}));box.position.set(x+a*.48,10,z);box.rotation.x=.3;entorno.add(box);const face=new THREE.Mesh(new THREE.PlaneGeometry(.68,.48),new THREE.MeshBasicMaterial({color:0xe4eeee}));face.position.set(x+a*.48,10,z+.12);face.rotation.x=.3;entorno.add(face);}
+});
+// Juego infantil azul con techo rojo, al costado de la cancha.
+const azul=new THREE.MeshStandardMaterial({color:0x0877c9,roughness:.6}),amarillo=new THREE.MeshStandardMaterial({color:0xe8ba29,roughness:.6});
+const juegos=new THREE.Group();juegos.position.set(-23,0,-30);entorno.add(juegos);
+function pieza(geo,mat,x,y,z){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);juegos.add(m);return m;}
+for(const x of [-.9,.9])for(const z of [-.9,.9])pieza(new THREE.CylinderGeometry(.06,.06,3.5,6),amarillo,x,1.75,z);
+pieza(new THREE.BoxGeometry(2,.12,2),azul,0,2.1,0);const roof=pieza(new THREE.ConeGeometry(1.7,.9,4),new THREE.MeshStandardMaterial({color:0xb42d25}),0,4,0);roof.rotation.y=Math.PI/4;
+const slide=pieza(new THREE.BoxGeometry(1,.12,3.8),azul,0,1.15,2.5);slide.rotation.x=.5;
+for(const x of [-.45,.45]){const rail=pieza(new THREE.BoxGeometry(.1,.35,3.8),azul,x,1.3,2.5);rail.rotation.x=.5;}
+for(let i=0;i<6;i++)pieza(new THREE.BoxGeometry(1.1,.07,.18),amarillo,0,.25+i*.31,-2.6+i*.26);
 
-async function cargarJugadores(){
-  S.players = {}; S.playersError = false;
+/* ---------- jugadores ---------- */
+const loader=new THREE.TextureLoader();loader.setCrossOrigin('anonymous');
+const fb=(txt,col)=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle=col;x.beginPath();x.arc(64,64,58,0,7);x.fill();x.strokeStyle='#fff';x.lineWidth=6;x.stroke();
+  x.fillStyle='#fff';x.font='bold 64px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,64,68);const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t};
+const cargar=(u,f)=>new Promise(ok=>{if(!u)return ok(f());loader.load(u,t=>{t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>ok(f()))});
+function prom(tex,def){try{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(tex.image,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,n=0;
+  for(let i=0;i<d.length;i+=4)if(d[i+3]>200){r+=d[i];g+=d[i+1];b+=d[i+2];n++}return n>8?new THREE.Color(r/n/255,g/n/255,b/n/255):def}catch(e){return def}}
+const cache={};
+function textura(t,i){return cache[t.id]||(cache[t.id]=(async()=>{const def=new THREE.Color().setHSL((i*.137)%1,.55,.42);
+  const [esc,pla]=await Promise.all([cargar(t.URL,()=>fb((t.Nombre||'?').charAt(0),'#'+def.getHexString())),cargar(t.Color_Playera,()=>null)]);
+  return {esc,pla,col:pla?prom(pla,def):def}})())}
+function texto(lineas,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+  lineas.forEach(([t,tam,col,y])=>{x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,y);x.fillStyle=col;x.fillText(t,w/2,y)});
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
+const pieles=[0xf1c9a5,0xe1ad87,0xc18b63,0xa4704c,0x8a5a3c,0x6b4430],peloCol=[0x14100e,0x2a1c13,0x4a3322,0x7a5a34,0xb08a4a,0x1c1c1c];
+const GEO={},geo=(k,f)=>GEO[k]||(GEO[k]=f());
+const esfera=()=>geo('sph',()=>new THREE.SphereGeometry(1,14,10));
+function lathe(r0,r1,len){return geo('l'+[r0,r1,len],()=>{const p=[];for(let k=0;k<=4;k++){const a=k/4*Math.PI/2;p.push(new THREE.Vector2(Math.max(.0001,r1*Math.sin(a)),-len-r1*Math.cos(a)))}for(let k=0;k<=4;k++){const a=k/4*Math.PI/2;p.push(new THREE.Vector2(Math.max(.0001,r0*Math.cos(a)),r0*Math.sin(a)))}return new THREE.LatheGeometry(p,12)})}
+function volumen(parent,mat,x,y,z,sx,sy,sz){const m=new THREE.Mesh(esfera(),mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;parent.add(m);return m;}
+function miembro(parent,mat,r0,r1,len,x,y,z){const m=new THREE.Mesh(lathe(r0,r1,len),mat);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m;}
+function telaTorso(tex,col){
+ // Se toma la zona de tela de la imagen de la playera, en vez de pegar su silueta completa.
+ const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,512,256);
+ if(tex?.image){const im=tex.image,w=im.width,h=im.height;for(let side=0;side<2;side++)x.drawImage(im,w*.20,h*.15,w*.60,h*.82,side*256,48,256,208);}
+ const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=4;map.wrapS=THREE.RepeatWrapping;return new THREE.MeshStandardMaterial({map,roughness:.9});
+}
+function camisetaMesh(mat){
+ const rings=[[1.16,.30,.18],[1.32,.285,.172],[1.48,.30,.18],[1.64,.345,.195],[1.80,.385,.19],[1.92,.37,.165],[2.00,.25,.13],[2.06,.14,.105]],verts=[],uv=[],idx=[],N=24;
+ rings.forEach(([y,rx,rz],r)=>{for(let a=0;a<=N;a++){const th=a/N*Math.PI*2;verts.push(Math.sin(th)*rx,y,Math.cos(th)*rz);const frontal=Math.cos(th)>=0;const u=(frontal?.25:.75)+Math.sin(th)*(frontal?.25:-.25);uv.push(u,(y-1.16)/.84);}});
+ for(let r=0;r<rings.length-1;r++)for(let a=0;a<N;a++){const i=r*(N+1)+a;idx.push(i,i+1,i+N+1,i+1,i+N+2,i+N+1);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return new THREE.Mesh(g,mat);
+}
+const numCache={};
+function numTex(n,claro){const k=n+(claro?'c':'o');return numCache[k]||(numCache[k]=(()=>{const c=document.createElement('canvas');c.width=64;c.height=80;const x=c.getContext('2d');x.font='bold 62px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=7;x.strokeStyle=claro?'rgba(0,0,0,.55)':'rgba(255,255,255,.7)';x.strokeText(n,32,42);x.fillStyle=claro?'#fff':'#111';x.fillText(n,32,42);const tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;return tx})())}
+async function jugador(t,i,gk){
+ const {esc,pla,col}=await textura(t,i),color=gk?new THREE.Color(gk):col,g=new THREE.Group();
+ const h=((i+1)*2654435761+(parseInt(t.id,10)||0)*40503)>>>0,estilo=(h>>>4)%6,pCol=peloCol[(h>>>9)%6],alto=.95+((h>>>13)%11)*.01,ancho=.93+((h>>>17)%12)*.012;
+ const piel=new THREE.MeshStandardMaterial({color:pieles[(h>>>2)%6],roughness:.85});
+ const tela=new THREE.MeshStandardMaterial({color,roughness:.9}),shortMat=new THREE.MeshStandardMaterial({color:color.clone().multiplyScalar(.48),roughness:.9});
+ const sock=new THREE.MeshStandardMaterial({color:gk?0x1d1d1d:color.clone().lerp(new THREE.Color(0xffffff),.45),roughness:.95});
+ const boot=new THREE.MeshStandardMaterial({color:[0x1b1f1f,0xeeeecc,0xd8412a,0x2a6fd8][(h>>>6)%4],roughness:.55});
+ const pelo=new THREE.MeshStandardMaterial({color:pCol,roughness:.95}),ojo=new THREE.MeshBasicMaterial({color:0x1a1210});
+ const guante=gk?new THREE.MeshStandardMaterial({color:0xf1f1e6,roughness:.7}):piel;
+ const cuerpo=new THREE.Group();cuerpo.scale.set(ancho,alto,ancho);g.add(cuerpo);
+ volumen(cuerpo,shortMat,0,1.12,0,.30,.20,.18);
+ // Torso y todo lo de arriba cuelga de "up", que gira desde la cadera (inclinación al correr).
+ const up=new THREE.Group();up.position.y=1.15;cuerpo.add(up);
+ const torso=camisetaMesh(telaTorso(gk?null:pla,color));torso.castShadow=true;torso.position.y=-1.15;up.add(torso);
+ const cuello=new THREE.Mesh(geo('cuello',()=>new THREE.CylinderGeometry(.07,.085,.17,12)),piel);cuello.position.y=.92;up.add(cuello);
+ const collar=new THREE.Mesh(geo('collar',()=>new THREE.TorusGeometry(.135,.027,6,18)),new THREE.MeshStandardMaterial({color:0xe6e8d9,roughness:.8}));collar.rotation.x=Math.PI/2;collar.scale.set(1,.8,1);collar.position.y=.89;up.add(collar);
+ const lum=color.r*.3+color.g*.59+color.b*.11,num=gk?1:2+(h>>>3)%9;
+ const nm=new THREE.Mesh(geo('num',()=>new THREE.PlaneGeometry(.24,.3)),new THREE.MeshBasicMaterial({map:numTex(num,lum<.55),transparent:true}));nm.position.set(0,.5,-.2);nm.rotation.y=Math.PI;up.add(nm);
+ const rodillas=[],codos=[];
+ function pierna(sign){const hip=new THREE.Group();hip.position.set(sign*.16,1.15,0);cuerpo.add(hip);
+  miembro(hip,piel,.118,.092,.46,0,-.1,0);
+  const sh=new THREE.Mesh(geo('short',()=>new THREE.CylinderGeometry(.145,.17,.34,14,1,true)),shortMat);sh.position.y=-.15;sh.castShadow=true;hip.add(sh);
+  const knee=new THREE.Group();knee.position.y=-.51;hip.add(knee);volumen(knee,piel,0,0,.005,.098,.098,.105);
+  miembro(knee,piel,.088,.062,.3,0,-.02,0);miembro(knee,sock,.094,.073,.24,0,-.2,0);
+  volumen(knee,boot,0,-.57,.07,.095,.07,.21);
+  rodillas.push(knee);return hip;
+ }
+ const piernaI=pierna(-1),piernaD=pierna(1);
+ function brazo(sign){const shoulder=new THREE.Group();shoulder.position.set(sign*.37,.76,0);shoulder.rotation.z=sign*.16;up.add(shoulder);
+  volumen(shoulder,tela,0,0,0,.125,.125,.125);miembro(shoulder,tela,.12,.1,.15,sign*.01,-.04,0);miembro(shoulder,piel,.083,.068,.22,sign*.02,-.2,0);
+  const elbow=new THREE.Group();elbow.position.set(sign*.025,-.45,0);shoulder.add(elbow);volumen(elbow,piel,0,0,0,.075,.078,.075);
+  miembro(elbow,piel,.07,.05,.2,0,-.03,0);volumen(elbow,guante,0,-.34,.03,.058,.088,.04);volumen(elbow,guante,-sign*.05,-.3,.045,.022,.045,.022);
+  elbow.rotation.x=-.18;codos.push(elbow);return shoulder;
+ }
+ const brazoI=brazo(-1),brazoD=brazo(1);
+ // Cabeza: mandíbula, nariz, orejas, ojos discretos y cabello en varios estilos.
+ const cabeza=new THREE.Group();cabeza.position.set(0,1.15,0);up.add(cabeza);
+ const crane=new THREE.Mesh(geo('cabeza',()=>new THREE.SphereGeometry(1,22,16)),piel);crane.position.y=.04;crane.scale.set(.165,.215,.175);cabeza.add(crane);
+ volumen(cabeza,piel,0,-.1,.02,.125,.115,.135);volumen(cabeza,piel,0,.01,.17,.027,.04,.04);
+ volumen(cabeza,piel,-.168,.03,0,.028,.052,.03);volumen(cabeza,piel,.168,.03,0,.028,.052,.03);
+ volumen(cabeza,ojo,-.06,.075,.158,.017,.013,.012);volumen(cabeza,ojo,.06,.075,.158,.017,.013,.012);
+ const cap=(sx,sy,sz,y,z,tl)=>{const m=new THREE.Mesh(geo('cap'+tl,()=>new THREE.SphereGeometry(1,18,10,0,Math.PI*2,0,tl)),pelo);m.position.set(0,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;cabeza.add(m)};
+ if(estilo==0)cap(.172,.222,.182,.045,0,1.1);
+ else if(estilo==1||estilo==2){cap(.18,.23,.19,.06,-.005,1.28);if(estilo==2){volumen(cabeza,pelo,0,-.05,-.11,.15,.21,.1);volumen(cabeza,pelo,-.14,-.02,-.04,.04,.15,.09);volumen(cabeza,pelo,.14,-.02,-.04,.04,.15,.09)}}
+ else if(estilo==3){cap(.2,.235,.205,.085,-.01,1.38);}
+ if(!pla||gk){const badge=new THREE.Mesh(new THREE.PlaneGeometry(.115,.135),new THREE.MeshStandardMaterial({map:esc,transparent:true,roughness:.8}));badge.position.set(-.16,.62,.2);up.add(badge);}
+ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:esc,transparent:true,depthTest:false}));sp.scale.set(1.15,1.15,1);sp.position.y=3.3;sp.renderOrder=2;g.add(sp);
+ const j={g,t,fase:Math.random()*9,pI:piernaI,pD:piernaD,bI:brazoI,bD:brazoD,cab:cabeza,rodillas,codos,up,cy:1.15};
+ const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,4.4,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.1;hit.userData.j=j;g.add(hit);j.hit=hit;return j;
+}
+
+
+/* ---------- el domingo elegido en la cancha ---------- */
+const grupo=new THREE.Group();scene.add(grupo);let anim=[],hits=[],gen=0;
+function limpiar(){while(grupo.children.length)grupo.remove(grupo.children[0]);anim=[];hits=[]}
+async function dibujar(f){
+  const mi=++gen;cur=f;limpiar();
+  document.querySelectorAll('#fechas button').forEach(b=>b.classList.toggle('on',b.dataset.f==f));
+  const ms=P.filter(p=>p.Fecha==f).sort((a,b)=>horaMin(a.Hora)-horaMin(b.Hora)||(a.Cancha||'').localeCompare(b.Cancha||''));
+  const cols=4,filas=Math.ceil(ms.length/cols),juegan=new Set();
+  for(let i=0;i<ms.length;i++){
+    const p=ms[i],tl=T[p.Equipo_Local],tv=T[p.Equipo_Visita];if(!tl||!tv)continue;
+    const cx=(i%cols-(Math.min(cols,ms.length)-1)/2)*17,cz=(Math.floor(i/cols)-(filas-1)/2)*15-3;
+    const [a,b]=await Promise.all([jugador(tl,Math.max(0,teams.indexOf(tl))),jugador(tv,Math.max(0,teams.indexOf(tv)))]);if(mi!=gen)return;
+    juegan.add(tl.id);juegan.add(tv.id);
+    const jug=p.Estado=='Jugado'&&p.Goles_Local!==''&&p.Goles_Visita!=='',gl=+p.Goles_Local,gv=+p.Goles_Visita;
+    a.g.position.set(cx-3.3,0,cz);a.g.rotation.y=Math.PI/2;b.g.position.set(cx+3.3,0,cz);b.g.rotation.y=-Math.PI/2;
+    a.res=jug?(gl>gv?1:gl<gv?0:.5):null;b.res=jug?(gv>gl?1:gv<gl?0:.5):null;
+    [a,b].forEach(j=>{grupo.add(j.g);hits.push(j.hit);anim.push(j)});
+    a.p=b.p=p;const mh=new THREE.Mesh(new THREE.CylinderGeometry(6.5,6.5,8,16),new THREE.MeshBasicMaterial({visible:false}));mh.position.set(cx,4,cz);mh.userData.p=p;grupo.add(mh);hits.push(mh);
+    const col=jug?'#ddc530':'#5eb50d';
+    const pl=texto([[jug?`${gl} - ${gv}`:'VS',jug?92:80,col,52],[jug?'Jugado':(hora(p.Hora)+(p.Cancha?' · '+p.Cancha:'')),34,'#f3f5ee',118]],512,150);
+    pl.scale.set(6.6,1.93,1);pl.position.set(cx,6,cz);grupo.add(pl);
+    const ring=new THREE.Mesh(new THREE.RingGeometry(6.4,6.7,48),new THREE.MeshBasicMaterial({color:jug?0xddc530:0x5eb50d,transparent:true,opacity:.7,side:THREE.DoubleSide}));
+    ring.rotation.x=-Math.PI/2;ring.position.set(cx,.06,cz);grupo.add(ring);
+  }
+  const banca=teams.filter(t=>!juegan.has(t.id));
+  for(let k=0;k<banca.length;k++){
+    const t=banca[k],j=await jugador(t,teams.indexOf(t));if(mi!=gen)return;
+    const r=R[t.id],hoy=r&&r.fechas.includes(f);
+    j.g.position.set((k-(banca.length-1)/2)*Math.min(7,50/banca.length),.55,PH/2+3.1);j.g.rotation.y=Math.PI;j.sentado=true;
+    j.pI.rotation.x=-1.45;j.pD.rotation.x=-1.45;
+    const z=texto([['Zzz',90,'#9db38c',48],[t.id==='18'&&f==='20/09/2026'?'Descanso inicial':'Sin partido',44,hoy?'#ddc530':'#f3f5ee',118]],384,150);z.scale.set(4.6,1.8,1);z.position.set(0,5.9,0);j.g.add(z);
+    grupo.add(j.g);hits.push(j.hit);anim.push(j);
+  }
+  if(!sel)objetivo.set(0,0,innerWidth<=760?0:5);
+}
+
+/* ---------- cámara y controles ---------- */
+const cam={th:innerWidth<=760?1.5:.25,ph:1.0,d:innerWidth<=760?100:70,o:new THREE.Vector3(0,0,innerWidth<=760?0:5)},meta={th:innerWidth<=760?1.5:.25,ph:1.0,d:innerWidth<=760?100:70},objetivo=new THREE.Vector3(0,0,innerWidth<=760?0:5);
+const ptr=new Map();let mov=0,pinch=0,sel=null,idle=0;const cv=renderer.domElement;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});mov=0;idle=0;if(ptr.size==2){const[a,b]=[...ptr.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y)}});
+cv.addEventListener('pointermove',e=>{const p=ptr.get(e.pointerId);if(!p)return;idle=0;
+  if(ptr.size==2){p.x=e.clientX;p.y=e.clientY;const[a,b]=[...ptr.values()],n=Math.hypot(a.x-b.x,a.y-b.y);meta.d=Math.min(110,Math.max(9,meta.d*pinch/n));pinch=n;mov=99;return}
+  const dx=e.clientX-p.x,dy=e.clientY-p.y;mov+=Math.abs(dx)+Math.abs(dy);p.x=e.clientX;p.y=e.clientY;meta.th-=dx*.006;meta.ph=Math.min(1.45,Math.max(.25,meta.ph-dy*.005))});
+cv.addEventListener('pointerup',e=>{ptr.delete(e.pointerId);if(mov<8&&!ptr.size)tocar(e.clientX,e.clientY)});
+cv.addEventListener('pointercancel',e=>ptr.delete(e.pointerId));
+cv.addEventListener('wheel',e=>{e.preventDefault();meta.d=Math.min(110,Math.max(9,meta.d*(1+e.deltaY*.001)))},{passive:false});
+const ray=new THREE.Raycaster();
+function tocar(x,y){ray.setFromCamera(new THREE.Vector2(x/innerWidth*2-1,-(y/innerHeight)*2+1),camera);const hs=ray.intersectObjects(hits),pj=hs.find(h=>h.object.userData.j),pm=hs.find(h=>h.object.userData.p||(h.object.userData.j&&h.object.userData.j.p)),mp=pm&&(pm.object.userData.p||pm.object.userData.j.p);
+  if(mp&&dbl('p'+mp.ID_Partido))return jugarPartido(mp.ID_Partido);elegir(pj?pj.object.userData.j.t:null)}
+addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.fov=innerWidth<=760?65:46;camera.updateProjectionMatrix();meta.th=innerWidth<=760?1.5:.25;if(!sel)meta.d=innerWidth<=760?100:70;if(cur&&!SIM)dibujar(cur).then(panel)});
+
+/* ---------- interfaz ---------- */
+const fila=(p,conFecha)=>{const tl=T[p.Equipo_Local],tv=T[p.Equipo_Visita],jug=p.Estado=='Jugado'&&p.Goles_Local!=='';
+  return `<div class="fila" data-f="${esc(p.Fecha)}" data-p="${esc(p.ID_Partido)}"><img src="${esc(tl&&tl.URL)}" alt=""><div class="m">${esc(tl?tl.Nombre:'?')}<small>vs ${esc(tv?tv.Nombre:'Por definir')}${conFecha&&p.Fecha?' · '+esc(p.Fecha):''}${!jug&&p.Hora?' · '+esc(hora(p.Hora)):''}</small></div>
+  <span class="sc">${jug?esc(p.Goles_Local)+' - '+esc(p.Goles_Visita):'vs'}</span><span class="chip ${jug?'c1':p.Estado=='Programado'?'c2':'c3'}">${jug?'Jugado':p.Estado=='Programado'?'Programado':'Pendiente'}</span><button class="ver-partido" data-ver="${esc(p.ID_Partido)}">Ver partido</button></div>`};
+function enlazarPartidos(root){root.querySelectorAll('[data-ver]').forEach(e=>e.onclick=ev=>{ev.stopPropagation();jugarPartido(e.dataset.ver)});}
+function panel(){
+ const jug=P.filter(p=>NL7Juegos.estado(p)==='jugado').sort((a,b)=>tf(b.Fecha)-tf(a.Fecha)),prog=P.filter(p=>NL7Juegos.estado(p)==='programado').sort((a,b)=>tf(a.Fecha)-tf(b.Fecha)),sin=P.filter(p=>NL7Juegos.estado(p)==='pendiente');let h='';
+ if(tab==='dom'){const ms=P.filter(p=>p.Fecha===cur).sort((a,b)=>horaMin(a.Hora)-horaMin(b.Hora)||(a.Cancha||'').localeCompare(b.Cancha||'')),jg=new Set(ms.flatMap(p=>[p.Equipo_Local,p.Equipo_Visita])),b=teams.filter(t=>!jg.has(t.id));h=`<div class="tit">${esc(cur||'')} · ${ms.length} partidos</div>`+ms.map(p=>fila(p,0)).join('')+'<div class="tit">Sin partido en esta fecha</div>'+b.map(t=>`<div class="fila" data-t="${t.id}"><img src="${esc(t.URL)}" alt=""><div class="m">${esc(t.Nombre)}<small>${t.id==='18'&&cur==='20/09/2026'?'Descanso inicial registrado':'Sin partido registrado para esta fecha'}</small></div></div>`).join('');}
+ else if(tab==='jug')h=`<div class="tit">${jug.length} partidos jugados</div>`+jug.map(p=>fila(p,1)).join('');
+ else if(tab==='pen')h=`<div class="tit">Programados (${prog.length})</div>`+prog.map(p=>fila(p,1)).join('')+`<div class="tit">Pendientes registrados (${sin.length})</div>`+sin.map(p=>fila(p,1)).join('');
+ else h='<div class="tit">Control de juegos por equipo</div>'+teams.map(t=>`<div class="fila" data-t="${t.id}"><img src="${esc(t.URL)}" alt=""><div class="m">${esc(t.Nombre)}<small>${esc(resumenTexto(t))}</small></div></div>`).join('');
+ $('cont').innerHTML=h;enlazarPartidos($('cont'));
+ $('cont').querySelectorAll('[data-f]').forEach(e=>e.onclick=()=>{if(e.dataset.p&&dbl('p'+e.dataset.p))return jugarPartido(e.dataset.p);if(e.dataset.f&&e.dataset.f!==cur)dibujar(e.dataset.f).then(panel)});
+ $('cont').querySelectorAll('[data-t]').forEach(e=>e.onclick=()=>{elegir(T[e.dataset.t]);document.body.classList.remove('ab')});
+ document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.k===tab));
+}
+function elegir(t){
+ sel=t;document.body.classList.toggle('sel',!!t);if(!t){meta.d=innerWidth<=760?100:70;objetivo.set(0,0,innerWidth<=760?0:5);return;}
+ meta.d=innerWidth<=760?30:22;meta.ph=Math.min(meta.ph,1.15);const j=anim.find(x=>x.t.id===t.id);if(j)objetivo.copy(j.g.position);
+ const mios=P.filter(p=>NL7Juegos.involucra(p,t.id)),jug=mios.filter(p=>NL7Juegos.estado(p)==='jugado'),prog=mios.filter(p=>NL7Juegos.estado(p)==='programado'),sin=mios.filter(p=>NL7Juegos.estado(p)==='pendiente'),{r,contado,b}=resumenEquipo(t);
+ const lista=a=>a.map(p=>{const rv=T[p.Equipo_Local===t.id?p.Equipo_Visita:p.Equipo_Local];return `<div class="fila"><img src="${esc(rv?.URL||'')}" alt=""><div class="m">${esc(rv?.Nombre||'Por definir')}<small>${esc(juegoTexto(p,t))} · ID ${esc(p.ID_Partido)}<br>${esc(p.Fecha||'Sin fecha')}${p.Hora?' · '+esc(hora(p.Hora)):''}${NL7Juegos.estado(p)==='jugado'?' · '+esc(p.Goles_Local)+' - '+esc(p.Goles_Visita):''}${p.Ganado_Por==='Penales'?' · Penales':''}</small></div><button class="ver-partido" data-ver="${esc(p.ID_Partido)}">Ver partido</button></div>`}).join('')||'<p class="vacio">Ninguno</p>';
+ $('card').innerHTML=`<button id="x" aria-label="Cerrar">×</button><div class="cab"><img src="${esc(t.URL)}" alt=""><div><h2>${esc(t.Nombre)}</h2><div class="ds">${esc(t.Descripción||'')}</div></div></div><div class="desc"><b>${esc(resumenTexto(t))}</b><br>${r.local} como local · ${r.visita} como visitante · ${r.programados} programados${b.excedentes?'<br>Hay '+b.excedentes+' cruce(s) de más registrado(s), por revisar.':''}${contado?'<br>El juego contado contra Puebla 450 no fue disputado.':''}${t.id==='18'?'<br>Descanso inicial: 20/09/2026.':''}</div><div class="tit">Jugados (${jug.length})</div>${lista(jug)}<div class="tit">Programados (${prog.length})</div>${lista(prog)}<div class="tit">Pendientes registrados (${sin.length})</div>${lista(sin)}`;
+ $('x').onclick=()=>elegir(null);enlazarPartidos($('card'));
+}
+$('vistaGeneral').onclick=()=>{elegir(null);meta.th=innerWidth<=760?1.5:.25;meta.ph=1;idle=0;};
+$('btnL').onclick=()=>document.body.classList.toggle('ab');
+
+/* ---------- partido en vivo: doble clic / doble toque a un encuentro ---------- */
+let SIM=null,simSp=1,lastTap={k:'',t:0};
+const dbl=k=>{const n=performance.now(),r=lastTap.k===k&&n-lastTap.t<450;lastTap={k,t:r?0:n};return r};
+const sg=new THREE.Group();scene.add(sg);
+const balon=new THREE.Mesh(new THREE.SphereGeometry(.17,16,12),new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5}));balon.castShadow=true;balon.visible=false;scene.add(balon);
+(function(){const c=document.createElement('canvas');c.width=128;c.height=64;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,128,64);x.fillStyle='#111';[[20,20],[64,12],[108,22],[40,48],[88,50]].forEach(([a,b])=>{x.beginPath();x.arc(a,b,9,0,7);x.fill()});balon.material.map=new THREE.CanvasTexture(c)})();
+const FORM=[[-33,0],[-24,-8],[-24,8],[-14,-12],[-14,0],[-14,12],[-6,0]],GKC=[0xe8a317,0x2fb8e0];
+const mkRnd=s=>()=>(s=s*16807%2147483647)/2147483647;
+function aviso(h,ms){const b=$('gol');b.innerHTML=h;b.classList.remove('on');void b.offsetWidth;b.classList.add('on');clearTimeout(aviso.t);if(ms)aviso.t=setTimeout(()=>b.classList.remove('on'),ms)}
+async function jugarPartido(id){
+  const p=P.find(x=>x.ID_Partido==id),tl=p&&T[p.Equipo_Local],tv=p&&T[p.Equipo_Visita];
+  if(!tl||!tv||SIM)return;
+  SIM={busy:true};const sesion=SIM;$('sP').textContent='Pausar';elegir(null);document.body.classList.add('sim');grupo.visible=false;
+  const mk=async(t,e)=>{const dir=e?-1:1,pj=[];
+    for(let k=0;k<7;k++){const j=await jugador(t,k+e,k?0:GKC[e]);if(SIM!==sesion)return null;j.e=e;j.i=k;j.dir=dir;j.bx=FORM[k][0]*dir;j.bz=FORM[k][1]*dir+(e?2.5:-2.5);
+      j.g.position.set(j.bx,0,j.bz);j.g.rotation.y=dir*Math.PI/2;j.cel=0;sg.add(j.g);pj.push(j)}
+    return{e,dir,t,pj}};
+  const eq=[await mk(tl,0),await mk(tv,1)];
+  if(SIM!==sesion)return;
+  const jug=p.Estado=='Jugado'&&p.Goles_Local!==''&&p.Goles_Visita!=='',gl=jug?+p.Goles_Local:0,gv=jug?+p.Goles_Visita:0,rnd=mkRnd(+p.ID_Partido*7919+13),pl=[];
+  for(let i=0;i<gl;i++)pl.push({e:0,r:'gol'});for(let i=0;i<gv;i++)pl.push({e:1,r:'gol'});
+  const ex=jug?Math.max(4,Math.round((gl+gv)*.8)):10;
+  for(let i=0;i<ex;i++)pl.push({e:rnd()<.5?0:1,r:['atajada','fuera','robo'][Math.floor(rnd()*3)]});
+  for(let i=pl.length-1;i>0;i--){const k=Math.floor(rnd()*(i+1));[pl[i],pl[k]]=[pl[k],pl[i]]}
+  Object.assign(SIM,{busy:false,run:true,p,eq,pl,idx:0,sc:[0,0],rnd,seg:null,q:[],hold:null,atk:0,pausa:1.2,fin:false,m:0,centro:false,tl,tv});
+  balon.visible=true;balon.position.set(0,.17,0);
+  $('mL').src=tl.URL||'';$('mV').src=tv.URL||'';$('nL').textContent=tl.Nombre;$('nV').textContent=tv.Nombre;
+  meta.d=innerWidth<=760?100:62;meta.ph=.9;objetivo.set(0,0,0);
+  aviso(jug?'¡Inicia el partido!':'Aún sin resultado<br><small>Demostración sin goles</small>',2200);
+}
+function salirPartido(){if(!SIM)return;SIM.run=false;SIM=null;while(sg.children.length)sg.remove(sg.children[0]);balon.visible=false;grupo.visible=true;
+  document.body.classList.remove('sim');$('gol').classList.remove('on');objetivo.set(0,0,innerWidth<=760?0:5);meta.d=innerWidth<=760?100:70;meta.ph=1}
+function nuevaJugada(){
+  const S=SIM,q=S.pl[S.idx];if(!q)return final();
+  S.idx++;S.atk=q.e;const E=S.eq[q.e],O=S.eq[1-q.e],d=E.dir,r=S.rnd;
+  if(S.centro){balon.position.set(0,.17,0);S.centro=false}
+  const mids=[3,4,5].sort(()=>r()-.5),same=S.hold&&S.hold.e==q.e,st=same?S.hold:E.pj[Math.floor(r()*3)];
+  const ch=[st,E.pj[mids[0]],E.pj[mids[1]],E.pj[6]].filter((j,i,a)=>a.indexOf(j)==i);S.hold=null;
+  const seg=(to,dur,arc,fin,ini)=>S.q.push({to,dur,arc,fin,ini});
+  ch.forEach((j,i)=>{if(!i&&same)return;const dist=Math.hypot(balon.position.x-j.g.position.x,balon.position.z-j.g.position.z);
+    seg(j,i?.7+r()*.3:.5+dist/35,1.2+r(),null)});
+  const sh=ch[ch.length-1],gk=O.pj[0];
+  if(q.r=='gol'){const z=(r()<.5?-1:1)*(1.2+r()*2.6),y=.6+r()*2.4;
+    seg({x:d*36.3,y,z},.75,.4,()=>gol(q.e),()=>{gk.dv={t:0,s:Math.sign(z)}})}
+  else if(q.r=='atajada'){seg(gk,.75,.3,()=>{S.hold=gk;S.q.push({to:null,dur:.9})},()=>{gk.dv={t:0,s:Math.sign(sh.g.position.z-gk.g.position.z)||1}})}
+  else if(q.r=='fuera'){seg({x:d*39,y:r()<.5?5:1,z:(r()<.5?-1:1)*(6+r()*3)},.8,.5,()=>{S.pausa=.7})}
+  else{const it=O.pj[3+Math.floor(r()*3)];seg(it,.7,1,()=>{S.hold=it})}
+}
+function gol(e){const S=SIM;S.sc[e]++;S.hold=null;S.pausa=.8;S.centro=true;S.regreso=9;
+  S.eq[e].pj.forEach((j,i)=>{if(i)j.cel=1.8});S.eq[1-e].pj.forEach(j=>j.cel=0);
+  aviso('¡GOOOL!<br><small>'+esc(S.eq[e].t.Nombre)+'</small>',2400)}
+function final(){const S=SIM,[a,b]=S.sc;let w=a>b?0:b>a?1:-1,n='';
+  if(w<0&&S.p.Ganado_Por=='Penales'&&S.p.Penales){w=S.p.Penales==S.p.Equipo_Local?0:1;n='<br><small>Gana en penales: '+esc(S.eq[w].t.Nombre)+'</small>'}
+  S.fin=true;S.finT=0;S.hold=null;S.m=60;S.regreso=0;
+  S.eq.forEach(E=>E.pj.forEach(j=>{if(E.e==w)j.cel=1e9;else if(w>=0)j.lose=true}));
+  aviso('FINAL '+a+' - '+b+(w>=0&&!n?'<br><small>Gana '+esc(S.eq[w].t.Nombre)+'</small>':n||'<br><small>Empate</small>'))}
+function simStep(dt){
+  const S=SIM;dt*=simSp;if(S.fin)S.finT+=dt;
+  if(!S.fin){
+    if(S.seg){const g=S.seg;g.t+=dt;const k=Math.min(1,g.t/g.dur);
+      if(g.to){const e=g.to.g?g.to.g.position:g.to,y1=g.to.g?.17:g.to.y;
+        balon.position.set(g.f.x+(e.x-g.f.x)*k,g.f.y+(y1-g.f.y)*k+Math.sin(k*Math.PI)*g.arc,g.f.z+(e.z-g.f.z)*k);balon.rotation.x+=dt*9}
+      else if(S.hold){const h=S.hold.g.position;balon.position.set(h.x,1.3,h.z)}
+      if(k>=1){S.seg=null;g.fin&&g.fin()}}
+    else if(S.q.length){S.seg=S.q.shift();S.seg.t=0;S.seg.f=balon.position.clone();S.seg.ini&&S.seg.ini();
+      if(S.seg.to){let kj=null,kd=4;S.eq[0].pj.concat(S.eq[1].pj).forEach(o=>{const d=Math.hypot(o.g.position.x-balon.position.x,o.g.position.z-balon.position.z);if(d<kd&&!o.dv){kd=d;kj=o}});if(kj)kj.kick=.32}}
+    else if(S.regreso>0){}
+    else if(S.pausa>0)S.pausa-=dt;else nuevaJugada();
+  }
+  S.m+=((S.fin?60:S.idx/S.pl.length*60)-S.m)*Math.min(1,dt*1.2);
+  const all=S.eq[0].pj.concat(S.eq[1].pj),bp=balon.position;S.tt=(S.tt||0)+dt;
+  if(!S.fin&&!(S.regreso>0))[0,1].forEach(e=>{S.eq[e].pj.slice(1).sort((a,b)=>Math.hypot(a.g.position.x-bp.x,a.g.position.z-bp.z)-Math.hypot(b.g.position.x-bp.x,b.g.position.z-bp.z)).forEach((j,k)=>{j.pr=k<2})});
+  if(S.regreso>0){if(S.centro&&S.regreso<7.4){balon.position.set(0,.17,0);S.centro=false}
+    if(all.every(j=>!(j.cel>0)&&!j.dv&&Math.hypot(j.g.position.x-j.bx,j.g.position.z-j.bz)<1.3))S.regreso=0;else S.regreso-=dt}
+  all.forEach(j=>{const g=j.g,p=g.position;
+    if(j.dv){j.dv.t+=dt;const t=j.dv.t,a=Math.min(1,t/.3)*(t>1.3?Math.max(0,1-(t-1.3)/.4):1);
+      g.rotation.z=j.dv.s*j.dir*1.25*a;j.bI.rotation.z=-2.3*a;j.bD.rotation.z=2.3*a;if(t<.4)p.z=Math.max(-5.5,Math.min(5.5,p.z+j.dv.s*dt*7));if(t>1.7){j.dv=null;g.rotation.z=0}return}
+    if(j.cel>0){j.cel-=dt;j.fase+=dt*8;const s=Math.sin(j.fase);j.bI.rotation.z=-2.6-s*.3;j.bD.rotation.z=2.6+s*.3;g.position.y=Math.abs(Math.sin(j.fase*.75))*.5;j.up.rotation.x=-.12;j.rodillas[0].rotation.x=j.rodillas[1].rotation.x=.25+Math.max(0,-Math.sin(j.fase*.75))*.5;return}
+    g.position.y=0;j.bI.rotation.z=-.16;j.bD.rotation.z=.16;
+    let tx,tz;
+    const rg=S.regreso>0&&!S.fin;
+    if(rg){tx=j.bx;tz=j.bz}
+    else if(!j.i){tx=j.bx;tz=Math.max(-3.5,Math.min(3.5,bp.z*.35))}
+    else{const att=S.atk==j.e&&!S.fin,adv=j.i>=6?(att?22:5):j.i>=3?(att?15:3):(att?8:-1);
+      if(j.pr&&!S.fin){tx=bp.x-j.dir*1.5;tz=bp.z+(j.i%2?1.2:-1.2)}
+      else{tx=j.bx+j.dir*adv;tx+=(bp.x-tx)*.3;tz=j.bz+(bp.z-j.bz)*.45+Math.sin(S.tt*.8+j.i*1.7)*2.2}}
+    if(S.fin){if(j.lose&&S.finT>2.2){tx=p.x;tz=(j.bz>=0?1:-1)*26.2}else[tx,tz]=[p.x,p.z]}
+    const dx=tx-p.x,dz=tz-p.z,dist=Math.hypot(dx,dz),v=dist>.4?Math.min(dist*2.5,j.lose?3.2:(rg?6.5:(j.i?(j.pr?9:7):3))):0;
+    if(v>0){p.x+=dx/dist*v*dt;p.z+=dz/dist*v*dt}
+    all.forEach(o=>{if(o!==j){const a=p.x-o.g.position.x,b=p.z-o.g.position.z,l=Math.hypot(a,b);if(l<2&&l>.01){p.x+=a/l*(2-l)*dt*4;p.z+=b/l*(2-l)*dt*4}}});
+    p.x=Math.max(-36,Math.min(36,p.x));const zl=j.lose?27:23;p.z=Math.max(-zl,Math.min(zl,p.z));
+    const ang=j.i?(v>.5?Math.atan2(dx,dz):Math.atan2(bp.x-p.x,bp.z-p.z)):j.dir*Math.PI/2;let da=ang-g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));g.rotation.y+=da*Math.min(1,dt*8);
+    j.fase+=dt*(2+v*1.1);const f=j.fase*1.6,mv=v>.5?Math.min(1,v/6):0,sw=Math.sin(f)*(mv?.55+mv*.3:.06);
+    j.pI.rotation.x=sw;j.pD.rotation.x=-sw;const kf=mv*1.05;
+    j.rodillas[0].rotation.x=Math.max(0,-Math.cos(f))*kf+.04;j.rodillas[1].rotation.x=Math.max(0,Math.cos(f))*kf+.04;
+    const ab=.9*(.4+mv*.6);j.bI.rotation.x=-sw*ab;j.bD.rotation.x=sw*ab;j.codos[0].rotation.x=j.codos[1].rotation.x=-.2-mv*.85;
+    j.up.rotation.x+=((j.lose?.3:mv*.16)-j.up.rotation.x)*Math.min(1,dt*6);j.up.rotation.y=Math.sin(f)*.14*mv;
+    if(j.kick>0){j.kick-=dt;const k=1-Math.max(0,j.kick)/.32;j.pD.rotation.x=-1.2*Math.sin(Math.PI*k)+(k<.4?.6*Math.sin(Math.PI*Math.min(1,k*2.5)):0);j.rodillas[1].rotation.x=.3+(k<.5?.6*Math.sin(Math.PI*k):0)}
+    g.position.y=Math.abs(Math.cos(f))*.06*mv;
+    j.cab.position.y=j.cy+Math.abs(Math.cos(f))*.03*mv;j.cab.rotation.x=j.lose?.45:0});
+  $('mS').textContent=S.sc[0]+' - '+S.sc[1];$('mT').textContent=S.fin?'FINAL':"Min "+Math.round(S.m)+"'";
+}
+$('sP').onclick=()=>{if(SIM&&!SIM.busy){SIM.run=!SIM.run;$('sP').textContent=SIM.run?'Pausar':'Continuar'}};
+$('sV').onclick=salirPartido;
+$('sR').onclick=()=>{if(!SIM||SIM.busy)return;const id=SIM.p.ID_Partido;salirPartido();jugarPartido(id)};
+$('sX').onclick=()=>{simSp=simSp==1?2:simSp==2?4:1;$('sX').textContent='×'+simSp};
+
+/* ---------- animación ---------- */
+const reloj=new THREE.Clock(),reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function animar(){
+  requestAnimationFrame(animar);const dt=Math.min(reloj.getDelta(),.05),t=reloj.elapsedTime;
+  if(SIM&&SIM.run)simStep(dt);
+  if(!reduce&&!SIM)anim.forEach(j=>{j.fase+=dt*2.4;const s=Math.sin(j.fase);
+    if(j.sentado){j.cab.position.y=j.cy+Math.sin(t*1.2+j.fase)*.012;j.rodillas[0].rotation.x=j.rodillas[1].rotation.x=1.5;j.up.rotation.x=-.06+Math.sin(t*1.1+j.fase)*.015;return}
+    j.pI.rotation.x=s*.07;j.pD.rotation.x=-s*.07;j.rodillas[0].rotation.x=.05+Math.max(0,-Math.cos(j.fase))*.12;j.rodillas[1].rotation.x=.05+Math.max(0,Math.cos(j.fase))*.12;j.codos[0].rotation.x=j.codos[1].rotation.x=-.2;j.up.rotation.z=s*.025;j.up.rotation.y=s*.04;j.cab.position.y=j.cy+Math.abs(Math.cos(j.fase))*.015;
+    if(j.res===1){j.bI.rotation.z=-2.6-s*.3;j.bD.rotation.z=2.6+s*.3;j.g.position.y=Math.abs(Math.sin(j.fase*1.5))*.5;j.up.rotation.x=-.1}
+    else if(j.res===0){j.cab.rotation.x=.45;j.up.rotation.x=.22;j.bI.rotation.x=.1;j.bD.rotation.x=.1}
+    else{j.bI.rotation.z=-.16;j.bD.rotation.z=.16;j.bI.rotation.x=-s*.2;j.bD.rotation.x=s*.2}});
+  if(sel){const j=anim.find(x=>x.t===sel);if(j)objetivo.set(j.g.position.x,0,j.g.position.z)}
+  idle+=dt;if(!sel&&!reduce&&idle>4&&!ptr.size)meta.th+=dt*.05;
+  const k=Math.min(1,dt*4);cam.th+=(meta.th-cam.th)*k;cam.ph+=(meta.ph-cam.ph)*k;cam.d+=(meta.d-cam.d)*k;cam.o.lerp(objetivo,k);
+  camera.position.set(cam.o.x+cam.d*Math.sin(cam.ph)*Math.sin(cam.th),cam.d*Math.cos(cam.ph)+1.5,cam.o.z+cam.d*Math.sin(cam.ph)*Math.cos(cam.th));
+  camera.lookAt(cam.o.x,sel?2:0,cam.o.z);renderer.render(scene,camera);
+}
+
+/* ---------- arranque ---------- */
+(async()=>{
   try{
-    const filas = await fetchCSVHoja('Jugadores');
-    const porNombre = {};
-    Object.values(S.teams).forEach(t=>{ porNombre[normTxt(t.nombre)] = String(t.id); });
-    filas.forEach(r=>{
-      const nombre = pick(r,['nombre','jugador']);
-      if(!nombre) return;
-      const eqRaw = pick(r,['equipo','id_equipo']);
-      const eqId = S.teams[eqRaw] ? eqRaw : (porNombre[normTxt(eqRaw)] || '');
-      if(!eqId) return;   // equipo dado de baja o no encontrado
-      (S.players[eqId] = S.players[eqId] || []).push({
-        nombre,
-        numero: pick(r,['numero','número','n°','no','num']),
-        posicion: pick(r,['posicion','posición']),
-        apodo: pick(r,['apodo'])
-      });
-    });
-    Object.values(S.players).forEach(l=>l.sort((a,b)=>{
-      const na = parseInt(a.numero,10), nb = parseInt(b.numero,10);
-      return (isNaN(na)?9999:na)-(isNaN(nb)?9999:nb) || a.nombre.localeCompare(b.nombre,'es');
-    }));
-  }catch(e){
-    console.error(e);
-    S.playersError = true;
-  }
-}
-
-function parseCSV(text){
-  const lines=text.trim().split('\n');
-  if(lines.length<2)return[];
-  const sep=lines[0].includes('\t')?'\t':',';
-  const headers=csvLine(lines[0],sep).map(h=>h.toLowerCase().trim().replace(/\s+/g,'_'));
-  return lines.slice(1).map(l=>{
-    const vals=csvLine(l,sep);
-    const obj={};
-    headers.forEach((h,i)=>obj[h]=(vals[i]||'').trim().replace(/^"|"$/g,''));
-    return obj;
-  }).filter(r=>Object.values(r).some(v=>v));
-}
-function csvLine(line,sep){
-  const res=[];let cur='';let q=false;
-  for(let i=0;i<line.length;i++){
-    const c=line[i];
-    if(c==='"'){q=!q}else if(c===sep&&!q){res.push(cur);cur=''}else{cur+=c}
-  }
-  res.push(cur);
-  return res;
-}
-
-// ════════════════════════════════
-//  INIT
-// ════════════════════════════════
-async function init(){
-  const msg = document.getElementById('load-msg');
-  try{
-    msg.textContent = 'Cargando equipos...';
-    const eq = await fetchCSV(GID_EQUIPOS);
-    eq.forEach(r=>{
-      const id=r['id_equipo']||r['id'];
-      if(!id) return;
-      if((r['status']||'').trim().toLowerCase()==='baja') return; // equipos de baja no se arman en jornadas
-      S.teams[id]={id, nombre:r['nombre']||'Equipo '+id, logo:r['url']||r['logo']||'', descripcion:r['descripción']||r['descripcion']||''};
-    });
-
-    msg.textContent = 'Cargando partidos...';
-    const pt = await fetchCSV(GID_PARTIDOS);
-    S.allMatches = pt
-      .map(r=>({
-        id:r['id_partido']||r['id']||'',
-        jornada:r['jornada']||'',
-        local:r['equipo_local']||r['local']||'',
-        visita:r['equipo_visita']||r['visita']||'',
-        ll:r['ll']||'', lv:r['lv']||'',
-        vuelta:r['vuelta']||'1',
-        estado:r['estado']||'',
-        fecha:r['fecha']||'',
-        hora:r['hora']||'',
-        cancha:r['cancha']||''
-      }))
-      .filter(m=>m.local&&m.visita);
-    S.matches = S.allMatches.filter(m=>(m.estado||'').toLowerCase()==='pendiente');
-
-    msg.textContent = 'Cargando jugadores...';
-    await cargarJugadores();
-
-    document.getElementById('loading-screen').style.display='none';
-    document.getElementById('login-screen').style.display='block';
-  }catch(e){
-    console.error(e);
-    msg.textContent = 'Error al cargar datos: '+e.message;
-  }
-}
-init();
-
-// ════════════════════════════════
-//  LOGIN
-// ════════════════════════════════
-function entrarPanel(){
-  const pass = document.getElementById('mod-password').value;
-  const loginMsg = document.getElementById('login-msg');
-  if(pass !== MOD_PASS){
-    loginMsg.textContent = 'Contraseña incorrecta.';
-    loginMsg.classList.add('err');
-    return;
-  }
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app-screen').style.display='block';
-  llenarSelectsEquipos();
-  llenarListaIds();
-  llenarSelectCedula();
-  llenarSelectConfirmacion();
-  initRol();
-}
-
-function llenarSelectsEquipos(){
-  actualizarSelectsPorJornada();
-}
-
-// Convierte el <input type=date> (yyyy-mm-dd) al formato dd/mm/yyyy que usa la hoja
-async function pintarConfirmacionesJornada(){
-  const el = document.getElementById('armando-confirmaciones');
-  if(!el) return;
-  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
-  if(!jornadaTarget){ el.innerHTML=''; return; }
-  const partidosJornada = S.allMatches.filter(m=>{
-    const est=(m.estado||'').toLowerCase();
-    return (est==='programado'||est==='jugado') && String(m.jornada).trim()===jornadaTarget;
-  });
-  if(!partidosJornada.length){ el.innerHTML=''; return; }
-  let conf = {};
-  try{
-    const r = await fetch('https://liga-next-level-7-default-rtdb.firebaseio.com/confirmaciones.json');
-    conf = (await r.json()) || {};
-  }catch(e){ /* si falla, mostramos igual sin confirmaciones */ }
-  const filas = partidosJornada.map(m=>{
-    const c = conf[m.id] || {};
-    const nomL = S.teams[m.local]?.nombre || m.local;
-    const nomV = S.teams[m.visita]?.nombre || m.visita;
-    const okL = c.local ? '✅' : '⏳';
-    const okV = c.visita ? '✅' : '⏳';
-    return `<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0;">
-      <span>${esc(nomL)} ${okL} &nbsp;vs&nbsp; ${okV} ${esc(nomV)}</span>
-    </div>`;
-  }).join('');
-  el.innerHTML = `<div style="color:var(--neon);font-weight:700;margin-bottom:4px">Confirmaciones — Jornada ${esc(jornadaTarget)}</div>${filas}`;
-}
-
-function fechaInputASheet(v){
-  if(!v) return '';
-  const [y,m,d] = v.split('-');
-  return (y&&m&&d) ? `${d}/${m}/${y}` : '';
-}
-
-// ¿Ya existe un partido con Estado=Jugado entre estos dos equipos?
-function jugaronYa(idA, idB){
-  return S.allMatches.some(m=>{
-    if((m.estado||'').toLowerCase() !== 'jugado') return false;
-    return (String(m.local)===idA && String(m.visita)===idB) || (String(m.local)===idB && String(m.visita)===idA);
-  });
-}
-
-// Repinta Equipo A / Equipo B: deshabilita (no oculta) los equipos que ya tienen partido
-// Programado o Jugado en la "Jornada que estoy armando", y calcula quién descansa esa fecha.
-// Además, en Equipo B deshabilita a los rivales con los que Equipo A ya jugó (Estado=Jugado).
-let confirmDebounce = null;
-function actualizarSelectsPorJornada(){
-  clearTimeout(confirmDebounce);
-  confirmDebounce = setTimeout(pintarConfirmacionesJornada, 350);
-  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
-  const fechaTarget = fechaInputASheet(document.getElementById('armando-fecha')?.value || '');
-
-  const ocupadosJornada = new Set();
-  if(jornadaTarget){
-    S.allMatches.forEach(m=>{
-      const est = (m.estado||'').toLowerCase();
-      if((est==='programado'||est==='jugado') && String(m.jornada).trim()===jornadaTarget){
-        if(m.local) ocupadosJornada.add(String(m.local));
-        if(m.visita) ocupadosJornada.add(String(m.visita));
-      }
-    });
-  }
-
-  // NUEVO: equipos que ya tienen partido (programado/jugado) en la FECHA elegida
-  const ocupadosFecha = new Set();
-  if(fechaTarget){
-    S.allMatches.forEach(m=>{
-      const est = (m.estado||'').toLowerCase();
-      if((est==='programado'||est==='jugado') && fechaNumSheet(m.fecha)===fechaNumSheet(fechaTarget)){
-        if(m.local) ocupadosFecha.add(String(m.local));
-        if(m.visita) ocupadosFecha.add(String(m.visita));
-      }
-    });
-  }
-
-  const ordenados = Object.values(S.teams).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es'));
-  const equipoASel = document.getElementById('buscar-equipo-a')?.value || '';
-
-  function construirOpciones(esSelectB){
-    return '<option value="">— Selecciona —</option>' + ordenados.map(t=>{
-      const idStr = String(t.id);
-      const ocupadoJornada = ocupadosJornada.has(idStr);
-      const ocupadoFecha = ocupadosFecha.has(idStr);
-      const yaJugaron = esSelectB && equipoASel && idStr!==equipoASel && jugaronYa(equipoASel, idStr);
-      const deshabilitado = ocupadoJornada || ocupadoFecha || yaJugaron;
-      let etiqueta = '';
-      if(ocupadoFecha) etiqueta = ' (ya juega esta fecha)';
-      else if(ocupadoJornada) etiqueta = ' (ya tiene partido esta jornada)';
-      else if(yaJugaron) etiqueta = ' (ya jugaron)';
-      return `<option value="${t.id}" ${deshabilitado?'disabled':''}>${esc(t.nombre)}${etiqueta}</option>`;
-    }).join('');
-  }
-
-  const selA = document.getElementById('buscar-equipo-a');
-  const valA = selA.value;
-  selA.innerHTML = construirOpciones(false);
-  if(valA && !ocupadosJornada.has(valA) && !ocupadosFecha.has(valA)) selA.value = valA;
-
-  const selB = document.getElementById('buscar-equipo-b');
-  const valB = selB.value;
-  selB.innerHTML = construirOpciones(true);
-  if(valB && !ocupadosJornada.has(valB) && !ocupadosFecha.has(valB) && !jugaronYa(equipoASel, valB)) selB.value = valB;
-
-  const descansaEl = document.getElementById('armando-descansa');
-  if(!descansaEl) return;
-  if(!fechaTarget){ descansaEl.textContent=''; return; }
-  const juegan = new Set();
-  S.allMatches.forEach(m=>{
-    const est = (m.estado||'').toLowerCase();
-    if((est==='programado'||est==='jugado') && (m.fecha||'').trim()===fechaTarget){
-      if(m.local) juegan.add(String(m.local));
-      if(m.visita) juegan.add(String(m.visita));
-    }
-  });
-  const descansan = Object.values(S.teams).filter(t=>!juegan.has(String(t.id)));
-  if(descansan.length===1){
-    descansaEl.textContent = `🛌 Descansa esta fecha: ${descansan[0].nombre}`;
-  } else if(descansan.length===0){
-    descansaEl.textContent = '';
-  } else {
-    descansaEl.textContent = `Faltan ${descansan.length} equipos por programar esta fecha.`;
-  }
-}
-
-// ════════════════════════════════
-//  EDITAR / PROGRAMAR PARTIDO (por pareja de equipos)
-// ════════════════════════════════
-// Lista de IDs sugeridos (partidos que aún no están Jugado y cuyos dos equipos siguen activos)
-function llenarListaIds(){
-  const dl = document.getElementById('lista-ids-partido');
-  if(!dl) return;
-  const nid = x => { const n = Number(x.id); return isNaN(n) ? 0 : n; };
-  dl.innerHTML = S.allMatches
-    .filter(m => m.id && (m.estado||'').toLowerCase() !== 'jugado' && S.teams[m.local] && S.teams[m.visita])
-    .sort((a,b) => nid(a) - nid(b))
-    .map(m => `<option value="${esc(m.id)}">${esc(tname(m.local))} vs ${esc(tname(m.visita))} · J${esc(m.jornada||'?')} · ${esc(m.estado||'?')}</option>`)
-    .join('');
-}
-
-// Trae un partido por su ID_Partido y abre el mismo formulario de programar/editar
-function buscarPartidoPorId(){
-  const inp = document.getElementById('buscar-id-partido');
-  const cont = document.getElementById('buscar-resultado');
-  const raw = (inp?.value || '').trim();
-  S.matchToProgram = null;
-  if(!raw){ cont.innerHTML = ''; return; }
-  const limpio = raw.replace(/\D/g,'');   // acepta "26", " 26 ", "#26"
-  const m = S.allMatches.find(x => String(x.id).trim() === raw)
-         || (limpio ? S.allMatches.find(x => String(Number(x.id)) === String(Number(limpio))) : null);
-  if(!m){
-    cont.innerHTML = `<div class="mod-preview-empty">No encontré el partido con ID ${esc(raw)}</div>`;
-    return;
-  }
-  if(!S.teams[m.local] || !S.teams[m.visita]){
-    cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} tiene un equipo dado de baja, no se puede programar.</div>`;
-    return;
-  }
-  if((m.estado||'').toLowerCase() === 'jugado'){
-    cont.innerHTML = `<div class="mod-preview-empty">El partido ${esc(m.id)} (${esc(tname(m.local))} vs ${esc(tname(m.visita))}) ya está Jugado, no se puede programar.</div>`;
-    return;
-  }
-  // limpiar los selects de equipos para que no se confundan con el partido traído por ID
-  const a = document.getElementById('buscar-equipo-a'), b = document.getElementById('buscar-equipo-b');
-  if(a) a.value = ''; if(b) b.value = '';
-  abrirFormEditar(m);
-}
-
-function buscarPartidoEntreEquipos(){
-  const a = document.getElementById('buscar-equipo-a').value;
-  const b = document.getElementById('buscar-equipo-b').value;
-  const cont = document.getElementById('buscar-resultado');
-  S.matchToProgram = null;
-  if(!a || !b){ cont.innerHTML=''; return; }
-  if(a === b){ cont.innerHTML = '<div class="mod-preview-empty">Elige dos equipos distintos</div>'; return; }
-
-  const m = S.allMatches.find(x =>
-    (x.estado||'').toLowerCase() !== 'jugado' &&
-    ((x.local===a && x.visita===b) || (x.local===b && x.visita===a))
-  );
-  if(!m){
-    cont.innerHTML = `<div class="mod-preview-empty">No hay partido pendiente ni programado entre ${esc(tname(a))} y ${esc(tname(b))}</div>`;
-    return;
-  }
-  abrirFormEditar(m);
-}
-
-function pad2(n){ return n<10 ? '0'+n : ''+n; }
-function buildHoraSelects(defaultH, defaultM){
-  let hOpts=''; for(let h=0;h<24;h++){ hOpts+=`<option value="${pad2(h)}" ${h===defaultH?'selected':''}>${pad2(h)}</option>`; }
-  let mOpts=''; for(let m=0;m<60;m+=5){ mOpts+=`<option value="${pad2(m)}" ${m===defaultM?'selected':''}>${pad2(m)}</option>`; }
-  return {hOpts,mOpts};
-}
-
-// ── Disponibilidad de jornada / horario / campo ──────────────────────────
-const DURACION_MIN = 60;                       // duración de un partido (para detectar traslapes en el mismo campo)
-const HORAS_BASE   = ['09:00','10:00','11:00','12:00'];
-const CAMPOS_BASE  = ['Campo 1','Campo 2'];
-
-function hhmm(hora){ const p=String(hora||'').split(':'); return pad2(parseInt(p[0],10)||0)+':'+pad2(parseInt(p[1],10)||0); }
-function esAgendado(m){ const e=(m.estado||'').toLowerCase(); return e==='programado'||e==='jugado'; }
-
-function listaCampos(){
-  const set = new Set(CAMPOS_BASE);
-  S.allMatches.forEach(x=>{ const c=(x.cancha||'').trim(); if(c) set.add(c); });
-  return [...set].sort((a,b)=>a.localeCompare(b,'es',{numeric:true}));
-}
-
-// Jornadas en las que NINGUNO de los dos equipos tiene ya partido programado/jugado
-function jornadasLibresPara(m){
-  const ids = [String(m.local), String(m.visita)];
-  const ocupadas = new Set();
-  S.allMatches.forEach(x=>{
-    if(x.id===m.id || !esAgendado(x)) return;
-    if(ids.includes(String(x.local)) || ids.includes(String(x.visita))){
-      const j = parseInt(x.jornada,10); if(!isNaN(j)) ocupadas.add(j);
-    }
-  });
-  const n = Object.keys(S.teams).length;
-  const rondas = n%2===0 ? n-1 : n;                       // jornadas por vuelta
-  const maxVuelta = Math.max(1, ...S.allMatches.map(x=>parseInt(x.vuelta,10)||1));
-  const maxData = Math.max(0, ...S.allMatches.map(x=>parseInt(x.jornada,10)||0));
-  const total = Math.max(rondas*maxVuelta, maxData);
-  const libres = [];
-  for(let j=1;j<=total;j++){ if(!ocupadas.has(j)) libres.push(j); }
-  return libres;
-}
-
-// Calendario del torneo: la Jornada 1 es el domingo de inicio y cada jornada avanza 7 días (igual que el reporte del rol del domingo)
-const INICIO_TORNEO = [2026, 9, 20];   // año, mes, día
-function fechaCalendarioJornada(j){
-  const n = parseInt(j,10);
-  if(isNaN(n) || n < 1) return '';
-  const d = new Date(INICIO_TORNEO[0], INICIO_TORNEO[1]-1, INICIO_TORNEO[2] + 7*(n-1));
-  return pad2(d.getDate()) + '/' + pad2(d.getMonth()+1) + '/' + d.getFullYear();
-}
-
-// Fecha sugerida para programar un partido de la jornada j:
-// la de calendario; si ya pasó, o alguno de los dos equipos ya juega ese día, el siguiente domingo libre para ambos.
-// (Así un juego atrasado de la J5 se propone para el siguiente domingo, no para el 18/10 que ya está lleno.)
-function fechaSugerida(m, j){
-  const cal = fechaCalendarioJornada(j);
-  if(!cal || !m) return cal || '';
-  const [d,mo,y] = cal.split('/').map(Number);
-  const dt = new Date(y, mo-1, d);
-  const hoy = new Date(); hoy.setHours(0,0,0,0);
-  while(dt < hoy) dt.setDate(dt.getDate()+7);
-  const ids = [String(m.local), String(m.visita)];
-  for(let i=0;i<60;i++){
-    const f = pad2(dt.getDate()) + '/' + pad2(dt.getMonth()+1) + '/' + dt.getFullYear();
-    const ocupado = S.allMatches.some(x => x.id!==m.id && esAgendado(x) && fechaNumSheet(x.fecha)===fechaNumSheet(f)
-                                           && (ids.includes(String(x.local)) || ids.includes(String(x.visita))));
-    if(!ocupado) return f;
-    dt.setDate(dt.getDate()+7);
-  }
-  return cal;
-}
-
-function fechaDeJornada(j){
-  const f = S.allMatches.find(x=>String(x.jornada).trim()===String(j) && esAgendado(x) && x.fecha);
-  return f ? f.fecha : '';
-}
-
-function ocupadosDeFecha(fechaSheet, excluirId){
-  return S.allMatches.filter(x=>x.id!==excluirId && esAgendado(x) && fechaNumSheet(x.fecha)===fechaNumSheet(fechaSheet));
-}
-
-// ¿Hay otro partido en ese campo cuyo horario se traslape con "hora"?
-function conflictoCampo(ocupados, campo, hora){
-  const t = minutosDeHora(hora);
-  return ocupados.find(x=> x.hora && (x.cancha||'').trim().toLowerCase()===String(campo).trim().toLowerCase()
-                        && Math.abs(minutosDeHora(x.hora)-t) < DURACION_MIN);
-}
-
-function abrirFormEditar(m){
-  S.matchToProgram = m;
-  const jornadaTarget = (document.getElementById('armando-jornada')?.value || '').trim();
-  const fechaTarget = document.getElementById('armando-fecha')?.value || '';
-  const [d,mo,y] = (m.fecha||'').split('/');
-  const fechaInput = (y&&mo&&d) ? `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}` : fechaTarget;
-
-  // Jornadas en las que estos dos equipos PUEDEN jugar
-  const libres = jornadasLibresPara(m);
-  const pref = String(m.jornada || jornadaTarget || '');
-  const jSel = libres.map(String).includes(pref) ? pref : (libres[0] ? String(libres[0]) : '');
-  const jOpts = libres.length
-    ? libres.map(j=>{ const f=fechaDeJornada(j); return `<option value="${j}" ${String(j)===jSel?'selected':''}>Jornada ${j}${f?' · '+f:''}</option>`; }).join('')
-    : '<option value="">(sin jornadas libres para estos equipos)</option>';
-
-  const horaParts = (m.hora||'09:00:00').split(':');
-  const {hOpts,mOpts} = buildHoraSelects(parseInt(horaParts[0],10)||9, parseInt(horaParts[1],10)||0);
-  const campoActual = (m.cancha||'').trim();
-  const cOpts = '<option value="">— Campo —</option>' + listaCampos().map(c=>`<option value="${esc(c)}" ${c.toLowerCase()===campoActual.toLowerCase()?'selected':''}>${esc(c)}</option>`).join('');
-
-  document.getElementById('buscar-resultado').innerHTML = `
-    <div class="mod-match-row">
-      <img src="${m.ll||tlogo(m.local)}" onerror="this.style.opacity='.2'">
-      <div>
-        <div class="mod-match-name">${esc(tname(m.local))} vs ${esc(tname(m.visita))}</div>
-        <div class="mod-match-meta">ID interno: ${esc(m.id)} · Estado actual: ${esc(m.estado||'?')}</div>
-      </div>
-      <img src="${m.lv||tlogo(m.visita)}" onerror="this.style.opacity='.2'">
-    </div>
-    <div class="programar-box">
-      <div style="display:flex;flex-direction:column;gap:10px">
-        <div>
-          <label>Jornada (solo las que estos equipos pueden jugar)</label>
-          <select id="edit-jornada" class="msg-input" style="width:100%" onchange="alCambiarJornadaForm()">${jOpts}</select>
-        </div>
-        <div>
-          <label>Fecha</label>
-          <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}" oninput="refrescarDisponibilidad()">
-          <div id="edit-fecha-hint" style="font-size:11px;color:var(--g400);margin-top:5px"></div>
-        </div>
-        <div>
-          <label>Hora</label>
-          <div style="display:flex;align-items:center;gap:8px">
-            <select id="edit-hora-h" class="msg-input" style="flex:1;text-align:center" onchange="refrescarDisponibilidad()">${hOpts}</select>
-            <span style="color:var(--g400);font-weight:700">:</span>
-            <select id="edit-hora-m" class="msg-input" style="flex:1;text-align:center" onchange="refrescarDisponibilidad()">${mOpts}</select>
-          </div>
-        </div>
-        <div>
-          <label>Campo / Cancha</label>
-          <select id="edit-cancha" class="msg-input" style="width:100%" onchange="refrescarDisponibilidad()">${cOpts}</select>
-        </div>
-        <div id="disp-panel"></div>
-      </div>
-      <button class="btn-anunciar" id="btn-guardar-editar" style="margin-top:14px" onclick="guardarEdicionPartido()">✅ Guardar cambios</button>
-    </div>
-  `;
-  alCambiarJornadaForm(true);
-}
-
-// Al elegir jornada: si esa jornada ya tiene fecha (otros partidos), se propone esa misma fecha
-function alCambiarJornadaForm(soloSiVacia){
-  const j = document.getElementById('edit-jornada')?.value;
-  const inp = document.getElementById('edit-fecha');
-  const hint = document.getElementById('edit-fecha-hint');
-  if(j && inp){
-    const fCal = fechaCalendarioJornada(j);        // fecha que le toca por calendario (la del reporte)
-    const fHoja = fechaDeJornada(j);               // fecha de otros partidos ya agendados con esa jornada
-    const fSug = fechaSugerida(S.matchToProgram, j) || fCal;
-    const f = fSug || fHoja;
-    if(f && (!soloSiVacia || !inp.value)){
-      const [d,mo,y] = f.split('/');
-      if(y&&mo&&d) inp.value = `${y}-${pad2(parseInt(mo,10))}-${pad2(parseInt(d,10))}`;
-    }
-    if(hint){
-      const otra = fHoja && fCal && fechaNumSheet(fHoja)!==fechaNumSheet(fCal);
-      hint.innerHTML = fCal ? `📆 Por calendario, la Jornada ${esc(j)} es el ${esc(fCal)}.` + ((fSug && fSug!==fCal) ? ` <span style="color:var(--neon)">Se sugiere el ${esc(fSug)}, el siguiente domingo libre para estos equipos.</span>` : '') + (otra ? ` <span style="color:#f87171">⚠️ En la hoja ya hay partidos de la Jornada ${esc(j)} el ${esc(fHoja)}.</span>` : '') : '';
-    }
-  }
-  refrescarDisponibilidad();
-}
-
-// Cuadrícula horario × campo para la fecha elegida: libre / ocupado (y por quién)
-function refrescarDisponibilidad(){
-  const panel = document.getElementById('disp-panel');
-  const m = S.matchToProgram;
-  if(!panel || !m) return;
-  const fecha = fechaInputASheet(document.getElementById('edit-fecha')?.value || '');
-  if(!fecha){ panel.innerHTML = '<div class="mod-hint" style="margin:0">Elige una fecha para ver qué horarios y campos están disponibles.</div>'; return; }
-
-  const ocupados = ocupadosDeFecha(fecha, m.id);
-  const campos = listaCampos();
-  const horas = new Set(HORAS_BASE);
-  ocupados.forEach(x=>{ if(x.hora) horas.add(hhmm(x.hora)); });
-  const hSel = hhmm((document.getElementById('edit-hora-h')?.value||'09')+':'+(document.getElementById('edit-hora-m')?.value||'00'));
-  horas.add(hSel);
-  const cSel = (document.getElementById('edit-cancha')?.value||'').trim();
-
-  // avisos de equipos que ya juegan ese día
-  const ids = [String(m.local), String(m.visita)];
-  const choqueEq = ocupados.filter(x=>ids.includes(String(x.local))||ids.includes(String(x.visita)));
-  const aviso = choqueEq.length
-    ? `<div style="font-size:12px;color:#f87171;margin-bottom:8px">⚠️ ${choqueEq.map(x=>esc(tname(x.local))+' vs '+esc(tname(x.visita))+' ('+esc(hhmm(x.hora))+')').join(' · ')} ya juega(n) esa fecha.</div>` : '';
-
-  const th = campos.map(c=>`<th style="padding:6px 4px;font-size:11px;color:var(--g400)">${esc(c)}</th>`).join('');
-  const filas = [...horas].sort().map(h=>{
-    const celdas = campos.map(c=>{
-      const x = conflictoCampo(ocupados, c, h);
-      const elegido = (h===hSel && c.toLowerCase()===cSel.toLowerCase());
-      if(x) return `<td style="padding:4px"><div style="font-size:10px;line-height:1.2;padding:6px 4px;border-radius:6px;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:#f87171">✖ ${esc(tname(x.local))} vs ${esc(tname(x.visita))}</div></td>`;
-      return `<td style="padding:4px"><button type="button" onclick="elegirSlot('${h}','${esc(c).replace(/'/g,"\\'")}')" style="width:100%;padding:7px 4px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid ${elegido?'var(--neon)':'rgba(94,181,13,.35)'};background:${elegido?'var(--neon)':'var(--neon-dim)'};color:${elegido?'#122400':'var(--neon)'}">${elegido?'✔ Elegido':'Libre'}</button></td>`;
-    }).join('');
-    return `<tr><td style="padding:4px 8px 4px 0;font-size:12px;font-weight:800;color:var(--w);white-space:nowrap">${h}</td>${celdas}</tr>`;
-  }).join('');
-
-  panel.innerHTML = `${aviso}<div style="font-size:11px;color:var(--g400);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Disponibilidad · ${esc(fecha)}</div>
-    <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr><th></th>${th}</tr></thead><tbody>${filas}</tbody></table></div>`;
-}
-
-function elegirSlot(hora, campo){
-  const [h,mi] = hora.split(':');
-  const hs = document.getElementById('edit-hora-h'), ms = document.getElementById('edit-hora-m'), cs = document.getElementById('edit-cancha');
-  if(hs) hs.value = h;
-  if(ms) ms.value = mi;
-  if(cs){
-    if(![...cs.options].some(o=>o.value===campo)){ cs.add(new Option(campo,campo)); }
-    cs.value = campo;
-  }
-  refrescarDisponibilidad();
-}
-
-async function guardarEdicionPartido(){
-  const m = S.matchToProgram;
-  if(!m) return;
-  const jornada = document.getElementById('edit-jornada').value.trim();
-  const fecha = document.getElementById('edit-fecha').value;
-  const horaH = document.getElementById('edit-hora-h').value;
-  const horaM = document.getElementById('edit-hora-m').value;
-  const hora = (horaH&&horaM) ? `${horaH}:${horaM}:00` : '';
-  const cancha = document.getElementById('edit-cancha').value.trim();
-
-  if(!jornada || !fecha || !hora || !cancha){
-    alert('Completa Jornada, Fecha, Hora y Campo antes de guardar.');
-    return;
-  }
-  const [anioF,mesF,diaF] = fecha.split('-');
-  const fechaSheet = `${diaF}/${mesF}/${anioF}`;
-
-  // Validaciones: campo/horario libre y equipos sin otro partido ese día
-  const ocupadosF = ocupadosDeFecha(fechaSheet, m.id);
-  const choqueCampo = conflictoCampo(ocupadosF, cancha, hora);
-  if(choqueCampo){
-    alert(`Ese horario/campo ya está ocupado: ${tname(choqueCampo.local)} vs ${tname(choqueCampo.visita)} (${hhmm(choqueCampo.hora)}, ${choqueCampo.cancha}).`);
-    return;
-  }
-  const choqueEquipo = ocupadosF.find(x=>[String(m.local),String(m.visita)].includes(String(x.local))||[String(m.local),String(m.visita)].includes(String(x.visita)));
-  if(choqueEquipo){
-    alert(`Uno de estos equipos ya juega esa fecha: ${tname(choqueEquipo.local)} vs ${tname(choqueEquipo.visita)}.`);
-    return;
-  }
-
-  const btn = document.getElementById('btn-guardar-editar');
-  if(btn){ btn.disabled=true; btn.textContent='Guardando...'; }
-
-  try{
-    await fetch(SCRIPT_URL,{
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({accion:'programar_partido', idPartido:m.id, jornada, fecha:fechaSheet, hora, cancha})
-    });
-  }catch(e){
-    console.error(e);
-  }
-
-  // Actualización local optimista
-  m.estado='programado'; m.fecha=fechaSheet; m.hora=hora; m.cancha=cancha; m.jornada=jornada;
-  S.matches = S.allMatches.filter(x=>(x.estado||'').toLowerCase()==='pendiente');
-
-  document.getElementById('buscar-resultado').innerHTML = `<div class="programar-hint">✅ Guardado: ${esc(tname(m.local))} vs ${esc(tname(m.visita))} — Jornada ${esc(jornada)}, ${esc(fechaSheet)}, ${esc(horaH)}:${esc(horaM)}, ${esc(cancha)}</div>`;
-  document.getElementById('buscar-equipo-a').value='';
-  document.getElementById('buscar-equipo-b').value='';
-  actualizarSelectsPorJornada();
-  const idInp = document.getElementById('buscar-id-partido');
-  if(idInp){ idInp.value=''; llenarListaIds(); idInp.focus(); }
-}
-
-// ════════════════════════════════
-//  ARMAR ROL DEL DOMINGO (rolSlots)
-// ════════════════════════════════
-function setVuelta(v){
-  S.vuelta=v;
-  document.getElementById('vbtn1').className='vbtn'+(v===1?' active':'');
-  document.getElementById('vbtn2').className='vbtn'+(v===2?' active':'');
-  renderSlots();
-}
-
-const HORARIOS_DEFAULT = ['09:00','09:00','10:00','10:00','11:00','11:00','12:00','12:00'];
-const CAMPOS_DEFAULT = ['Campo 1','Campo 2','Campo 1','Campo 2','Campo 1','Campo 2','Campo 1','Campo 2'];
-let rolSlots = [];
-
-function initRol(){
-  const hoy = new Date();
-  const dia = hoy.getDay();
-  const diasHastaDom = dia===0 ? 7 : 7-dia;
-  const dom = new Date(hoy);
-  dom.setDate(hoy.getDate()+diasHastaDom);
-  document.getElementById('rol-fecha').value = dom.toISOString().split('T')[0];
-  rolSlots = [];
-  document.getElementById('rol-slots').innerHTML = '';
-  document.getElementById('rol-preview-wrap').style.display = 'none';
-}
-
-function addSlot(hora, matchId){
-  const vuelta = String(S.vuelta);
-  const pending = S.matches.filter(m => m.vuelta===vuelta);
-  const idx = rolSlots.length;
-  const horaDefault = hora || HORARIOS_DEFAULT[idx] || '09:00';
-
-  const usados = {};
-  rolSlots.forEach(s=>{
-    if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
-    if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
-  });
-
-  const disponibles = pending.filter(m=>{
-    const lUsos = usados[m.local]||0;
-    const vUsos = usados[m.visita]||0;
-    return lUsos < 2 && vUsos < 2;
-  });
-
-  const slot = { hora: horaDefault, matchId: matchId || (disponibles[0]?.id||''), localId:'', visitaId:'', campo:'' };
-  if(slot.matchId){
-    const m = S.matches.find(x=>x.id===slot.matchId);
-    if(m){ slot.localId=m.local; slot.visitaId=m.visita; }
-  }
-  rolSlots.push(slot);
-  renderSlots();
-}
-
-function removeSlot(idx){
-  rolSlots.splice(idx,1);
-  renderSlots();
-}
-
-function renderSlots(){
-  const vuelta = String(S.vuelta);
-  const pending = S.matches.filter(m=>m.vuelta===vuelta);
-  const container = document.getElementById('rol-slots');
-
-  container.innerHTML = rolSlots.map((slot,idx)=>{
-    const usados = {};
-    rolSlots.forEach((s,i)=>{
-      if(i===idx) return;
-      if(s.localId){ usados[s.localId]=(usados[s.localId]||0)+1; }
-      if(s.visitaId){ usados[s.visitaId]=(usados[s.visitaId]||0)+1; }
-    });
-
-    const disponibles = pending.filter(m=>{
-      const lUsos = usados[m.local]||0;
-      const vUsos = usados[m.visita]||0;
-      return lUsos<2 && vUsos<2;
-    });
-
-    const options = disponibles.map(m=>
-      `<option value="${m.id}" ${m.id===slot.matchId?'selected':''}>
-        ${esc(tname(m.local))} vs ${esc(tname(m.visita))} (J${esc(m.jornada)})
-      </option>`
-    ).join('');
-
-    const ll = slot.localId ? (S.matches.find(m=>m.id===slot.matchId)?.ll || tlogo(slot.localId)) : '';
-    const lv = slot.visitaId ? (S.matches.find(m=>m.id===slot.matchId)?.lv || tlogo(slot.visitaId)) : '';
-
-    return `<div style="display:flex;align-items:center;gap:8px;background:var(--dark2);border:1px solid rgba(255,255,255,.07);border-radius:var(--rs);padding:10px 12px;flex-wrap:wrap;">
-      <input type="time" value="${slot.hora}" onchange="updateSlotHora(${idx},this.value)" style="padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--neon);font-size:13px;font-weight:700;width:90px;flex-shrink:0">
-      ${ll?`<img src="${ll}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
-           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
-      <select onchange="updateSlotMatch(${idx},this.value)" style="flex:1;padding:7px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;min-width:0">
-        <option value="">-- Seleccionar partido --</option>
-        ${options}
-      </select>
-      ${lv?`<img src="${lv}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0" onerror="this.style.opacity='.2'">`:
-           `<div style="width:28px;height:28px;border-radius:50%;background:var(--dark3);flex-shrink:0"></div>`}
-      <input type="text" value="${slot.campo||''}" onchange="updateSlotCampo(${idx},this.value)" placeholder="Campo (opcional)" style="width:110px;padding:6px 8px;background:var(--dark);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--w);font-size:12px;flex-shrink:0">
-      <button onclick="removeSlot(${idx})" style="background:none;border:none;color:#f87171;font-size:16px;cursor:pointer;flex-shrink:0;padding:0 4px">✕</button>
-    </div>`;
-  }).join('');
-
-  updateRolPreview();
-}
-
-function updateSlotHora(idx, hora){ rolSlots[idx].hora = hora; updateRolPreview(); }
-function updateSlotCampo(idx, campo){ rolSlots[idx].campo = campo; updateRolPreview(); }
-function updateSlotMatch(idx, matchId){
-  rolSlots[idx].matchId = matchId;
-  if(matchId){
-    const m = S.matches.find(x=>x.id===matchId);
-    if(m){ rolSlots[idx].localId=m.local; rolSlots[idx].visitaId=m.visita; }
-  } else {
-    rolSlots[idx].localId=''; rolSlots[idx].visitaId='';
-  }
-  renderSlots();
-}
-
-// Busca, entre los partidos pendientes, el mayor número posible de partidos
-// (hasta "limite") donde ningún equipo se repita. A diferencia de un algoritmo
-// "greedy" simple -que recorre la lista una sola vez y, si un equipo ya quedó
-// usado en un partido, pierde la posibilidad de formar una pareja mejor más
-// adelante- esta búsqueda prueba combinaciones (con poda) para no dejar fuera
-// un partido válido solo por el orden en que aparece en la lista.
-function mejorConjuntoDePartidos(pending, limite){
-  let mejor = [];
-
-  function backtrack(desde, actuales, usados){
-    if(actuales.length > mejor.length) mejor = actuales.slice();
-    if(mejor.length >= limite) return;
-    for(let i = desde; i < pending.length; i++){
-      // Poda: si ni agregando todos los partidos restantes se supera lo mejor
-      // encontrado hasta ahora, no vale la pena seguir explorando esta rama.
-      if(actuales.length + (pending.length - i) <= mejor.length) break;
-      const m = pending[i];
-      if(usados.has(m.local) || usados.has(m.visita)) continue;
-      usados.add(m.local); usados.add(m.visita);
-      actuales.push(m);
-      backtrack(i+1, actuales, usados);
-      actuales.pop();
-      usados.delete(m.local); usados.delete(m.visita);
-      if(mejor.length >= limite) return;
-    }
-  }
-
-  backtrack(0, [], new Set());
-  return mejor;
-}
-
-function autoRol(){
-  const vuelta = String(S.vuelta);
-  const pending = [...S.matches.filter(m=>m.vuelta===vuelta)]
-    .sort((a,b) => (Number(a.jornada)||0) - (Number(b.jornada)||0) || (Number(a.id)||0) - (Number(b.id)||0));
-  rolSlots = [];
-
-  const seleccionados = mejorConjuntoDePartidos(pending, 8);
-
-  seleccionados.forEach((m,i)=>{
-    rolSlots.push({
-      hora: HORARIOS_DEFAULT[i]||'09:00',
-      matchId: m.id,
-      localId: m.local,
-      visitaId: m.visita,
-      campo: CAMPOS_DEFAULT[i]||''
-    });
-  });
-
-  renderSlots();
-  document.getElementById('rol-preview-wrap').style.display='block';
-}
-
-function minutosDeHora(hora){
-  if(!hora) return 99999;
-  const partes = hora.split(':');
-  const h = parseInt(partes[0],10) || 0;
-  const m = parseInt(partes[1],10) || 0;
-  return h*60+m;
-}
-function ordenarPorCampoHora(lista){
-  return [...lista].sort((a,b)=>{
-    const ha = minutosDeHora(a.hora);
-    const hb = minutosDeHora(b.hora);
-    if(ha !== hb) return ha - hb;
-    const ca = (a.campo||'').trim();
-    const cb = (b.campo||'').trim();
-    if(!ca) return 1;
-    if(!cb) return -1;
-    return ca.localeCompare(cb, 'es', {numeric:true, sensitivity:'base'});
-  });
-}
-
-function updateRolPreview(){
-  const fecha = document.getElementById('rol-fecha').value;
-  const fechaStr = fecha ? new Date(fecha+'T12:00:00').toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'}) : 'Domingo pendiente';
-  const filled = ordenarPorCampoHora(rolSlots.filter(s=>s.matchId));
-
-  if(!filled.length){
-    document.getElementById('rol-preview-wrap').style.display='none';
-    return;
-  }
-  document.getElementById('rol-preview-wrap').style.display='block';
-
-  let html = `<div style="text-align:center;font-size:13px;font-weight:700;color:var(--neon);margin-bottom:12px;text-transform:capitalize">📅 ${fechaStr}</div>`;
-  filled.forEach(slot=>{
-    const m = S.matches.find(x=>x.id===slot.matchId);
-    if(!m) return;
-    const ll = m.ll||tlogo(m.local);
-    const lv = m.lv||tlogo(m.visita);
-    html+=`<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--dark3);border-radius:var(--rs);margin-bottom:6px;border:1px solid rgba(255,255,255,.05)">
-      <span style="font-size:14px;font-weight:800;color:var(--neon);min-width:52px">${esc(slot.hora)}</span>
-      <img src="${ll}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
-      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w)">${esc(tname(m.local))}</span>
-      <span style="font-size:11px;color:var(--g500);font-weight:700">VS</span>
-      <span style="flex:1;font-size:12px;font-weight:600;color:var(--w);text-align:right">${esc(tname(m.visita))}</span>
-      <img src="${lv}" style="width:30px;height:30px;border-radius:50%;object-fit:cover" onerror="this.style.opacity='.2'">
-    </div>`;
-  });
-  document.getElementById('rol-preview').innerHTML = html;
-  renderCartelPreview(fechaStr, filled);
-}
-
-// ════════════════════════════════
-//  CARTEL DE JORNADA (PNG descargable)
-// ════════════════════════════════
-const CARTEL_POR_PAGINA = 7;
-
-function calcularEquipoDescansa(filled){
-  const idsJuegan = new Set();
-  filled.forEach(slot=>{
-    const m = S.matches.find(x=>x.id===slot.matchId);
-    if(!m) return;
-    if(m.local) idsJuegan.add(String(m.local));
-    if(m.visita) idsJuegan.add(String(m.visita));
-  });
-  const descansan = Object.values(S.teams).filter(t=>!idsJuegan.has(String(t.id)));
-  if(descansan.length === 1){
-    const t = descansan[0];
-    return { nombre:(t.nombre||'').toUpperCase(), descripcion:t.descripcion||'' };
-  }
-  return null;
-}
-
-function pintarCartelPagina(paginaSlots, numPagina, totalPaginas, equipoDescansa){
-  const poster = document.getElementById('cartel-poster');
-  if(!poster) return;
-
-  const T = {crest:88, name:18, jv:15, fecha:14, hora:20, campo:14, padY:11, gap:3};
-
-  let filasHtml = '';
-  paginaSlots.forEach((slot, i)=>{
-    const m = S.matches.find(x=>x.id===slot.matchId);
-    if(!m) return;
-    const ll = m.ll||tlogo(m.local);
-    const lv = m.lv||tlogo(m.visita);
-    const horaFmt = formatHora12(slot.hora);
-    filasHtml += `
-      <div class="cartel-row" style="padding:${T.padY}px 0;">
-        <div class="cartel-team local">
-          <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${ll}" onerror="this.style.opacity='.2'">
-          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.local))}</span>
-        </div>
-        <div class="cartel-center">
-          <span class="cartel-jv" style="font-size:${T.jv}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">Jornada ${esc(m.jornada||'?')}</span>
-          <span class="cartel-fecha" style="font-size:${T.fecha}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(document.getElementById('rol-fecha').value.split('-').reverse().join('/'))}</span>
-          <div class="cartel-linea" style="margin:${T.gap}px 0;"></div>
-          <span class="cartel-hora" style="font-size:${T.hora}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${horaFmt}</span>
-          ${slot.campo?`<span class="cartel-campo" style="font-size:${T.campo}px;text-shadow:0 1px 3px rgba(0,0,0,.9);">${esc(slot.campo)}</span>`:''}
-        </div>
-        <div class="cartel-team visita">
-          <img class="cartel-crest" style="width:${T.crest}px;height:${T.crest}px;" src="${lv}" onerror="this.style.opacity='.2'">
-          <span class="cartel-name" style="font-size:${T.name}px;">${esc(tname(m.visita))}</span>
-        </div>
-      </div>
-      ${i < paginaSlots.length-1 ? '<hr class="cartel-sep">' : ''}
-    `;
-  });
-
-  const descansaHTML = (equipoDescansa && numPagina === 1) ? `
-    <div style="text-align:center;margin-bottom:14px;display:flex;flex-direction:column;align-items:center;gap:5px;">
-      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:22px;letter-spacing:1px;color:#5eb50d;text-shadow:0 0 10px rgba(94,181,13,.5),0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.nombre)}</div>
-      <div style="font-size:13px;font-weight:700;color:#f3c94a;text-shadow:0 1px 3px rgba(0,0,0,.8);">${esc(equipoDescansa.descripcion)}</div>
-      <div style="font-family:'Arial Black',Arial,sans-serif;font-size:14px;letter-spacing:1px;color:#f5f5f5;text-shadow:0 1px 3px rgba(0,0,0,.8);">DESCANSA ESTA JORNADA</div>
-    </div>
-  ` : '';
-
-  poster.innerHTML = `
-    <div class="cartel-header">
-      <div class="cartel-h1">Torneo Dominical Libre</div>
-    </div>
-    ${descansaHTML}
-    <div class="cartel-matches">${filasHtml}</div>
-    ${totalPaginas>1?`<div class="cartel-pagina-tag">Página ${numPagina} de ${totalPaginas}</div>`:''}
-  `;
-}
-
-function renderCartelPreview(fechaStr, filled){
-  const poster = document.getElementById('cartel-poster');
-  if(!poster) return;
-  if(!filled.length){ poster.innerHTML=''; return; }
-
-  const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
-  const equipoDescansa = calcularEquipoDescansa(filled);
-  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas, equipoDescansa);
-
-  const aviso = document.getElementById('cartel-paginas-aviso');
-  if(aviso){
-    aviso.textContent = totalPaginas>1
-      ? `📄 Se generarán ${totalPaginas} páginas de PNG al descargar (7 partidos por página). Aquí se muestra la página 1.`
-      : '';
-  }
-}
-
-function formatHora12(hora24){
-  if(!hora24) return '';
-  const [hStr,mStr] = hora24.split(':');
-  let h = parseInt(hStr,10);
-  const m = mStr || '00';
-  const ampm = h >= 12 ? 'pm' : 'am';
-  h = h % 12; if(h===0) h = 12;
-  return `${h}:${m} ${ampm}`;
-}
-
-async function esperarImagenes(el){
-  const imgs = el.querySelectorAll('img');
-  await Promise.all(Array.from(imgs).map(img=> new Promise(resolve=>{
-    if(img.complete) resolve(); else { img.onload=resolve; img.onerror=resolve; }
-  })));
-  await new Promise(r=>setTimeout(r,150));
-}
-
-async function descargarCartelPNG(){
-  const poster = document.getElementById('cartel-poster');
-  const filled = ordenarPorCampoHora(rolSlots.filter(s=>s.matchId));
-  if(!poster || !filled.length){
-    alert('Primero arma el Rol del Domingo (Auto-proponer o agregar horarios) para generar el cartel.');
-    return;
-  }
-  const btn = document.querySelector('.btn-descargar-cartel');
-  const totalPaginas = Math.ceil(filled.length / CARTEL_POR_PAGINA);
-  const fecha = document.getElementById('rol-fecha').value || 'jornada';
-  const equipoDescansa = calcularEquipoDescansa(filled);
-
-  if(btn){ btn.disabled=true; btn.textContent='Generando...'; }
-
-  try{
-    for(let p=0; p<totalPaginas; p++){
-      const pagina = filled.slice(p*CARTEL_POR_PAGINA, (p+1)*CARTEL_POR_PAGINA);
-      pintarCartelPagina(pagina, p+1, totalPaginas, equipoDescansa);
-      await esperarImagenes(poster);
-      const canvas = await html2canvas(poster, { backgroundColor: null, scale: 4, useCORS: true });
-      const link = document.createElement('a');
-      link.download = totalPaginas>1 ? `jornada_${fecha}_pagina${p+1}.png` : `jornada_${fecha}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      await new Promise(r=>setTimeout(r,400));
-    }
-  }catch(err){
-    console.error(err);
-    alert('No se pudo generar el PNG. Revisa que las imágenes (escudos y logo) permitan descarga (CORS).');
-  }
-
-  pintarCartelPagina(filled.slice(0, CARTEL_POR_PAGINA), 1, totalPaginas, equipoDescansa);
-  if(btn){ btn.disabled=false; btn.textContent='📥 Descargar cartel PNG'; }
-}
-
-// ════════════════════════════════
-//  CÉDULA ARBITRAL (formato oficial de reportes, 1 encuentro por hoja carta, un campo tras otro)
-//  Lee los jugadores de la hoja "Jugadores" (N°, nombre, apodo, posición) y deja G / A / R en blanco para el árbitro.
-// ════════════════════════════════
-const CA_MIN_RENGLONES = 14;   // renglones mínimos por equipo (los sobrantes quedan en blanco para altas de último momento)
-const CA_LEYENDA = 'Asistió = marcar ✔ · G = Goles · A = Amarillas · R = Rojas';
-const CL_AREA_FILAS = 417;   // alto (px) disponible para los renglones de jugadores en la hoja horizontal
-
-function fechaNumSheet(f){ // dd/mm/yyyy -> yyyymmdd (para ordenar)
-  const p = String(f||'').split('/').map(n=>parseInt(n,10));
-  return (p.length===3 && p.every(n=>!isNaN(n))) ? p[2]*10000 + p[1]*100 + p[0] : 0;
-}
-function diaSemanaSheet(f){
-  const p = String(f||'').split('/').map(n=>parseInt(n,10));
-  if(!(p.length===3 && p.every(n=>!isNaN(n)))) return '';
-  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-  return dias[new Date(Date.UTC(p[2], p[1]-1, p[0])).getUTCDay()];
-}
-
-function llenarSelectCedula(){
-  const sel = document.getElementById('cedula-jornada');
-  if(!sel) return;
-  const jornadas = [...new Set(S.allMatches.filter(esAgendado).map(m=>String(m.jornada||'').trim()).filter(Boolean))]
-    .sort((a,b)=>Number(a)-Number(b));
-  sel.innerHTML = '<option value="">— Selecciona jornada —</option>' + jornadas.map(j=>`<option value="${j}">Jornada ${esc(j)}</option>`).join('');
-
-  const selF = document.getElementById('cedula-fecha');
-  if(selF){
-    const fechas = [...new Set(S.allMatches.filter(esAgendado).map(m=>String(m.fecha||'').trim()).filter(Boolean))]
-      .sort((a,b)=>fechaNumSheet(b)-fechaNumSheet(a)); // la más reciente primero
-    selF.innerHTML = '<option value="">— Selecciona fecha —</option>' + fechas.map(f=>{
-      const dia = diaSemanaSheet(f);
-      return `<option value="${esc(f)}">${esc((dia?dia+' ':'')+f)}</option>`;
-    }).join('');
-  }
-}
-
-function cambiarCedulaTipo(){
-  const t = document.getElementById('cedula-tipo').value;
-  document.getElementById('cedula-jornada').style.display = (t==='jornada') ? '' : 'none';
-  document.getElementById('cedula-fecha').style.display   = (t==='fecha')   ? '' : 'none';
-  document.getElementById('cedula-aviso').textContent = '';
-}
-
-function abreviaPosicion(p){
-  const t = String(p||'').trim();
-  if(!t) return '';
-  const n = t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
-  if(n.startsWith('port')) return 'POR';
-  if(n.startsWith('def'))  return 'DEF';
-  if(n.startsWith('med') || n.startsWith('vol') || n.startsWith('mc')) return 'MED';
-  if(n.startsWith('del') || n.startsWith('ata')) return 'DEL';
-  return t.slice(0,3).toUpperCase();
-}
-
-// ── Cédula horizontal: DOS encuentros por hoja carta (uno junto al otro), con casilla "Asistió" ──
-function clTablaHTML(equipoId, rol, renglones, rowH){
-  const jugadores = S.players[String(equipoId)] || [];
-  let filas = '';
-  for(let i=0;i<renglones;i++){
-    const j = jugadores[i];
-    if(j){
-      const largo = (String(j.nombre||'') + String(j.apodo||'')).length > 30 ? ' largo' : '';
-      filas += `<tr><td class="num">${esc(j.numero)}</td><td class="jug${largo}"><b>${esc(j.nombre)}</b>${j.apodo ? ` <i>&quot;${esc(j.apodo)}&quot;</i>` : ''}</td><td class="pos">${esc(abreviaPosicion(j.posicion))}</td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
-    } else {
-      filas += `<tr><td class="num"></td><td class="jug"></td><td class="pos"></td><td><span class="chk"></span></td><td></td><td></td><td></td></tr>`;
-    }
-  }
-  return `<div class="cl-col">
-    <div class="cl-teamhead"><span>${esc(rol)}</span><b>${esc(tname(equipoId))}</b></div>
-    <table class="cl-tabla" style="--rowh:${rowH}px">
-      <colgroup><col style="width:8%"><col><col style="width:10%"><col style="width:18%"><col style="width:9%"><col style="width:9%"><col style="width:9%"></colgroup>
-      <thead><tr><th>N°</th><th>Jugador</th><th>Pos.</th><th>Asistió</th><th>G</th><th class="a">A</th><th class="r">R</th></tr></thead>
-      <tbody>${filas}</tbody>
-    </table>
-    ${jugadores.length ? '' : '<div class="cl-sinjug">Sin jugadores registrados en la hoja — anotar a mano.</div>'}
-  </div>`;
-}
-
-function clCardHTML(m, renglones, rowH, idx, total, emision, sello){
-  const dia = diaSemanaSheet(m.fecha);
-  const ll = m.ll || tlogo(m.local);
-  const lv = m.lv || tlogo(m.visita);
-  const campo = String(m.cancha||'').trim() || '—';
-  const folio = `CA-J${m.jornada||'X'}-P${m.id}-${sello}`;
-  return `<div class="cl-card">
-    <div class="cl-head">
-      <div>
-        <div class="cl-liga">Liga Next Level 7 · Torneo Dominical</div>
-        <div class="cl-titulo">Cédula arbitral <span>· Jornada ${esc(m.jornada||'—')} · ${esc(campo)}</span></div>
-      </div>
-      <div class="cl-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
-    </div>
-    <div class="cl-cuerpo">
-      <div class="cl-cruce">
-        <div class="eq"><img src="${ll}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.local))}</b></div>
-        <div class="vs">VS</div>
-        <div class="eq v"><img src="${lv}" onerror="this.style.opacity='.15'"><b>${esc(tname(m.visita))}</b></div>
-      </div>
-      <div class="cl-info">
-        <span>Jornada ${esc(m.jornada||'—')}</span>
-        <span>${esc(m.fecha||'—')}${dia ? ' · ' + esc(dia) : ''}</span>
-        <span>${m.hora ? esc(formatHora12(m.hora)) : '—'}</span>
-        <span>${esc(campo)}</span>
-        <span>ID ${esc(m.id)}</span>
-      </div>
-      <div class="cl-tablas">
-        ${clTablaHTML(m.local, 'Local', renglones, rowH)}
-        ${clTablaHTML(m.visita, 'Visitante', renglones, rowH)}
-      </div>
-      <div class="cl-marcador">
-        <div><span>${esc(tname(m.local))}</span><div class="box"></div></div>
-        <div class="guion">–</div>
-        <div><span>${esc(tname(m.visita))}</span><div class="box"></div></div>
-      </div>
-      <div class="cl-obs-t">Observaciones</div><div class="cl-obs"></div>
-      <div class="cl-firmas"><div class="cl-firma">Árbitro</div><div class="cl-firma">Capitán local</div><div class="cl-firma">Capitán visitante</div></div>
-    </div>
-    <div class="cl-pie"><span>${CA_LEYENDA}</span><span>Hoja ${idx+1} de ${total} · Partido ${esc(m.id)}</span></div>
-  </div>`;
-}
-
-function caHojaDobleHTML(par, idx, total){
-  const p2 = n => String(n).padStart(2,'0');
-  const ahora = new Date();
-  const emision = `${p2(ahora.getDate())}/${p2(ahora.getMonth()+1)}/${ahora.getFullYear()} ${p2(ahora.getHours())}:${p2(ahora.getMinutes())}`;
-  const sello = `${ahora.getFullYear()}${p2(ahora.getMonth()+1)}${p2(ahora.getDate())}`;
-  const tamanos = par.flatMap(m => [(S.players[String(m.local)]||[]).length, (S.players[String(m.visita)]||[]).length]);
-  const renglones = Math.max(CA_MIN_RENGLONES, ...tamanos);           // ambos encuentros usan el mismo número de renglones
-  const rowH = Math.max(17, Math.min(30, Math.floor(CL_AREA_FILAS / renglones)));
-  // Cada encuentro lleva su propio encabezado verde y su propio pie (se pueden separar por partido)
-  return `<div class="cl-hoja">
-    <div class="cl-cards">
-      ${par.map(m => clCardHTML(m, renglones, rowH, idx, total, emision, sello)).join('')}
-      ${par.length < 2 ? '<div class="cl-card vacia"></div>' : ''}
-    </div>
-  </div>`;
-}
-
-// Dos encuentros por hoja (horizontal). Se agrupa por campo (Campo 1 primero, luego Campo 2...) y dentro de cada campo por hora; las parejas nunca mezclan campos.
-function cedulaOrdenarPartidos(partidos){
-  return [...partidos].sort((a,b)=>{
-    const ca = String(a.cancha||'').trim() || 'zzz';
-    const cb = String(b.cancha||'').trim() || 'zzz';
-    return ca.localeCompare(cb,'es',{numeric:true,sensitivity:'base'})
-      || fechaNumSheet(a.fecha)-fechaNumSheet(b.fecha)
-      || minutosDeHora(a.hora)-minutosDeHora(b.hora)
-      || Number(a.id)-Number(b.id);
-  });
-}
-
-async function generarCedulaJornada(modo){
-  const tipo = document.getElementById('cedula-tipo').value;
-  const aviso = document.getElementById('cedula-aviso');
-  let partidos, nombreArchivo;
-
-  if(tipo === 'fecha'){
-    const f = document.getElementById('cedula-fecha').value;
-    if(!f){ aviso.textContent = 'Selecciona una fecha primero.'; return; }
-    partidos = S.allMatches.filter(m => esAgendado(m) && String(m.fecha||'').trim() === f);
-    nombreArchivo = 'cedula_fecha_' + f.replace(/\//g,'-');
-  } else {
-    const jornadaSel = document.getElementById('cedula-jornada').value;
-    if(!jornadaSel){ aviso.textContent = 'Selecciona una jornada primero.'; return; }
-    partidos = S.allMatches.filter(m => esAgendado(m) && String(m.jornada||'').trim() === jornadaSel);
-    nombreArchivo = `cedula_jornada${jornadaSel}`;
-  }
-  if(!partidos.length){ aviso.textContent = 'No hay encuentros programados en esa selección.'; return; }
-  partidos = cedulaOrdenarPartidos(partidos);
-  const totalPartidos = partidos.length;
-  // se arman parejas dentro de cada campo (así un árbitro/campo no se mezcla con otro)
-  const porCampo = {};
-  partidos.forEach(m => { const c = String(m.cancha||'').trim() || '—'; (porCampo[c] = porCampo[c] || []).push(m); });
-  const pares = [];
-  Object.keys(porCampo).forEach(c => { for(let i=0;i<porCampo[c].length;i+=2) pares.push(porCampo[c].slice(i,i+2)); });
-  const total = pares.length;
-  const advertencia = S.playersError ? ' ⚠️ No se pudo leer la hoja "Jugadores": los renglones salen en blanco.' : '';
-
-  try{
-    if(modo === 'imprimir'){
-      aviso.textContent = 'Preparando hojas...';
-      const html = pares.map((par,i)=>caHojaDobleHTML(par,i,total)).join('');
-      await cfImprimir(html, CA_CSS);
-      aviso.textContent = `✅ ${total} hoja(s) horizontales con ${totalPartidos} encuentro(s), listas para imprimir (también puedes elegir "Guardar como PDF").` + advertencia;
-      return;
-    }
-
-    aviso.textContent = 'Generando PNG...';
-    const temp = document.createElement('div');
-    temp.style.cssText = 'position:fixed;left:-9999px;top:0;';
-    document.body.appendChild(temp);
-    try{
-      for(let i=0;i<total;i++){
-        temp.innerHTML = `<style>${CF_CSS}${CA_CSS}</style>${caHojaDobleHTML(pares[i], i, total)}`;
-        const hoja = temp.querySelector('.cl-hoja');
-        await esperarImagenes(hoja);
-        const canvas = await html2canvas(hoja, { backgroundColor:'#ffffff', scale:3, useCORS:true });
-        const link = document.createElement('a');
-        const idsPar = pares[i].map(m=>m.id).join('-');
-        link.download = total>1 ? `${nombreArchivo}_hoja${i+1}_partidos${idsPar}.png` : `${nombreArchivo}_partidos${idsPar}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        await new Promise(r=>setTimeout(r,400));
-      }
-    } finally { document.body.removeChild(temp); }
-    aviso.textContent = `✅ Se generaron ${total} hoja(s) PNG con ${totalPartidos} encuentro(s).` + advertencia;
-  }catch(err){
-    console.error(err);
-    aviso.textContent = 'No se pudo generar la cédula.';
-  }
-}
-
-// ════════════════════════════════
-//  REPORTE DE CONFIRMACIÓN DE ENCUENTROS (formal, imprimible / PNG)
-// ════════════════════════════════
-const CF_FB = 'https://liga-next-level-7-default-rtdb.firebaseio.com';
-
-const CF_CSS = `
-  .cf-doc{width:850px;min-height:1100px;background:#fff;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;box-sizing:border-box;position:relative;}
-  .cf-doc *{box-sizing:border-box;}
-  .cf-head{background:#1d3d05;color:#fff;padding:22px 34px 18px;border-bottom:6px solid #5eb50d;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cf-liga{font-size:12px;letter-spacing:3px;text-transform:uppercase;color:#b9d8a0;font-weight:600;}
-  .cf-titulo{font-size:28px;font-weight:800;margin-top:6px;line-height:1.15;}
-  .cf-sub{font-size:15px;color:#d6e6c8;margin-top:4px;}
-  .cf-meta{text-align:right;font-size:12px;color:#d6e6c8;line-height:1.7;white-space:nowrap;}
-  .cf-body{padding:22px 34px 10px;}
-  .cf-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
-  .cf-kpi{border:1px solid #cfd8c5;border-top:4px solid #5eb50d;border-radius:6px;padding:9px 6px;text-align:center;}
-  .cf-kpi b{display:block;font-size:26px;font-weight:800;line-height:1.15;}
-  .cf-kpi span{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.7px;font-weight:600;}
-  .cf-kpi.v{border-top-color:#2f9e44;} .cf-kpi.v b{color:#1f7a35;}
-  .cf-kpi.a{border-top-color:#e0a800;} .cf-kpi.a b{color:#a87500;}
-  .cf-kpi.r{border-top-color:#d64545;} .cf-kpi.r b{color:#c0392b;}
-  .cf-tabla{width:100%;border-collapse:collapse;font-size:13px;}
-  .cf-tabla thead{display:table-header-group;}
-  .cf-tabla th{background:#e8f1dc;color:#1d3d05;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;padding:8px 6px;border:1px solid #cfd8c5;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cf-tabla td{padding:8px 6px;border:1px solid #d9e0d0;text-align:center;vertical-align:middle;}
-  .cf-tabla tr{page-break-inside:avoid;break-inside:avoid;}
-  .cf-tabla td.n{color:#6b7280;font-size:12px;}
-  .cf-tabla td.cm{white-space:nowrap;}
-  .cf-tabla td.fh b{display:block;font-size:13px;}
-  .cf-tabla td.fh span{font-size:12px;color:#6b7280;}
-  .cf-eq{display:flex;align-items:center;gap:8px;text-align:left;}
-  .cf-eq img{width:34px;height:34px;object-fit:contain;flex-shrink:0;}
-  .cf-eq div{line-height:1.2;}
-  .cf-eq b{font-size:13px;text-transform:uppercase;display:block;}
-  .cf-ok{color:#1b6e2e;font-weight:800;font-size:11.5px;}
-  .cf-pend{color:#8a6100;font-weight:700;font-size:11.5px;}
-  .cf-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.4px;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cf-pill.v{background:#e3f4e6;color:#1b6e2e;border:1px solid #a9d9b3;}
-  .cf-pill.a{background:#fff4d6;color:#8a6100;border:1px solid #f0d58a;}
-  .cf-pill.r{background:#fde8e8;color:#b42318;border:1px solid #f5b5b5;}
-  .cf-seccion{margin-top:18px;}
-  .cf-seccion h4{margin:0 0 6px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;}
-  .cf-chips span{display:inline-block;margin:0 6px 6px 0;padding:4px 10px;border:1px solid #f0d58a;background:#fff8e1;border-radius:6px;font-size:12px;color:#6b4e00;}
-  .cf-todos{padding:10px 14px;border:1px solid #a9d9b3;background:#e3f4e6;border-radius:6px;color:#1b6e2e;font-weight:700;font-size:13px;}
-  .cf-obs{height:62px;border:1px solid #cfd8c5;border-radius:6px;background:repeating-linear-gradient(transparent,transparent 19px,#d9e0d0 19px,#d9e0d0 20px);}
-  .cf-firmas{display:flex;justify-content:space-around;gap:40px;margin:46px 40px 0;}
-  .cf-firma{flex:1;text-align:center;border-top:1.5px solid #1f2933;padding-top:6px;font-size:12px;color:#444;}
-  .cf-pie{display:flex;justify-content:space-between;gap:20px;margin-top:22px;padding:10px 34px;border-top:1px solid #cfd8c5;font-size:10.5px;color:#6b7280;}
-`;
-
-// Estilos extra de la cédula arbitral (se suman a CF_CSS: mismo encabezado, pie, firmas y paleta verde oficial)
-const CA_CSS = `
-  @page{size:letter landscape;margin:5mm}
-  .cl-hoja{width:1000px;height:760px;box-sizing:border-box;background:#fff;color:#1f2933;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;position:relative;overflow:hidden;display:flex;flex-direction:column;margin:0 auto;page-break-after:always;break-after:page;}
-  .cl-hoja:last-child{page-break-after:auto;break-after:auto;}
-  .cl-hoja *{box-sizing:border-box;}
-  .cl-cards{flex:1;display:flex;gap:14px;padding:8px 14px;min-height:0;}
-  .cl-card{flex:1;min-width:0;display:flex;flex-direction:column;border:1px solid #cfd8c5;border-radius:8px;overflow:hidden;}
-  .cl-card.vacia{border:none;}
-  .cl-head{background:#1d3d05;color:#fff;border-bottom:5px solid #5eb50d;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cl-liga{font-size:8.5px;letter-spacing:2px;text-transform:uppercase;color:#b9d8a0;font-weight:600;}
-  .cl-titulo{font-size:16px;font-weight:800;line-height:1.15;margin-top:2px;}
-  .cl-titulo span{font-size:11.5px;font-weight:600;color:#d6e6c8;}
-  .cl-meta{text-align:right;font-size:9px;color:#d6e6c8;line-height:1.45;white-space:nowrap;}
-  .cl-cuerpo{flex:1;display:flex;flex-direction:column;padding:8px 9px 6px;min-height:0;}
-  .cl-cruce{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#f4f8ee;border:1px solid #cfd8c5;border-radius:6px;padding:5px 9px;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cl-cruce .eq{display:flex;align-items:center;gap:7px;flex:1;min-width:0;}
-  .cl-cruce .eq.v{flex-direction:row-reverse;text-align:right;}
-  .cl-cruce img{width:34px;height:34px;object-fit:contain;flex-shrink:0;}
-  .cl-cruce b{font-size:12.5px;text-transform:uppercase;line-height:1.1;}
-  .cl-cruce .vs{font-size:14px;font-weight:900;color:#5eb50d;}
-  .cl-info{display:flex;justify-content:space-between;gap:4px;margin:6px 0;}
-  .cl-info span{background:#e8f1dc;color:#1d3d05;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:700;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cl-tablas{display:flex;gap:7px;align-items:flex-start;}
-  .cl-col{flex:1;min-width:0;}
-  .cl-teamhead{display:flex;justify-content:space-between;align-items:baseline;gap:4px;background:#1d3d05;color:#fff;padding:4px 7px;border-radius:5px 5px 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cl-teamhead span{font-size:8.5px;letter-spacing:1.2px;text-transform:uppercase;color:#b9d8a0;font-weight:700;}
-  .cl-teamhead b{font-size:11px;text-transform:uppercase;text-align:right;line-height:1.1;}
-  .cl-tabla{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9.5px;}
-  .cl-tabla th{background:#e8f1dc;color:#1d3d05;font-size:8px;letter-spacing:0;white-space:nowrap;text-transform:uppercase;padding:3px 1px;border:1px solid #b9c4ae;text-align:center;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
-  .cl-tabla th.a{background:#fff4d6;color:#8a6100;} .cl-tabla th.r{background:#fde8e8;color:#b42318;}
-  .cl-tabla td{border:1px solid #b9c4ae;padding:0 3px;text-align:center;vertical-align:middle;overflow:hidden;height:var(--rowh,22px);}
-  .cl-tabla tr{page-break-inside:avoid;break-inside:avoid;}
-  .cl-tabla td.num{font-weight:800;font-size:10.5px;}
-  .cl-tabla td.jug{text-align:left;line-height:1.05;font-size:9px;}
-  .cl-tabla td.jug i{color:#5b6b4d;font-size:8.5px;}
-  .cl-tabla td.pos{font-size:8.5px;color:#4b5563;font-weight:700;}
-  .chk{display:inline-block;width:13px;height:13px;border:1.6px solid #1f2933;border-radius:2px;background:#fff;vertical-align:middle;}
-  .cl-sinjug{font-size:9px;color:#8a6100;margin-top:3px;}
-  .cl-marcador{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-top:auto;padding-top:6px;}
-  .cl-marcador > div:not(.guion){display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 1 150px;}
-  .cl-marcador span{font-size:9px;font-weight:700;text-transform:uppercase;color:#1d3d05;text-align:center;line-height:1.1;}
-  .cl-marcador .box{width:62px;height:32px;border:2px solid #1f2933;border-radius:5px;}
-  .cl-marcador .guion{font-size:22px;font-weight:800;color:#1d3d05;padding-bottom:3px;}
-  .cl-obs-t{font-size:8.5px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;font-weight:800;margin-top:6px;}
-  .cl-obs{border:1px solid #b9c4ae;border-radius:5px;height:28px;margin-top:2px;}
-  .cl-firmas{display:flex;gap:10px;margin-top:12px;}
-  .cl-firma{flex:1;text-align:center;border-top:1.4px solid #1f2933;padding-top:3px;font-size:9px;color:#444;}
-  .cl-pie{display:flex;justify-content:space-between;gap:8px;padding:4px 10px;border-top:1px solid #cfd8c5;font-size:8px;color:#6b7280;white-space:nowrap;}
-  .cl-tabla td.jug.largo{font-size:8px;line-height:1;}
-  .cl-tabla td.jug.largo i{font-size:7.5px;}
-`;
-
-function llenarSelectConfirmacion(){
-  const sel = document.getElementById('cf-jornada');
-  if(!sel) return;
-  const jornadas = [...new Set(S.allMatches.map(m=>String(m.jornada||'').trim()).filter(Boolean))]
-    .sort((a,b)=>Number(a)-Number(b));
-  sel.innerHTML = '<option value="">— Selecciona jornada —</option>' + jornadas.map(j=>`<option value="${j}">Jornada ${esc(j)}</option>`).join('');
-  const selF = document.getElementById('cf-fecha');
-  if(selF){
-    const fechas = [...new Set(S.allMatches.map(m=>String(m.fecha||'').trim()).filter(Boolean))]
-      .sort((a,b)=>fechaNumSheet(b)-fechaNumSheet(a));
-    selF.innerHTML = '<option value="">— Selecciona fecha —</option>' + fechas.map(f=>{
-      const dia = diaSemanaSheet(f);
-      return `<option value="${esc(f)}">${esc((dia?dia+' ':'')+f)}</option>`;
-    }).join('');
-  }
-}
-function cambiarCfTipo(){
-  const t = document.getElementById('cf-tipo').value;
-  document.getElementById('cf-jornada').style.display = (t==='jornada') ? '' : 'none';
-  document.getElementById('cf-fecha').style.display   = (t==='fecha')   ? '' : 'none';
-  document.getElementById('cf-aviso').textContent = '';
-}
-
-function cfDocHTML(partidos, conf, tipo, valor){
-  const ahora = new Date();
-  const p2 = n => String(n).padStart(2,'0');
-  const emision = `${p2(ahora.getDate())}/${p2(ahora.getMonth()+1)}/${ahora.getFullYear()} ${p2(ahora.getHours())}:${p2(ahora.getMinutes())}`;
-  const sello = `${ahora.getFullYear()}${p2(ahora.getMonth()+1)}${p2(ahora.getDate())}`;
-  const folio = tipo==='fecha' ? `CE-F${String(valor).replace(/\//g,'')}-${sello}` : `CE-J${valor}-${sello}`;
-  const dia = tipo==='fecha' ? diaSemanaSheet(valor) : '';
-  const sub = tipo==='fecha' ? `Encuentros del ${dia ? dia+' ' : ''}${esc(valor)}` : `Jornada ${esc(valor)}`;
-
-  let completos=0, parciales=0, sin=0;
-  const pendientes = [];
-  const filas = partidos.map((m,i)=>{
-    const c = conf[m.id] || {};
-    const okL = !!c.local, okV = !!c.visita;
-    const n = (okL?1:0)+(okV?1:0);
-    if(n===2) completos++; else if(n===1) parciales++; else sin++;
-    const nomL = tname(m.local), nomV = tname(m.visita);
-    if(!okL) pendientes.push(`${esc(nomL)} <small>(vs ${esc(nomV)})</small>`);
-    if(!okV) pendientes.push(`${esc(nomV)} <small>(vs ${esc(nomL)})</small>`);
-    const pill = n===2 ? '<span class="cf-pill v">COMPLETA</span>' : (n===1 ? '<span class="cf-pill a">PARCIAL</span>' : '<span class="cf-pill r">SIN CONFIRMAR</span>');
-    const jugado = (m.estado||'').toLowerCase()==='jugado' ? '<div style="font-size:10px;color:#6b7280;margin-top:3px">Jugado</div>' : '';
-    const eq = (nombre, logo, ok) => `<div class="cf-eq"><img src="${logo}" onerror="this.style.opacity='.15'"><div><b>${esc(nombre)}</b><span class="${ok?'cf-ok':'cf-pend'}">${ok?'✔ Confirmado':'○ Pendiente'}</span></div></div>`;
-    return `<tr>
-      <td class="n">${i+1}</td>
-      <td>${esc(m.jornada||'')}</td>
-      <td class="fh"><b>${esc(m.fecha||'—')}</b><span>${m.hora ? esc(formatHora12(m.hora)) : '—'}</span></td>
-      <td class="cm">${esc(m.cancha||'—')}</td>
-      <td>${eq(nomL, m.ll || tlogo(m.local), okL)}</td>
-      <td>${eq(nomV, m.lv || tlogo(m.visita), okV)}</td>
-      <td>${pill}${jugado}</td>
-    </tr>`;
-  }).join('');
-
-  const seccionPend = pendientes.length
-    ? `<div class="cf-chips">${pendientes.map(p=>`<span>${p}</span>`).join('')}</div>`
-    : '<div class="cf-todos">✔ Todos los equipos confirmaron su asistencia.</div>';
-
-  return `<div class="cf-doc">
-    <div class="cf-head">
-      <div>
-        <div class="cf-liga">Liga Next Level 7</div>
-        <div class="cf-titulo">Confirmación de encuentros</div>
-        <div class="cf-sub">${sub}</div>
-      </div>
-      <div class="cf-meta">Folio: <b>${esc(folio)}</b><br>Emitido: ${emision}</div>
-    </div>
-    <div class="cf-body">
-      <div class="cf-kpis">
-        <div class="cf-kpi"><b>${partidos.length}</b><span>Encuentros</span></div>
-        <div class="cf-kpi v"><b>${completos}</b><span>Confirmación completa</span></div>
-        <div class="cf-kpi a"><b>${parciales}</b><span>Confirmación parcial</span></div>
-        <div class="cf-kpi r"><b>${sin}</b><span>Sin confirmar</span></div>
-        <div class="cf-kpi ${pendientes.length?'a':'v'}"><b>${pendientes.length}</b><span>Equipos pendientes</span></div>
-      </div>
-      <table class="cf-tabla">
-        <thead><tr><th style="width:30px">No.</th><th style="width:44px">Jor.</th><th style="width:96px">Fecha y hora</th><th style="width:78px">Campo</th><th>Equipo local</th><th>Equipo visitante</th><th style="width:112px">Situación</th></tr></thead>
-        <tbody>${filas}</tbody>
-      </table>
-      <div class="cf-seccion"><h4>Equipos pendientes de confirmar asistencia</h4>${seccionPend}</div>
-      <div class="cf-seccion"><h4>Observaciones</h4><div class="cf-obs"></div></div>
-      <div class="cf-firmas"><div class="cf-firma">Administrador de la liga</div><div class="cf-firma">Vo. Bo.</div></div>
-    </div>
-    <div class="cf-pie"><span>Documento generado desde el panel de administración · Liga Next Level 7</span><span>Confirmaciones leídas el ${emision}</span></div>
-  </div>`;
-}
-
-async function cfImprimir(html, extraCss=''){
-  const f = document.createElement('iframe');
-  f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
-  document.body.appendChild(f);
-  const d = f.contentWindow.document;
-  d.open();
-  d.write(`<!doctype html><html><head><meta charset="utf-8"><title>Confirmación de encuentros</title><style>@page{size:letter;margin:10mm}html,body{margin:0;background:#fff}${CF_CSS}${extraCss}.cf-doc{width:auto!important;min-height:0!important}</style></head><body>${html}</body></html>`);
-  d.close();
-  await Promise.all([...d.images].map(i => i.complete ? 1 : new Promise(r => { i.onload = i.onerror = r; })));
-  await new Promise(r => setTimeout(r, 200));
-  f.contentWindow.focus();
-  f.contentWindow.print();
-  setTimeout(() => { try{ f.remove(); }catch(e){} }, 60000);
-}
-
-async function cfReporte(modo){
-  const tipo = document.getElementById('cf-tipo').value;
-  const aviso = document.getElementById('cf-aviso');
-  const valor = document.getElementById(tipo==='fecha' ? 'cf-fecha' : 'cf-jornada').value;
-  if(!valor){ aviso.textContent = tipo==='fecha' ? 'Selecciona una fecha primero.' : 'Selecciona una jornada primero.'; return; }
-
-  let partidos = S.allMatches.filter(m=>{
-    const est = (m.estado||'').toLowerCase();
-    if(!(est==='programado' || est==='jugado')) return false;
-    return tipo==='fecha' ? String(m.fecha||'').trim()===valor : String(m.jornada||'').trim()===valor;
-  });
-  if(!partidos.length){ aviso.textContent = 'No hay encuentros programados en esa selección.'; return; }
-  partidos.sort((a,b)=> fechaNumSheet(a.fecha)-fechaNumSheet(b.fecha) || minutosDeHora(a.hora)-minutosDeHora(b.hora)
-    || String(a.cancha||'').localeCompare(String(b.cancha||''),'es',{numeric:true}) || Number(a.id)-Number(b.id));
-
-  aviso.textContent = 'Leyendo confirmaciones...';
-  let conf;
-  try{
-    const r = await fetch(CF_FB + '/confirmaciones.json');
-    if(!r.ok) throw new Error('HTTP ' + r.status);
-    conf = (await r.json()) || {};
-  }catch(e){
-    aviso.textContent = 'No se pudieron leer las confirmaciones; no genero el reporte para no mostrar datos incorrectos. Revisa tu conexión.';
-    return;
-  }
-
-  const html = cfDocHTML(partidos, conf, tipo, valor);
-  try{
-    if(modo==='imprimir'){
-      aviso.textContent = 'Abriendo impresión...';
-      await cfImprimir(html);
-      aviso.textContent = '✅ Listo para imprimir (también puedes elegir "Guardar como PDF").';
-    } else {
-      aviso.textContent = 'Generando PNG...';
-      const temp = document.createElement('div');
-      temp.style.cssText = 'position:fixed;left:-9999px;top:0;';
-      temp.innerHTML = `<style>${CF_CSS}</style>${html}`;
-      document.body.appendChild(temp);
-      try{
-        const doc = temp.querySelector('.cf-doc');
-        await esperarImagenes(doc);
-        const canvas = await html2canvas(doc, { backgroundColor:'#ffffff', scale:2, useCORS:true });
-        const link = document.createElement('a');
-        link.download = tipo==='fecha' ? `confirmacion_fecha_${valor.replace(/\//g,'-')}.png` : `confirmacion_jornada${valor}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      } finally { document.body.removeChild(temp); }
-      aviso.textContent = `✅ PNG generado — ${partidos.length} encuentro(s).`;
-    }
-  }catch(err){
-    console.error(err);
-    aviso.textContent = 'No se pudo generar el reporte.';
-  }
-}
-
-// ════════════════════════════════
-//  HELPERS
-// ════════════════════════════════
-function tname(id){ return (S.teams[id]||{}).nombre||'Equipo '+id; }
-function tlogo(id){ return (S.teams[id]||{}).logo||''; }
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    const [te,tp]=await Promise.all([fetch(SHEET+GID_EQ).then(r=>r.text()),fetch(SHEET+GID_PA).then(r=>r.text())]);
+    teams=csv(te).filter(e=>(e.Status||'').trim().toLowerCase()==='activo'&&!['11','15'].includes(String(e.ID_Equipo))).map(e=>({...e,id:e.ID_Equipo}));teams.forEach(t=>T[t.id]=t);
+    csv(te).forEach(e=>{if(!T[e.ID_Equipo])T[e.ID_Equipo]={...e,id:e.ID_Equipo,baja:true}});   // equipos en baja: sus partidos ya jugados se siguen mostrando
+    const PALL=NL7Juegos.correcciones(csv(tp));P=PALL;calcDescansos();   // descansos con TODOS los partidos, como partidos.js
+    /* igual que partidos.js: los jugados siempre se ven; los pendientes/programados solo si los dos equipos están activos */
+    const act=new Set(teams.map(t=>String(t.id).trim())),ok=x=>{x=String(x||'').trim();return !x||act.has(x)};
+    P=PALL.filter(p=>!NL7Juegos.estado(p).includes('cancel')&&!NL7Juegos.esCubierto(p,Object.values(T))&&(NL7Juegos.estado(p)==='jugado'||ok(p.Equipo_Local)&&ok(p.Equipo_Visita))); 
+    fechas=[...new Set(P.map(p=>p.Fecha).filter(Boolean))].sort((a,b)=>tf(a)-tf(b));
+    $('fechas').innerHTML=fechas.map(f=>{const ms=P.filter(p=>p.Fecha==f),pen=ms.some(p=>p.Estado!='Jugado');return `<button data-f="${f}" class="${pen?'pen':''}">${f.slice(0,5)}<small>${ms.length} · ${pen?'pendientes':'jugados'}</small></button>`}).join('');
+    document.querySelectorAll('#fechas button').forEach(b=>b.onclick=()=>dibujar(b.dataset.f).then(panel));
+    $('tabs').innerHTML=[['dom','Domingo'],['jug','Jugados'],['pen','Pendientes'],['des','Control']].map(([k,n])=>`<button data-k="${k}">${n}</button>`).join('');
+    document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.k;panel()});
+    const hoy=new Date().setHours(0,0,0,0),prox=fechas.find(f=>tf(f)>=hoy)||fechas[fechas.length-1];
+    await dibujar(prox);panel();$('msg').remove();animar();
+    document.querySelector(`#fechas button[data-f="${prox}"]`).scrollIntoView({inline:'center',block:'nearest'});
+  }catch(e){$('msg').textContent='No se pudo cargar la hoja: '+e.message}
+})();
 </script>
 </body>
 </html>
