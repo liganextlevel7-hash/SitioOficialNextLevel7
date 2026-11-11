@@ -706,8 +706,7 @@
       try {
         const rh = await fetch(RV_URL_JUGADORES, {cache:'no-store'});
         if (!rh.ok) throw Error();
-        const filasH = rvParseCSV(await rh.text());
-        hojaAdminCache = filasH.slice(1).map(c => ({ id: String(c[0] || '').trim(), nombre: rvNorm(c[1]), equipo: String(c[2] || '').trim() })).filter(h => h.nombre);
+        hojaAdminCache = rvLeerHojaJugadores(await rh.text());
       } catch (e) { hojaAdminCache = null; }
 
       pintarListaAdmin();
@@ -724,8 +723,7 @@
       const e = EQUIPOS.find(q => rvNorm(q.nombre) === rvNorm(j.equipo));
       eqId = e ? String(e.id) : '';
     }
-    if (j.idJugador && hojaAdminCache.some(h => h.id === j.idJugador && h.equipo === eqId)) return 'hoja';
-    return rvEstado({ nombre: j.nombre || '', eqId }, hojaAdminCache);
+    return rvEstado({ idJugador: j.idJugador, nombre: j.nombre || '', eqId }, hojaAdminCache);
   }
 
   function filtrarEquipoAdm(nombre) {
@@ -934,8 +932,13 @@
 
   async function borrarRegistroAdm(id) {
     if (!confirm('¿Ya pasaste este jugador a tu hoja de Sheets? Se va a borrar (no se puede deshacer).')) return;
-    await fetch(`${FB}/jugadoresRegistro/${id}.json`, { method: 'DELETE' });
-    cargarRegistrosAdmin();
+    try {
+      const respuesta = await fetch(`${FB}/jugadoresRegistro/${id}.json`, { method: 'DELETE' });
+      if (!respuesta.ok) throw Error('El registro rechazó el borrado');
+      await cargarRegistrosAdmin();
+    } catch {
+      alert('No se pudo borrar el registro. Revisa tu conexión y vuelve a intentar.');
+    }
   }
 
   // ---- Foto: abrir selector, comprimir antes de guardar ----
@@ -1272,9 +1275,20 @@
     return new Date(y, m-1, d).toLocaleDateString('es-MX', { weekday: 'short' }).replace('.','');
   }
 
-  // 'hoja' exige el mismo equipo y nombre completo normalizado; permite reordenar palabras.
-  // 'hoja_otro' = el nombre está en la hoja pero con otro equipo, 'pendiente' = no aparece.
+  function rvLeerHojaJugadores(csv){
+    const [encabezado, ...filas] = rvParseCSV(csv);
+    if (!['ID_Jugador', 'Nombre', 'Equipo'].every((campo, i) => encabezado?.[i]?.replace(/^\uFEFF/, '').trim() === campo)) {
+      throw Error('La hoja Jugadores no devolvió las columnas esperadas');
+    }
+    return filas.map(c => ({
+      id: String(c[0] || '').trim(), nombre: rvNorm(c[1]), equipo: String(c[2] || '').trim()
+    })).filter(h => h.nombre);
+  }
+
+  // El panel y los reportes usan el mismo ID o nombre normalizado dentro del equipo.
   function rvEstado(reg, hoja){
+    const idJugador = String(reg.idJugador ?? '').trim();
+    if (idJugador && hoja.some(h => h.id === idJugador && h.equipo === reg.eqId)) return 'hoja';
     const n = rvNorm(reg.nombre);
     if (!n) return 'pendiente';
     const mismoEq = hoja.filter(h => h.equipo === reg.eqId);
@@ -1286,10 +1300,13 @@
   }
 
   async function rvCargarDatos(){
-    const [rFb, rSh] = await Promise.all([ fetch(FB + '/jugadoresRegistro.json'), fetch(RV_URL_JUGADORES) ]);
+    const [rFb, rSh] = await Promise.all([
+      fetch(FB + '/jugadoresRegistro.json', {cache:'no-store'}),
+      fetch(RV_URL_JUGADORES, {cache:'no-store'})
+    ]);
+    if (!rFb.ok || !rSh.ok) throw Error('No se pudo leer el registro o la hoja Jugadores');
     const data = (await rFb.json()) || {};
-    const filas = rvParseCSV(await rSh.text());
-    const hoja = filas.slice(1).map(c => ({ nombre: rvNorm(c[1]), equipo: String(c[2] || '').trim() })).filter(h => h.nombre);
+    const hoja = rvLeerHojaJugadores(await rSh.text());
 
     const equipos = { 18: { id: "18", nombre: "Galácticos", regs: [] } };
     const idPorNombre = { galacticos: "18", "atletico ballenitas": "11" };
@@ -1304,7 +1321,7 @@
       if (!eqId || eqId === 'NaN') eqId = idPorNombre[rvNorm(j.equipo)] || '';
       if (eqId === "11") return [];
       const reg = {
-        id, nombre: (j.nombre || '').trim(), apodo: (j.apodo || '').trim(),
+        id, idJugador: j.idJugador, nombre: (j.nombre || '').trim(), apodo: (j.apodo || '').trim(),
         numero: j.numero, posicion: j.posicion || '', fecha: j.fecha || 0,
         dia: rvDiaKey(j.fecha), eqId, eqNombre: j.equipo || ''
       };
