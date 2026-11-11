@@ -768,6 +768,34 @@
         `;
   }
 
+  function confirmacionAdministracion(jugador) {
+    return jugador.actualizadoEn && jugador.actualizacionesAplicadasAdmin?.[jugador.actualizadoEn];
+  }
+
+  let guardandoConfirmacionesAdm = false;
+
+  async function marcarActualizacionesAplicadasAdm(entradas, aviso) {
+    if (guardandoConfirmacionesAdm || sessionStorage.getItem('nl7_domingo_admin_ok') !== '1') return;
+    const cambios = Object.fromEntries(entradas.map(([id, jugador]) => [
+      `${id}/actualizacionesAplicadasAdmin/${jugador.actualizadoEn}`, {'.sv': 'timestamp'}
+    ]));
+    guardandoConfirmacionesAdm = true;
+    aviso.textContent = 'Guardando confirmación…';
+    try {
+      const respuesta = await fetch(FB + '/jugadoresRegistro.json', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cambios)
+      });
+      if (!respuesta.ok) throw Error('No se pudo guardar la confirmación');
+      await cargarRegistrosAdmin();
+    } catch {
+      aviso.textContent = 'No se pudo guardar la confirmación. Intenta de nuevo.';
+    } finally {
+      guardandoConfirmacionesAdm = false;
+    }
+  }
+
   function pintarListaAdmin() {
     const lista = document.getElementById('lista-admin');
     const contador = document.getElementById('contador');
@@ -787,12 +815,13 @@
 
     // Separa: nuevos (faltan por capturar) y ya capturados en la hoja
     const conEstado = entradas.map(([id, j]) => [id, j, estadoRegistroAdm(j)]);
-    const actualizados = conEstado.filter(([,j]) => j.actualizadoEn)
+    const actualizados = conEstado.filter(([,j]) => j.actualizadoEn && !confirmacionAdministracion(j))
       .sort((a,b) => b[1].actualizadoEn - a[1].actualizadoEn);
+    const revisados = conEstado.filter(([,j]) => confirmacionAdministracion(j));
     const nuevos = conEstado.filter(([,j,e]) => !j.actualizadoEn && e !== 'hoja');
     const capturados = conEstado.filter(([,j,e]) => !j.actualizadoEn && e === 'hoja');
 
-    contador.textContent = (filtro ? filtro + ': ' : '') + `${nuevos.length} por capturar · ${capturados.length} ya capturados · ${actualizados.length} actualizados`;
+    contador.textContent = (filtro ? filtro + ': ' : '') + `${nuevos.length} por capturar · ${capturados.length} ya capturados · ${actualizados.length} actualizaciones por revisar`;
 
     // Si no se eligió equipo, se agrupa por equipo; si se eligió uno, va la lista directa
     const pintaItems = (items) => {
@@ -828,11 +857,29 @@
            ${capturados.length ? pintaItems(capturados) : '<div class="nota">Todavía no hay jugadores registrados que estén en la hoja.</div>'}
          </details>` : '';
 
-    const seccionActualizados = actualizados.length
-      ? `<div class="sec-titulo-adm hechos">Jugadores actualizados · ${actualizados.length}</div>`
-        + actualizados.map(([id,j,e]) => tarjetaAdm(id,j,e)).join('')
-      : '';
-    lista.innerHTML = seccionActualizados + seccionNuevos + seccionCapturados;
+    const seccionActualizados = `<div class="sec-titulo-adm hechos">Actualizaciones por revisar · ${actualizados.length}</div>` +
+      (actualizados.length ? `
+        <button type="button" class="btn-editar-adm" data-aplicar-todas-adm>Marcar todas las visibles como aplicadas (${actualizados.length})</button>
+        <div class="nota" role="status" data-aviso-aplicadas-adm></div>
+        ${actualizados.map(([id,j,e], i) => `<div>${tarjetaAdm(id,j,e)}
+          <button type="button" class="btn-editar-adm" data-aplicar-actualizacion-adm="${i}">Marcar como aplicada</button>
+        </div>`).join('')}
+      ` : '<div class="nota">No hay actualizaciones por revisar.</div>');
+    const seccionRevisados = revisados.length ? `
+      <details class="sec-capturados">
+        <summary class="sec-titulo-adm hechos">Actualizaciones aplicadas · ${revisados.length}</summary>
+        ${pintaItems(revisados)}
+      </details>` : '';
+
+    lista.innerHTML = seccionActualizados + seccionNuevos + seccionCapturados + seccionRevisados;
+    if (actualizados.length) {
+      const aviso = lista.querySelector('[data-aviso-aplicadas-adm]');
+      lista.querySelector('[data-aplicar-todas-adm]').addEventListener('click', () =>
+        marcarActualizacionesAplicadasAdm(actualizados, aviso));
+      lista.querySelectorAll('[data-aplicar-actualizacion-adm]').forEach(btn =>
+        btn.addEventListener('click', () =>
+          marcarActualizacionesAplicadasAdm([actualizados[Number(btn.dataset.aplicarActualizacionAdm)]], aviso)));
+    }
   }
 
   function copiarDatosAdm(btn, texto) {
@@ -1039,6 +1086,7 @@
         !hojaDisponible && '<p class="nota">No se pudo leer la hoja de jugadores. Se muestran los datos del registro.</p>',
         !entradas.length && '<p class="nota">Aún no hay jugadores para este equipo.</p>',
         ...entradas.map(([id,j]) => {
+          const confirmacion = confirmacionAdministracion(j);
           const foto = /^(https?:\/\/|data:image\/(jpeg|png|webp);base64,)/i.test(j.foto || '') ? j.foto : '';
           return `<div class="tarjeta-jg" id="mi-card-${escaparRegistro(id)}">
             ${foto ? `<img src="${escaparRegistro(foto)}" alt="Foto del jugador">` : ''}
@@ -1046,7 +1094,9 @@
               <div class="nombre-jg">${escaparRegistro(j.nombre || '(sin nombre)')}</div>
               <div class="campo-jg">Número ${escaparRegistro(j.numero ?? '—')} · ${escaparRegistro(j.posicion || 'Sin posición')}</div>
               ${j.apodo ? `<div class="campo-jg">Apodo ${escaparRegistro(j.apodo)}</div>` : ''}
-              ${j.actualizadoEn ? `<div class="campo-jg" style="color:#a4db52">Actualizado ${fechaRegistro(j.actualizadoEn)}</div>` : ''}
+              ${confirmacion
+                ? `<div class="campo-jg" style="color:#a4db52">✓ Actualizado por Administración · ${fechaRegistro(confirmacion)}</div>`
+                : j.actualizadoEn ? `<div class="campo-jg" style="color:#a4db52">Actualizado ${fechaRegistro(j.actualizadoEn)}</div>` : ''}
               <button type="button" class="btn-editar-jg">✏️ Editar</button>
             </div>
           </div>`;
