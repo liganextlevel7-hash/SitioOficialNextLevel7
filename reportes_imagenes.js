@@ -1037,6 +1037,17 @@ async function downloadPNGDescansos(){
  const el=document.createElement('div');el.innerHTML=NL7Juegos.documento('Partidos pendientes',NL7Juegos.tabla(todosPartidos.filter(p=>NL7Juegos.estado(p)==='pendiente'&&!NL7Juegos.esCubierto(p,todosEquipos)&&[p.Equipo_Local,p.Equipo_Visita].every(id=>todosEquipos.some(e=>String(e.ID_Equipo)===String(id)&&String(e.Status).toLowerCase()==='activo'))),todosEquipos));el.style.cssText='position:absolute;left:-12000px;top:0;width:1000px';document.body.append(el);
  try{const c=await html2canvas(el,{scale:2,backgroundColor:'#fff',useCORS:true});const a=document.createElement('a');a.download='partidos-pendientes.png';a.href=c.toDataURL('image/png');a.click();}finally{el.remove();}
 }
+function partidosAtrasadosPNG(fecha) {
+ const G = NL7Juegos;
+ const control = G.controlFechas(todosPartidos, todosEquipos, fecha);
+ const equipos = control?.equipos.filter(e => e.atrasados > 0) || [];
+ if (!equipos.length) return '';
+
+ const filas = equipos.map(e =>
+  `<div><b>${G.esc(e.equipo)}</b> — ${e.atrasados}</div>`
+ ).join('');
+ return `<div style="font-size:16px;font-weight:bold;color:#b5e874;margin-bottom:8px">Partidos atrasados</div>${filas}`;
+}
 // Exportación acotada: cada equipo ocupa su propia columna y el centro no crece con sus etiquetas.
 function pngPagina(tipo,partidos,pagina,total,titulo,opciones){
  const G=NL7Juegos,E=Object.fromEntries(todosEquipos.map(e=>[String(e.ID_Equipo).trim(),e]));opciones=opciones||{};
@@ -1058,7 +1069,8 @@ function pngPagina(tipo,partidos,pagina,total,titulo,opciones){
   mid.innerHTML=`<div style="font-size:13px">${G.esc(p.Fecha||'Fecha por definir')}</div><div style="font-size:25px;color:#e1e8dc">${jugado?G.esc(p.Goles_Local)+' – '+G.esc(p.Goles_Visita):'VS'}</div><div style="font-size:24px;font-weight:bold;color:#ffd83d">${G.esc(formatHora(p.Hora)||'Por definir')}</div><div style="font-size:14px;color:#c8ef9a">${G.esc(p.Cancha||'Campo por definir')}</div><div style="font-size:10px;color:#c8d7bb">ID ${G.esc(p.ID_Partido)}</div>`;
   row.append(team('local'),mid,team('visita'));rows.append(row);
  }content.append(rows);
- if(pagina===total&&opciones.fechaControl){const footer=document.createElement('div');footer.className='png-control-fechas';footer.style.cssText='margin-top:12px;padding:10px 12px;background:rgba(0,12,6,.92);border:1px solid #5b7c2d;border-radius:8px;font-size:11px;line-height:1.32;box-sizing:border-box;';footer.innerHTML=G.leyendaFechas(todosPartidos,todosEquipos,opciones.fechaControl);content.append(footer);}
+ const atrasos = pagina === total && opciones.fechaControl ? partidosAtrasadosPNG(opciones.fechaControl) : '';
+ if(atrasos){const footer=document.createElement('div');footer.className='png-control-fechas';footer.style.cssText='margin-top:12px;padding:10px 12px;background:rgba(0,12,6,.92);border:1px solid #5b7c2d;border-radius:8px;font-size:13px;line-height:1.32;box-sizing:border-box;';footer.innerHTML=atrasos;content.append(footer);}
  root.append(content);return root;
 }
 function pngAjustarPagina(root){
