@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="dashboard-version" content="rostro-liso-playera-3">
+<meta name="dashboard-version" content="jugadores-partidos3d-1">
 <title>Dashboard 3D · Liga Next Level 7</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -173,20 +173,23 @@ renderer.outputEncoding=THREE.sRGBEncoding;renderer.shadowMap.enabled=true;rende
 document.body.prepend(renderer.domElement);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x85bfea);scene.fog=new THREE.Fog(0x9ac5dd,110,240);
 const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.5,400);
-scene.add(new THREE.HemisphereLight(0xe4f3ff,0x24391e,.62));
-const sun=new THREE.DirectionalLight(0xfff4da,.88);sun.position.set(-25,50,20);sun.castShadow=true;
+scene.add(new THREE.HemisphereLight(0xbfe8c0,0x0a1d10,.9));
+const sun=new THREE.DirectionalLight(0xfff4da,.95);sun.position.set(-25,50,20);sun.castShadow=true;
 const shadowSize=innerWidth<=760?512:1024;sun.shadow.mapSize.set(shadowSize,shadowSize);Object.assign(sun.shadow.camera,{left:-45,right:45,top:35,bottom:-35,near:10,far:120});scene.add(sun);
 
 const PW=74,PH=48.6;
 function campoTex(){
-  const c=document.createElement('canvas');c.width=1400;c.height=920;const x=c.getContext('2d');
-  for(let i=0;i<14;i++){x.fillStyle=i%2?'#2a542d':'#315e30';x.fillRect(i*100,0,100,920)}
-  for(let n=0;n<6500;n++){x.fillStyle=n%2?'rgba(255,255,255,.035)':'rgba(0,0,0,.05)';x.fillRect(Math.random()*1400,Math.random()*920,1,3)}
-  x.strokeStyle='rgba(255,255,255,.9)';x.fillStyle='#fff';x.lineWidth=5;const m=40;
-  x.strokeRect(m,m,1400-2*m,920-2*m);x.beginPath();x.moveTo(700,m);x.lineTo(700,880);x.stroke();
-  x.beginPath();x.arc(700,460,95,0,7);x.stroke();x.beginPath();x.arc(700,460,6,0,7);x.fill();
-  [[m,1],[1400-m,-1]].forEach(([px,s])=>{x.strokeRect(s>0?px:px-230,250,230,420);x.strokeRect(s>0?px:px-95,360,95,200);
-    x.beginPath();x.arc(px+s*160,460,5,0,7);x.fill();x.beginPath();x.arc(px+s*230,460,95,s>0?-1:Math.PI-1,s>0?1:Math.PI+1);x.stroke()});
+  const K=1.5,c=document.createElement('canvas');c.width=1400*K;c.height=920*K;const x=c.getContext('2d');x.scale(K,K);
+  for(let i=0;i<14;i++){const gr=x.createLinearGradient(0,0,0,920);const a1=i%2?'#2a7a2d':'#348a3a',a2=i%2?'#276f2a':'#30823a';gr.addColorStop(0,a1);gr.addColorStop(.5,a2);gr.addColorStop(1,a1);x.fillStyle=gr;x.fillRect(i*100,0,100,920)}
+  let sd=7;const rr=()=>(sd=(sd*16807)%2147483647)/2147483647;
+  for(let n=0;n<9000;n++){x.fillStyle=rr()<.5?'rgba(255,255,255,.05)':'rgba(0,30,0,.08)';x.fillRect(rr()*1400,rr()*920,1+rr()*2,3+rr()*7)}
+  x.strokeStyle='rgba(255,255,255,.92)';x.fillStyle='rgba(255,255,255,.95)';x.lineWidth=5;x.lineJoin='round';const m=40;
+  x.strokeRect(m,m,1320,840);x.beginPath();x.moveTo(700,m);x.lineTo(700,880);x.stroke();x.beginPath();x.arc(700,460,95,0,7);x.stroke();
+  x.beginPath();x.arc(700,460,7,0,7);x.fill();
+  [[m,1],[1360,-1]].forEach(([px,s])=>{x.strokeRect(s>0?px:px-230,250,230,420);x.strokeRect(s>0?px:px-95,360,95,200);
+    const cx=s>0?m+165:1360-165;x.beginPath();x.arc(cx,460,6,0,7);x.fill();
+    x.beginPath();if(s>0)x.arc(cx,460,95,-.82,.82);else x.arc(cx,460,95,Math.PI-.82,Math.PI+.82);x.stroke()});
+  [[m,m,0],[1360,m,Math.PI/2],[1360,880,Math.PI],[m,880,Math.PI*1.5]].forEach(([cx,cy,a0])=>{x.beginPath();x.arc(cx,cy,14,a0,a0+Math.PI/2);x.stroke()});
   const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=8;return t;
 }
 const campo=new THREE.Mesh(new THREE.PlaneGeometry(PW,PH),new THREE.MeshStandardMaterial({map:campoTex(),roughness:.95}));
@@ -194,14 +197,22 @@ campo.rotation.x=-Math.PI/2;campo.receiveShadow=true;scene.add(campo);
 const suelo=new THREE.Mesh(new THREE.CircleGeometry(220,48),new THREE.MeshStandardMaterial({color:0x203e22,roughness:1}));
 suelo.rotation.x=-Math.PI/2;suelo.position.y=-.05;scene.add(suelo);
 
-function porteria(s){
-  const g=new THREE.Group(),m=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.4});
-  const poste=(w,h,d,x,y,z)=>{const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);b.position.set(x,y,z);b.castShadow=true;g.add(b)};
-  poste(.3,3.8,.3,0,1.9,-4.2);poste(.3,3.8,.3,0,1.9,4.2);poste(.3,.3,8.7,0,3.8,0);
-  const red=new THREE.Mesh(new THREE.BoxGeometry(3,3.7,8.4,6,4,10),new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.18}));
-  red.position.set(s*1.6,1.9,0);g.add(red);g.position.x=s*(PW/2-1.6);return g;
-}
-scene.add(porteria(-1),porteria(1));
+(function(){
+  const netC=document.createElement('canvas');netC.width=netC.height=32;const nx=netC.getContext('2d');nx.strokeStyle='rgba(255,255,255,.9)';nx.lineWidth=2;nx.strokeRect(0,0,32,32);
+  const netT=new THREE.CanvasTexture(netC);netT.wrapS=netT.wrapT=THREE.RepeatWrapping;netT.anisotropy=4;
+  const netMat=new THREE.MeshBasicMaterial({map:netT,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false});
+  const netGeo=(()=>{const D=2.4,H=3.8,B=2.6,Z=4.2,P=[],U=[],I=[];
+    const q=(A,B2,C,E,w,h)=>{const n=P.length/3;[A,B2,C,E].forEach(p=>P.push(p[0],p[1],p[2]));U.push(0,0,w,0,w,h,0,h);I.push(n,n+1,n+2,n,n+2,n+3)};
+    q([0,H,-Z],[0,H,Z],[D,B,Z],[D,B,-Z],18.7,5.3);q([D,B,-Z],[D,B,Z],[D,0,Z],[D,0,-Z],18.7,5.8);
+    q([0,H,-Z],[D,B,-Z],[D,0,-Z],[0,0,-Z],5.3,8.4);q([0,H,Z],[D,B,Z],[D,0,Z],[0,0,Z],5.3,8.4);
+    const gm=new THREE.BufferGeometry();gm.setAttribute('position',new THREE.Float32BufferAttribute(P,3));gm.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));gm.setIndex(I);return gm})();
+  const postGeo=new THREE.CylinderGeometry(.13,.13,3.8,12),barGeo=new THREE.CylinderGeometry(.13,.13,8.7,12);
+  [-1,1].forEach(d=>{const g=new THREE.Group(),m=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.5});
+    [-4.2,4.2].forEach(z=>{const p=new THREE.Mesh(postGeo,m);p.position.set(0,1.9,z);p.castShadow=true;g.add(p)});
+    const bar=new THREE.Mesh(barGeo,m);bar.rotation.x=Math.PI/2;bar.position.y=3.8;bar.castShadow=true;g.add(bar);
+    const net=new THREE.Mesh(netGeo,netMat);net.renderOrder=1;g.add(net);
+    g.position.x=d*(PW/2-1.6);g.scale.x=d;scene.add(g)});
+})();
 
 /* Entorno aproximado inspirado en la foto: vegetación, mallas, luminarias y juegos. */
 const entorno=new THREE.Group();scene.add(entorno);
@@ -269,11 +280,14 @@ function fusionarMallas(parent){
 }
 // Los postes y piezas fijas se agrupan; el follaje permanece instanciado.
 const envGroups=[];entorno.traverse(o=>{if(o.isGroup)envGroups.push(o)});envGroups.reverse().forEach(fusionarMallas);
-/* Jugadores articulados de proporciones humanas y camiseta con volumen. */
-const pieles=[0xe1ad87,0xc18b63,0x9b6344,0x754a35];
+/* Jugadores articulados: mismo armado que partidos3d (cabeza con rasgos y cabello, camiseta con volumen, número, brazos y piernas). */
+const pieles=[0xf1c9a5,0xe1ad87,0xc18b63,0xa4704c,0x8a5a3c,0x6b4430],peloCol=[0x14100e,0x2a1c13,0x4a3322,0x7a5a34,0xb08a4a,0x1c1c1c];
 const jugadores=[],hits=[];
-const anatomiaGeo=new THREE.SphereGeometry(1,12,10);
-function volumen(parent,mat,x,y,z,sx,sy,sz){const m=new THREE.Mesh(anatomiaGeo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;parent.add(m);return m;}
+const GEO={},geo=(k,f)=>GEO[k]||(GEO[k]=f());
+const esfera=()=>geo('sph',()=>new THREE.SphereGeometry(1,14,10));
+function lathe(r0,r1,len){return geo('l'+[r0,r1,len],()=>{const p=[];for(let k=0;k<=4;k++){const a=k/4*Math.PI/2;p.push(new THREE.Vector2(Math.max(.0001,r1*Math.sin(a)),-len-r1*Math.cos(a)))}for(let k=0;k<=4;k++){const a=k/4*Math.PI/2;p.push(new THREE.Vector2(Math.max(.0001,r0*Math.cos(a)),r0*Math.sin(a)))}return new THREE.LatheGeometry(p,12)})}
+function volumen(parent,mat,x,y,z,sx,sy,sz){const m=new THREE.Mesh(esfera(),mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;parent.add(m);return m;}
+function miembro(parent,mat,r0,r1,len,x,y,z){const m=new THREE.Mesh(lathe(r0,r1,len),mat);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m;}
 function telaTorso(tex,col){
  // Se toma la zona de tela de la imagen de la playera, en vez de pegar su silueta completa.
  const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,512,256);
@@ -281,52 +295,70 @@ function telaTorso(tex,col){
  const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=4;map.wrapS=THREE.RepeatWrapping;return new THREE.MeshStandardMaterial({map,roughness:.9});
 }
 function camisetaMesh(mat){
- const rings=[[1.18,.285,.17],[1.36,.30,.185],[1.62,.345,.195],[1.88,.39,.18],[2.02,.255,.135]],verts=[],uv=[],idx=[],N=20;
- rings.forEach(([y,rx,rz],r)=>{for(let a=0;a<=N;a++){const th=a/N*Math.PI*2;verts.push(Math.sin(th)*rx,y,Math.cos(th)*rz);const frontal=Math.cos(th)>=0;const u=(frontal?.25:.75)+Math.sin(th)*(frontal?.25:-.25);uv.push(u,(y-1.18)/.84);}});
+ const rings=[[1.16,.30,.18],[1.32,.285,.172],[1.48,.30,.18],[1.64,.345,.195],[1.80,.385,.19],[1.92,.37,.165],[2.00,.25,.13],[2.06,.14,.105]],verts=[],uv=[],idx=[],N=24;
+ rings.forEach(([y,rx,rz],r)=>{for(let a=0;a<=N;a++){const th=a/N*Math.PI*2;verts.push(Math.sin(th)*rx,y,Math.cos(th)*rz);const frontal=Math.cos(th)>=0;const u=(frontal?.25:.75)+Math.sin(th)*(frontal?.25:-.25);uv.push(u,(y-1.16)/.84);}});
  for(let r=0;r<rings.length-1;r++)for(let a=0;a<N;a++){const i=r*(N+1)+a;idx.push(i,i+1,i+N+1,i+1,i+N+2,i+N+1);}
- const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();return new THREE.Mesh(geo,mat);
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return new THREE.Mesh(g,mat);
 }
+const numCache={};
+function numTex(n,claro){const k=n+(claro?'c':'o');return numCache[k]||(numCache[k]=(()=>{const c=document.createElement('canvas');c.width=64;c.height=80;const x=c.getContext('2d');x.font='bold 62px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=7;x.strokeStyle=claro?'rgba(0,0,0,.55)':'rgba(255,255,255,.7)';x.strokeText(n,32,42);x.fillStyle=claro?'#fff':'#111';x.fillText(n,32,42);const tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;return tx})())}
+const cacheTex={};
+function textura(t,i){return cacheTex[t.id]||(cacheTex[t.id]=(async()=>{const def=new THREE.Color().setHSL((i*.137)%1,.55,.42);
+  const [escudo,pla]=await Promise.all([cargar(t.URL,()=>fbTex((t.Nombre||'?').charAt(0),'#'+def.getHexString())),cargar(t.Color_Playera,()=>null)]);
+  return {escudo,pla,col:pla?promedio(pla,def):def}})())}
 async function crearJugador(t,i){
- const def=new THREE.Color().setHSL((i*.137)%1,.6,.38);
- const [escudo,pla]=await Promise.all([cargar(t.URL,()=>fbTex((t.Nombre||'?')[0],'#'+def.getHexString())),cargar(t.Color_Playera,()=>null)]);
- const color=pla?promedio(pla,def):def,g=new THREE.Group();
- const piel=new THREE.MeshStandardMaterial({color:pieles[i%4],roughness:.88});
+ const {escudo,pla,col:color}=await textura(t,i),g=new THREE.Group();
+ const h=((i+1)*2654435761+(parseInt(t.id,10)||0)*40503)>>>0,estilo=(h>>>4)%6,pCol=peloCol[(h>>>9)%6],alto=.95+((h>>>13)%11)*.01,ancho=.93+((h>>>17)%12)*.012;
+ const piel=new THREE.MeshStandardMaterial({color:pieles[(h>>>2)%6],roughness:.85});
  const tela=new THREE.MeshStandardMaterial({color,roughness:.9}),shortMat=new THREE.MeshStandardMaterial({color:color.clone().multiplyScalar(.48),roughness:.9});
- const sock=new THREE.MeshStandardMaterial({color:0xe9e9db,roughness:.95}),boot=new THREE.MeshStandardMaterial({color:i%2?0x202827:0xeeeecc,roughness:.6});
- const torso=camisetaMesh(telaTorso(pla,color));torso.castShadow=true;g.add(torso);
- // Cuello y ribete real de la camiseta.
- volumen(g,piel,0,2.035,0,.09,.12,.09);
- const collar=new THREE.Mesh(new THREE.TorusGeometry(.135,.027,6,18),new THREE.MeshStandardMaterial({color:0xe6e8d9,roughness:.8}));collar.rotation.x=Math.PI/2;collar.position.y=2.035;g.add(collar);
- volumen(g,shortMat,0,1.12,0,.30,.20,.18);
+ const sock=new THREE.MeshStandardMaterial({color:color.clone().lerp(new THREE.Color(0xffffff),.45),roughness:.95});
+ const boot=new THREE.MeshStandardMaterial({color:[0x1b1f1f,0xeeeecc,0xd8412a,0x2a6fd8][(h>>>6)%4],roughness:.55});
+ const pelo=new THREE.MeshStandardMaterial({color:pCol,roughness:.95}),ojo=new THREE.MeshBasicMaterial({color:0x1a1210});
+ const guante=piel;
+ const cuerpo=new THREE.Group();cuerpo.scale.set(ancho,alto,ancho);g.add(cuerpo);
+ volumen(cuerpo,shortMat,0,1.12,0,.30,.20,.18);
+ // Torso y todo lo de arriba cuelga de "up", que gira desde la cadera (inclinación al caminar).
+ const up=new THREE.Group();up.position.y=1.15;cuerpo.add(up);
+ const torso=camisetaMesh(telaTorso(pla,color));torso.castShadow=true;torso.position.y=-1.15;up.add(torso);
+ const cuello=new THREE.Mesh(geo('cuello',()=>new THREE.CylinderGeometry(.07,.085,.17,12)),piel);cuello.position.y=.92;up.add(cuello);
+ const collar=new THREE.Mesh(geo('collar',()=>new THREE.TorusGeometry(.135,.027,6,18)),new THREE.MeshStandardMaterial({color:0xe6e8d9,roughness:.8}));collar.rotation.x=Math.PI/2;collar.scale.set(1,.8,1);collar.position.y=.89;up.add(collar);
+ const lum=color.r*.3+color.g*.59+color.b*.11,num=2+(h>>>3)%9;
+ const nm=new THREE.Mesh(geo('num',()=>new THREE.PlaneGeometry(.24,.3)),new THREE.MeshBasicMaterial({map:numTex(num,lum<.55),transparent:true}));nm.position.set(0,.5,-.2);nm.rotation.y=Math.PI;up.add(nm);
  const rodillas=[],codos=[];
- function pierna(sign){const hip=new THREE.Group();hip.position.set(sign*.16,1.15,0);g.add(hip);
-  volumen(hip,shortMat,0,-.15,0,.145,.25,.16);volumen(hip,piel,0,-.34,0,.115,.20,.12);
-  const knee=new THREE.Group();knee.position.y=-.51;hip.add(knee);volumen(knee,piel,0,0,0,.105,.105,.11);
-  volumen(knee,sock,0,-.22,0,.09,.25,.10);volumen(knee,boot,0,-.48,.09,.12,.09,.22);
+ function pierna(sign){const hip=new THREE.Group();hip.position.set(sign*.16,1.15,0);cuerpo.add(hip);
+  miembro(hip,piel,.118,.092,.46,0,-.1,0);
+  const sh=new THREE.Mesh(geo('short',()=>new THREE.CylinderGeometry(.145,.17,.34,14,1,true)),shortMat);sh.position.y=-.15;sh.castShadow=true;hip.add(sh);
+  const knee=new THREE.Group();knee.position.y=-.51;hip.add(knee);volumen(knee,piel,0,0,.005,.098,.098,.105);
+  miembro(knee,piel,.088,.062,.3,0,-.02,0);miembro(knee,sock,.094,.073,.24,0,-.2,0);
+  volumen(knee,boot,0,-.57,.07,.095,.07,.21);
   rodillas.push(knee);return hip;
  }
  const piernaI=pierna(-1),piernaD=pierna(1);
- function brazo(sign){const shoulder=new THREE.Group();shoulder.position.set(sign*.37,1.91,0);shoulder.rotation.z=sign*.08;g.add(shoulder);
-  volumen(shoulder,tela,sign*.025,-.10,0,.15,.20,.145);volumen(shoulder,piel,sign*.025,-.29,0,.095,.20,.10);
-  const elbow=new THREE.Group();elbow.position.set(sign*.025,-.45,0);shoulder.add(elbow);volumen(elbow,piel,0,0,0,.085,.09,.085);volumen(elbow,piel,0,-.19,.025,.075,.19,.08);
-  volumen(elbow,piel,0,-.39,.04,.073,.10,.045);volumen(elbow,piel,-sign*.062,-.38,.055,.025,.055,.03);
-  for(let k=0;k<4;k++)volumen(elbow,piel,-.044+k*.029,-.48,.04,.013,.048,.019);
+ function brazo(sign){const shoulder=new THREE.Group();shoulder.position.set(sign*.37,.76,0);shoulder.rotation.z=sign*.16;up.add(shoulder);
+  volumen(shoulder,tela,0,0,0,.125,.125,.125);miembro(shoulder,tela,.12,.1,.15,sign*.01,-.04,0);miembro(shoulder,piel,.083,.068,.22,sign*.02,-.2,0);
+  const elbow=new THREE.Group();elbow.position.set(sign*.025,-.45,0);shoulder.add(elbow);volumen(elbow,piel,0,0,0,.075,.078,.075);
+  miembro(elbow,piel,.07,.05,.2,0,-.03,0);volumen(elbow,guante,0,-.34,.03,.058,.088,.04);volumen(elbow,guante,-sign*.05,-.3,.045,.022,.045,.022);
   elbow.rotation.x=-.18;codos.push(elbow);return shoulder;
  }
  const brazoI=brazo(-1),brazoD=brazo(1);
- // Cabeza lisa de una sola pieza, sin rasgos ni cabello.
- const cabeza=new THREE.Group();cabeza.position.set(0,2.30,0);g.add(cabeza);
- const cabezaLisa=new THREE.Mesh(new THREE.SphereGeometry(1,32,24),piel);cabezaLisa.position.y=.04;cabezaLisa.scale.set(.175,.225,.172);cabeza.add(cabezaLisa);
- volumen(cabeza,piel,-.18,.025,0,.035,.06,.028);volumen(cabeza,piel,.18,.025,0,.035,.06,.028);
- const pelo=new THREE.Group();pelo.position.set(0,2.32,0);g.add(pelo);
+ // Cabeza: mandíbula, nariz, orejas, ojos discretos y cabello en varios estilos.
+ const cabeza=new THREE.Group();cabeza.position.set(0,1.15,0);up.add(cabeza);
+ const crane=new THREE.Mesh(geo('cabeza',()=>new THREE.SphereGeometry(1,22,16)),piel);crane.position.y=.04;crane.scale.set(.165,.215,.175);cabeza.add(crane);
+ volumen(cabeza,piel,0,-.1,.02,.125,.115,.135);volumen(cabeza,piel,0,.01,.17,.027,.04,.04);
+ volumen(cabeza,piel,-.168,.03,0,.028,.052,.03);volumen(cabeza,piel,.168,.03,0,.028,.052,.03);
+ volumen(cabeza,ojo,-.06,.075,.158,.017,.013,.012);volumen(cabeza,ojo,.06,.075,.158,.017,.013,.012);
+ const cap=(sx,sy,sz,y,z,tl)=>{const m=new THREE.Mesh(geo('cap'+tl,()=>new THREE.SphereGeometry(1,18,10,0,Math.PI*2,0,tl)),pelo);m.position.set(0,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;cabeza.add(m)};
+ if(estilo==0)cap(.172,.222,.182,.045,0,1.1);
+ else if(estilo==1||estilo==2){cap(.18,.23,.19,.06,-.005,1.28);if(estilo==2){volumen(cabeza,pelo,0,-.05,-.11,.15,.21,.1);volumen(cabeza,pelo,-.14,-.02,-.04,.04,.15,.09);volumen(cabeza,pelo,.14,-.02,-.04,.04,.15,.09)}}
+ else if(estilo==3){cap(.2,.235,.205,.085,-.01,1.38);}
  // Escudo cosido al pecho cuando no existe una imagen de uniforme.
- if(!pla){const badge=new THREE.Mesh(new THREE.PlaneGeometry(.115,.135),new THREE.MeshStandardMaterial({map:escudo,transparent:true,roughness:.8,side:THREE.DoubleSide}));badge.position.set(-.16,1.77,.177);g.add(badge);}
+ if(!pla){const badge=new THREE.Mesh(new THREE.PlaneGeometry(.115,.135),new THREE.MeshStandardMaterial({map:escudo,transparent:true,roughness:.8}));badge.position.set(-.16,.62,.2);up.add(badge);}
  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:escudo,transparent:true,depthTest:false}));sp.scale.set(.95,.95,1);sp.position.y=3.25;sp.renderOrder=2;g.add(sp);
  const nom=placa(t.Nombre);nom.scale.set(3.6,.67,1);nom.position.y=4;nom.renderOrder=3;g.add(nom);
  const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.1,1.1,4.4,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.1;g.add(hit);
  const groups=[];g.traverse(o=>{if(o.isGroup)groups.push(o)});groups.reverse().forEach(fusionarMallas);
  g.position.set((Math.random()-.5)*50,0,(Math.random()-.5)*30);scene.add(g);
- const j={t,g,piernaI,piernaD,brazoI,brazoD,cabeza,pelo,nom,rodillas,codos,fase:Math.random()*9,obj:null,espera:Math.random()*2,vel:.75+Math.random()*.45,sp};
+ const j={t,g,piernaI,piernaD,brazoI,brazoD,cabeza,up,cy:1.15,bz:[-.16,.16],nom,rodillas,codos,fase:Math.random()*9,obj:null,espera:Math.random()*2,vel:.75+Math.random()*.45,sp};
  hit.userData.j=j;hits.push(hit);jugadores.push(j);
 }
 function nuevoDestino(j){j.obj=new THREE.Vector3((Math.random()-.5)*62,0,(Math.random()-.5)*38)}
@@ -390,13 +422,13 @@ addEventListener('resize',()=>{renderer.setSize(innerWidth,innerHeight);camera.a
 
 /* ---------- animación ---------- */
 /* ánimo del equipo seleccionado según su puesto: 1.º invicto = jubiloso, 2.º-8.º = contento (liguilla), 9.º+ = cabizbajo */
-function reposo(j){j.moodOn=false;j.g.position.y=0;j.brazoI.rotation.z=j.brazoD.rotation.z=0;j.cabeza.position.set(0,2.30,0);j.pelo.position.set(0,2.32,0)}
+function reposo(j){j.moodOn=false;j.g.position.y=0;j.brazoI.rotation.z=j.bz[0];j.brazoD.rotation.z=j.bz[1];j.cabeza.position.set(0,j.cy,0);j.up.rotation.x=0;j.up.rotation.z=0}
 function animo(j,t,dt){
   j.moodOn=true;const m=j.mood,k=j.k,s=Math.sin(t*(m=='jubilo'?7:4)+j.fase),p=j.g.position;
   const giro=Math.atan2(camera.position.x-p.x,camera.position.z-p.z);let da=giro-j.g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));j.g.rotation.y+=da*Math.min(1,dt*5);
-  [j.piernaI,j.piernaD,j.brazoI,j.brazoD].forEach(b=>b.rotation.x*=.8);
-  if(m=='triste'){j.brazoI.rotation.z=.08;j.brazoD.rotation.z=-.08;p.y=0;j.cabeza.position.set(0,2.22,.07);j.pelo.position.set(0,2.24,.07);return}
-  j.cabeza.position.set(0,2.30,0);j.pelo.position.set(0,2.32,0);
+  [j.piernaI,j.piernaD,j.brazoI,j.brazoD].forEach(b=>b.rotation.x*=.8);j.rodillas.forEach(k=>k.rotation.x*=.8);j.up.rotation.z*=.8;const kk=Math.min(1,dt*5);
+  if(m=='triste'){j.brazoI.rotation.z=j.bz[0]*.5;j.brazoD.rotation.z=j.bz[1]*.5;p.y=0;j.cabeza.position.set(0,j.cy-.06,.06);j.up.rotation.x+=(.22-j.up.rotation.x)*kk;return}
+  j.cabeza.position.set(0,j.cy,0);j.up.rotation.x+=((m=='jubilo'?-.12:-.03)-j.up.rotation.x)*kk;
   if(m=='jubilo'){j.brazoI.rotation.z=-2.55-s*.12;j.brazoD.rotation.z=2.55+s*.12;p.y=Math.abs(s)*.17}
   else{const a=(.35+1.45*k)*(.7+.3*s);j.brazoI.rotation.z=-a;j.brazoD.rotation.z=a;p.y=Math.abs(s)*(.025+.08*k)}
 }
@@ -408,7 +440,7 @@ function animar(){
     const lento=j===sel?.35:1,p=j.g.position;
     if(j===sel&&j.mood){animo(j,t,dt);return}
     if(j.moodOn)reposo(j);
-    if(j.espera>0){j.espera-=dt;j.fase+=dt*2;[j.piernaI,j.piernaD,j.brazoI,j.brazoD].forEach(m=>m.rotation.x*=.85);j.cabeza.position.y=2.30+Math.sin(t*2+j.fase)*.008}
+    if(j.espera>0){j.espera-=dt;j.fase+=dt*2;[j.piernaI,j.piernaD,j.brazoI,j.brazoD].forEach(m=>m.rotation.x*=.85);j.cabeza.position.y=j.cy+Math.sin(t*2+j.fase)*.008;j.rodillas.forEach(k=>k.rotation.x*=.85);j.up.rotation.x*=.9;j.up.rotation.z*=.9}
     else{
       if(!j.obj)nuevoDestino(j);
       const d=j.obj.clone().sub(p);d.y=0;const dist=d.length();
@@ -422,7 +454,7 @@ function animar(){
         j.piernaI.rotation.x=sw;j.piernaD.rotation.x=-sw;j.brazoI.rotation.x=-sw*.8;j.brazoD.rotation.x=sw*.8;
         j.rodillas.forEach((k,i)=>k.rotation.x=Math.max(0,Math.sin(j.fase+(i?Math.PI:0)))*.65);
         j.codos.forEach(e=>e.rotation.x=-.22-Math.abs(sw)*.45);
-        j.cabeza.position.y=2.30+Math.abs(Math.cos(j.fase))*.025;j.pelo.position.y=j.cabeza.position.y+.02;
+        j.cabeza.position.y=j.cy+Math.abs(Math.cos(j.fase))*.025;j.up.rotation.x=.07;j.up.rotation.z=Math.sin(j.fase)*.03;
       }
     }
   });
@@ -455,5 +487,3 @@ function animar(){
 </script>
 </body>
 </html>
-
-
