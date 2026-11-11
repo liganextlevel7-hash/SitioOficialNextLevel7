@@ -264,7 +264,7 @@ async function jugador(t,i,gk){
  else if(estilo==3){cap(.2,.235,.205,.085,-.01,1.38);}
  if(!pla||gk){const badge=new THREE.Mesh(new THREE.PlaneGeometry(.115,.135),new THREE.MeshStandardMaterial({map:esc,transparent:true,roughness:.8}));badge.position.set(-.16,.62,.2);up.add(badge);}
  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:esc,transparent:true,depthTest:false}));sp.scale.set(1.15,1.15,1);sp.position.y=3.3;sp.renderOrder=2;g.add(sp);
- const j={g,t,fase:Math.random()*9,pI:piernaI,pD:piernaD,bI:brazoI,bD:brazoD,cab:cabeza,rodillas,codos,up,cy:1.15};
+ const j={g,t,fase:Math.random()*9,pI:piernaI,pD:piernaD,bI:brazoI,bD:brazoD,cab:cabeza,rodillas,codos,up,cy:1.15,col:color,sp};
  const hit=new THREE.Mesh(new THREE.CylinderGeometry(1.3,1.3,4.4,8),new THREE.MeshBasicMaterial({visible:false}));hit.position.y=2.1;hit.userData.j=j;g.add(hit);j.hit=hit;return j;
 }
 
@@ -361,23 +361,26 @@ async function jugarPartido(id){
   if(!tl||!tv||SIM)return;
   SIM={busy:true};const sesion=SIM;$('sP').textContent='Pausar';elegir(null);document.body.classList.add('sim');grupo.visible=false;
   const mk=async(t,e)=>{const dir=e?-1:1,pj=[];
-    for(let k=0;k<7;k++){const j=await jugador(t,k+e,k?0:GKC[e]);if(SIM!==sesion)return null;j.e=e;j.i=k;j.dir=dir;j.bx=FORM[k][0]*dir;j.bz=FORM[k][1]*dir+(e?2.5:-2.5);
+    for(let k=0;k<7;k++){const j=await jugador(t,k+e,k?0:GKC[e]);if(SIM!==sesion)return null;j.sp.visible=false;j.e=e;j.i=k;j.dir=dir;j.bx=FORM[k][0]*dir;j.bz=FORM[k][1]*dir+(e?2.5:-2.5);
       j.g.position.set(j.bx,0,j.bz);j.g.rotation.y=dir*Math.PI/2;j.cel=0;sg.add(j.g);pj.push(j)}
     return{e,dir,t,pj}};
   const eq=[await mk(tl,0),await mk(tv,1)];
   if(SIM!==sesion)return;
+  const subs=[];
+  for(const e of [0,1])for(let k=0;k<4;k++){const j=await jugador(eq[e].t,8+e*3+k,0);if(SIM!==sesion)return;j.sp.visible=false;j.e=e;j.fase=Math.random()*9;
+    j.g.position.set((e?1:-1)*(15+k*3.4),0,25.2);j.g.rotation.y=Math.PI;sg.add(j.g);subs.push(j)}
   const jug=p.Estado=='Jugado'&&p.Goles_Local!==''&&p.Goles_Visita!=='',gl=jug?+p.Goles_Local:0,gv=jug?+p.Goles_Visita:0,rnd=mkRnd(+p.ID_Partido*7919+13),pl=[];
   for(let i=0;i<gl;i++)pl.push({e:0,r:'gol'});for(let i=0;i<gv;i++)pl.push({e:1,r:'gol'});
   const ex=jug?Math.max(4,Math.round((gl+gv)*.8)):10;
   for(let i=0;i<ex;i++)pl.push({e:rnd()<.5?0:1,r:['atajada','fuera','robo'][Math.floor(rnd()*3)]});
   for(let i=pl.length-1;i>0;i--){const k=Math.floor(rnd()*(i+1));[pl[i],pl[k]]=[pl[k],pl[i]]}
-  Object.assign(SIM,{busy:false,run:true,p,eq,pl,idx:0,sc:[0,0],rnd,seg:null,q:[],hold:null,atk:0,pausa:1.2,fin:false,m:0,centro:false,tl,tv});
-  balon.visible=true;balon.position.set(0,.17,0);
+  Object.assign(SIM,{busy:false,run:true,subs,p,eq,pl,idx:0,sc:[0,0],rnd,seg:null,q:[],hold:null,atk:0,pausa:1.2,fin:false,m:0,centro:false,tl,tv});
+  balon.visible=true;balon.position.set(0,.17,0);porra.colores(eq[0].pj[1].col,eq[1].pj[1].col);cheerG[0]=cheerG[1]=0;
   $('mL').src=tl.URL||'';$('mV').src=tv.URL||'';$('nL').textContent=tl.Nombre;$('nV').textContent=tv.Nombre;
   meta.d=innerWidth<=760?100:62;meta.ph=.9;objetivo.set(0,0,0);
   aviso(jug?'¡Inicia el partido!':'Aún sin resultado<br><small>Demostración sin goles</small>',2200);
 }
-function salirPartido(){if(!SIM)return;SIM.run=false;SIM=null;while(sg.children.length)sg.remove(sg.children[0]);balon.visible=false;grupo.visible=true;
+function salirPartido(){if(!SIM)return;SIM.run=false;SIM=null;while(sg.children.length)sg.remove(sg.children[0]);balon.visible=false;grupo.visible=true;porra.colores(null,null);cheerG[0]=cheerG[1]=0;
   document.body.classList.remove('sim');$('gol').classList.remove('on');objetivo.set(0,0,innerWidth<=760?0:5);meta.d=innerWidth<=760?100:70;meta.ph=1}
 function nuevaJugada(){
   const S=SIM,q=S.pl[S.idx];if(!q)return final();
@@ -395,12 +398,12 @@ function nuevaJugada(){
   else if(q.r=='fuera'){seg({x:d*39,y:r()<.5?5:1,z:(r()<.5?-1:1)*(6+r()*3)},.8,.5,()=>{S.pausa=.7})}
   else{const it=O.pj[3+Math.floor(r()*3)];seg(it,.7,1,()=>{S.hold=it})}
 }
-function gol(e){const S=SIM;S.sc[e]++;S.hold=null;S.pausa=.8;S.centro=true;S.regreso=9;
+function gol(e){const S=SIM;cheerG[e]=3.4;S.sc[e]++;S.hold=null;S.pausa=.8;S.centro=true;S.regreso=9;
   S.eq[e].pj.forEach((j,i)=>{if(i)j.cel=1.8});S.eq[1-e].pj.forEach(j=>j.cel=0);
   aviso('¡GOOOL!<br><small>'+esc(S.eq[e].t.Nombre)+'</small>',2400)}
 function final(){const S=SIM,[a,b]=S.sc;let w=a>b?0:b>a?1:-1,n='';
   if(w<0&&S.p.Ganado_Por=='Penales'&&S.p.Penales){w=S.p.Penales==S.p.Equipo_Local?0:1;n='<br><small>Gana en penales: '+esc(S.eq[w].t.Nombre)+'</small>'}
-  S.fin=true;S.finT=0;S.hold=null;S.m=60;S.regreso=0;
+  S.fin=true;S.finT=0;S.hold=null;S.m=60;S.regreso=0;if(w>=0)cheerG[w]=8;
   S.eq.forEach(E=>E.pj.forEach(j=>{if(E.e==w)j.cel=1e9;else if(w>=0)j.lose=true}));
   aviso('FINAL '+a+' - '+b+(w>=0&&!n?'<br><small>Gana '+esc(S.eq[w].t.Nombre)+'</small>':n||'<br><small>Empate</small>'))}
 function simStep(dt){
@@ -447,6 +450,9 @@ function simStep(dt){
     if(j.kick>0){j.kick-=dt;const k=1-Math.max(0,j.kick)/.32;j.pD.rotation.x=-1.2*Math.sin(Math.PI*k)+(k<.4?.6*Math.sin(Math.PI*Math.min(1,k*2.5)):0);j.rodillas[1].rotation.x=.3+(k<.5?.6*Math.sin(Math.PI*k):0)}
     g.position.y=Math.abs(Math.cos(f))*.06*mv;
     j.cab.position.y=j.cy+Math.abs(Math.cos(f))*.03*mv;j.cab.rotation.x=j.lose?.45:0});
+  (S.subs||[]).forEach(j=>{j.fase+=dt*2;const s=Math.sin(j.fase),ch=cheerG[j.e]>0;
+    if(ch){j.bI.rotation.z=-2.6-s*.3;j.bD.rotation.z=2.6+s*.3;j.g.position.y=Math.abs(Math.sin(j.fase*3))*.45;j.up.rotation.x=-.1;j.rodillas[0].rotation.x=j.rodillas[1].rotation.x=.3}
+    else{j.g.position.y=0;j.bI.rotation.z=-.16;j.bD.rotation.z=.16;j.bI.rotation.x=j.bD.rotation.x=0;j.pI.rotation.x=s*.05;j.pD.rotation.x=-s*.05;j.rodillas[0].rotation.x=j.rodillas[1].rotation.x=.05;j.codos[0].rotation.x=j.codos[1].rotation.x=-.2;j.up.rotation.x=0;j.up.rotation.z=s*.02}});
   $('mS').textContent=S.sc[0]+' - '+S.sc[1];$('mT').textContent=S.fin?'FINAL':"Min "+Math.round(S.m)+"'";
 }
 $('sP').onclick=()=>{if(SIM&&!SIM.busy){SIM.run=!SIM.run;$('sP').textContent=SIM.run?'Pausar':'Continuar'}};
@@ -454,11 +460,37 @@ $('sV').onclick=salirPartido;
 $('sR').onclick=()=>{if(!SIM||SIM.busy)return;const id=SIM.p.ID_Partido;salirPartido();jugarPartido(id)};
 $('sX').onclick=()=>{simSp=simSp==1?2:simSp==2?4:1;$('sX').textContent='×'+simSp};
 
+/* ---------- porra: aficionados a los lados de la cancha ---------- */
+const cheerG=[0,0],porra=(()=>{
+ const pos=[];let sd=991;const rn=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ for(let x=-31;x<=31;x+=2)pos.push({x:x+(rn()-.5)*.5,y:0,z:-28.4+(rn()-.5)*.3});
+ for(let x=-30;x<=30;x+=2)pos.push({x:x+(rn()-.5)*.5,y:.55,z:-30.6+(rn()-.5)*.3});
+ for(let x=-26;x<=26;x+=2.2)pos.push({x:x+(rn()-.5)*.5,y:0,z:30.4+(rn()-.5)*.3});
+ const n=pos.length;pos.forEach(p=>{p.ph=rn()*6.28;p.r=rn();p.r2=rn()});
+ const grada=new THREE.Mesh(new THREE.BoxGeometry(66,.55,1.8),new THREE.MeshStandardMaterial({color:0x6b6458,roughness:1}));grada.position.set(0,.275,-30.6);grada.receiveShadow=true;scene.add(grada);
+ const mk=(g,c)=>{const m=new THREE.InstancedMesh(g,new THREE.MeshStandardMaterial({color:0xffffff,roughness:.9}),c);m.frustumCulled=false;m.castShadow=true;scene.add(m);return m};
+ const cuerpo=mk(new THREE.CylinderGeometry(.3,.32,1.2,10),n),cab=mk(new THREE.SphereGeometry(.21,10,8),n),
+   brazos=mk((()=>{const g=new THREE.CylinderGeometry(.07,.06,.8,6);g.translate(0,-.4,0);return g})(),n*2);
+ const pal=[0xd62828,0x1d4ed8,0xf4c20d,0xf2f2f2,0x16a34a,0x7c3aed,0xf97316,0x2b2b2b],sk=pieles,cc=new THREE.Color(),dm=new THREE.Object3D();
+ function colores(c0,c1){for(let i=0;i<n;i++){const p=pos[i],own=p.x<0?c0:c1;
+   if(c0&&p.r<.78)cc.copy(own);else cc.setHex(pal[Math.floor(p.r2*pal.length)%pal.length]);cuerpo.setColorAt(i,cc);
+   cc.setHex(sk[Math.floor(p.r*97)%sk.length]);cab.setColorAt(i,cc);brazos.setColorAt(i*2,cc);brazos.setColorAt(i*2+1,cc)}
+   cuerpo.instanceColor.needsUpdate=cab.instanceColor.needsUpdate=brazos.instanceColor.needsUpdate=true}
+ function anim(t,dt){cheerG[0]=Math.max(0,cheerG[0]-dt);cheerG[1]=Math.max(0,cheerG[1]-dt);
+   for(let i=0;i<n;i++){const p=pos[i],ch=cheerG[p.x<0?0:1]>0,s=Math.sin(t*(ch?7:1.6)+p.ph),y=p.y+(ch?Math.abs(s)*.38:Math.abs(Math.sin(t*1.1+p.ph))*.03);
+     dm.rotation.set(0,0,0);dm.position.set(p.x,y+.6,p.z);dm.updateMatrix();cuerpo.setMatrixAt(i,dm.matrix);
+     dm.position.set(p.x,y+1.48,p.z);dm.updateMatrix();cab.setMatrixAt(i,dm.matrix);
+     for(let k=0;k<2;k++){const sg=k?1:-1;dm.position.set(p.x+sg*.34,y+1.18,p.z);dm.rotation.set(0,0,sg*(ch?2.7+s*.35:.18));dm.updateMatrix();brazos.setMatrixAt(i*2+k,dm.matrix)}}
+   cuerpo.instanceMatrix.needsUpdate=cab.instanceMatrix.needsUpdate=brazos.instanceMatrix.needsUpdate=true}
+ colores(null,null);anim(0,0);
+ return{colores,anim}})();
+
 /* ---------- animación ---------- */
 const reloj=new THREE.Clock(),reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 function animar(){
   requestAnimationFrame(animar);const dt=Math.min(reloj.getDelta(),.05),t=reloj.elapsedTime;
   if(SIM&&SIM.run)simStep(dt);
+  porra.anim(reduce?0:t,reduce?0:dt);
   if(!reduce&&!SIM)anim.forEach(j=>{j.fase+=dt*2.4;const s=Math.sin(j.fase);
     if(j.sentado){j.cab.position.y=j.cy+Math.sin(t*1.2+j.fase)*.012;j.rodillas[0].rotation.x=j.rodillas[1].rotation.x=1.5;j.up.rotation.x=-.06+Math.sin(t*1.1+j.fase)*.015;return}
     j.pI.rotation.x=s*.07;j.pD.rotation.x=-s*.07;j.rodillas[0].rotation.x=.05+Math.max(0,-Math.cos(j.fase))*.12;j.rodillas[1].rotation.x=.05+Math.max(0,Math.cos(j.fase))*.12;j.codos[0].rotation.x=j.codos[1].rotation.x=-.2;j.up.rotation.z=s*.025;j.up.rotation.y=s*.04;j.cab.position.y=j.cy+Math.abs(Math.cos(j.fase))*.015;
