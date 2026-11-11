@@ -384,7 +384,7 @@ function salirPartido(){if(!SIM)return;SIM.run=false;SIM=null;while(sg.children.
   document.body.classList.remove('sim');$('gol').classList.remove('on');objetivo.set(0,0,innerWidth<=760?0:5);meta.d=innerWidth<=760?100:70;meta.ph=1}
 function nuevaJugada(){
   const S=SIM,q=S.pl[S.idx];if(!q)return final();
-  S.idx++;S.atk=q.e;const E=S.eq[q.e],O=S.eq[1-q.e],d=E.dir,r=S.rnd;
+  S.idx++;S.atk=q.e;if(q.r=='pen')return penalti(q);const E=S.eq[q.e],O=S.eq[1-q.e],d=E.dir,r=S.rnd;
   if(S.centro){balon.position.set(0,.17,0);S.centro=false}
   const mids=[3,4,5].sort(()=>r()-.5),same=S.hold&&S.hold.e==q.e,st=same?S.hold:E.pj[Math.floor(r()*3)];
   const ch=[st,E.pj[mids[0]],E.pj[mids[1]],E.pj[6]].filter((j,i,a)=>a.indexOf(j)==i);S.hold=null;
@@ -401,9 +401,33 @@ function nuevaJugada(){
 function gol(e){const S=SIM;cheerG[e]=3.4;S.sc[e]++;S.hold=null;S.pausa=.8;S.centro=true;S.regreso=9;
   S.eq[e].pj.forEach((j,i)=>{if(i)j.cel=1.8});S.eq[1-e].pj.forEach(j=>j.cel=0);
   aviso('¡GOOOL!<br><small>'+esc(S.eq[e].t.Nombre)+'</small>',2400)}
-function final(){const S=SIM,[a,b]=S.sc;let w=a>b?0:b>a?1:-1,n='';
-  if(w<0&&S.p.Ganado_Por=='Penales'&&S.p.Penales){w=S.p.Penales==S.p.Equipo_Local?0:1;n='<br><small>Gana en penales: '+esc(S.eq[w].t.Nombre)+'</small>'}
+/* ---------- tanda de penales ---------- */
+function iniciarPenales(){const S=SIM,[a,b]=S.sc,r=S.rnd,w=S.p.Penales==S.p.Equipo_Local?0:1,sud=r()<.25;
+ let gw,gl;if(sud){gw=gl=3+Math.floor(r()*3)}else{gl=2+Math.floor(r()*3);gw=Math.min(5,gl+1+(r()<.3?1:0))}
+ const mk=n=>{const x=Array(5).fill(0);for(let i=0;i<n;i++)x[i]=1;for(let i=4;i>0;i--){const k=Math.floor(r()*(i+1));[x[i],x[k]]=[x[k],x[i]]}return x},sq=[null,null];
+ sq[w]=mk(gw);sq[1-w]=mk(gl);const fallo=()=>r()<.6?'ataja':'fuera';
+ for(let i=0;i<5;i++)[0,1].forEach(e=>S.pl.push({e,r:'pen',k:sq[e][i]?'gol':fallo(),n:i}));
+ if(sud)[0,1].forEach(e=>S.pl.push({e,r:'pen',k:e==w?'gol':fallo(),n:5}));
+ S.pen={sc:[0,0],w};S.hold=null;S.seg=null;S.q=[];S.pausa=1.4;
+ objetivo.set(26,0,0);meta.d=innerWidth<=760?44:32;meta.ph=1.1;meta.th=-1.25;
+ aviso('¡PENALES!<br><small>Empate '+a+' - '+b+'</small>',2600)}
+function penalti(q){const S=SIM,E=S.eq[q.e],O=S.eq[1-q.e],r=S.rnd,gk=O.pj[0],kk=E.pj[1+q.n%6],spotX=26.4;
+ S.atk=q.e;S.hold=null;balon.position.set(spotX,.17,0);
+ let c0=0,c1=0;S.eq.forEach(T=>T.pj.forEach(j=>{if(j===kk)j.pt=[spotX-3.4,0];else if(j===gk){j.dir=-1;j.pt=[34.8,0]}else{const n=T.e?c1++:c0++;j.pt=[14,(T.e?1:-1)*(1.5+n*1.8)]}}));
+ const sg=r()<.5?-1:1,z=sg*(1.6+r()*2.2),y=.5+r()*1.9,seg=(to,dur,arc,fin,ini)=>S.q.push({to,dur,arc,fin,ini});
+ aviso('Penal<br><small>'+esc(E.t.Nombre)+'</small>',1400);
+ seg(null,3,0);
+ seg(null,.55,0,null,()=>{kk.pt=[spotX-.8,0]});
+ if(q.k=='gol')seg({x:36.3,y,z},.6,.25,()=>penRes(q,true,kk),()=>{if(r()<.75)gk.dv={t:0,s:-sg}});
+ else if(q.k=='ataja')seg(gk,.7,.3,()=>{S.hold=gk;S.q.push({to:null,dur:.9});penRes(q,false,kk)},()=>{gk.dv={t:0,s:sg}});
+ else seg({x:38.8,y:r()<.5?5:1,z:sg*(5.6+r()*1.8)},.7,.5,()=>penRes(q,false,kk))}
+function penRes(q,ok,kk){const S=SIM;if(ok){S.pen.sc[q.e]++;cheerG[q.e]=2.4;kk.cel=1.5}
+ S.pausa=1.2;aviso(ok?'¡GOL!':q.k=='ataja'?'¡Atajado!':'¡Afuera!',1300)}
+function final(){const S=SIM,[a,b]=S.sc;if(a==b&&S.p.Ganado_Por=='Penales'&&S.p.Penales&&!S.pen)return iniciarPenales();
+  let w=a>b?0:b>a?1:-1,n='';
+  if(w<0&&S.p.Ganado_Por=='Penales'&&S.p.Penales){w=S.p.Penales==S.p.Equipo_Local?0:1;n='<br><small>Gana en penales: '+esc(S.eq[w].t.Nombre)+(S.pen?' ('+S.pen.sc[0]+' - '+S.pen.sc[1]+')':'')+'</small>'}
   S.fin=true;S.finT=0;S.hold=null;S.m=60;S.regreso=0;if(w>=0)cheerG[w]=8;
+  if(S.pen){S.eq.forEach(E=>E.pj.forEach(j=>{j.pt=null}));objetivo.set(0,0,0);meta.d=innerWidth<=760?100:62;meta.ph=.9}
   S.eq.forEach(E=>E.pj.forEach(j=>{if(E.e==w)j.cel=1e9;else if(w>=0)j.lose=true}));
   aviso('FINAL '+a+' - '+b+(w>=0&&!n?'<br><small>Gana '+esc(S.eq[w].t.Nombre)+'</small>':n||'<br><small>Empate</small>'))}
 function simStep(dt){
@@ -421,7 +445,7 @@ function simStep(dt){
   }
   S.m+=((S.fin?60:S.idx/S.pl.length*60)-S.m)*Math.min(1,dt*1.2);
   const all=S.eq[0].pj.concat(S.eq[1].pj),bp=balon.position;S.tt=(S.tt||0)+dt;
-  if(!S.fin&&!(S.regreso>0))[0,1].forEach(e=>{S.eq[e].pj.slice(1).sort((a,b)=>Math.hypot(a.g.position.x-bp.x,a.g.position.z-bp.z)-Math.hypot(b.g.position.x-bp.x,b.g.position.z-bp.z)).forEach((j,k)=>{j.pr=k<2})});
+  if(!S.fin&&!S.pen&&!(S.regreso>0))[0,1].forEach(e=>{S.eq[e].pj.slice(1).sort((a,b)=>Math.hypot(a.g.position.x-bp.x,a.g.position.z-bp.z)-Math.hypot(b.g.position.x-bp.x,b.g.position.z-bp.z)).forEach((j,k)=>{j.pr=k<2})});
   if(S.regreso>0){if(S.centro&&S.regreso<7.4){balon.position.set(0,.17,0);S.centro=false}
     if(all.every(j=>!(j.cel>0)&&!j.dv&&Math.hypot(j.g.position.x-j.bx,j.g.position.z-j.bz)<1.3))S.regreso=0;else S.regreso-=dt}
   all.forEach(j=>{const g=j.g,p=g.position;
@@ -430,18 +454,19 @@ function simStep(dt){
     if(j.cel>0){j.cel-=dt;j.fase+=dt*8;const s=Math.sin(j.fase);j.bI.rotation.z=-2.6-s*.3;j.bD.rotation.z=2.6+s*.3;g.position.y=Math.abs(Math.sin(j.fase*.75))*.5;j.up.rotation.x=-.12;j.rodillas[0].rotation.x=j.rodillas[1].rotation.x=.25+Math.max(0,-Math.sin(j.fase*.75))*.5;return}
     g.position.y=0;j.bI.rotation.z=-.16;j.bD.rotation.z=.16;
     let tx,tz;
-    const rg=S.regreso>0&&!S.fin;
-    if(rg){tx=j.bx;tz=j.bz}
+    const rg=S.regreso>0&&!S.fin,pm=S.pen&&j.pt&&!S.fin;
+    if(pm){tx=j.pt[0];tz=j.pt[1]}
+    else if(rg){tx=j.bx;tz=j.bz}
     else if(!j.i){tx=j.bx;tz=Math.max(-3.5,Math.min(3.5,bp.z*.35))}
     else{const att=S.atk==j.e&&!S.fin,adv=j.i>=6?(att?22:5):j.i>=3?(att?15:3):(att?8:-1);
       if(j.pr&&!S.fin){tx=bp.x-j.dir*1.5;tz=bp.z+(j.i%2?1.2:-1.2)}
       else{tx=j.bx+j.dir*adv;tx+=(bp.x-tx)*.3;tz=j.bz+(bp.z-j.bz)*.45+Math.sin(S.tt*.8+j.i*1.7)*2.2}}
     if(S.fin){if(j.lose&&S.finT>2.2){tx=p.x;tz=(j.bz>=0?1:-1)*26.2}else[tx,tz]=[p.x,p.z]}
-    const dx=tx-p.x,dz=tz-p.z,dist=Math.hypot(dx,dz),v=dist>.4?Math.min(dist*2.5,j.lose?3.2:(rg?6.5:(j.i?(j.pr?9:7):3))):0;
+    const dx=tx-p.x,dz=tz-p.z,dist=Math.hypot(dx,dz),v=dist>.4?Math.min(dist*2.5,j.lose?3.2:(pm?9:rg?6.5:(j.i?(j.pr?9:7):3))):0;
     if(v>0){p.x+=dx/dist*v*dt;p.z+=dz/dist*v*dt}
     all.forEach(o=>{if(o!==j){const a=p.x-o.g.position.x,b=p.z-o.g.position.z,l=Math.hypot(a,b);if(l<2&&l>.01){p.x+=a/l*(2-l)*dt*4;p.z+=b/l*(2-l)*dt*4}}});
     p.x=Math.max(-36,Math.min(36,p.x));const zl=j.lose?27:23;p.z=Math.max(-zl,Math.min(zl,p.z));
-    const ang=j.i?(v>.5?Math.atan2(dx,dz):Math.atan2(bp.x-p.x,bp.z-p.z)):j.dir*Math.PI/2;let da=ang-g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));g.rotation.y+=da*Math.min(1,dt*8);
+    const ang=(j.i||pm)?(v>.5?Math.atan2(dx,dz):Math.atan2(bp.x-p.x,bp.z-p.z)):j.dir*Math.PI/2;let da=ang-g.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));g.rotation.y+=da*Math.min(1,dt*8);
     j.fase+=dt*(2+v*1.1);const f=j.fase*1.6,mv=v>.5?Math.min(1,v/6):0,sw=Math.sin(f)*(mv?.55+mv*.3:.06);
     j.pI.rotation.x=sw;j.pD.rotation.x=-sw;const kf=mv*1.05;
     j.rodillas[0].rotation.x=Math.max(0,-Math.cos(f))*kf+.04;j.rodillas[1].rotation.x=Math.max(0,Math.cos(f))*kf+.04;
@@ -453,7 +478,7 @@ function simStep(dt){
   (S.subs||[]).forEach(j=>{j.fase+=dt*2;const s=Math.sin(j.fase),ch=cheerG[j.e]>0;
     if(ch){j.bI.rotation.z=-2.6-s*.3;j.bD.rotation.z=2.6+s*.3;j.g.position.y=Math.abs(Math.sin(j.fase*3))*.45;j.up.rotation.x=-.1;j.rodillas[0].rotation.x=j.rodillas[1].rotation.x=.3}
     else{j.g.position.y=0;j.bI.rotation.z=-.16;j.bD.rotation.z=.16;j.bI.rotation.x=j.bD.rotation.x=0;j.pI.rotation.x=s*.05;j.pD.rotation.x=-s*.05;j.rodillas[0].rotation.x=j.rodillas[1].rotation.x=.05;j.codos[0].rotation.x=j.codos[1].rotation.x=-.2;j.up.rotation.x=0;j.up.rotation.z=s*.02}});
-  $('mS').textContent=S.sc[0]+' - '+S.sc[1];$('mT').textContent=S.fin?'FINAL':"Min "+Math.round(S.m)+"'";
+  $('mS').textContent=S.sc[0]+' - '+S.sc[1];$('mT').textContent=S.pen?'Penales '+S.pen.sc[0]+' - '+S.pen.sc[1]+(S.fin?' · FINAL':''):(S.fin?'FINAL':"Min "+Math.round(S.m)+"'");
 }
 $('sP').onclick=()=>{if(SIM&&!SIM.busy){SIM.run=!SIM.run;$('sP').textContent=SIM.run?'Pausar':'Continuar'}};
 $('sV').onclick=salirPartido;
