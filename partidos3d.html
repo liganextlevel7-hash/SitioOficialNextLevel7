@@ -73,6 +73,7 @@ body.sim #gol.on{display:block;position:fixed;left:50%;top:34%;transform:transla
 .ver-partido{flex:none;min-height:36px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#284b15;color:#fff;font:700 11px Roboto,Arial;cursor:pointer}.fila{flex-wrap:wrap}.fila .m{flex-basis:100px}.fila .sc{font-size:18px;min-width:35px}.vacio{font-size:12px;color:#aac49a;margin:8px}.recreacion{display:block;color:#ddc530!important;font-size:10px!important}#vistaGeneral{right:16px;bottom:16px;color:#fff;padding:12px;cursor:pointer;min-height:44px}body.sim #vistaGeneral{display:none}#sP{min-width:80px}#simbar{max-width:calc(100% - 16px);flex-wrap:wrap;justify-content:center;width:max-content}.nb{min-height:44px}#fechas button{min-height:44px}
 @media(max-width:760px){#top h1{font-size:19px;letter-spacing:1px;max-width:170px}#top p{display:none}#fechas{left:8px;right:8px;top:62px}#tabs button{min-height:44px}#lado{height:43dvh;bottom:calc(8px + env(safe-area-inset-bottom,0px))}#card{max-height:52dvh;bottom:calc(8px + env(safe-area-inset-bottom,0px))}#vistaGeneral{top:118px;bottom:auto;right:8px;padding:8px;font-size:11px}body.sel #vistaGeneral,body.ab #vistaGeneral{display:none}#simbar button{padding:10px 12px;min-height:44px}#nav{right:115px}.nb{padding:6px 9px}.fila{padding:8px 4px}.fila .m{font-size:12px}.fila .m small{font-size:11px}#marc .mid b{font-size:32px}#marc img{width:32px;height:32px}}
 @media(max-width:520px){#marc .eq{flex-direction:column;gap:3px;min-width:70px}#marc .eq b{display:block;font:700 10px Roboto,Arial;max-width:95px;letter-spacing:0;text-align:center;line-height:1.2}#marc .mid{min-width:82px}}
+#nota{display:none}body.sim #nota{display:block;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(66px + env(safe-area-inset-bottom,0px));width:max-content;max-width:min(560px,calc(100% - 24px));text-align:center;font:400 10px/1.35 Roboto,Arial;color:rgba(255,255,255,.8);text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none}
 </style>
 </head>
 <body>
@@ -81,6 +82,7 @@ body.sim #gol.on{display:block;position:fixed;left:50%;top:34%;transform:transla
 <div id="fechas"></div>
 <div id="marc" class="panel"><div class="eq"><img id="mL" alt=""><b id="nL"></b></div><div class="mid"><b id="mS">0 - 0</b><small id="mT">Min 0'</small><small class="recreacion">Recreación del resultado</small></div><div class="eq"><b id="nV"></b><img id="mV" alt=""></div></div>
 <div id="gol"></div>
+<div id="nota">Recreación ilustrativa: los goles caen indistintamente y no reflejan cómo fue el partido; lo importante es el marcador. Lo mismo aplica en los penales.</div>
 <div id="simbar"><button id="sV">← Volver</button><button id="sR">↻ Repetir</button><button id="sP">Pausar</button><button id="sX">×1</button></div>
 <nav id="nav"><a class="nb" href="partidos.html" title="Volver a Partidos"><span aria-hidden="true">←</span><svg viewBox="0 0 32 40" aria-hidden="true"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg><span class="t">Partidos</span></a><a class="nb" href="index.html" title="Ir al inicio del portal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11L12 3l9 8M5 10v11h14V10M9 21v-8h6v8"/></svg><span class="t">Inicio</span></a></nav>
 <button id="btnL">Partidos</button><button id="vistaGeneral" class="panel">↺ Vista general</button>
@@ -190,10 +192,42 @@ const fb=(txt,col)=>{const c=document.createElement('canvas');c.width=c.height=1
 const cargar=(u,f)=>new Promise(ok=>{if(!u)return ok(f());loader.load(u,t=>{t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>ok(f()))});
 function prom(tex,def){try{const c=document.createElement('canvas');c.width=c.height=16;const x=c.getContext('2d');x.drawImage(tex.image,0,0,16,16);const d=x.getImageData(0,0,16,16).data;let r=0,g=0,b=0,n=0;
   for(let i=0;i<d.length;i+=4)if(d[i+3]>200){r+=d[i];g+=d[i+1];b+=d[i+2];n++}return n>8?new THREE.Color(r/n/255,g/n/255,b/n/255):def}catch(e){return def}}
+function promedio(tex,def){
+  // Lee los colores reales del uniforme: cuerpo (zona del pecho/vientre, evitando escudos) y mangas. Devuelve {col, manga}.
+  try{
+    const im=tex.image,N=128,sc=N/Math.max(im.width,im.height),W=Math.max(8,Math.round(im.width*sc)),H=Math.max(8,Math.round(im.height*sc));
+    const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(im,0,0,W,H);
+    const d=x.getImageData(0,0,W,H).data,px=(i,j)=>(j*W+i)*4;
+    const cs=[[0,0],[W-1,0],[0,H-1],[W-1,H-1]].map(([i,j])=>{const k=px(i,j);return [d[k],d[k+1],d[k+2],d[k+3]]});
+    const bg=cs.every(q=>q[3]>240&&Math.abs(q[0]-cs[0][0])+Math.abs(q[1]-cs[0][1])+Math.abs(q[2]-cs[0][2])<30)?cs[0]:null; // fondo opaco uniforme, si lo hay
+    const es=(i,j)=>{const k=px(i,j);if(d[k+3]<60)return false;return !(bg&&Math.abs(d[k]-bg[0])+Math.abs(d[k+1]-bg[1])+Math.abs(d[k+2]-bg[2])<40)};
+    let x0=W,x1=-1,y0=H,y1=-1;
+    for(let j=0;j<H;j++)for(let i=0;i<W;i++)if(es(i,j)){if(i<x0)x0=i;if(i>x1)x1=i;if(j<y0)y0=j;if(j>y1)y1=j}
+    if(x1-x0<10||y1-y0<10)return {col:def,manga:def};
+    const bw=x1-x0,bh=y1-y0;
+    const modo=rects=>{const B={};let n=0;
+      rects.forEach(([ax,ay,bx,by])=>{for(let j=Math.round(y0+ay*bh);j<=Math.round(y0+by*bh);j++)for(let i=Math.round(x0+ax*bw);i<=Math.round(x0+bx*bw);i++){
+        if(i<0||j<0||i>=W||j>=H||!es(i,j))continue;const k=px(i,j),key=(d[k]>>4)+','+(d[k+1]>>4)+','+(d[k+2]>>4),o=B[key]||(B[key]={r:0,g:0,b:0,n:0});o.r+=d[k];o.g+=d[k+1];o.b+=d[k+2];o.n++;n++}});
+      let best=null;for(const k in B)if(!best||B[k].n>best.n)best=B[k];
+      return best&&n>=12?new THREE.Color(best.r/best.n/255,best.g/best.n/255,best.b/best.n/255):null};
+    const col=modo([[.28,.58,.40,.80],[.60,.58,.72,.80]])||modo([[0,0,1,1]])||def;
+    const manga=modo([[.08,.18,.17,.30],[.83,.18,.92,.30]])||col;
+    const cx=Math.max(0,Math.floor(x0/sc)),cy=Math.max(0,Math.floor(y0/sc));
+    return {col,manga,caja:{x:cx,y:cy,w:Math.min(im.width-cx,Math.ceil((bw+1)/sc)),h:Math.min(im.height-cy,Math.ceil((bh+1)/sc))}};
+  }catch(e){return {col:def,manga:def}}
+}
+const COLN={rojo:'#d62828','rojo oscuro':'#8b1e1e',vino:'#7b1e3a',guinda:'#5a1230',naranja:'#f97316',amarillo:'#f4c20d',dorado:'#d4a017',verde:'#16a34a','verde oscuro':'#14532d','verde limon':'#84cc16',turquesa:'#14b8a6',celeste:'#38bdf8',azul:'#1d4ed8','azul rey':'#1d4ed8','azul marino':'#1e3a8a','azul cielo':'#0ea5e9',morado:'#7c3aed',lila:'#a78bfa',rosa:'#ec4899',cafe:'#78350f',beige:'#e7d8b1',blanco:'#ffffff',negro:'#111111',gris:'#6b7280',plata:'#c0c0c0'};
+function parseColor(v){v=String(v==null?'':v).trim().toLowerCase();if(!v)return null;
+  const n=v.normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(COLN[n])v=COLN[n];
+  let m=v.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/);if(m){let h=m[1];if(h.length==3)h=h.split('').map(c=>c+c).join('');return new THREE.Color(parseInt(h,16))}
+  m=v.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/);if(m)return new THREE.Color(m[1]/255,m[2]/255,m[3]/255);return null}
+function colorDeHoja(t,re){for(const k of Object.keys(t)){if(re.test(k.normalize('NFD').replace(/[\u0300-\u036f]/g,''))){const c=parseColor(t[k]);if(c)return c}}return null}
+const LIN=c=>c.clone().convertSRGBToLinear();
 const cache={};
 function textura(t,i){return cache[t.id]||(cache[t.id]=(async()=>{const def=new THREE.Color().setHSL((i*.137)%1,.55,.42);
   const [esc,pla]=await Promise.all([cargar(t.URL,()=>fb((t.Nombre||'?').charAt(0),'#'+def.getHexString())),cargar(t.Color_Playera,()=>null)]);
-  return {esc,pla,col:pla?prom(pla,def):def}})())}
+  const an=pla?promedio(pla,def):{col:def,manga:def};
+  return {esc,pla,col:an.col,manga:an.manga,caja:an.caja,short:colorDeHoja(t,/short|pantalon/i),calc:colorDeHoja(t,/calcet|media/i)}})())}
 function texto(lineas,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
   lineas.forEach(([t,tam,col,y])=>{x.font=`bold ${tam}px Roboto,Arial`;x.lineWidth=tam/5;x.strokeStyle='#04100a';x.strokeText(t,w/2,y);x.fillStyle=col;x.fillText(t,w/2,y)});
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false}));s.renderOrder=3;return s}
@@ -203,11 +237,17 @@ const esfera=()=>geo('sph',()=>new THREE.SphereGeometry(1,14,10));
 function lathe(r0,r1,len){return geo('l'+[r0,r1,len],()=>{const p=[];for(let k=0;k<=4;k++){const a=k/4*Math.PI/2;p.push(new THREE.Vector2(Math.max(.0001,r1*Math.sin(a)),-len-r1*Math.cos(a)))}for(let k=0;k<=4;k++){const a=k/4*Math.PI/2;p.push(new THREE.Vector2(Math.max(.0001,r0*Math.cos(a)),r0*Math.sin(a)))}return new THREE.LatheGeometry(p,12)})}
 function volumen(parent,mat,x,y,z,sx,sy,sz){const m=new THREE.Mesh(esfera(),mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;parent.add(m);return m;}
 function miembro(parent,mat,r0,r1,len,x,y,z){const m=new THREE.Mesh(lathe(r0,r1,len),mat);m.position.set(x,y,z);m.castShadow=true;parent.add(m);return m;}
-function telaTorso(tex,col){
- // Se toma la zona de tela de la imagen de la playera, en vez de pegar su silueta completa.
- const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d');x.fillStyle='#'+col.getHexString();x.fillRect(0,0,512,256);
- if(tex?.image){const im=tex.image,w=im.width,h=im.height;for(let side=0;side<2;side++)x.drawImage(im,w*.20,h*.15,w*.60,h*.82,side*256,48,256,208);}
- const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=4;map.wrapS=THREE.RepeatWrapping;return new THREE.MeshStandardMaterial({map,roughness:.9});
+function telaTorso(tex,col,caja){
+ // La playera del equipo tal cual, recortada a su silueta y ajustada al torso. Atrás va la misma tela sin el escudo ni el patrocinador del centro.
+ const K=innerWidth<=760?.5:1,W=1024*K,H=512*K,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+ x.fillStyle='#'+col.getHexString();x.fillRect(0,0,W,H);
+ if(tex?.image){const im=tex.image,cj=caja||{x:0,y:0,w:im.width,h:im.height},fw=W/2,y0=H*.04,fh=H-y0;
+  x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';
+  x.drawImage(im,cj.x,cj.y,cj.w,cj.h,0,y0,fw,fh);
+  x.drawImage(im,cj.x,cj.y,cj.w,cj.h,fw,y0,fw,fh);
+  x.fillStyle='#'+col.getHexString();x.fillRect(fw+fw*.24,0,fw*.52,H);
+ }
+ const map=new THREE.CanvasTexture(c);map.encoding=THREE.sRGBEncoding;map.anisotropy=8;map.wrapS=THREE.RepeatWrapping;return new THREE.MeshStandardMaterial({map,roughness:.9});
 }
 function camisetaMesh(mat){
  const rings=[[1.16,.30,.18],[1.32,.285,.172],[1.48,.30,.18],[1.64,.345,.195],[1.80,.385,.19],[1.92,.37,.165],[2.00,.25,.13],[2.06,.14,.105]],verts=[],uv=[],idx=[],N=24;
@@ -218,11 +258,11 @@ function camisetaMesh(mat){
 const numCache={};
 function numTex(n,claro){const k=n+(claro?'c':'o');return numCache[k]||(numCache[k]=(()=>{const c=document.createElement('canvas');c.width=64;c.height=80;const x=c.getContext('2d');x.font='bold 62px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=7;x.strokeStyle=claro?'rgba(0,0,0,.55)':'rgba(255,255,255,.7)';x.strokeText(n,32,42);x.fillStyle=claro?'#fff':'#111';x.fillText(n,32,42);const tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;return tx})())}
 async function jugador(t,i,gk){
- const {esc,pla,col}=await textura(t,i),color=gk?new THREE.Color(gk):col,g=new THREE.Group();
+ const {esc,pla,col,manga,caja,short:sCol,calc:cCol}=await textura(t,i),color=gk?new THREE.Color(gk):col,mcol=gk?color:manga,g=new THREE.Group();
  const h=((i+1)*2654435761+(parseInt(t.id,10)||0)*40503)>>>0,estilo=(h>>>4)%6,pCol=peloCol[(h>>>9)%6],alto=.95+((h>>>13)%11)*.01,ancho=.93+((h>>>17)%12)*.012;
  const piel=new THREE.MeshStandardMaterial({color:pieles[(h>>>2)%6],roughness:.85});
- const tela=new THREE.MeshStandardMaterial({color,roughness:.9}),shortMat=new THREE.MeshStandardMaterial({color:color.clone().multiplyScalar(.48),roughness:.9});
- const sock=new THREE.MeshStandardMaterial({color:gk?0x1d1d1d:color.clone().lerp(new THREE.Color(0xffffff),.45),roughness:.95});
+ const tela=new THREE.MeshStandardMaterial({color:LIN(color),roughness:.9}),mangaMat=new THREE.MeshStandardMaterial({color:LIN(mcol),roughness:.9}),shortMat=new THREE.MeshStandardMaterial({color:sCol&&!gk?LIN(sCol):LIN(color).multiplyScalar(.5),roughness:.9});
+ const sock=new THREE.MeshStandardMaterial({color:gk?new THREE.Color(0x1d1d1d):LIN(cCol||color.clone().lerp(new THREE.Color(0xffffff),.45)),roughness:.95});
  const boot=new THREE.MeshStandardMaterial({color:[0x1b1f1f,0xeeeecc,0xd8412a,0x2a6fd8][(h>>>6)%4],roughness:.55});
  const pelo=new THREE.MeshStandardMaterial({color:pCol,roughness:.95}),ojo=new THREE.MeshBasicMaterial({color:0x1a1210});
  const guante=gk?new THREE.MeshStandardMaterial({color:0xf1f1e6,roughness:.7}):piel;
@@ -230,9 +270,9 @@ async function jugador(t,i,gk){
  volumen(cuerpo,shortMat,0,1.12,0,.30,.20,.18);
  // Torso y todo lo de arriba cuelga de "up", que gira desde la cadera (inclinación al correr).
  const up=new THREE.Group();up.position.y=1.15;cuerpo.add(up);
- const torso=camisetaMesh(telaTorso(gk?null:pla,color));torso.castShadow=true;torso.position.y=-1.15;up.add(torso);
+ const torso=camisetaMesh(telaTorso(gk?null:pla,color,caja));torso.castShadow=true;torso.position.y=-1.15;up.add(torso);
  const cuello=new THREE.Mesh(geo('cuello',()=>new THREE.CylinderGeometry(.07,.085,.17,12)),piel);cuello.position.y=.92;up.add(cuello);
- const collar=new THREE.Mesh(geo('collar',()=>new THREE.TorusGeometry(.135,.027,6,18)),new THREE.MeshStandardMaterial({color:0xe6e8d9,roughness:.8}));collar.rotation.x=Math.PI/2;collar.scale.set(1,.8,1);collar.position.y=.89;up.add(collar);
+ const collar=new THREE.Mesh(geo('collar',()=>new THREE.TorusGeometry(.135,.027,6,18)),new THREE.MeshStandardMaterial({color:LIN(color.clone().lerp(new THREE.Color(0xffffff),.3)),roughness:.8}));collar.rotation.x=Math.PI/2;collar.scale.set(1,.8,1);collar.position.y=.89;up.add(collar);
  const lum=color.r*.3+color.g*.59+color.b*.11,num=gk?1:2+(h>>>3)%9;
  const nm=new THREE.Mesh(geo('num',()=>new THREE.PlaneGeometry(.24,.3)),new THREE.MeshBasicMaterial({map:numTex(num,lum<.55),transparent:true}));nm.position.set(0,.5,-.2);nm.rotation.y=Math.PI;up.add(nm);
  const rodillas=[],codos=[];
@@ -246,7 +286,7 @@ async function jugador(t,i,gk){
  }
  const piernaI=pierna(-1),piernaD=pierna(1);
  function brazo(sign){const shoulder=new THREE.Group();shoulder.position.set(sign*.37,.76,0);shoulder.rotation.z=sign*.16;up.add(shoulder);
-  volumen(shoulder,tela,0,0,0,.125,.125,.125);miembro(shoulder,tela,.12,.1,.15,sign*.01,-.04,0);miembro(shoulder,piel,.083,.068,.22,sign*.02,-.2,0);
+  volumen(shoulder,mangaMat,0,0,0,.125,.125,.125);miembro(shoulder,mangaMat,.12,.1,.15,sign*.01,-.04,0);miembro(shoulder,piel,.083,.068,.22,sign*.02,-.2,0);
   const elbow=new THREE.Group();elbow.position.set(sign*.025,-.45,0);shoulder.add(elbow);volumen(elbow,piel,0,0,0,.075,.078,.075);
   miembro(elbow,piel,.07,.05,.2,0,-.03,0);volumen(elbow,guante,0,-.34,.03,.058,.088,.04);volumen(elbow,guante,-sign*.05,-.3,.045,.022,.045,.022);
   elbow.rotation.x=-.18;codos.push(elbow);return shoulder;
