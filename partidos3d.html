@@ -403,11 +403,11 @@ function gol(e){const S=SIM;cheerG[e]=3.4;S.sc[e]++;S.hold=null;S.pausa=.8;S.cen
   aviso('¡GOOOL!<br><small>'+esc(S.eq[e].t.Nombre)+'</small>',2400)}
 /* ---------- tanda de penales ---------- */
 function iniciarPenales(){const S=SIM,[a,b]=S.sc,r=S.rnd,w=S.p.Penales==S.p.Equipo_Local?0:1,sud=r()<.25;
- let gw,gl;if(sud){gw=gl=3+Math.floor(r()*3)}else{gl=2+Math.floor(r()*3);gw=Math.min(5,gl+1+(r()<.3?1:0))}
- const mk=n=>{const x=Array(5).fill(0);for(let i=0;i<n;i++)x[i]=1;for(let i=4;i>0;i--){const k=Math.floor(r()*(i+1));[x[i],x[k]]=[x[k],x[i]]}return x},sq=[null,null];
+ let gw,gl;if(sud){gw=gl=1+Math.floor(r()*3)}else{gl=Math.floor(r()*3);gw=Math.min(3,gl+1+(r()<.3?1:0))}
+ const mk=n=>{const x=Array(3).fill(0);for(let i=0;i<n;i++)x[i]=1;for(let i=2;i>0;i--){const k=Math.floor(r()*(i+1));[x[i],x[k]]=[x[k],x[i]]}return x},sq=[null,null];
  sq[w]=mk(gw);sq[1-w]=mk(gl);const fallo=()=>r()<.6?'ataja':'fuera';
- for(let i=0;i<5;i++)[0,1].forEach(e=>S.pl.push({e,r:'pen',k:sq[e][i]?'gol':fallo(),n:i}));
- if(sud)[0,1].forEach(e=>S.pl.push({e,r:'pen',k:e==w?'gol':fallo(),n:5}));
+ for(let i=0;i<3;i++)[0,1].forEach(e=>S.pl.push({e,r:'pen',k:sq[e][i]?'gol':fallo(),n:i}));
+ if(sud)[0,1].forEach(e=>S.pl.push({e,r:'pen',k:e==w?'gol':fallo(),n:3}));
  S.pen={sc:[0,0],w};S.hold=null;S.seg=null;S.q=[];S.pausa=1.4;
  objetivo.set(26,0,0);meta.d=innerWidth<=760?44:32;meta.ph=1.1;meta.th=-1.25;
  aviso('¡PENALES!<br><small>Empate '+a+' - '+b+'</small>',2600)}
