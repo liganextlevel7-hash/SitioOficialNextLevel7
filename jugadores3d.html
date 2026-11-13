@@ -223,10 +223,12 @@ for(let i=0;i<12;i++){const g=new THREE.Group();g.position.set(-130+azar()*260,4
 
 /* ---------- texturas y jugadores ---------- */
 const loader=new THREE.TextureLoader();loader.setCrossOrigin('anonymous');
-const cargar=u=>new Promise(ok=>{if(!u)return ok(null);const fin=setTimeout(()=>ok(null),8000);
-  loader.load(u,t=>{clearTimeout(fin);const im=t.image,m=Math.max(im.width,im.height);
+const cargar=u=>new Promise(ok=>{if(!u)return ok(null);let hecho=false,n=0;
+  const fin=setTimeout(()=>{if(!hecho){hecho=true;ok(null)}},30000);
+  const intenta=()=>loader.load(u,t=>{if(hecho)return;hecho=true;clearTimeout(fin);const im=t.image,m=Math.max(im.width,im.height);
     if(m>384){const k=384/m,c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);t=new THREE.CanvasTexture(c)}
-    t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>{clearTimeout(fin);ok(null)})});
+    t.encoding=THREE.sRGBEncoding;ok(t)},undefined,()=>{if(hecho)return;if(n++<2)setTimeout(intenta,700);else{hecho=true;clearTimeout(fin);ok(null)}});
+  intenta()});
 const cacheT={};const tex=u=>cacheT[u]||(cacheT[u]=cargar(u));
 function analizarPlayera(tex,def){
   // Lee los colores reales del uniforme: cuerpo (zona del pecho/vientre, evitando escudos) y mangas. Devuelve {col, manga}.
