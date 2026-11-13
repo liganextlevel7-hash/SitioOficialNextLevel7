@@ -292,15 +292,21 @@ const numCache={};
 function numTex(n,claro){const k=n+(claro?'c':'o');return numCache[k]||(numCache[k]=(()=>{const c=document.createElement('canvas');c.width=64;c.height=80;const x=c.getContext('2d');x.font='bold '+(n>9?44:62)+'px Roboto,Arial';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=7;x.strokeStyle=claro?'rgba(0,0,0,.55)':'rgba(255,255,255,.7)';x.strokeText(n,32,42);x.fillStyle=claro?'#fff':'#111';x.fillText(n,32,42);const tx=new THREE.CanvasTexture(c);tx.encoding=THREE.sRGBEncoding;return tx})())}
 
 /* Jugador articulado: mismo armado que partidos3d y dashboard (cabeza con rasgos y cabello, playera real del equipo, número, brazos y piernas). */
+const COLN={rojo:'#d62828','rojo oscuro':'#8b1e1e',vino:'#7b1e3a',guinda:'#5a1230',naranja:'#f97316',amarillo:'#f4c20d',dorado:'#d4a017',verde:'#16a34a','verde oscuro':'#14532d','verde limon':'#84cc16',turquesa:'#14b8a6',celeste:'#38bdf8',azul:'#1d4ed8','azul rey':'#1d4ed8','azul marino':'#1e3a8a','azul cielo':'#0ea5e9',morado:'#7c3aed',lila:'#a78bfa',rosa:'#ec4899',cafe:'#78350f',beige:'#e7d8b1',blanco:'#ffffff',negro:'#111111',gris:'#6b7280',plata:'#c0c0c0'};
+function parseColor(v){v=String(v==null?'':v).trim().toLowerCase();if(!v)return null;
+  const n=v.normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(COLN[n])v=COLN[n];
+  let m=v.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/);if(m){let h=m[1];if(h.length==3)h=h.split('').map(c=>c+c).join('');return new THREE.Color(parseInt(h,16))}
+  m=v.match(/^rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/);if(m)return new THREE.Color(m[1]/255,m[2]/255,m[3]/255);return null}
+function colorDeHoja(t,re){for(const k of Object.keys(t)){if(re.test(k.normalize('NFD').replace(/[\u0300-\u036f]/g,''))){const c=parseColor(t[k]);if(c)return c}}return null}
 async function figura(s,i){
  const def=new THREE.Color().setHSL(((parseInt(s.t.ID_Equipo,10)||i)*.137)%1,.55,.42),pla=await tex(s.t.Color_Playera);
- const an=pla?analizarPlayera(pla,def):{col:def,manga:def},color=an.col,mcol=an.manga,caja=an.caja,L=c=>c.clone().convertSRGBToLinear();
+ const an=pla?analizarPlayera(pla,def):{col:def,manga:def},color=an.col,mcol=an.manga,caja=an.caja,L=c=>c.clone().convertSRGBToLinear(),sCol=colorDeHoja(s.t,/short|pantalon/i),cCol=colorDeHoja(s.t,/calcet|media/i);
  const escudo=pla?null:await tex(s.t.URL),g=new THREE.Group();
  let h=2166136261;for(const ch of String((s.j.Nombre||'')+'|'+(s.t.ID_Equipo||'')))h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;
  const estilo=(h>>>4)%6,pCol=peloCol[(h>>>9)%6],alto=.95+((h>>>13)%11)*.01,ancho=.93+((h>>>17)%12)*.012;
  const piel=new THREE.MeshStandardMaterial({color:pieles[(h>>>2)%6],roughness:.85});
- const tela=new THREE.MeshStandardMaterial({color:L(color),roughness:.9}),mangaMat=new THREE.MeshStandardMaterial({color:L(mcol),roughness:.9}),shortMat=new THREE.MeshStandardMaterial({color:L(color).multiplyScalar(.5),roughness:.9});
- const sock=new THREE.MeshStandardMaterial({color:L(color.clone().lerp(new THREE.Color(0xffffff),.45)),roughness:.95});
+ const tela=new THREE.MeshStandardMaterial({color:L(color),roughness:.9}),mangaMat=new THREE.MeshStandardMaterial({color:L(mcol),roughness:.9}),shortMat=new THREE.MeshStandardMaterial({color:sCol?L(sCol):L(color).multiplyScalar(.5),roughness:.9});
+ const sock=new THREE.MeshStandardMaterial({color:L(cCol||color.clone().lerp(new THREE.Color(0xffffff),.45)),roughness:.95});
  const boot=new THREE.MeshStandardMaterial({color:[0x1b1f1f,0xeeeecc,0xd8412a,0x2a6fd8][(h>>>6)%4],roughness:.55});
  const pelo=new THREE.MeshStandardMaterial({color:pCol,roughness:.95}),ojo=new THREE.MeshBasicMaterial({color:0x1a1210});
  const guante=piel;
