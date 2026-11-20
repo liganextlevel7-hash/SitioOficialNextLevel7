@@ -22,20 +22,12 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 .load-title{font-size:18px;font-weight:800;color:var(--neon);margin-bottom:6px}
 .load-sub{font-size:12px;color:var(--g400)}
 
-#login-screen{display:none;background:var(--dark);border:1px solid rgba(94,181,13,.2);border-radius:20px;width:100%;max-width:420px;margin-top:20px;overflow:hidden}
-.login-hero{background:linear-gradient(135deg,#142702,#1c3204);padding:28px;text-align:center;border-bottom:1px solid rgba(94,181,13,.15)}
-.login-hero-icon{font-size:38px;margin-bottom:10px}
-.login-hero-title{font-size:20px;font-weight:800;color:var(--neon);margin-bottom:4px;letter-spacing:1px}
-.login-hero-sub{font-size:12px;color:var(--g400)}
-.login-body{padding:24px 28px 28px}
 .field{margin-bottom:16px}
 .field label{display:block;font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
 .field input{width:100%;padding:11px 14px;border:1.5px solid var(--dark3);border-radius:var(--rs);font-size:14px;color:var(--w);background:var(--dark2);outline:none}
 .field input:focus{border-color:var(--neon)}
 .btn-enter{width:100%;padding:14px;background:var(--neon);color:#122400;border:none;border-radius:var(--r);font-size:15px;font-weight:800;cursor:pointer}
 .btn-enter:hover{filter:brightness(1.1)}
-.login-msg{font-size:12px;color:var(--g400);text-align:center;margin-top:10px;min-height:18px}
-.login-msg.err{color:#f87171}
 
 #app-screen{display:none;width:100%;max-width:760px;background:var(--dark);border:1px solid rgba(94,181,13,.15);border-radius:20px;overflow:hidden;margin-top:20px}
 .app-header{background:linear-gradient(135deg,#142702,#1c3204);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(94,181,13,.15)}
@@ -95,7 +87,7 @@ body{font-family:var(--font);background:linear-gradient(135deg,#142702 0%,#1c320
 @media(max-width:580px){
   .cartel-poster{min-width:760px}
   body{padding:0;align-items:flex-start}
-  #login-screen,#app-screen{border-radius:0;margin-top:0}
+  #app-screen{border-radius:0;margin-top:0}
 }
 
 
@@ -169,22 +161,6 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
   <div class="load-ball">⚽</div>
   <div class="load-title">PROGRAMAR PARTIDOS</div>
   <div class="load-sub" id="load-msg">Conectando con Google Sheets...</div>
-</div>
-
-<div id="login-screen">
-  <div class="login-hero">
-    <div class="login-hero-icon">🛠️</div>
-    <div class="login-hero-title">PROGRAMAR PARTIDOS</div>
-    <div class="login-hero-sub">Liga Next Level 7 · Panel de administración</div>
-  </div>
-  <div class="login-body">
-    <div class="field">
-      <label>Contraseña de moderador</label>
-      <input type="password" id="mod-password" placeholder="Ingresa la contraseña..." onkeydown="if(event.key==='Enter')entrarPanel()">
-    </div>
-    <button class="btn-enter" onclick="entrarPanel()">Entrar →</button>
-    <div class="login-msg" id="login-msg"></div>
-  </div>
 </div>
 
 <div id="app-screen">
@@ -324,7 +300,6 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
 const SHEET_ID     = '1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE';
 const GID_EQUIPOS  = '1894947293';
 const GID_PARTIDOS = '1362473459';
-const MOD_PASS     = 'nl7admin';
 
 // ── Reglas de datos: las MISMAS del reporte de 15 jornadas y del reporte por equipo ──
 // (así Armar Jornada y los reportes calculan con los mismos partidos)
@@ -460,7 +435,7 @@ async function init(){
     await cargarJugadores();
 
     document.getElementById('loading-screen').style.display='none';
-    document.getElementById('login-screen').style.display='block';
+    entrarPanel();
   }catch(e){
     console.error(e);
     msg.textContent = 'Error al cargar datos: '+e.message;
@@ -472,14 +447,6 @@ init();
 //  LOGIN
 // ════════════════════════════════
 function entrarPanel(){
-  const pass = document.getElementById('mod-password').value;
-  const loginMsg = document.getElementById('login-msg');
-  if(pass !== MOD_PASS){
-    loginMsg.textContent = 'Contraseña incorrecta.';
-    loginMsg.classList.add('err');
-    return;
-  }
-  document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   llenarSelectsEquipos();
   llenarListaIds();
@@ -1668,4 +1635,3 @@ function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
 </script>
 </body>
 </html>
-
