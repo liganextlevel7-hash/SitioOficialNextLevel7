@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Administración - Next Level 7</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --fondo: #101f06;
+      --pasto: #1a3009;
+      --pasto-claro: #223d0e;
+      --linea: #35601a;
+      --verde: #5eb50d;
+      --oro: #ddc530;
+      --azul: #29a6ff;
+      --texto: #eef6e4;
+      --suave: #b9cca6;
+      --error: #ff9a8f;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      background: var(--fondo);
+      color: var(--texto);
+      font: 16px/1.5 'Roboto', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 28px 16px 40px;
+    }
+
+    /* Líneas de cancha de fondo: sólo ambientan, no llevan información */
+    .cancha {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+    }
+    .cancha * { fill: none; stroke: var(--verde); stroke-width: 3; opacity: .1; }
+
+    main { position: relative; z-index: 1; width: 100%; max-width: 720px; }
+
+    /* ===== ACCESO ===== */
+    .acceso {
+      max-width: 400px;
+      margin: 12vh auto 0;
+      background: rgba(26, 48, 9, .94);
+      border: 1px solid var(--linea);
+      border-radius: 20px;
+      padding: 34px 28px 28px;
+      text-align: center;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+    }
+    .candado {
+      width: 64px; height: 64px; margin: 0 auto 16px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      background: rgba(94, 181, 13, .14);
+      border: 1px solid var(--verde);
+      color: var(--verde);
+    }
+    .candado svg { width: 30px; height: 30px; }
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-weight: 400;
+      letter-spacing: 1.5px;
+      line-height: 1.05;
+      margin: 0;
+    }
+    .acceso h1 { font-size: 40px; }
+    .acceso p { margin: 8px 0 22px; color: var(--suave); font-size: 15px; }
+
+    .campo { text-align: left; }
+    .campo label { display: block; font-size: 13px; color: var(--suave); margin-bottom: 6px; }
+    .entrada { position: relative; }
+    .entrada input {
+      width: 100%; min-height: 48px;
+      background: rgba(0, 0, 0, .35);
+      border: 1px solid var(--linea);
+      border-radius: 10px;
+      color: var(--texto);
+      font-size: 16px;
+      padding: 10px 52px 10px 14px;
+    }
+    .entrada input:focus { outline: 2px solid var(--oro); outline-offset: 1px; border-color: var(--oro); }
+    .ojo {
+      position: absolute; right: 4px; top: 4px;
+      width: 40px; height: 40px;
+      background: transparent; border: 0; border-radius: 8px;
+      color: var(--suave); cursor: pointer;
+      display: grid; place-items: center;
+    }
+    .ojo:hover { color: var(--texto); }
+    .ojo:focus-visible { outline: 2px solid var(--oro); }
+    .ojo svg { width: 22px; height: 22px; }
+
+    .error { min-height: 22px; margin: 10px 0 0; font-size: 14px; color: var(--error); text-align: left; }
+    .entrar {
+      width: 100%; min-height: 50px; margin-top: 8px;
+      background: var(--verde); color: #0b1704;
+      border: 0; border-radius: 10px;
+      font: 700 16px 'Roboto', Arial, sans-serif;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .entrar:hover { background: #74cc22; }
+    .entrar:focus-visible { outline: 3px solid var(--oro); outline-offset: 3px; }
+    .sacudir { animation: sacudir .35s; }
+    @keyframes sacudir {
+      20% { transform: translateX(-8px); } 40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); } 80% { transform: translateX(5px); }
+    }
+
+    /* ===== PANEL ===== */
+    .panel-cab { margin: 6px 0 24px; }
+    .panel-cab h1 { font-size: clamp(40px, 9vw, 58px); }
+    .panel-cab p { margin: 8px 0 0; color: var(--suave); font-size: 16px; max-width: 46ch; }
+
+    .herramientas { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+    .fila {
+      --acento: var(--verde);
+      display: grid; grid-template-columns: 72px minmax(0, 1fr) 28px;
+      align-items: center; gap: 18px;
+      padding: 18px 20px;
+      background: var(--pasto);
+      border: 1px solid var(--linea);
+      border-radius: 18px;
+      color: var(--texto);
+      text-decoration: none;
+      transition: border-color .18s, background .18s;
+    }
+    .fila:hover { background: var(--pasto-claro); border-color: var(--acento); }
+    .fila:focus-visible { outline: 3px solid var(--oro); outline-offset: 3px; }
+    .fila.oro { --acento: var(--oro); }
+    .fila.azul { --acento: var(--azul); }
+
+    .icono {
+      width: 72px; height: 72px;
+      display: grid; place-items: center;
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--acento) 16%, transparent);
+      border: 1px solid var(--acento);
+      color: var(--acento);
+    }
+    .icono svg { width: 38px; height: 38px; }
+    .fila h2 {
+      font-family: 'Bebas Neue', sans-serif; font-weight: 400;
+      font-size: 30px; letter-spacing: 1px; line-height: 1.1; margin: 0 0 4px;
+    }
+    .fila p { margin: 0; color: var(--suave); font-size: 15px; line-height: 1.45; }
+    .flecha { width: 26px; height: 26px; color: var(--acento); justify-self: end; }
+
+    .pie {
+      margin-top: 30px; padding-top: 18px;
+      border-top: 1px solid var(--linea);
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between;
+    }
+    .pie a, .pie button {
+      min-height: 44px; padding: 10px 18px;
+      background: transparent; color: var(--suave);
+      border: 1px solid var(--linea); border-radius: 10px;
+      font: 700 14px 'Roboto', Arial, sans-serif;
+      text-decoration: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      touch-action: manipulation;
+    }
+    .pie a:hover, .pie button:hover { color: var(--texto); border-color: var(--suave); }
+    .pie a:focus-visible, .pie button:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+    .pie svg { width: 18px; height: 18px; }
+
+    @media (max-width: 520px) {
+      body { padding: 18px 12px 32px; }
+      .acceso { margin-top: 7vh; padding: 28px 20px 22px; }
+      .fila { grid-template-columns: 56px minmax(0, 1fr) 22px; gap: 14px; padding: 14px; }
+      .icono { width: 56px; height: 56px; border-radius: 14px; }
+      .icono svg { width: 30px; height: 30px; }
+      .fila h2 { font-size: 26px; }
+      .fila p { font-size: 14px; }
+      .flecha { width: 22px; height: 22px; }
+      .pie > * { flex: 1 1 100%; justify-content: center; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .sacudir { animation: none; }
+      .fila { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="cancha" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <rect x="40" y="40" width="920" height="620" rx="6" />
+    <line x1="500" y1="40" x2="500" y2="660" />
+    <circle cx="500" cy="350" r="90" />
+    <rect x="40" y="215" width="150" height="270" />
+    <rect x="810" y="215" width="150" height="270" />
+  </svg>
+
+  <main>
+    <!-- Pantalla de acceso -->
+    <section class="acceso" id="acceso" aria-labelledby="tituloAcceso">
+      <div class="candado" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10.5" width="16" height="10.5" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.8" r="1.2"/></svg>
+      </div>
+      <h1 id="tituloAcceso">Administración</h1>
+      <p>Escribe la contraseña para entrar al panel.</p>
+      <form id="formAcceso" autocomplete="off" novalidate>
+        <div class="campo">
+          <label for="clave">Contraseña</label>
+          <div class="entrada">
+            <input id="clave" name="clave" type="password" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" aria-describedby="errorClave" />
+            <button type="button" class="ojo" id="verClave" aria-label="Mostrar contraseña" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <p class="error" id="errorClave" role="alert"></p>
+        <button class="entrar" type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <!-- Panel de administración -->
+    <section id="panel" hidden aria-labelledby="tituloPanel">
+      <header class="panel-cab">
+        <h1 id="tituloPanel" tabindex="-1">Panel de administración</h1>
+        <p>Elige la herramienta que necesitas. Ya no te pedirán contraseña al abrirlas.</p>
+      </header>
+
+      <ul class="herramientas">
+        <li>
+          <a class="fila" href="reporte_por_equipo.html">
+            <span class="icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 16v-4m5 4V7m5 9v-6"/></svg>
+            </span>
+            <span>
+              <h2>Reportes</h2>
+              <p>Consulta el reporte de cada equipo de la liga.</p>
+            </span>
+            <svg class="flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+          </a>
+        </li>
+        <li>
+          <a class="fila oro" href="armar-jornada.html">
+            <span class="icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-9 3v5m-2.5-2.5h5"/></svg>
+            </span>
+            <span>
+              <h2>Programar partidos</h2>
+              <p>Arma la jornada y programa los partidos de la liga.</p>
+            </span>
+            <svg class="flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+          </a>
+        </li>
+        <li>
+          <a class="fila azul" href="reporteliga15jornadas.html">
+            <span class="icono" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 9v12M9 15h12"/></svg>
+            </span>
+            <span>
+              <h2>Control de 15 juegos</h2>
+              <p>Revisa cuántos de sus 15 juegos lleva cada equipo.</p>
+            </span>
+            <svg class="flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+          </a>
+        </li>
+      </ul>
+
+      <div class="pie">
+        <a href="index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></svg>
+          Volver al inicio
+        </a>
+        <button type="button" id="salir">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      var CLAVE = 'nl7admin';
+      var LLAVE = 'nl7admin';   // marca de sesión: las demás páginas pueden revisarla
+      var acceso = document.getElementById('acceso');
+      var panel = document.getElementById('panel');
+      var form = document.getElementById('formAcceso');
+      var input = document.getElementById('clave');
+      var error = document.getElementById('errorClave');
+      var ver = document.getElementById('verClave');
+
+      function leerSesion() { try { return sessionStorage.getItem(LLAVE) === '1'; } catch (e) { return false; } }
+      function guardarSesion(v) { try { v ? sessionStorage.setItem(LLAVE, '1') : sessionStorage.removeItem(LLAVE); } catch (e) {} }
+
+      function mostrar(dentro) {
+        acceso.hidden = dentro;
+        panel.hidden = !dentro;
+        if (dentro) { document.getElementById('tituloPanel').focus({ preventScroll: true }); }
+        else { input.value = ''; error.textContent = ''; input.focus({ preventScroll: true }); }
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (input.value.trim() === CLAVE) {
+          guardarSesion(true);
+          mostrar(true);
+        } else {
+          error.textContent = 'Contraseña incorrecta. Revisa que esté bien escrita e inténtalo de nuevo.';
+          input.select();
+          acceso.classList.remove('sacudir'); void acceso.offsetWidth; acceso.classList.add('sacudir');
+        }
+      });
+
+      ver.addEventListener('click', function () {
+        var oculto = input.type === 'password';
+        input.type = oculto ? 'text' : 'password';
+        ver.setAttribute('aria-pressed', String(oculto));
+        ver.setAttribute('aria-label', oculto ? 'Ocultar contraseña' : 'Mostrar contraseña');
+      });
+
+      document.getElementById('salir').addEventListener('click', function () {
+        guardarSesion(false);
+        mostrar(false);
+      });
+
+      if (leerSesion()) { acceso.hidden = true; panel.hidden = false; }
+      else { input.focus({ preventScroll: true }); }
+    })();
+  </script>
+</body>
+</html>
