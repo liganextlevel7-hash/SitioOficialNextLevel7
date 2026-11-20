@@ -153,6 +153,31 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
  .pending-heading h3{font-size:15px;}.msg-input{min-width:0;}#tab-reportes>div{padding:16px!important;}
 }
 
+
+/* ── Confirmar asistencia por los equipos ── */
+.cfa-barra{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.cfa-barra select{flex:1;min-width:170px}
+.cfa-act{min-height:44px;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.35);border-radius:var(--rs);color:var(--neon);font-size:13px;font-weight:700;cursor:pointer}
+.cfa-act:hover{background:var(--neon-dim)}
+.cfa-aviso{font-size:13px;color:#a4b79c;min-height:20px;margin:2px 0 12px}
+.cfa-aviso.err{color:#f87171}
+.cfa-partido{background:var(--dark2);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.cfa-cab{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:var(--g400);margin-bottom:6px}
+.cfa-cab b{color:var(--w)}
+.cfa-eq{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 0}
+.cfa-eq+.cfa-eq{border-top:1px solid rgba(255,255,255,.07)}
+.cfa-eq img{width:40px;height:40px;object-fit:contain}
+.cfa-nom{font-weight:700;font-size:14px;line-height:1.25;overflow-wrap:anywhere}
+.cfa-nom small{display:block;font-weight:400;font-size:11px;color:var(--g500)}
+.cfa-btn{min-height:44px;padding:10px 16px;background:var(--neon);border:0;border-radius:var(--rs);color:#102006;font-size:13px;font-weight:800;cursor:pointer}
+.cfa-btn:hover{background:#74cc22}
+.cfa-btn:disabled{opacity:.6;cursor:default}
+.cfa-der{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.cfa-ok{color:#7be04a;font-weight:700;font-size:13px}
+.cfa-quitar{background:transparent;border:0;color:var(--g400);font-size:12px;text-decoration:underline;cursor:pointer;padding:6px 2px;min-height:32px}
+.cfa-quitar:hover{color:var(--w)}
+.cfa-btn:focus-visible,.cfa-act:focus-visible,.cfa-quitar:focus-visible{outline:3px solid #c6ff95;outline-offset:2px}
+@media(max-width:520px){.cfa-eq{grid-template-columns:36px minmax(0,1fr) auto;gap:10px}.cfa-eq img{width:36px;height:36px}.cfa-btn{padding:10px 12px}}
 </style>
 </head>
 <body>
@@ -169,11 +194,12 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
       <div class="app-header-title">Control de partidos</div>
       <div class="app-header-sub">NEXT LEVEL 7 · ADMINISTRACIÓN</div>
     </div></div>
-    <a href="partidos.html" class="btn-logout">← Partidos</a>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><a href="admin.html" class="btn-logout">← Admin</a><a href="partidos.html" class="btn-logout">← Partidos</a></div>
   </div>
 
   <nav class="app-tabs" role="tablist" aria-label="Administración">
     <button type="button" class="app-tab" id="nav-programar" role="tab" aria-controls="tab-programar" aria-selected="true" onclick="cambiarPestana('programar')">Programar partidos</button>
+    <button type="button" class="app-tab" id="nav-confirmar" role="tab" aria-controls="tab-confirmar" aria-selected="false" onclick="cambiarPestana('confirmar')">Confirmar</button>
     <button type="button" class="app-tab" id="nav-cartel" role="tab" aria-controls="tab-cartel" aria-selected="false" onclick="cambiarPestana('cartel')">Cartel</button>
     <button type="button" class="app-tab" id="nav-reportes" role="tab" aria-controls="tab-reportes" aria-selected="false" onclick="cambiarPestana('reportes')">Reportes</button>
   </nav>
@@ -221,6 +247,17 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
     </section>
 
     <!-- ARMAR ROL DEL DOMINGO -->
+    <section class="admin-panel" id="tab-confirmar" role="tabpanel" aria-labelledby="nav-confirmar" hidden>
+      <div class="mod-section-title">✅ Confirmar asistencia por los equipos</div>
+      <div class="mod-hint">Confirma tú por un equipo, sin su contraseña. Queda guardado igual que cuando el equipo confirma en Partidos, así que ahí y en los reportes aparece como confirmado.</div>
+      <div class="cfa-barra">
+        <select id="cfa-fecha" class="msg-input" aria-label="Fecha de los partidos" onchange="cfaAbrir()"><option value="">— Selecciona fecha —</option></select>
+        <button type="button" class="cfa-act" onclick="cfaAbrir()">🔄 Actualizar</button>
+      </div>
+      <div class="cfa-aviso" id="cfa-aviso" role="status" aria-live="polite"></div>
+      <div id="cfa-lista"></div>
+    </section>
+
     <section class="admin-panel" id="tab-cartel" role="tabpanel" aria-labelledby="nav-cartel" hidden>
       <div class="mod-section-title" style="color:var(--neon)">📋 Armar Rol del Domingo (cartel)</div>
 
@@ -453,6 +490,7 @@ function entrarPanel(){
   llenarSelectCedula();
   llenarSelectConfirmacion();
   initRol();
+  if(location.hash==='#confirmar') cambiarPestana('confirmar');
 }
 
 function llenarSelectsEquipos(){
@@ -462,10 +500,11 @@ function llenarSelectsEquipos(){
 // La condición local / visitante se conserva en cada registro e ID.
 
 function cambiarPestana(nombre){
-  ['programar','cartel','reportes'].forEach(id=>{
+  ['programar','confirmar','cartel','reportes'].forEach(id=>{
     document.getElementById('tab-'+id).hidden=id!==nombre;
     document.getElementById('nav-'+id).setAttribute('aria-selected',String(id===nombre));
   });
+  if(nombre==='confirmar') cfaAbrir();
 }
 function renderTablaPendientes(){
   const tbody=document.getElementById('pendientes-tabla');
@@ -1623,6 +1662,92 @@ async function cfReporte(modo){
   }catch(err){
     console.error(err);
     aviso.textContent = 'No se pudo generar el reporte.';
+  }
+}
+
+
+// ════════════════════════════════
+//  CONFIRMAR ASISTENCIA POR LOS EQUIPOS (el administrador no necesita la contraseña del equipo)
+//  Se guarda en el mismo lugar que usa Partidos: confirmaciones/{ID_Partido}/{local|visita}
+// ════════════════════════════════
+const CFA = { conf:{} };
+function cfaAviso(texto, error){
+  const a=document.getElementById('cfa-aviso'); a.textContent=texto||''; a.classList.toggle('err',!!error);
+}
+function cfaFechas(){
+  return [...new Set(S.allMatches.filter(m=>estadoPartido(m)==='programado').map(m=>String(m.fecha||'').trim()).filter(Boolean))]
+    .sort((a,b)=>fechaNumSheet(a)-fechaNumSheet(b));
+}
+function cfaLlenarFechas(){
+  const sel=document.getElementById('cfa-fecha'), anterior=sel.value, fechas=cfaFechas();
+  sel.innerHTML='<option value="">— Selecciona fecha —</option>'+fechas.map(f=>`<option value="${esc(f)}">${esc(diaSemanaSheet(f)+' '+f)}</option>`).join('');
+  if(fechas.includes(anterior)){ sel.value=anterior; return; }
+  const d=new Date(), hoy=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+  sel.value=fechas.find(f=>fechaNumSheet(f)>=hoy)||fechas[fechas.length-1]||'';   // la fecha más próxima
+}
+async function cfaLeer(){
+  const r=await fetch(CF_FB+'/confirmaciones.json',{cache:'no-store'});
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  CFA.conf=(await r.json())||{};
+}
+async function cfaAbrir(){
+  cfaLlenarFechas();
+  const lista=document.getElementById('cfa-lista');
+  cfaAviso('Leyendo confirmaciones…');
+  try{ await cfaLeer(); }
+  catch(e){   // sin lectura no se muestra la lista, para no dar como pendientes a equipos que ya confirmaron
+    console.error(e); lista.innerHTML='';
+    cfaAviso('No se pudieron leer las confirmaciones. Revisa tu conexión y pulsa Actualizar.',true); return;
+  }
+  cfaPintar();
+}
+function cfaPintar(){
+  const cont=document.getElementById('cfa-lista'), fecha=document.getElementById('cfa-fecha').value;
+  if(!fecha){ cont.innerHTML=''; cfaAviso(cfaFechas().length?'Selecciona una fecha para ver sus partidos.':'No hay partidos programados.'); return; }
+  const lista=S.allMatches.filter(m=>estadoPartido(m)==='programado' && String(m.fecha||'').trim()===fecha)
+    .sort((a,b)=>minutosDeHora(a.hora)-minutosDeHora(b.hora) || String(a.cancha||'').localeCompare(String(b.cancha||''),'es',{numeric:true}) || Number(a.id)-Number(b.id));
+  if(!lista.length){ cont.innerHTML=''; cfaAviso('No hay partidos programados en esa fecha.'); return; }
+  let pendientes=0;
+  cont.innerHTML=lista.map(m=>{
+    const c=CFA.conf[m.id]||{};
+    const fila=(lado,idEq,logo)=>{
+      const ok=!!c[lado]; if(!ok) pendientes++;
+      const der=ok
+        ? `<div class="cfa-der"><span class="cfa-ok">✅ Confirmó</span><button type="button" class="cfa-quitar" onclick="cfaQuitar('${esc(m.id)}','${lado}')">Quitar</button></div>`
+        : `<button type="button" class="cfa-btn" onclick="cfaConfirmar('${esc(m.id)}','${lado}',this)">Confirmar</button>`;
+      return `<div class="cfa-eq"><img src="${esc(logo||tlogo(idEq))}" alt="" onerror="this.style.opacity='.15'"><div class="cfa-nom">${esc(tname(idEq))}<small>${lado==='local'?'Local':'Visitante'}</small></div>${der}</div>`;
+    };
+    return `<div class="cfa-partido"><div class="cfa-cab"><span>Partido <b>#${esc(m.id)}</b></span>${m.hora?`<span>⏰ <b>${esc(formatHora12(m.hora))}</b></span>`:''}${m.cancha?`<span>📍 <b>${esc(m.cancha)}</b></span>`:''}</div>${fila('local',m.local,m.ll)}${fila('visita',m.visita,m.lv)}</div>`;
+  }).join('');
+  cfaAviso(pendientes?`Pendientes de confirmar: ${pendientes}.`:'✅ Todos los equipos de esta fecha ya confirmaron.');
+}
+function cfaNombre(id,lado){
+  const m=S.allMatches.find(x=>String(x.id)===String(id));
+  return m?tname(lado==='local'?m.local:m.visita):'el equipo';
+}
+async function cfaConfirmar(id,lado,btn){
+  const nombre=cfaNombre(id,lado);
+  btn.disabled=true; btn.textContent='Guardando…';
+  try{
+    const r=await fetch(`${CF_FB}/confirmaciones/${encodeURIComponent(id)}/${lado}.json`,{method:'PUT',body:JSON.stringify(true)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    await cfaLeer(); cfaPintar();
+    cfaAviso('✅ '+nombre+' quedó confirmado. '+document.getElementById('cfa-aviso').textContent);
+  }catch(e){
+    console.error(e); btn.disabled=false; btn.textContent='Confirmar';
+    cfaAviso('No se pudo guardar la confirmación de '+nombre+'. Revisa tu conexión e inténtalo de nuevo.',true);
+  }
+}
+async function cfaQuitar(id,lado){
+  const nombre=cfaNombre(id,lado);
+  if(!confirm('¿Quitar la confirmación de '+nombre+'?')) return;
+  try{
+    const r=await fetch(`${CF_FB}/confirmaciones/${encodeURIComponent(id)}/${lado}.json`,{method:'DELETE'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    await cfaLeer(); cfaPintar();
+    cfaAviso('Se quitó la confirmación de '+nombre+'. '+document.getElementById('cfa-aviso').textContent);
+  }catch(e){
+    console.error(e); cfaAviso('No se pudo quitar la confirmación de '+nombre+'. Revisa tu conexión e inténtalo de nuevo.',true);
   }
 }
 
