@@ -87,12 +87,6 @@ select{width:100%;padding:11px;border-radius:10px;border:1px solid #5eb50d66;bac
 .rq-tit{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#1d3d05;font-weight:800;margin:20px 0 6px}
 .rq-sim{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:#374151;margin-top:12px}
 .rq-sim span b{display:inline-block;min-width:22px;text-align:center;font-size:15px}
-body:not(.auth) .panel, body:not(.auth) #vista-wrap{display:none !important}
-body.auth #login-reporte{display:none}
-#login-reporte{width:100%;max-width:420px;background:rgba(0,0,0,.75);border:1px solid #5eb50d55;border-radius:14px;padding:20px;margin-top:30px}
-#login-reporte h2{color:#5eb50d;font-size:17px;margin-bottom:12px;letter-spacing:1px;text-transform:uppercase}
-#login-reporte input{width:100%;padding:11px 12px;border-radius:10px;border:1px solid #5eb50d66;background:#071019;color:#fff;font-size:15px;outline:none;margin-bottom:10px}
-#login-reporte .err{color:#ff6b6b;font-size:13px;min-height:18px;margin-top:8px}
 td.idp{font-weight:700;font-size:12px;color:#374151}
 td.n{font-weight:800;font-size:13px;color:#1d3d05}
 
@@ -205,13 +199,6 @@ td.n{font-weight:800;font-size:13px;color:#1d3d05}
 </head>
 <body>
 <div class="nav"><a href="index.html">← Inicio</a></div>
-
-<div id="login-reporte">
-  <h2>🔒 Acceso de administrador</h2>
-  <input type="password" id="pass-reporte" placeholder="Contraseña de administrador" autocomplete="off">
-  <button class="btn pri" style="width:100%" onclick="entrarReporte()">Entrar</button>
-  <div class="err" id="err-reporte"></div>
-</div>
 
 <div class="panel">
   <h2>📋 Reporte por equipo</h2>
@@ -1194,16 +1181,6 @@ async function imprimir(){
   await Promise.all([...d.images].map(i => i.complete ? 1 : new Promise(x => { i.onload = i.onerror = x; })));
   await new Promise(x => setTimeout(x, 200)); f.contentWindow.focus(); f.contentWindow.print(); setTimeout(() => { try { f.remove(); } catch (e) {} }, 60000);
 }
-// ═══ Acceso con contraseña de administrador ═══
-const ADMIN_PASSWORD = 'nl7admin';
-function entrarReporte(){
-  if ($('pass-reporte').value === ADMIN_PASSWORD){
-    sessionStorage.setItem('nl7_reporte_ok', '1');
-    document.body.classList.add('auth');
-  } else { $('err-reporte').textContent = 'Contraseña incorrecta.'; }
-}
-$('pass-reporte').addEventListener('keydown', e => { if (e.key === 'Enter') entrarReporte(); });
-if (sessionStorage.getItem('nl7_reporte_ok') === '1') document.body.classList.add('auth');
 
 // Adaptación de salida: conserva resultado(), correcciones, acceso y emparejamiento existentes.
 function juegosValidos(){const activos=new Set(activosIds());return PARTIDOS.filter(p=>!cancelado(p)&&(estadoDe(p)==='jugado'||(activos.has(String(p.Equipo_Local))&&activos.has(String(p.Equipo_Visita))))&&!esParCubierto(String(p.Equipo_Local),String(p.Equipo_Visita)));}
@@ -1343,6 +1320,3 @@ cargaReporte=init().finally(()=>cargaReporte=null);
 <script src="reportes_imagenes.js?v=20261111-atrasos"></script>
 </body>
 </html>
-
-
-
