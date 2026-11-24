@@ -178,6 +178,33 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
 .cfa-quitar:hover{color:var(--w)}
 .cfa-btn:focus-visible,.cfa-act:focus-visible,.cfa-quitar:focus-visible{outline:3px solid #c6ff95;outline-offset:2px}
 @media(max-width:520px){.cfa-eq{grid-template-columns:36px minmax(0,1fr) auto;gap:10px}.cfa-eq img{width:36px;height:36px}.cfa-btn{padding:10px 12px}}
+
+/* ── Horarios de la fecha anterior (ventana emergente) ── */
+.hp-btn{min-height:44px;padding:10px 16px;background:var(--dark2);border:1px solid rgba(94,181,13,.35);border-radius:var(--rs);color:var(--neon);font-size:13px;font-weight:700;cursor:pointer;margin:0 0 14px}
+.hp-btn:hover{background:var(--neon-dim)}
+.hp-chico{min-height:0;padding:8px 14px;font-size:12px;font-weight:600;margin:0}
+.hp-link{background:none;border:0;color:var(--neon);font-size:12px;font-weight:700;text-decoration:underline;cursor:pointer;padding:8px 0 0}
+.hp-fondo{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.68);display:flex;align-items:center;justify-content:center;padding:16px}
+.hp-fondo[hidden]{display:none}
+.hp-caja{width:100%;max-width:480px;max-height:86vh;overflow:auto;background:var(--dark);border:1px solid rgba(94,181,13,.4);border-radius:18px;padding:18px 18px 8px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.hp-cab{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+.hp-cab h3{margin:0;font-size:18px;color:var(--w)}
+.hp-cab p{margin:4px 0 0;font-size:13px;color:var(--g400)}
+.hp-x{flex:none;width:44px;height:44px;margin:-8px -8px 0 0;background:none;border:0;color:var(--g400);font-size:20px;cursor:pointer;border-radius:10px}
+.hp-x:hover{color:var(--w)}
+.hp-x:focus-visible,.hp-btn:focus-visible,.hp-link:focus-visible{outline:3px solid #c6ff95;outline-offset:2px}
+.hp-par{padding:10px 0 4px;border-top:1px solid rgba(255,255,255,.08)}
+.hp-par:first-child{border-top:0}
+.hp-par-cab{font-size:12px;font-weight:700;color:var(--neon);margin-bottom:2px}
+.hp-eq{display:grid;grid-template-columns:36px minmax(0,1fr);gap:12px;align-items:center;padding:9px 0}
+.hp-eq img{width:36px;height:36px;object-fit:contain}
+.hp-nom{font-weight:700;font-size:14px;color:var(--w)}
+.hp-det{font-size:13px;line-height:1.45;color:#cfe0c0}
+.hp-det small{display:block;font-size:12px;color:var(--g400)}
+.hp-hora{color:#ddc530}
+.hp-no,.hp-vacio{color:var(--g400);font-size:13px}
+.hp-vacio{padding:14px 0 18px}
+@media(max-width:520px){.hp-fondo{align-items:flex-end;padding:0}.hp-caja{border-radius:18px 18px 0 0;max-height:88vh}}
 </style>
 </head>
 <body>
@@ -220,6 +247,7 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
       <details class="advanced-search"><summary>Buscar también por ID o pareja de equipos</summary>
       <div id="armando-descansa" style="font-size:12px;color:var(--neon);margin-bottom:12px;min-height:16px"></div>
       <div id="armando-confirmaciones" style="font-size:12px;margin-bottom:12px"></div>
+      <button type="button" class="hp-btn" onclick="hpAbrirFecha()">🕘 Ver horarios de la fecha anterior</button>
 
       <div style="margin-bottom:12px;padding:12px;background:var(--dark2);border:1px solid rgba(94,181,13,.2);border-radius:var(--rs)">
         <label style="display:block;font-size:11px;color:var(--neon);font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px">🔢 Traer partido por ID (el que sale en el reporte)</label>
@@ -275,6 +303,7 @@ body{background:radial-gradient(ellipse at top,#203c17 0%,#0d190b 70%);color:#e9
 
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="addSlot()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(94,181,13,0.3);border-radius:var(--rs);color:var(--neon);font-size:12px;font-weight:600;cursor:pointer">+ Agregar horario</button>
+        <button type="button" class="hp-btn hp-chico" onclick="hpAbrirRol()">🕘 Horarios anteriores</button>
         <button onclick="autoRol()" style="padding:8px 14px;background:var(--dark2);border:1px solid rgba(167,139,250,0.3);border-radius:var(--rs);color:#a78bfa;font-size:12px;font-weight:600;cursor:pointer">⚡ Auto-proponer rol</button>
       </div>
 
@@ -749,6 +778,7 @@ function abrirFormEditar(m){
           <label>Fecha</label>
           <input type="date" id="edit-fecha" class="msg-input" style="width:100%" value="${fechaInput}" oninput="refrescarDisponibilidad()">
           <div id="edit-fecha-hint" style="font-size:11px;color:var(--g400);margin-top:5px"></div>
+          <button type="button" class="hp-link" onclick="hpAbrirPartido(S.matchToProgram)">🕘 Ver horarios de la fecha anterior</button>
         </div>
         <div>
           <label>Hora</label>
@@ -768,6 +798,7 @@ function abrirFormEditar(m){
     </div>
   `;
   refrescarDisponibilidad();
+  hpAbrirPartido(m);
 }
 
 
@@ -978,6 +1009,7 @@ function updateSlotMatch(idx, matchId){
     rolSlots[idx].localId=''; rolSlots[idx].visitaId='';
   }
   renderSlots();
+  if(matchId) hpAbrirPartido(S.matches.find(x=>x.id===matchId), document.getElementById('rol-fecha').value);
 }
 
 // Busca, entre los partidos pendientes, el mayor número posible de partidos
@@ -1754,6 +1786,85 @@ async function cfaQuitar(id,lado){
 // ════════════════════════════════
 //  HELPERS
 // ════════════════════════════════
+
+// ════════════════════════════════
+//  HORARIOS DE LA FECHA ANTERIOR: cuándo jugó cada equipo su juego inmediato anterior
+// ════════════════════════════════
+let hpFocoPrevio=null;
+function hpFechaNum(valorInput){ const f=fechaInputASheet(valorInput); return f?(fechaNumSheet(f)||0):0; }
+function hpUltimoJuego(equipoId, fechaNum, excluirId){
+  let mejor=null, clave=-1;
+  S.allMatches.forEach(m=>{
+    if(!esAgendado(m) || String(m.id)===String(excluirId)) return;
+    if(m.local!==equipoId && m.visita!==equipoId) return;
+    const fn=fechaNumSheet(m.fecha); if(!fn || fn>=fechaNum) return;   // sólo fechas anteriores a la que se arma
+    const k=fn*10000+minutosDeHora(m.hora);
+    if(k>clave){ clave=k; mejor=m; }
+  });
+  return mejor;
+}
+function hpFilaEquipo(id, fechaNum, excluirId){
+  const j=hpUltimoJuego(id,fechaNum,excluirId), t=S.teams[id]||{};
+  let det;
+  if(!j) det='<span class="hp-no">Sin juegos anteriores registrados.</span>';
+  else{
+    const rival=j.local===id?j.visita:j.local;
+    det=`<b>${esc(diaSemanaSheet(j.fecha))} ${esc(j.fecha)}</b> · ⏰ <b class="hp-hora">${j.hora?esc(formatHora12(j.hora)):'sin hora'}</b>${j.cancha?' · 📍 '+esc(j.cancha):''}<small>${j.jornada?'Jornada '+esc(j.jornada)+' · ':''}vs ${esc(tname(rival))}${estadoPartido(j)==='programado'?' · todavía sin marcar como jugado':''}</small>`;
+  }
+  return `<div class="hp-eq"><img src="${esc(t.logo||'')}" alt="" onerror="this.style.opacity='.15'"><div><div class="hp-nom">${esc(tname(id))}</div><div class="hp-det">${det}</div></div></div>`;
+}
+function hpBloque(hora, campo, localId, visitaId, fechaNum, id){
+  return `<div class="hp-par"><div class="hp-par-cab">${hora?'⏰ '+esc(formatHora12(hora)):'Sin hora'}${campo?' · 📍 '+esc(campo):''} · ${esc(tname(localId))} vs ${esc(tname(visitaId))}</div>${hpFilaEquipo(localId,fechaNum,id)}${hpFilaEquipo(visitaId,fechaNum,id)}</div>`;
+}
+function hpModal(titulo, subtitulo, cuerpoHTML){
+  let m=document.getElementById('hp-modal');
+  if(!m){
+    m=document.createElement('div'); m.id='hp-modal'; m.className='hp-fondo'; m.hidden=true;
+    m.innerHTML='<div class="hp-caja" role="dialog" aria-modal="true" aria-labelledby="hp-titulo"><div class="hp-cab"><div><h3 id="hp-titulo"></h3><p id="hp-sub"></p></div><button type="button" class="hp-x" aria-label="Cerrar" onclick="hpCerrar()">✕</button></div><div id="hp-cuerpo"></div></div>';
+    m.addEventListener('click',e=>{ if(e.target===m) hpCerrar(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !m.hidden) hpCerrar(); });
+    document.body.appendChild(m);
+  }
+  if(m.hidden) hpFocoPrevio=document.activeElement;
+  document.getElementById('hp-titulo').textContent=titulo;
+  document.getElementById('hp-sub').textContent=subtitulo||'';
+  document.getElementById('hp-cuerpo').innerHTML=cuerpoHTML;
+  m.hidden=false; m.querySelector('.hp-x').focus();
+}
+function hpCerrar(){
+  const m=document.getElementById('hp-modal'); if(!m) return;
+  m.hidden=true; if(hpFocoPrevio && hpFocoPrevio.focus) hpFocoPrevio.focus();
+}
+// Los dos equipos de un partido que se está programando
+function hpAbrirPartido(m, fechaInput){
+  if(!m) return;
+  const f=fechaInput!==undefined ? fechaInput : (document.getElementById('edit-fecha')?.value || document.getElementById('armando-fecha').value);
+  const fs=fechaInputASheet(f);
+  hpModal('Su juego anterior', fs?('Para jugar el '+diaSemanaSheet(fs)+' '+fs):'Aún no eliges fecha: se muestra el último juego de cada equipo',
+    hpFilaEquipo(m.local,hpFechaNum(f)||99999999,m.id)+hpFilaEquipo(m.visita,hpFechaNum(f)||99999999,m.id));
+}
+// Todos los equipos que ya están programados en la fecha que se está armando
+function hpAbrirFecha(){
+  const f=document.getElementById('armando-fecha').value, fs=fechaInputASheet(f);
+  if(!fs){ hpModal('Horarios de la fecha anterior','','<div class="hp-vacio">Primero elige la fecha de juego.</div>'); return; }
+  const fn=fechaNumSheet(fs);
+  const lista=S.allMatches.filter(m=>esAgendado(m) && String(m.fecha||'').trim()===fs)
+    .sort((a,b)=>minutosDeHora(a.hora)-minutosDeHora(b.hora) || String(a.cancha||'').localeCompare(String(b.cancha||''),'es',{numeric:true}));
+  hpModal('Horarios de la fecha anterior','Equipos programados el '+diaSemanaSheet(fs)+' '+fs,
+    lista.length ? lista.map(m=>hpBloque(m.hora,m.cancha,m.local,m.visita,fn,m.id)).join('')
+                 : '<div class="hp-vacio">Todavía no hay partidos programados en esta fecha. Al abrir un partido pendiente verás el juego anterior de sus dos equipos.</div>');
+}
+// Los equipos de los horarios que se están armando en el rol
+function hpAbrirRol(){
+  const f=document.getElementById('rol-fecha').value, fs=fechaInputASheet(f);
+  if(!fs){ hpModal('Horarios de la fecha anterior','','<div class="hp-vacio">Primero elige la fecha del rol.</div>'); return; }
+  const fn=fechaNumSheet(fs);
+  const llenos=rolSlots.filter(sl=>sl.matchId && sl.localId && sl.visitaId);
+  hpModal('Horarios de la fecha anterior','Equipos del rol del '+diaSemanaSheet(fs)+' '+fs,
+    llenos.length ? llenos.map(sl=>hpBloque(sl.hora,sl.campo,sl.localId,sl.visitaId,fn,sl.matchId)).join('')
+                  : '<div class="hp-vacio">Aún no has elegido partidos en el rol. Al elegir uno verás el juego anterior de sus equipos.</div>');
+}
+
 function tname(id){ return (S.teams[id]||{}).nombre||'Equipo '+id; }
 function tlogo(id){ return (S.teams[id]||{}).logo||''; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
