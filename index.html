@@ -178,6 +178,27 @@ body.arena{--arena-green:#9fe751;--arena-gold:#e0bb58;background:radial-gradient
 .arena .c-tabla .card-titulo{position:absolute;top:20px;left:0;right:0;z-index:2;}
 .arena .c-tabla .card-contenido{background-size:100% 100%;background-position:center;}
 .arena .carrusel-seccion{height:570px;}
+
+.arena .c-reglamento .card-body {
+  justify-content:center;
+  align-items:center;
+  gap:18px;
+  padding:26px;
+  text-align:center;
+  background:radial-gradient(ellipse at 50% 30%, #304b20, transparent 68%), #111c11;
+}
+.arena .c-reglamento .reglamento-icono {
+  display:grid;
+  place-items:center;
+  width:76px;
+  height:76px;
+  border:1px solid #9fe75155;
+  border-radius:18px;
+  background:#111c11;
+  font-size:36px;
+}
+.arena .c-reglamento .card-titulo {color:var(--arena-green);font-size:clamp(17px, 4vw, 23px);}
+.arena .c-reglamento p {margin:0;max-width:15rem;color:#d7e5cd;font-size:14px;line-height:1.55;}
 </style>
 </head>
 <body class="arena">
@@ -243,6 +264,14 @@ body.arena{--arena-green:#9fe751;--arena-gold:#e0bb58;background:radial-gradient
   </div>
 
   <!-- ===== CARD: LA FAMILIA FUTBOLERA ===== -->
+  <div class="card-sec c-reglamento" id="ccard-reglamento" data-link="reglamento.html">
+    <div class="card-body">
+      <span class="reglamento-icono" aria-hidden="true">📋</span>
+      <div class="card-titulo">Reglamento oficial del torneo</div>
+      <p>Consulta las reglas de juego, el registro y los requisitos de liguilla. Descarga el PDF desde el reglamento.</p>
+    </div>
+  </div>
+
   <div class="card-sec c-familia" id="ccard-11" data-link="familia-futbolera.html">
     <div class="card-body" style="position:relative;background-image:url('fondonuevo.png');background-size:cover;background-position:center;">
       <img src="Red-Social-Next-Leve-en-la-Cancha.png" class="familia-img" alt="La Familia Futbolera" onerror="this.style.display='none'">
@@ -571,7 +600,7 @@ carCardsOriginal.forEach((card,i)=>{
 });
 carWrap.appendChild(carCircular);
 
-const arenaNames=['Tabla General','Goleadores','Resultados','Próximos partidos','Equipos','Liguilla','Familia futbolera','En vivo','Radio','Registro'];
+const arenaNames=['Tabla General','Goleadores','Resultados','Próximos partidos','Equipos','Liguilla','Reglamento oficial','Familia futbolera','En vivo','Radio','Registro'];
 const arenaMenu=document.getElementById('arena-menu');
 carCardsOriginal.forEach((card,i)=>{
  const footer=document.createElement('div');footer.className='arena-card-footer';
