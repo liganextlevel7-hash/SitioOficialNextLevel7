@@ -199,6 +199,26 @@ body.arena{--arena-green:#9fe751;--arena-gold:#e0bb58;background:radial-gradient
 }
 .arena .c-reglamento .card-titulo {color:var(--arena-green);font-size:clamp(17px, 4vw, 23px);}
 .arena .c-reglamento p {margin:0;max-width:15rem;color:#d7e5cd;font-size:14px;line-height:1.55;}
+
+/* Entrenador caminando en la tarjeta Reglamento (solo se mueve cuando la tarjeta está al frente) */
+.arena .c-reglamento .rg-pista{position:relative;flex:none;width:100%;height:165px;border-bottom:3px solid var(--arena-gold);--h:158px;--w:calc(var(--h) * .625);}
+.arena .c-reglamento .rg-hombre{position:absolute;left:0;bottom:0;height:var(--h);aspect-ratio:400/640;}
+.arena .c-reglamento .rg-giro{position:relative;width:100%;height:100%;}
+.arena .c-reglamento .rg-cuerpo{position:relative;width:100%;height:100%;}
+.arena .c-reglamento .rg-cuerpo img{position:absolute;display:block;height:auto;max-width:none;}
+.arena .c-reglamento .rg-centro{left:42.5%;top:48.75%;width:9%;}
+.arena .c-reglamento .rg-pl{left:18.25%;top:48.75%;width:28.25%;transform-origin:34.5% 7.3%;}
+.arena .c-reglamento .rg-pr{left:46.5%;top:48.75%;width:51.5%;transform-origin:32% 7.4%;}
+.arena .c-reglamento .rg-torso{left:16.75%;top:0;width:77.5%;transform-origin:42.9% 100%;}
+.arena .c-reglamento.card-sec-activa .rg-hombre{animation:rg-ida 9s ease-in-out infinite;}
+.arena .c-reglamento.card-sec-activa .rg-giro{animation:rg-giro 9s step-end infinite;}
+.arena .c-reglamento.card-sec-activa .rg-pl{animation:rg-pierna .8s ease-in-out infinite;}
+.arena .c-reglamento.card-sec-activa .rg-pr{animation:rg-pierna .8s ease-in-out infinite;animation-delay:-.4s;}
+.arena .c-reglamento.card-sec-activa .rg-torso{animation:rg-paso .8s ease-in-out infinite;}
+@keyframes rg-ida{0%,100%{left:0}50%{left:calc(100% - var(--w))}}
+@keyframes rg-giro{0%{transform:scaleX(1)}50%{transform:scaleX(-1)}100%{transform:scaleX(1)}}
+@keyframes rg-pierna{0%,100%{transform:translateY(0) rotate(0deg)}25%{transform:translateY(-3%) rotate(-5deg)}50%{transform:translateY(0) rotate(0deg)}75%{transform:translateY(0) rotate(4deg)}}
+@keyframes rg-paso{0%,50%,100%{transform:translate(0,-1.3%) rotate(0deg)}25%{transform:translate(1%,0) rotate(-1.6deg)}75%{transform:translate(-1%,0) rotate(1.6deg)}}
 </style>
 </head>
 <body class="arena">
@@ -266,7 +286,7 @@ body.arena{--arena-green:#9fe751;--arena-gold:#e0bb58;background:radial-gradient
   <!-- ===== CARD: LA FAMILIA FUTBOLERA ===== -->
   <div class="card-sec c-reglamento" id="ccard-reglamento" data-link="reglamento.html">
     <div class="card-body">
-      <span class="reglamento-icono" aria-hidden="true">📋</span>
+      <div class="rg-pista" aria-hidden="true"><div class="rg-hombre"><div class="rg-giro"><div class="rg-cuerpo"><img class="rg-centro" src="entrenador-centro.png" alt="" width="36" height="112"><img class="rg-pl" src="entrenador-pierna-izq.png" alt="" width="113" height="328"><img class="rg-pr" src="entrenador-pierna-der.png" alt="" width="206" height="324"><img class="rg-torso" src="entrenador-torso.png" alt="" width="310" height="330"></div></div></div></div>
       <div class="card-titulo">Reglamento oficial del torneo</div>
       <p>Consulta las reglas de juego, el registro y los requisitos de liguilla. Descarga el PDF desde el reglamento.</p>
     </div>
@@ -697,4 +717,3 @@ cargarCarrusel();
 </script>
 </body>
 </html>
-
