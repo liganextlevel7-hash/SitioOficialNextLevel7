@@ -66,13 +66,76 @@ strong{color:#b6f06a;font-weight:700}
 @media(max-width:520px){.wrap{padding:0 14px}.acc a{padding:0 11px}.brand{font-size:20px}.hero{padding:40px 0 40px}.btn{flex:1 1 100%}.cards{gap:10px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.card{transition:none}}
 @media print{*{print-color-adjust:exact;-webkit-print-color-adjust:exact}body{background:#fff;color:#111;font-size:10.5pt}.top,.btns,.buscar,.skip{display:none!important}.hero{padding:16mm 0}.card,.toc a,.medallas li{background:#f3f8ea;color:#111}.des,.toc small,.intro{color:#333}.card strong,strong{color:#1f5200}.ref{color:#6b5a00}article{break-inside:avoid}.cap{break-inside:auto}.band{break-after:avoid}.cierre{margin-top:10mm}}
+
+/* ===== Entrenador y lonas (animación de la portada) ===== */
+.esc{--p:clamp(180px,25vw,250px);--alto:clamp(280px,34vw,310px);position:relative;height:calc(var(--p) + 10px + 38px + var(--alto) + 34px);margin-top:34px;overflow:hidden}
+.esc-plancha{position:absolute;left:0;right:0;top:var(--p);height:10px;background:var(--panel2);border-bottom:3px solid var(--gold);z-index:3}
+.esc-col{position:absolute;top:calc(var(--p) + 10px);width:30%;z-index:2}
+.esc-col[data-i="0"]{left:3%}.esc-col[data-i="1"]{left:35%}.esc-col[data-i="2"]{left:67%}
+.esc-rodillo{position:relative;height:38px;margin:0 3%;border-radius:6px;z-index:3;background:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 3px,transparent 3px 14px),linear-gradient(#fff0a0,var(--gold),#a38f10 70%,#6b5d08);box-shadow:0 5px 10px rgba(0,0,0,.8)}
+.esc-rodillo::before,.esc-rodillo::after{content:"";position:absolute;top:-3px;width:44px;height:44px;border-radius:50%;background:conic-gradient(from 0deg,rgba(0,0,0,.75) 0 7deg,transparent 7deg 360deg),repeating-radial-gradient(circle at 50% 50%,#8a7a14 0 3px,var(--gold) 3px 7px);border:2px solid #4d4306}
+.esc-rodillo::before{left:-20px}.esc-rodillo::after{right:-20px}
+.esc-col.suelta .esc-rodillo::before,.esc-col.suelta .esc-rodillo::after{animation:esc-girar 1.1s cubic-bezier(.5,0,.9,.6) .15s forwards}
+@keyframes esc-girar{from{transform:rotate(0deg) scale(1)}to{transform:rotate(-1080deg) scale(.55)}}
+.esc-cuerda{position:absolute;left:50%;top:-14px;width:8px;height:62px;margin-left:-4px;z-index:6;background:repeating-linear-gradient(45deg,#d9b36c 0 4px,#8a6a2b 4px 8px);border-radius:4px;transform-origin:top center}
+.esc-cuerda::after{content:"";position:absolute;left:-6px;top:18px;width:20px;height:20px;border-radius:50%;background:#d9b36c;border:3px solid #8a6a2b}
+.esc-col.suelta .esc-cuerda{animation:esc-cae 1.2s cubic-bezier(.5,0,.9,.5) forwards}
+@keyframes esc-cae{0%{transform:rotate(0deg);opacity:1}15%{transform:rotate(-28deg) translateY(-8px);opacity:1}100%{transform:translateY(75vh) rotate(260deg);opacity:0}}
+.esc-ventana{position:relative;height:var(--alto);margin:0 6%;perspective:900px;perspective-origin:50% 0;clip-path:inset(0 -90px -140px -90px);z-index:2}
+.esc-lona{position:absolute;inset:0;display:block;transform-origin:50% 0;background:#000;border-left:3px solid var(--gold);border-right:3px solid var(--gold);border-radius:0 0 4px 4px;text-align:center;text-decoration:none;color:#fff}
+.esc-listo .esc-lona{transform:translateY(-102%)}
+.esc-listo .esc-col.suelta .esc-lona{transform:none}
+.esc-lona::before{content:"";position:absolute;inset:9px;border:2px dashed rgba(221,197,48,.55);border-radius:4px;pointer-events:none}
+.esc-lona::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(90deg,rgba(255,255,255,.055) 0 2px,transparent 2px 17px),repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 5px,transparent 5px 41px),repeating-linear-gradient(180deg,transparent 0 40px,rgba(255,255,255,.03) 40px 41px)}
+.esc-lona:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.esc-ojal{position:absolute;top:14px;width:14px;height:14px;border-radius:50%;background:#000;border:3px solid #a38f10;z-index:2}
+.esc-ojal.izq{left:16px}.esc-ojal.der{right:16px}
+.esc-dob{position:absolute;left:-7px;right:-7px;bottom:-5px;height:16px;border-radius:8px;z-index:2;background:linear-gradient(#fff0a0,#a38f10 60%,#6b5d08);box-shadow:0 5px 8px rgba(0,0,0,.85)}
+.esc-cont{position:relative;z-index:1;padding:46px 14px 44px}
+.esc-lona .esc-lab{display:block;font-family:'Bebas Neue',Impact,sans-serif;font-size:clamp(15px,2vw,20px);letter-spacing:.08em;color:#cfe3b8}
+.esc-lona .esc-val{display:block;margin:6px 0 10px;font-family:'Bebas Neue',Impact,sans-serif;font-weight:400;font-size:clamp(30px,6.2vw,60px);line-height:1;color:var(--gold);overflow-wrap:anywhere}
+.esc-lona .esc-des{display:block;font-size:clamp(11px,1.5vw,15px);line-height:1.4;color:#ddd}
+.esc-polvo{position:absolute;border-radius:50%;pointer-events:none;z-index:7}
+.esc-hombre{position:absolute;left:0;top:0;height:var(--p);z-index:5;transition:transform 1.1s ease-in-out}
+.esc-cuerpo{position:relative;height:100%;transform-origin:50% 100%}
+.esc-cuerpo img{display:block;height:100%;width:auto}
+.esc-aro{position:absolute;left:71%;top:32%;width:18%;aspect-ratio:1;border:4px solid #7dff3a;border-radius:50%;opacity:0;transform:translate(-50%,-50%);pointer-events:none}
+.esc-hombre.camina .esc-cuerpo{animation:esc-paso .42s ease-in-out infinite}
+.esc-hombre.desata .esc-cuerpo{animation:esc-jalar .3s ease-in-out infinite alternate}
+.esc-hombre.aprueba .esc-cuerpo{animation:esc-salto .6s ease-out}
+.esc-hombre.aprueba .esc-aro{animation:esc-aro .7s ease-out}
+.esc-hombre.fin .esc-cuerpo{animation:esc-respira 2.4s ease-in-out infinite}
+@keyframes esc-paso{0%,100%{transform:translateY(0) rotate(-1.6deg)}50%{transform:translateY(-8px) rotate(1.6deg)}}
+@keyframes esc-jalar{from{transform:rotate(-3deg) translateX(-3px) scaleY(.985)}to{transform:rotate(5deg) translateX(4px) scaleY(1)}}
+@keyframes esc-salto{0%{transform:translateY(0) scale(1,1)}30%{transform:translateY(-16px) scale(.98,1.03)}60%{transform:translateY(0) scale(1.03,.97)}100%{transform:translateY(0) scale(1,1)}}
+@keyframes esc-aro{0%{transform:translate(-50%,-50%) scale(.2);opacity:.95}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+@keyframes esc-respira{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-3px) rotate(.8deg)}}
+.esc-repetir{position:absolute;top:0;right:0;z-index:9;min-height:40px;padding:0 14px;background:transparent;color:var(--gold);border:1px solid var(--gold);border-radius:10px;font:700 13px Roboto,Arial,sans-serif;cursor:pointer}
+.esc-repetir:hover{background:var(--panel)}
+@media(max-width:520px){.esc-col{width:31%}.esc-col[data-i="0"]{left:1%}.esc-col[data-i="1"]{left:34.5%}.esc-col[data-i="2"]{left:68%}.esc-ventana{margin:0 3%}.esc-cont{padding:40px 6px 38px}}
+@media(prefers-reduced-motion:reduce){.esc *,.esc *::before,.esc *::after{animation:none!important;transition:none!important}.esc-col.suelta .esc-cuerda{opacity:0}}
+@media print{.esc{display:none!important}}
 </style></head><body>
 <a class="skip" href="#reglamento">Saltar al reglamento</a>
 <header class="top"><div class="wrap bar"><a class="brand" href="index.html" aria-label="NEXT LEVEL 7, volver al inicio"><span class="mark" aria-hidden="true">7</span><span>NEXT LEVEL <em>7</em></span></a><nav class="acc" aria-label="Accesos"><a href="index.html">Inicio</a><a class="pdf" href="Reglamento_Oficial_Next_Level_7.pdf" download="Reglamento_Oficial_Next_Level_7.pdf">Descargar PDF</a></nav></div></header>
 <main>
 <section class="hero"><svg class="cancha" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect x="30" y="30" width="940" height="540" rx="6"/><line x1="500" y1="30" x2="500" y2="570"/><circle cx="500" cy="300" r="90"/><rect x="30" y="190" width="150" height="220"/><rect x="820" y="190" width="150" height="220"/></svg>
 <div class="wrap"><p class="kick">TORNEO DE FÚTBOL 7</p><h1>NEXT LEVEL <span>7</span></h1><p class="sub">REGLAMENTO OFICIAL</p><p class="motto">Competencia, respeto y pasión por el fútbol.</p>
-<div class="btns"><a class="btn b1" href="Reglamento_Oficial_Next_Level_7.pdf" download="Reglamento_Oficial_Next_Level_7.pdf">Descargar reglamento (PDF)</a><a class="btn b2" href="#esencial">Lo esencial en una página</a></div></div></section>
+<div class="btns"><a class="btn b1" href="Reglamento_Oficial_Next_Level_7.pdf" download="Reglamento_Oficial_Next_Level_7.pdf">Descargar reglamento (PDF)</a><a class="btn b2" href="#esencial">Lo esencial en una página</a></div>
+<div class="esc" id="escenario">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<filter id="nl-tela0" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010 0.028" numOctaves="2" seed="3" result="r"/><feDisplacementMap in="SourceGraphic" in2="r" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="nl-tela1" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.030" numOctaves="2" seed="8" result="r"/><feDisplacementMap in="SourceGraphic" in2="r" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>
+<filter id="nl-tela2" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.009 0.026" numOctaves="2" seed="14" result="r"/><feDisplacementMap in="SourceGraphic" in2="r" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>
+</defs></svg>
+<button class="esc-repetir" type="button" id="esc-repetir">↻ Ver otra vez</button>
+<div class="esc-plancha" aria-hidden="true"></div>
+<div class="esc-hombre" id="esc-hombre" aria-hidden="true"><div class="esc-cuerpo"><img src="entrenador.png" alt="" width="400" height="640"><i class="esc-aro"></i></div></div>
+<div class="esc-col" data-i="0"><div class="esc-cuerda"></div><div class="esc-rodillo"></div><div class="esc-ventana"><a class="esc-lona" href="#art-8"><i class="esc-ojal izq"></i><i class="esc-ojal der"></i><div class="esc-cont"><span class="esc-lab">DURACIÓN</span><strong class="esc-val">40 min</strong><span class="esc-des">Dos tiempos de 20 minutos, con descanso de 5 minutos.</span></div><div class="esc-dob"></div></a></div></div>
+<div class="esc-col" data-i="1"><div class="esc-cuerda"></div><div class="esc-rodillo"></div><div class="esc-ventana"><a class="esc-lona" href="#art-10"><i class="esc-ojal izq"></i><i class="esc-ojal der"></i><div class="esc-cont"><span class="esc-lab">JUGADORES</span><strong class="esc-val">7 en cancha</strong><span class="esc-des">Uno es el portero. Mínimo 5 para jugar. Cambios ilimitados.</span></div><div class="esc-dob"></div></a></div></div>
+<div class="esc-col" data-i="2"><div class="esc-cuerda"></div><div class="esc-rodillo"></div><div class="esc-ventana"><a class="esc-lona" href="#art-9"><i class="esc-ojal izq"></i><i class="esc-ojal der"></i><div class="esc-cont"><span class="esc-lab">TOLERANCIA</span><strong class="esc-val">10 min</strong><span class="esc-des">Tiempo máximo para presentarse y estar listo para jugar.</span></div><div class="esc-dob"></div></a></div></div>
+</div>
+</div></section>
 <div class="wrap">
 <section id="esencial" class="blq" aria-labelledby="t-esencial"><h2 id="t-esencial" class="h2">Lo esencial de un vistazo</h2><p class="intro">Los datos que más se consultan. Toca una tarjeta para ir al artículo completo. En caso de duda, vale el texto del reglamento.</p><div class="cards"><a class="card" href="#art-8"><span class="lab">DURACIÓN</span><strong>40 min</strong><span class="des">Dos tiempos de 20 minutos, con descanso de 5 minutos.</span><span class="ref">Art. 8</span></a><a class="card" href="#art-9"><span class="lab">TOLERANCIA</span><strong>10 min</strong><span class="des">Tiempo máximo para presentarse y estar listo para jugar.</span><span class="ref">Art. 9</span></a><a class="card" href="#art-10"><span class="lab">JUGADORES</span><strong>7 en cancha</strong><span class="des">Uno es el portero. Mínimo 5 para jugar. Cambios ilimitados.</span><span class="ref">Arts. 10 y 11</span></a><a class="card" href="#art-12"><span class="lab">TIEMPO FUERA</span><strong>2 min</strong><span class="des">Uno por equipo en cada tiempo. Detiene el cronómetro.</span><span class="ref">Art. 12</span></a><a class="card" href="#art-18"><span class="lab">PUNTOS</span><strong>3 · 2 · 1</strong><span class="des">Victoria 3. Si empatan, en penales el ganador 2 y el perdedor 1. Derrota 0.</span><span class="ref">Arts. 18 y 19</span></a><a class="card" href="#art-17"><span class="lab">FALTAS</span><strong>La 6.ª es penal</strong><span class="des">Se cuentan por equipo en cada tiempo y el conteo se reinicia.</span><span class="ref">Art. 17</span></a><a class="card" href="#art-22"><span class="lab">TARJETA AMARILLA</span><strong>2 min fuera</strong><span class="des">La segunda amarilla es expulsión y 1 partido de suspensión.</span><span class="ref">Arts. 22 y 23</span></a><a class="card" href="#art-24"><span class="lab">TARJETA ROJA</span><strong>5 min fuera</strong><span class="des">Su equipo juega con uno menos durante 5 minutos. No regresa.</span><span class="ref">Art. 24</span></a><a class="card" href="#art-21"><span class="lab">DEFAULT</span><strong>3-0</strong><span class="des">Quien no se presenta pierde 3-0. Con 2 sorpresa o 3 avisados, baja.</span><span class="ref">Art. 21</span></a><a class="card" href="#art-6"><span class="lab">REGISTRO</span><strong>Jornada 6</strong><span class="des">Los registros cierran al terminar esa jornada. Cada jugador necesita foto.</span><span class="ref">Art. 6</span></a><a class="card" href="#art-7"><span class="lab">LIGUILLA</span><strong>70%</strong><span class="des">Asistencia mínima de cada jugador y registro oficial con fotografía.</span><span class="ref">Art. 7</span></a><a class="card" href="#art-38bis"><span class="lab">HORARIO EN LIGUILLA</span><strong>1.º · 2.º · 3.º</strong><span class="des">Los tres primeros de la fase regular eligen horario, en ese orden.</span><span class="ref">Art. 38 Bis</span></a></div></section>
 <section id="contenido" class="blq" aria-labelledby="t-contenido"><h2 id="t-contenido" class="h2">Contenido</h2><p class="intro">Encuentra rápido el capítulo que buscas, o busca una palabra en todo el reglamento.</p>
@@ -94,5 +157,139 @@ strong{color:#b6f06a;font-weight:700}
     cuenta.textContent=!v?'':(hit?hit+(hit===1?' artículo encontrado':' artículos encontrados'):'Sin resultados');
   }
   q.addEventListener('input',filtrar);
+})();
+</script><script>(function(){
+  var root = document.getElementById('escenario');
+  if (!root) return;
+  var hombre = document.getElementById('esc-hombre');
+  var cols = [].slice.call(root.querySelectorAll('.esc-col'));
+  var timers = [], rafs = [];
+  var reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var esSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
+  root.classList.add('esc-listo');
+
+  function esperar(fn, ms) { timers.push(setTimeout(fn, ms)); }
+
+  function centroX(col) {
+    var e = root.getBoundingClientRect();
+    var r = col.getBoundingClientRect();
+    return r.left - e.left + r.width / 2 - hombre.offsetWidth / 2;
+  }
+
+  function polvo(col) {
+    var ancho = col.offsetWidth;
+    for (var i = 0; i < 16; i++) {
+      (function () {
+        var p = document.createElement('span');
+        var s = 3 + Math.random() * 7;
+        p.className = 'esc-polvo';
+        p.style.cssText = 'width:' + s + 'px;height:' + s + 'px;left:' + (8 + Math.random() * (ancho - 16)) +
+          'px;top:34px;background:' + (Math.random() < 0.5 ? 'rgba(221,197,48,.85)' : 'rgba(210,210,210,.6)');
+        col.appendChild(p);
+        var dx = (Math.random() - 0.5) * 50, dy = 140 + Math.random() * 180;
+        var a = p.animate(
+          [{ transform:'translate(0,0) scale(1)', opacity:0.9 },
+           { transform:'translate(' + dx + 'px,' + dy + 'px) scale(.3)', opacity:0 }],
+          { duration:1100 + Math.random() * 900, delay:Math.random() * 300, easing:'cubic-bezier(.4,0,.9,.6)', fill:'both' });
+        a.onfinish = function () { p.remove(); };
+      })();
+    }
+  }
+
+  function ondular(lona, i) {
+    if (esSafari) return;
+    var desplaza = document.querySelector('#nl-tela' + i + ' feDisplacementMap');
+    if (!desplaza) return;
+    var t0 = performance.now();
+    lona.style.filter = 'url(#nl-tela' + i + ')';
+    function paso(ahora) {
+      var t = (ahora - t0) / 1000;
+      if (t > 2.4) { desplaza.setAttribute('scale', 0); lona.style.filter = ''; return; }
+      var a = 34 * Math.pow(1 - t / 2.4, 2) * (0.6 + 0.4 * Math.sin(t * 11));
+      desplaza.setAttribute('scale', a.toFixed(2));
+      rafs.push(requestAnimationFrame(paso));
+    }
+    rafs.push(requestAnimationFrame(paso));
+  }
+
+  function sacudir() {
+    root.animate([
+      { transform:'translate(0,0)' }, { transform:'translate(2px,3px)' }, { transform:'translate(-2px,-2px)' },
+      { transform:'translate(1px,1px)' }, { transform:'translate(0,0)' }
+    ], { duration:260, easing:'ease-out' });
+  }
+
+  function aprobar() {
+    hombre.classList.remove('desata', 'aprueba');
+    void hombre.offsetWidth;
+    hombre.classList.add('aprueba');
+  }
+
+  function soltar(col, i) {
+    var lona = col.querySelector('.esc-lona');
+    col.classList.add('suelta');
+    if (reducir) return;
+    polvo(col);
+    var T = 'translateY(0%) ';
+    lona.animate([
+      { transform:'translateY(-102%) scaleY(1) rotateX(0deg) rotateZ(0deg)', offset:0,    easing:'cubic-bezier(.55,0,.95,.55)' },
+      { transform:T + 'scaleY(1) rotateX(0deg) rotateZ(0deg)',               offset:0.40, easing:'ease-out' },
+      { transform:T + 'scaleY(1.07) rotateX(-5deg) rotateZ(1.2deg)',         offset:0.52, easing:'ease-in-out' },
+      { transform:T + 'scaleY(.97) rotateX(6deg) rotateZ(-1deg)',            offset:0.66, easing:'ease-in-out' },
+      { transform:T + 'scaleY(1.025) rotateX(-3deg) rotateZ(.7deg)',         offset:0.80, easing:'ease-in-out' },
+      { transform:T + 'scaleY(.99) rotateX(1.2deg) rotateZ(-.3deg)',         offset:0.92, easing:'ease-in-out' },
+      { transform:T + 'scaleY(1) rotateX(0deg) rotateZ(0deg)',               offset:1 }
+    ], { duration:2200, delay:150, fill:'backwards' });
+    ondular(lona, i);
+    aprobar();
+    esperar(sacudir, 150 + 0.4 * 2200);
+  }
+
+  function reiniciar() {
+    timers.forEach(clearTimeout); timers = [];
+    rafs.forEach(cancelAnimationFrame); rafs = [];
+    cols.forEach(function (c) {
+      c.classList.remove('suelta');
+      var l = c.querySelector('.esc-lona');
+      l.getAnimations().forEach(function (a) { a.cancel(); });
+      l.style.filter = '';
+      [].slice.call(c.querySelectorAll('.esc-polvo')).forEach(function (p) { p.remove(); });
+    });
+    hombre.className = 'esc-hombre';
+    hombre.style.transition = 'none';
+    hombre.style.transform = 'translateX(-' + (hombre.offsetWidth + 60) + 'px)';
+    void hombre.offsetWidth;
+    hombre.style.transition = '';
+  }
+
+  function iniciar() {
+    reiniciar();
+    if (reducir) {
+      cols.forEach(function (c, i) { soltar(c, i); });
+      hombre.style.transform = 'translateX(' + centroX(cols[1]) + 'px)';
+      return;
+    }
+    var t = 400;
+    cols.forEach(function (col, i) {
+      esperar(function () { hombre.classList.remove('aprueba'); hombre.classList.add('camina'); hombre.style.transform = 'translateX(' + centroX(col) + 'px)'; }, t);
+      esperar(function () { hombre.classList.remove('camina'); hombre.classList.add('desata'); }, t + 1200);
+      esperar(function () { soltar(col, i); }, t + 1900);
+      esperar(function () { hombre.classList.remove('aprueba'); }, t + 2600);
+      t += 2800;
+    });
+    esperar(function () { hombre.classList.add('fin'); }, t);
+  }
+
+  document.getElementById('esc-repetir').addEventListener('click', iniciar);
+
+  reiniciar();
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      if (es[0].isIntersecting) { io.disconnect(); iniciar(); }
+    }, { threshold: 0.4 });
+    io.observe(root);
+  } else {
+    iniciar();
+  }
 })();
 </script></body></html>
