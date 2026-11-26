@@ -68,7 +68,7 @@ strong{color:#b6f06a;font-weight:700}
 @media print{*{print-color-adjust:exact;-webkit-print-color-adjust:exact}body{background:#fff;color:#111;font-size:10.5pt}.top,.btns,.buscar,.skip{display:none!important}.hero{padding:16mm 0}.card,.toc a,.medallas li{background:#f3f8ea;color:#111}.des,.toc small,.intro{color:#333}.card strong,strong{color:#1f5200}.ref{color:#6b5a00}article{break-inside:avoid}.cap{break-inside:auto}.band{break-after:avoid}.cierre{margin-top:10mm}}
 
 /* ===== Entrenador y lonas (animación de la portada) ===== */
-.esc{--p:clamp(180px,25vw,250px);--alto:clamp(280px,34vw,310px);position:relative;height:calc(var(--p) + 10px + 38px + var(--alto) + 34px);margin-top:34px;overflow:hidden}
+.esc{--p:clamp(180px,25vw,250px);--alto:clamp(280px,34vw,310px);position:relative;height:calc(var(--p) + 10px + 38px + var(--alto) + 62px);margin-top:34px;overflow:hidden}
 .esc-plancha{position:absolute;left:0;right:0;top:var(--p);height:10px;background:var(--panel2);border-bottom:3px solid var(--gold);z-index:3}
 .esc-col{position:absolute;top:calc(var(--p) + 10px);width:30%;z-index:2}
 .esc-col[data-i="0"]{left:3%}.esc-col[data-i="1"]{left:35%}.esc-col[data-i="2"]{left:67%}
@@ -117,7 +117,7 @@ strong{color:#b6f06a;font-weight:700}
 @keyframes esc-salto{0%{transform:translateY(0) scale(1,1)}30%{transform:translateY(-16px) scale(.98,1.03)}60%{transform:translateY(0) scale(1.03,.97)}100%{transform:translateY(0) scale(1,1)}}
 @keyframes esc-aro{0%{transform:translate(-50%,-50%) scale(.2);opacity:.95}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
 @keyframes esc-respira{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-3px) rotate(.8deg)}}
-.esc-repetir{position:absolute;top:0;right:0;z-index:9;min-height:40px;padding:0 14px;background:transparent;color:var(--gold);border:1px solid var(--gold);border-radius:10px;font:700 13px Roboto,Arial,sans-serif;cursor:pointer}
+.esc-repetir{position:absolute;bottom:0;left:50%;transform:translateX(-50%);z-index:9;min-height:40px;padding:0 14px;background:transparent;color:var(--gold);border:1px solid var(--gold);border-radius:10px;font:700 13px Roboto,Arial,sans-serif;cursor:pointer}
 .esc-repetir:hover{background:var(--panel)}
 @media(max-width:520px){.esc-col{width:31%}.esc-col[data-i="0"]{left:1%}.esc-col[data-i="1"]{left:34.5%}.esc-col[data-i="2"]{left:68%}.esc-ventana{margin:0 3%}.esc-cont{padding:40px 6px 38px}}
 @media(prefers-reduced-motion:reduce){.esc *,.esc *::before,.esc *::after{animation:none!important;transition:none!important}.esc-col.suelta .esc-cuerda{opacity:0}}
@@ -128,7 +128,7 @@ strong{color:#b6f06a;font-weight:700}
 <main>
 <section class="hero"><svg class="cancha" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect x="30" y="30" width="940" height="540" rx="6"/><line x1="500" y1="30" x2="500" y2="570"/><circle cx="500" cy="300" r="90"/><rect x="30" y="190" width="150" height="220"/><rect x="820" y="190" width="150" height="220"/></svg>
 <div class="wrap"><p class="kick">TORNEO DE FÚTBOL 7</p><h1>NEXT LEVEL <span>7</span></h1><p class="sub">REGLAMENTO OFICIAL</p><p class="motto">Competencia, respeto y pasión por el fútbol.</p>
-<div class="btns"><a class="btn b1" href="Reglamento_Oficial_Next_Level_7.pdf" download="Reglamento_Oficial_Next_Level_7.pdf">Descargar reglamento (PDF)</a><a class="btn b2" href="#esencial">Lo esencial en una página</a></div>
+
 <div class="esc" id="escenario">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
 <filter id="nl-tela0" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.010 0.028" numOctaves="2" seed="3" result="r"/><feDisplacementMap in="SourceGraphic" in2="r" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>
