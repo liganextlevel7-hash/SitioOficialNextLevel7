@@ -1043,10 +1043,23 @@ function partidosAtrasadosPNG(fecha) {
  const equipos = control?.equipos.filter(e => e.atrasados > 0) || [];
  if (!equipos.length) return '';
 
- const filas = equipos.map(e =>
-  `<div><b>${G.esc(e.equipo)}</b> — ${e.atrasados}</div>`
+ const encabezado = 'padding:4px 8px;color:#b5e874;background:#183321;text-align:';
+ const celda = 'padding:3px 8px;border-top:1px solid #38532c;text-align:';
+ const filas = equipos.map(equipo => `
+  <tr>
+   <th scope="row" style="${celda}left">${G.esc(equipo.equipo)}</th>
+   <td style="${celda}center">${equipo.atrasados}</td>
+   <td style="${celda}center">${equipo.quedarian}</td>
+  </tr>`
  ).join('');
- return `<div style="font-size:16px;font-weight:bold;color:#b5e874;margin-bottom:8px">Partidos atrasados</div>${filas}`;
+ return `<table style="width:100%;border-collapse:collapse;line-height:1.2">
+  <thead><tr>
+   <th scope="col" style="${encabezado}left">Equipo</th>
+   <th scope="col" style="${encabezado}center">Pendientes</th>
+   <th scope="col" style="${encabezado}center">Si juegan, quedarían</th>
+  </tr></thead>
+  <tbody>${filas}</tbody>
+ </table>`;
 }
 // Exportación acotada: cada equipo ocupa su propia columna y el centro no crece con sus etiquetas.
 function pngPagina(tipo,partidos,pagina,total,titulo,opciones){
