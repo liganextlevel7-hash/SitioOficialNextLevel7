@@ -243,6 +243,25 @@
   .rc-ficha img,.rc-sin-foto {width:58px;height:64px}
 }
 </style>
+<style>
+#rc-reporte-png {display:block;width:100%;margin:0 0 8px;padding:10px;border:0;border-radius:10px;background:#a4db52;color:#102007;font-weight:900;cursor:pointer}
+.rc-exportacion {position:absolute;left:-12000px;top:0;width:816px;box-sizing:border-box;padding:24px;background:#fff;color:#17281b;text-align:left}
+.rc-exportacion h2 {margin:4px 0;font-size:22px}
+.rc-exportacion .rc-equipo {margin-top:12px;border-color:#b6c4ae}
+.rc-exportacion .rc-equipo header,.rc-exportacion .rc-columnas {background:#e6efd9;color:#21391b}
+.rc-exportacion h3,.rc-exportacion small,.rc-exportacion .rc-vacia {color:#263b28}
+.rc-exportacion .rc-sin-foto {background:#edf0ea;color:#374438}
+.rc-exportacion .rc-par,.rc-exportacion .rc-par > :nth-child(2),.rc-exportacion .rc-columnas > :nth-child(2) {border-color:#cfd9ca}
+.rc-exportacion .rc-ficha {flex-direction:row;align-items:center}
+@media print {
+  body.rc-imprimiendo > :not(.rc-exportacion) {display:none!important}
+  body.rc-imprimiendo {background:white!important;margin:0!important;padding:0!important}
+  .rc-exportacion {position:static;width:100%;padding:0;print-color-adjust:exact}
+  .rc-exportacion .rc-equipo {overflow:visible}
+  .rc-exportacion .rc-par {break-inside:avoid}
+  .rc-exportacion .rc-equipo header,.rc-exportacion .rc-columnas {break-after:avoid}
+}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -361,6 +380,8 @@
 <div class="rc-controles">
 <label for="rc-filtro">Equipo<select id="rc-filtro"><option value="">Todos los equipos</option></select></label>
 <button type="button" id="rc-recargar">Actualizar comparativo</button>
+<button type="button" id="rc-descargar">Descargar PNG</button>
+<button type="button" id="rc-imprimir">Imprimir</button>
 </div>
 <p id="rc-estado" role="status"></p>
 <div id="rc-lista"></div>
@@ -374,6 +395,12 @@
 <button class="rv-btn" data-rv="pend" style="display:block; width:100%; margin-bottom:8px; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">📥 Pendientes de pasar a la hoja (lista)</button>
 <button class="rv-btn" data-rv="dia" style="display:block; width:100%; margin-bottom:8px; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">📥 Registrados por día y equipo (conteo)</button>
 <button class="rv-btn" data-rv="cont" style="display:block; width:100%; margin-bottom:8px; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">📥 Cuántos faltan de pasar, por equipo</button>
+<div class="rc-controles" style="margin:12px 0 8px">
+<label for="rc-equipo-reporte">Equipo para el comparativo
+<select id="rc-equipo-reporte"><option value="">Selecciona un equipo</option></select>
+</label>
+</div>
+<button type="button" id="rc-reporte-png">📥 Comparativo por equipo (PNG)</button>
 <button class="rv-btn" data-rv="todos" style="display:block; width:100%; padding:10px; border:1px solid #5eb50d; border-radius:10px; background:transparent; color:#5eb50d; font-weight:900; cursor:pointer;">📥 Descargar los 3</button>
 <div id="rv-aviso" style="text-align:center; font-size:0.78rem; margin-top:10px; min-height:16px; color:rgba(238,247,230,0.7);"></div>
 </div>
@@ -1673,6 +1700,7 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
 (() => {
   const panel = document.getElementById('rg-comparativo');
   const filtro = document.getElementById('rc-filtro');
+  const filtroReporte = document.getElementById('rc-equipo-reporte');
   const recargar = document.getElementById('rc-recargar');
   const estado = document.getElementById('rc-estado');
   const lista = document.getElementById('rc-lista');
@@ -1769,7 +1797,7 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
 
   async function cargar() {
     if (recargar.disabled || sessionStorage.getItem('nl7_domingo_admin_ok') !== '1') return;
-    recargar.disabled = filtro.disabled = true;
+    recargar.disabled = filtro.disabled = filtroReporte.disabled = true;
     estado.textContent = 'Cargando el registro y la hoja Jugadores…';
     try {
       const [rFb, rSh] = await Promise.all([
@@ -1817,19 +1845,129 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
       equipos = [...grupos.values()].sort((a, b) => orden(a.nombre, b.nombre));
       const anterior = filtro.value;
       filtro.replaceChildren(new Option('Todos los equipos', ''), ...equipos.map(e => new Option(e.nombre, e.clave)));
-      filtro.value = equipos.some(e => e.clave === anterior) ? anterior : '';
+      filtroReporte.replaceChildren(new Option('Selecciona un equipo', ''), ...equipos.map(e => new Option(e.nombre, e.clave)));
+      filtroReporte.value = filtro.value = equipos.some(e => e.clave === anterior) ? anterior : '';
       pintar();
     } catch {
       lista.replaceChildren();
       equipos = [];
+      filtro.replaceChildren(new Option('Todos los equipos', ''));
+      filtroReporte.replaceChildren(new Option('Selecciona un equipo', ''));
       estado.textContent = 'No se pudo comparar el Registro con Jugadores. Intenta actualizar.';
     } finally {
-      recargar.disabled = filtro.disabled = false;
+      recargar.disabled = filtro.disabled = filtroReporte.disabled = false;
     }
   }
 
-  panel.addEventListener('toggle', () => { if (panel.open) cargar(); });
-  filtro.addEventListener('change', pintar);
+  const exportarPNG = document.getElementById('rc-descargar');
+  const imprimir = document.getElementById('rc-imprimir');
+  const reporte = document.getElementById('rc-reporte-png');
+
+  async function prepararImagen(img, paraPNG) {
+    const foto = new Image();
+    const url = new URL(img.src);
+    if (paraPNG && /^https?:$/.test(url.protocol) && url.origin !== location.origin) {
+      foto.crossOrigin = 'anonymous';
+    }
+    const disponible = await new Promise(resolve => {
+      const tiempo = setTimeout(() => resolve(false), 7000);
+      foto.onload = () => { clearTimeout(tiempo); resolve(true); };
+      foto.onerror = () => { clearTimeout(tiempo); resolve(false); };
+      foto.src = url.href;
+    });
+    if (disponible) {
+      img.loading = 'eager';
+      return true;
+    }
+    const aviso = document.createElement('span');
+    aviso.className = 'rc-sin-foto';
+    aviso.textContent = img.classList.contains('rc-escudo') ? 'Escudo no disponible' : 'Foto no disponible';
+    img.replaceWith(aviso);
+    return false;
+  }
+
+  async function generarComparativo(formato) {
+    if (exportarPNG.disabled) return;
+    panel.open = true;
+    const equipo = equipos.find(e => e.clave === filtro.value);
+    const seccion = lista.querySelector('.rc-equipo');
+    if (recargar.disabled || !equipo || !seccion) {
+      panel.scrollIntoView({ block: 'start' });
+      if (!recargar.disabled) {
+        filtro.focus({ preventScroll: true });
+        if (equipos.length) estado.textContent = 'Selecciona un equipo y pulsa Descargar PNG o Imprimir.';
+      }
+      return;
+    }
+
+    const paraPNG = formato === 'png';
+    exportarPNG.disabled = imprimir.disabled = reporte.disabled = true;
+    estado.textContent = 'Preparando el comparativo…';
+    const hoja = document.createElement('article');
+    hoja.className = 'rc-exportacion';
+    hoja.innerHTML = '<small>LIGA NEXT LEVEL 7</small><h2>Comparativo de jugadores por equipo</h2>';
+    hoja.append(seccion.cloneNode(true));
+    document.body.append(hoja);
+    try {
+      const imagenes = await Promise.all([...hoja.querySelectorAll('img')].map(img => prepararImagen(img, paraPNG)));
+      if (paraPNG) {
+        const canvas = await html2canvas(hoja, {
+          backgroundColor: '#ffffff', useCORS: true, scale: 2, windowWidth: 1024
+        });
+        const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        if (!png) throw Error('No se pudo crear el PNG');
+        const url = URL.createObjectURL(png);
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = 'Comparativo_' + (rvNorm(equipo.nombre).replace(/ /g, '_') || 'equipo') + '.png';
+        document.body.append(enlace);
+        enlace.click();
+        enlace.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+      } else {
+        document.body.classList.add('rc-imprimiendo');
+        window.print();
+      }
+      estado.textContent = imagenes.includes(false)
+        ? 'Algunas imágenes no se pudieron incluir. Usa Imprimir si el navegador permite mostrarlas.'
+        : paraPNG ? 'PNG generado.' : '';
+    } catch {
+      estado.textContent = paraPNG ? 'No se pudo generar el PNG. Intenta otra vez o usa Imprimir.' : 'No se pudo abrir la impresión.';
+    } finally {
+      document.body.classList.remove('rc-imprimiendo');
+      hoja.remove();
+      exportarPNG.disabled = imprimir.disabled = reporte.disabled = false;
+    }
+  }
+
+  reporte.addEventListener('click', () => {
+    if (filtroReporte.disabled) return;
+    if (!filtroReporte.value) {
+      filtroReporte.setCustomValidity('Selecciona el equipo que quieres descargar.');
+      filtroReporte.reportValidity();
+      return;
+    }
+    panel.open = true;
+    panel.scrollIntoView({ block: 'start' });
+    generarComparativo('png');
+  });
+  exportarPNG.addEventListener('click', () => generarComparativo('png'));
+  imprimir.addEventListener('click', () => generarComparativo('impresion'));
+
+  panel.addEventListener('toggle', () => { if (panel.open && !equipos.length) cargar(); });
+  document.getElementById('btn-toggle-reportes').addEventListener('click', () => {
+    if (!equipos.length && getComputedStyle(document.getElementById('panel-reportes')).display !== 'none') cargar();
+  });
+  filtro.addEventListener('change', () => {
+    filtroReporte.setCustomValidity('');
+    filtroReporte.value = filtro.value;
+    pintar();
+  });
+  filtroReporte.addEventListener('change', () => {
+    filtroReporte.setCustomValidity('');
+    filtro.value = filtroReporte.value;
+    pintar();
+  });
   recargar.addEventListener('click', cargar);
   document.getElementById('link-cerrar-admin').addEventListener('click', () => { panel.open = false; });
 })();
