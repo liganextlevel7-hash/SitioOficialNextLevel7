@@ -211,7 +211,39 @@
 @media(min-width:780px){#form-registro{display:grid;grid-template-columns:1fr 1fr;column-gap:24px}#form-registro>*{grid-column:1/-1}#form-registro .rg-preview{grid-column:1/-1}}
 @media(max-width:600px){body{padding:16px 12px 40px}.rg-hero{padding:12px 0 25px;gap:12px}.rg-hero img{width:76px;height:90px}.rg-hero h1{font-size:31px;letter-spacing:-1px}.rg-hero p{font-size:12px}.card{padding:20px 16px}.rg-section-title h2{font-size:17px}.rg-preview{padding:15px}.rg-preview-row{gap:11px}.rg-preview-row>img,.rg-preview-row>span{width:54px;height:68px}.rg-preview-row b{font-size:16px}.rg-preview-row>strong{font-size:28px}.rg-resumen{gap:6px}.rg-resumen div{padding:13px 9px}.rg-resumen b{font-size:24px}.rg-resumen span{font-size:10px}.rg-list-grid{grid-template-columns:1fr}.tarjeta-adm{padding:14px;gap:10px}.tarjeta-adm img{width:60px;height:72px}.tarjeta-adm .nombre-adm{font-size:15px}.tarjeta-adm .campo-adm{font-size:12px}.acciones-adm{gap:6px}.rg-admin-nav a{padding:10px 12px;font-size:11px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
-</style></head>
+</style>
+<style>
+.wrap:has(#rg-comparativo[open]) {max-width:940px}
+#rg-comparativo {margin:16px 0 24px;background:#101e17;border:1px solid #405634;border-radius:16px}
+#rg-comparativo summary {padding:16px;color:#c0ed83;font-weight:800;cursor:pointer}
+.rc-cuerpo {padding:0 clamp(10px,3vw,22px) 20px}
+.rc-controles {display:flex;align-items:end;gap:12px;flex-wrap:wrap}
+.rc-controles label {flex:1 1 200px;margin:0}
+.rc-controles select,.rc-controles button {margin-top:6px;padding:9px;border-radius:8px;border:1px solid #587343;background:#172520;color:#f2f7ef;font:inherit;max-width:100%}
+.rc-controles select {display:block;width:100%}
+.rc-equipo {border:1px solid #405634;border-radius:12px;margin-top:16px;overflow:hidden}
+.rc-equipo header {display:flex;align-items:center;gap:12px;padding:12px;background:#1d3020;text-align:left}
+.rc-equipo h3 {margin:0;color:#eafaDC;font-size:1rem}
+.rc-equipo p {margin:4px 0 0}
+.rc-escudo {width:44px;height:44px;object-fit:contain;flex:none}
+.rc-columnas,.rc-par {display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.rc-columnas {background:#14251c;font-size:.8rem;font-weight:800;color:#c0ed83}
+.rc-columnas span,.rc-ficha {padding:10px;min-width:0}
+.rc-par {border-top:1px solid #314237}
+.rc-par > :nth-child(2),.rc-columnas > :nth-child(2) {border-left:1px solid #314237}
+.rc-ficha {display:flex;align-items:center;gap:10px;overflow-wrap:anywhere;font-size:.85rem}
+.rc-ficha strong,.rc-ficha small {display:block}
+.rc-ficha small,.rc-equipo small,.rc-vacia {color:#c2d0c2}
+.rc-ficha img,.rc-sin-foto {width:64px;height:72px;border-radius:8px;flex:none}
+.rc-ficha img {object-fit:cover;background:#243128}
+.rc-sin-foto {display:grid;place-content:center;background:#243128;text-align:center;font-size:.7rem}
+.rc-vacia {font-size:.8rem}
+@media(max-width:570px) {
+  .rc-ficha {align-items:flex-start;flex-direction:column}
+  .rc-ficha img,.rc-sin-foto {width:58px;height:64px}
+}
+</style>
+</head>
 <body>
 <div class="wrap">
 <a class="volver" href="index.html">← Volver al inicio</a><header class="rg-hero"><div><span class="rg-kicker">LIGA NEXT LEVEL 7</span><h1>Tu equipo empieza aquí.</h1><p>Registra a tus jugadores y mantén tu plantel al día.</p></div><img alt="Next Level 7" src="logo-liga.png.png"/></header>
@@ -322,6 +354,18 @@
 <button id="btn-guardar-nuevo" style="width:100%; padding:10px; border:none; border-radius:10px; background:linear-gradient(145deg,#5eb50d,#8fe89a); color:#0a1a0d; font-weight:900; cursor:pointer;">Guardar Jugador</button>
 <div aria-live="polite" class="msg" id="add-msg" role="status" style="text-align:center; font-size:0.78rem; margin-top:8px;"></div>
 </div>
+
+<details id="rg-comparativo">
+<summary>Comparativo de jugadores por equipo</summary>
+<div class="rc-cuerpo">
+<div class="rc-controles">
+<label for="rc-filtro">Equipo<select id="rc-filtro"><option value="">Todos los equipos</option></select></label>
+<button type="button" id="rc-recargar">Actualizar comparativo</button>
+</div>
+<p id="rc-estado" role="status"></p>
+<div id="rc-lista"></div>
+</div>
+</details>
 <button id="btn-toggle-reportes" style="display:block; width:100%; margin-bottom:16px; padding:12px; border:1px dashed #8fe89a; border-radius:14px; background:rgba(143,232,154,0.08); color:#8fe89a; font-weight:bold; font-size:0.85rem; cursor:pointer;">📊 Reportes de revisión (PNG)</button>
 <div id="panel-reportes" style="display:none; background:rgba(20,39,2,0.85); border:1px solid rgba(143,232,154,0.4); border-radius:16px; padding:16px; margin-bottom:20px;">
 <p class="sub" style="font-size:0.74rem; margin:0 0 12px;">Compara los registros del formulario contra tu hoja <b>"Jugadores"</b> (por nombre y equipo, sin importar mayúsculas, acentos, espacios de más u orden de los nombres; no se aceptan nombres parciales) para saber cuáles ya pasaste y cuáles no.</p>
@@ -547,7 +591,7 @@
   const selectAddEquipo = document.getElementById('add-equipo');
 
   // Ahora que ya existen loginMsg y selectAddEquipo, disparamos la carga real desde el Sheet.
-  cargarEquiposDesdeSheet();
+  const cargaInicialEquipos = cargarEquiposDesdeSheet();
 
   async function pintarPanelContrasenas() {
     const cont = document.getElementById('panel-contrasenas');
@@ -1564,15 +1608,34 @@ document.getElementById('rg-recargar-admin').addEventListener('click', async eve
 });
 document.getElementById('rg-buscar-admin').addEventListener('input',pintarListaAdmin);
 const zonaFoto=document.getElementById('foto-zona');zonaFoto.tabIndex=0;zonaFoto.setAttribute('role','button');zonaFoto.setAttribute('aria-label','Tomar o subir foto del jugador');zonaFoto.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();document.getElementById('input-foto').click();}});
-// Escudo visual: el catálogo no interviene en el acceso, los registros ni los reportes.
-(async()=>{try{
- const url='https://docs.google.com/spreadsheets/d/e/2PACX-1vRs55yHIAY-lWfU6XccheWIPHUjF4aRue0jy68FbZ9fNtPJfeO1glwsWI46cWv-6cxXy2slGty-DgMd/pub?gid=1894947293&single=true&output=csv';
- const r=await fetch(url);if(!r.ok)return;const rows=rvParseCSV(await r.text()),headers=rows.shift().map(x=>rvNorm(x));
- const ni=headers.indexOf('nombre'),ui=headers.indexOf('url');if(ni<0||ui<0)return;
- const logos=new Map(rows.map(c=>[rvNorm(c[ni]),c[ui]]));
- function pintar(){const img=document.getElementById('rg-escudo-equipo');const src=logos.get(rvNorm(document.getElementById('equipo-actual-nombre').textContent));img.hidden=!src;if(src)img.src=src;}
- new MutationObserver(pintar).observe(document.getElementById('equipo-actual-nombre'),{childList:true});document.getElementById('rg-escudo-equipo').onerror=e=>e.currentTarget.hidden=true;pintar();
-}catch(e){/* El escudo no bloquea el registro. */}})();
+// Catálogo compartido entre la ficha del capitán y el comparativo.
+const catalogoEscudos = (async () => {
+  try {
+    const url = CAR_CAPITANES.replace('gid=1768443342', 'gid=1894947293');
+    const respuesta = await fetch(url);
+    if (!respuesta.ok) return new Map();
+    const [cabecera = [], ...filas] = rvParseCSV(await respuesta.text());
+    const columnas = cabecera.map(rvNorm);
+    const nombre = columnas.indexOf('nombre');
+    const imagen = columnas.indexOf('url');
+    return new Map(filas.filter(f => f[nombre] && f[imagen]).map(f => [rvNorm(f[nombre]), f[imagen]]));
+  } catch {
+    return new Map();
+  }
+})();
+catalogoEscudos.then(logos => {
+  const nombre = document.getElementById('equipo-actual-nombre');
+  const imagen = document.getElementById('rg-escudo-equipo');
+  const pintar = () => {
+    const src = logos.get(rvNorm(nombre.textContent));
+    imagen.hidden = !src;
+    if (src) imagen.src = src;
+    else imagen.removeAttribute('src');
+  };
+  imagen.onerror = () => { imagen.hidden = true; };
+  new MutationObserver(pintar).observe(nombre, { childList: true });
+  pintar();
+});
 </script><script>
 // Los accesos de administración abren los paneles originales antes de navegar.
 const accesosRegistro = {
@@ -1604,6 +1667,172 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
     }
   });
 });
+</script>
+
+<script>
+(() => {
+  const panel = document.getElementById('rg-comparativo');
+  const filtro = document.getElementById('rc-filtro');
+  const recargar = document.getElementById('rc-recargar');
+  const estado = document.getElementById('rc-estado');
+  const lista = document.getElementById('rc-lista');
+  const orden = (a, b) => a.localeCompare(b, 'es', { sensitivity: 'base', numeric: true });
+  const limpio = valor => String(valor ?? '').trim();
+  const nombreClave = nombre => rvNorm(nombre).split(' ').sort().join(' ');
+  const esc = escaparRegistro;
+  let equipos = [];
+
+  function alinear(registro, hoja) {
+    const enlaces = new Map();
+    const usados = new Set();
+    // Vincular primero por ID y después por nombre completo, solo si es único en ambos lados.
+    for (const clave of [j => limpio(j.id), j => nombreClave(j.nombre)]) {
+      const indice = jugadores => {
+        const grupos = new Map();
+        for (const j of jugadores) {
+          const llave = clave(j);
+          if (!llave) continue;
+          if (!grupos.has(llave)) grupos.set(llave, []);
+          grupos.get(llave).push(j);
+        }
+        return grupos;
+      };
+      const altas = indice(registro.filter(j => !enlaces.has(j)));
+      const publicados = indice(hoja.filter(j => !usados.has(j)));
+      for (const [llave, candidatos] of altas) {
+        const fichas = publicados.get(llave);
+        if (candidatos.length !== 1 || fichas?.length !== 1) continue;
+        const [alta] = candidatos;
+        const [ficha] = fichas;
+        if (alta.id && ficha.id && alta.id !== ficha.id) continue;
+        enlaces.set(alta, ficha);
+        usados.add(ficha);
+      }
+    }
+    return [
+      ...registro.map(j => [j, enlaces.get(j)]),
+      ...hoja.filter(j => !usados.has(j)).map(j => [null, j])
+    ].sort((a, b) => orden((a[0] || a[1]).nombre, (b[0] || b[1]).nombre));
+  }
+
+  function imagenURL(valor) {
+    const src = limpio(valor);
+    if (!src) return '';
+    if (/^data:image\/(?:jpe?g|png|webp|gif|avif);base64,/i.test(src)) return src;
+    try {
+      const url = new URL(src, location.href);
+      if (['http:', 'https:', 'file:'].includes(url.protocol)) return url.href;
+    } catch {}
+    return '';
+  }
+
+  function ficha(jugador, ausente) {
+    if (!jugador) return `<div class="rc-ficha rc-vacia">${ausente}</div>`;
+    const { nombre, numero, posicion, apodo, foto, fecha } = jugador;
+    const src = imagenURL(foto);
+    const meta = [limpio(numero) && `#${numero}`, posicion].filter(Boolean).join(' · ');
+    return `<div class="rc-ficha">
+      ${src ? `<img src="${esc(src)}" alt="Foto de ${esc(nombre)}" loading="lazy">` : ''}
+      <span class="rc-sin-foto" ${src ? 'hidden style="display:none"' : ''}>Sin foto</span>
+      <div><strong>${esc(nombre || 'Sin nombre')}</strong>
+      ${meta ? `<small>${esc(meta)}</small>` : ''}
+      ${apodo ? `<small>Apodo: ${esc(apodo)}</small>` : ''}
+      ${fecha && Number.isFinite(new Date(fecha).getTime()) ? `<small>Alta: ${esc(fechaRegistro(fecha))}</small>` : ''}</div>
+    </div>`;
+  }
+
+  lista.addEventListener('error', evento => {
+    const img = evento.target;
+    if (!(img instanceof HTMLImageElement)) return;
+    if (img.nextElementSibling?.classList.contains('rc-sin-foto')) {
+      img.nextElementSibling.hidden = false;
+      img.nextElementSibling.style.removeProperty('display');
+    }
+    img.remove();
+  }, true);
+
+  function pintar() {
+    const visibles = equipos.filter(e => !filtro.value || e.clave === filtro.value);
+    lista.innerHTML = visibles.map(e => {
+      const filas = alinear(e.registro, e.hoja);
+      const logo = imagenURL(e.logo);
+      return `<section class="rc-equipo">
+        <header>${logo ? `<img class="rc-escudo" src="${esc(logo)}" alt="" loading="lazy">` : ''}
+        <div><h3>${esc(e.nombre)}</h3>
+        <p><small>${e.registro.length} en Registro · ${e.hoja.length} en Jugadores · ${filas.filter(f => f[0] && f[1]).length} coincidencias</small></p></div></header>
+        <div class="rc-columnas"><span>Registro · Datos del alta</span><span>Jugadores · Hoja actual</span></div>
+        ${filas.map(([alta, actual]) => `<div class="rc-par">${ficha(alta, 'Sin coincidencia en Registro')}${ficha(actual, 'Sin coincidencia en Jugadores')}</div>`).join('')}
+      </section>`;
+    }).join('');
+    estado.textContent = visibles.length ? '' : 'No hay jugadores en las dos fuentes.';
+  }
+
+  async function cargar() {
+    if (recargar.disabled || sessionStorage.getItem('nl7_domingo_admin_ok') !== '1') return;
+    recargar.disabled = filtro.disabled = true;
+    estado.textContent = 'Cargando el registro y la hoja Jugadores…';
+    try {
+      const [rFb, rSh] = await Promise.all([
+        fetch(FB + '/jugadoresRegistro.json', { cache: 'no-store' }),
+        fetch(RV_URL_JUGADORES, { cache: 'no-store' })
+      ]);
+      if (!rFb.ok || !rSh.ok) throw Error('Fuentes no disponibles');
+      const [datos, csv, logos] = await Promise.all([rFb.json(), rSh.text(), catalogoEscudos, cargaInicialEquipos]);
+      const [encabezado, ...filas] = rvParseCSV(csv);
+      if (!['ID_Jugador', 'Nombre', 'Equipo'].every((campo, i) => limpio(encabezado?.[i]) === campo)) {
+        throw Error('Columnas inesperadas');
+      }
+      const nombres = new Map(EQUIPOS.map(e => [String(e.id), e.nombre]));
+      const ids = new Map(EQUIPOS.map(e => [rvNorm(e.nombre), String(e.id)]));
+      const registros = Object.values(datos || {}).filter(j => j && typeof j === 'object');
+      for (const j of registros) {
+        const id = limpio(j.equipoId);
+        if (!id || id === 'NaN' || !j.equipo) continue;
+        if (!nombres.has(id)) nombres.set(id, j.equipo);
+        if (!ids.has(rvNorm(j.equipo))) ids.set(rvNorm(j.equipo), id);
+      }
+      const grupos = new Map();
+      function grupo(equipoId, equipoNombre) {
+        const id = equipoId && equipoId !== 'NaN' ? equipoId : ids.get(rvNorm(equipoNombre));
+        const clave = id ? 'id:' + id : 'nombre:' + rvNorm(equipoNombre);
+        const nombre = nombres.get(id) || equipoNombre || (id ? `Equipo ${id}` : 'Sin equipo');
+        if (!grupos.has(clave)) grupos.set(clave, {
+          clave, nombre, logo: logos.get(rvNorm(nombre)), registro: [], hoja: []
+        });
+        return grupos.get(clave);
+      }
+      for (const j of registros) {
+        grupo(limpio(j.equipoId), limpio(j.equipo)).registro.push({
+          ...j, id: limpio(j.idJugador), nombre: limpio(j.nombre)
+        });
+      }
+      for (const [id, nombre, equipo, numero, posicion, , foto, , apodo] of filas) {
+        if (!limpio(nombre)) continue;
+        const valor = limpio(equipo);
+        const equipoId = /^\d+$/.test(valor) || nombres.has(valor) ? valor : '';
+        grupo(equipoId, equipoId ? '' : valor).hoja.push({
+          id: limpio(id), nombre: limpio(nombre), numero, posicion, foto, apodo
+        });
+      }
+      equipos = [...grupos.values()].sort((a, b) => orden(a.nombre, b.nombre));
+      const anterior = filtro.value;
+      filtro.replaceChildren(new Option('Todos los equipos', ''), ...equipos.map(e => new Option(e.nombre, e.clave)));
+      filtro.value = equipos.some(e => e.clave === anterior) ? anterior : '';
+      pintar();
+    } catch {
+      lista.replaceChildren();
+      equipos = [];
+      estado.textContent = 'No se pudo comparar el Registro con Jugadores. Intenta actualizar.';
+    } finally {
+      recargar.disabled = filtro.disabled = false;
+    }
+  }
+
+  panel.addEventListener('toggle', () => { if (panel.open) cargar(); });
+  filtro.addEventListener('change', pintar);
+  recargar.addEventListener('click', cargar);
+  document.getElementById('link-cerrar-admin').addEventListener('click', () => { panel.open = false; });
+})();
 </script>
 </body>
 </html>
