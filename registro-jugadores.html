@@ -287,7 +287,22 @@
 .rc-pg-main > .rc-resumen,.rc-pg-main > .rc-cab{flex:none}
 .rc-pg-body{flex:1;min-height:0;overflow:hidden}
 .rc-pg-body .rc-fila{border-right:1px solid var(--line)}
-.rc-pg-body .rc-fila:last-child{border-bottom:0}
+.rc-pg-body .rc-fila.rc-ultima{border-bottom:2px solid #1d3d05}
+.rc-pg-body .rc-resumen{margin:24px 0 12px}
+.rc-caja{border:1px solid var(--line);border-left:4px solid var(--k);border-radius:6px;padding:10px 14px 6px;margin-bottom:10px;background:#fff;color:var(--tx)}
+.rc-caja-t{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.rc-caja-t b{font-size:13px}
+.rc-caja ul{margin:4px 0 6px;padding-left:18px;font-size:11.5px;line-height:1.5}
+.rc-caja li{margin:0}
+.rc-linea{height:24px;border-bottom:1px solid #9aa79c}
+.rc-nada{margin:4px 0;font-size:11px;font-style:italic;color:var(--mut)}
+.rc-fin{margin-top:14px;padding-top:10px;border-top:2px solid #1d3d05;text-align:center;font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);font-weight:700}
+#rc-notas{margin-top:18px;padding:14px;border:1px solid #405634;border-radius:12px;background:#0f1a14}
+#rc-notas h4{margin:0 0 10px;color:#c0ed83;font-size:.9rem}
+#rc-notas label{display:block;margin:10px 0 0;font-size:.78rem;font-weight:700;color:#c0ed83}
+#rc-notas textarea{display:block;width:100%;margin-top:5px;min-height:84px;padding:9px;border-radius:8px;border:1px solid #587343;background:#172520;color:#f2f7ef;font:inherit;font-size:13px;resize:vertical;box-sizing:border-box}
+#rc-notas p{margin:8px 0 0;font-size:.72rem;color:#a9bbb0}
+
 .rc-pie{flex:none;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 36px;border-top:1px solid #d3dccb;background:#eef2e8;font-size:10.5px;color:#43544a}
 .rc-leyenda{display:flex;gap:14px;flex-wrap:wrap}
 .rc-leyenda i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;background:var(--k)}
@@ -425,6 +440,13 @@
 <p id="rc-estado" role="status"></p>
 <div id="rc-archivos" aria-label="Páginas del comparativo"></div>
 <div id="rc-lista"></div>
+<div id="rc-notas" hidden>
+<h4>Notas del informe (salen en la última hoja)</h4>
+<label for="rc-nota-corregir">Por corregir<textarea id="rc-nota-corregir"></textarea></label>
+<label for="rc-nota-alta">Altas pendientes<textarea id="rc-nota-alta"></textarea></label>
+<label for="rc-nota-baja">Bajas<textarea id="rc-nota-baja"></textarea></label>
+<p>Se llenan solas con la comparación; puedes borrar, agregar o corregir lo que quieras. Cada recuadro lleva además renglones en blanco para escribir a mano si lo imprimes.</p>
+</div>
 </div>
 </details>
 <button id="btn-toggle-reportes" style="display:block; width:100%; margin-bottom:16px; padding:12px; border:1px dashed #8fe89a; border-radius:14px; background:rgba(143,232,154,0.08); color:#8fe89a; font-weight:bold; font-size:0.85rem; cursor:pointer;">📊 Reportes de revisión (PNG)</button>
@@ -1879,6 +1901,41 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
       </section>`;
     }).join('');
     estado.textContent = visibles.length ? '' : 'No hay jugadores en las dos fuentes.';
+    llenarNotas();
+  }
+
+  function llenarNotas() {
+    const cuadro = document.getElementById('rc-notas');
+    const e = equipos.find(x => x.clave === filtro.value);
+    cuadro.hidden = !e;
+    if (!e) return;
+    const filas = filasEquipo(e);
+    const nom = f => (f.alta || f.actual).nombre || 'Sin nombre';
+    document.getElementById('rc-nota-corregir').value = filas.filter(f => f.tipo === 'corregir').map(f => `${nom(f)} — ${f.nota}`).join('\n');
+    document.getElementById('rc-nota-alta').value = filas.filter(f => f.tipo === 'alta').map(nom).join('\n');
+    document.getElementById('rc-nota-baja').value = filas.filter(f => f.tipo === 'baja').map(nom).join('\n');
+  }
+
+  function bloquesFinales(filas, e) {
+    const n = t => filas.filter(f => f.tipo === t).length;
+    const celdaR = (k, valor, texto) => `<div class="${k ? 'rc-k-' + k : ''}"><b>${valor}</b><span>${texto}</span></div>`;
+    const resumen = `<div class="rc-resumen">
+      ${celdaR('', e.registro.length, 'En Registro')}${celdaR('activo', n('activo'), 'Activos')}
+      ${celdaR('corregir', n('corregir'), 'Por corregir')}${celdaR('alta', n('alta'), 'Altas pendientes')}${celdaR('baja', n('baja'), 'Bajas')}
+    </div>`;
+    const caja = (tipo, titulo, id) => {
+      const lineas = document.getElementById(id).value.split('\n').map(l => l.trim()).filter(Boolean);
+      return `<div class="rc-caja rc-k-${tipo}">
+        <div class="rc-caja-t"><span class="rc-tag">${titulo}</span><b>${n(tipo)}</b></div>
+        ${lineas.length ? `<ul>${lineas.map(l => `<li>${esc(l)}</li>`).join('')}</ul>` : '<p class="rc-nada">Sin pendientes.</p>'}
+        <div class="rc-linea"></div><div class="rc-linea"></div>
+      </div>`;
+    };
+    return [resumen,
+      caja('corregir', 'POR CORREGIR', 'rc-nota-corregir'),
+      caja('alta', 'ALTAS PENDIENTES', 'rc-nota-alta'),
+      caja('baja', 'BAJAS', 'rc-nota-baja'),
+      '<div class="rc-fin">Fin del informe</div>'];
   }
 
   async function cargar() {
@@ -1985,14 +2042,14 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
     return false;
   }
 
-  function paginarComparativo(hoja, staging, equipo, resumen, logoEl) {
+  function paginarComparativo(hoja, staging, equipo, bloques, logoEl) {
     const paginas = [];
     const filas = [...staging.querySelectorAll('.rc-fila')];
     const fecha = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
     const leyenda = ['activo', 'corregir', 'alta', 'baja']
       .map(t => `<span class="rc-k-${t}"><i></i>${ETIQUETA[t]}</span>`).join('');
 
-    function nuevaPagina(primera) {
+    function nuevaPagina(conCabecera) {
       const pagina = document.createElement('section');
       pagina.className = 'rc-pagina';
       pagina.innerHTML = `
@@ -2001,7 +2058,7 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
           <div class="rc-pg-tit"><small>Liga Next Level 7 · Revisión de jugadores</small><h2>${esc(equipo.nombre)}</h2></div>
           <div class="rc-pg-fecha"><small>Generado</small><b>${esc(fecha)}</b></div>
         </header>
-        <div class="rc-pg-main">${primera ? resumen : ''}${CABECERA}<div class="rc-pg-body"></div></div>
+        <div class="rc-pg-main">${conCabecera ? CABECERA : ''}<div class="rc-pg-body"></div></div>
         <footer class="rc-pie"><div class="rc-leyenda">${leyenda}</div><span class="rc-num"></span></footer>`;
       if (logoEl) pagina.querySelector('.rc-pg-logo').append(logoEl.cloneNode(true));
       hoja.append(pagina);
@@ -2016,10 +2073,22 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
       cuerpo.append(fila);
       if (!desborda()) continue;
       fila.remove();
-      cuerpo = nuevaPagina(false);
+      cuerpo = nuevaPagina(true);
       cuerpo.append(fila);
       if (desborda()) throw Error('Una fila excede el espacio de una hoja carta.');
     }
+    // Resumen, notas y cierre al final del informe (sigue a la última fila; pasa a otra hoja si no cabe).
+    for (const html of bloques) {
+      const caja = document.createElement('div');
+      caja.innerHTML = html;
+      const nodo = caja.firstElementChild;
+      cuerpo.append(nodo);
+      if (!desborda()) continue;
+      nodo.remove();
+      cuerpo = nuevaPagina(false);
+      cuerpo.append(nodo);
+    }
+    paginas.forEach(pagina => [...pagina.querySelectorAll('.rc-fila')].at(-1)?.classList.add('rc-ultima'));
     paginas.forEach((pagina, i) => {
       pagina.querySelector('.rc-num').innerHTML = `Hoja <b>${i + 1}</b> de <b>${paginas.length}</b> · Tamaño carta`;
     });
@@ -2061,7 +2130,7 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
       hoja.append(staging);
       const imagenes = await Promise.all([...staging.querySelectorAll('img')].map(img => prepararImagen(img, paraPNG)));
       const logoEl = staging.querySelector('img.rc-escudo');
-      const paginas = paginarComparativo(hoja, staging, equipo, resumenHTML(filas, equipo), logoEl);
+      const paginas = paginarComparativo(hoja, staging, equipo, bloquesFinales(filas, equipo), logoEl);
       staging.remove();
 
       if (paraPNG) {
