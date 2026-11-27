@@ -6,6 +6,7 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Registro de Jugadores — Next Level 7</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 .mi-edicion label{display:block}.mi-edicion input{max-width:100%}
   * { box-sizing: border-box; }
@@ -221,48 +222,81 @@
 .rc-controles label {flex:1 1 200px;margin:0}
 .rc-controles select,.rc-controles button {margin-top:6px;padding:9px;border-radius:8px;border:1px solid #587343;background:#172520;color:#f2f7ef;font:inherit;max-width:100%}
 .rc-controles select {display:block;width:100%}
-.rc-equipo {border:1px solid #405634;border-radius:12px;margin-top:16px;overflow:hidden}
-.rc-equipo header {display:flex;align-items:center;gap:12px;padding:12px;background:#1d3020;text-align:left}
-.rc-equipo h3 {margin:0;color:#eafaDC;font-size:1rem}
-.rc-equipo p {margin:4px 0 0}
-.rc-escudo {width:44px;height:44px;object-fit:contain;flex:none}
-.rc-columnas,.rc-par {display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
-.rc-columnas {background:#14251c;font-size:.8rem;font-weight:800;color:#c0ed83}
-.rc-columnas span,.rc-ficha {padding:10px;min-width:0}
-.rc-par {border-top:1px solid #314237}
-.rc-par > :nth-child(2),.rc-columnas > :nth-child(2) {border-left:1px solid #314237}
-.rc-ficha {display:flex;align-items:center;gap:10px;overflow-wrap:anywhere;font-size:.85rem}
-.rc-ficha strong,.rc-ficha small {display:block}
-.rc-ficha small,.rc-equipo small,.rc-vacia {color:#c2d0c2}
-.rc-ficha img,.rc-sin-foto {width:64px;height:72px;border-radius:8px;flex:none}
-.rc-ficha img {object-fit:cover;background:#243128}
-.rc-sin-foto {display:grid;place-content:center;background:#243128;text-align:center;font-size:.7rem}
-.rc-vacia {font-size:.8rem}
-@media(max-width:570px) {
-  .rc-ficha {align-items:flex-start;flex-direction:column}
-  .rc-ficha img,.rc-sin-foto {width:58px;height:64px}
-}
-</style>
-<style>
 #rc-reporte-png {display:block;width:100%;margin:0 0 8px;padding:10px;border:0;border-radius:10px;background:#a4db52;color:#102007;font-weight:900;cursor:pointer}
-.rc-exportacion {position:absolute;left:-12000px;top:0;width:816px;color:#17281b;text-align:left}
-.rc-pagina {width:816px;height:1056px;box-sizing:border-box;padding:36px;background:#fff;display:flex;flex-direction:column}
-.rc-pagina > .rc-equipo {flex:none}
-.rc-pie {margin-top:auto;padding-top:10px;min-height:30px;box-sizing:border-box;font-size:12px;color:#263b28;text-align:right}
 #rc-archivos {display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 10px}
 #rc-archivos a {color:#c0ed83}
-.rc-exportacion h2 {margin:4px 0;font-size:22px}
-.rc-exportacion .rc-equipo {margin-top:12px;border-color:#b6c4ae}
-.rc-exportacion .rc-equipo header,.rc-exportacion .rc-columnas {background:#e6efd9;color:#21391b}
-.rc-exportacion h3,.rc-exportacion small,.rc-exportacion .rc-vacia {color:#263b28}
-.rc-exportacion .rc-sin-foto {background:#edf0ea;color:#374438}
-.rc-exportacion .rc-par,.rc-exportacion .rc-par > :nth-child(2),.rc-exportacion .rc-columnas > :nth-child(2) {border-color:#cfd9ca}
-.rc-exportacion .rc-ficha {flex-direction:row;align-items:center}
+
+/* ===== Comparativo: colores por contenedor (pantalla = oscuro, exportación = claro) ===== */
+#rc-lista{--tx:#eef5f1;--mut:#a9bbb0;--line:#2e4034;--cab:#14251c;--cabtx:#c0ed83;--fila:#101e17;--sinfoto:#243128;
+  --ok-b:#1c3a24;--ok-t:#9be3a6;--co-b:#4a3b0c;--co-t:#ffd666;--al-b:#173450;--al-t:#8cc4f5;--ba-b:#4a1d1d;--ba-t:#ff9c9c}
+.rc-exportacion{--tx:#17281b;--mut:#5b6b5f;--line:#d8e0d2;--cab:#1d3d05;--cabtx:#ffffff;--fila:#ffffff;--sinfoto:#edf0ea;
+  --ok-b:#dff3e3;--ok-t:#17642a;--co-b:#fff0c7;--co-t:#7a4f00;--al-b:#dcebfa;--al-t:#164f8a;--ba-b:#fbe0e0;--ba-t:#9a2424}
+.rc-k-activo{--k:#2f9e44;--tb:var(--ok-b);--tt:var(--ok-t)}
+.rc-k-corregir{--k:#e0a800;--tb:var(--co-b);--tt:var(--co-t)}
+.rc-k-alta{--k:#2f7fd1;--tb:var(--al-b);--tt:var(--al-t)}
+.rc-k-baja{--k:#d64545;--tb:var(--ba-b);--tt:var(--ba-t)}
+
+.rc-bloque{margin-top:16px}
+.rc-bloque-cab{display:flex;align-items:center;gap:12px;padding:10px 0}
+.rc-bloque-cab h3{margin:0;color:#eafadc;font-size:1.05rem}
+.rc-escudo{width:44px;height:44px;object-fit:contain;flex:none}
+.rc-resumen{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.rc-resumen div{border:1px solid var(--line);border-top:3px solid var(--k,#7a8a7e);border-radius:8px;padding:8px 6px;text-align:center;background:var(--fila);color:var(--tx)}
+.rc-resumen b{display:block;font-size:22px;line-height:1.15;font-variant-numeric:tabular-nums}
+.rc-resumen span{display:block;font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);font-weight:700}
+.rc-cab,.rc-fila{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(0,1fr) 120px;align-items:center}
+.rc-cab{background:var(--cab);color:var(--cabtx);font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;font-weight:800;border-radius:8px 8px 0 0;border-left:4px solid transparent}
+.rc-cab span{padding:10px 8px}
+.rc-cab span:first-child{text-align:center;padding:10px 0}
+.rc-cab span:last-child{text-align:center}
+.rc-fila{background:var(--fila);color:var(--tx);border-bottom:1px solid var(--line);border-left:4px solid var(--k);min-height:56px}
+.rc-n{text-align:center;font-size:11px;color:var(--mut);font-variant-numeric:tabular-nums}
+.rc-cel{display:flex;align-items:center;gap:9px;padding:6px 8px;min-width:0;font-size:12px;overflow-wrap:anywhere}
+.rc-dat{min-width:0}
+.rc-dat strong{display:block;font-size:12.5px;line-height:1.25;color:var(--tx)}
+.rc-dat small{display:block;font-size:10.5px;line-height:1.35;color:var(--mut)}
+.rc-foto,.rc-sin-foto{width:36px;height:44px;border-radius:6px;flex:none}
+.rc-foto{object-fit:cover;background:var(--sinfoto)}
+.rc-sin-foto{display:grid;place-content:center;background:var(--sinfoto);color:var(--mut);text-align:center;font-size:8px;line-height:1.1}
+.rc-vacia{color:var(--mut);font-size:11px;font-style:italic}
+.rc-est{padding:6px 6px;text-align:center}
+.rc-tag{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.9px;padding:4px 11px;border-radius:999px;background:var(--tb);color:var(--tt);border:1px solid var(--k)}
+.rc-est small{display:block;margin-top:4px;font-size:9.5px;line-height:1.25;color:var(--mut)}
+.rc-vacio-tabla{padding:18px;text-align:center;color:var(--mut);font-size:12px}
+@media(max-width:620px){
+  #rc-lista .rc-cab{display:none}
+  #rc-lista .rc-resumen{grid-template-columns:repeat(3,minmax(0,1fr))}
+  #rc-lista .rc-fila{grid-template-columns:1fr;padding:6px 4px 6px 4px}
+  #rc-lista .rc-n{display:none}
+  #rc-lista .rc-est{text-align:left;padding:4px 8px 8px}
+}
+
+/* ===== Hoja carta (816 × 1056 px = 8.5 × 11 in a 96 dpi) ===== */
+.rc-exportacion{position:absolute;left:-12000px;top:0;width:816px;text-align:left;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.rc-exportacion *{box-sizing:border-box}
+.rc-pagina{width:816px;height:1056px;background:#fff;display:flex;flex-direction:column;overflow:hidden;color:var(--tx)}
+.rc-pg-head{flex:none;display:flex;align-items:center;gap:16px;padding:26px 36px 18px;background:linear-gradient(135deg,#0f2002 0%,#1d3d05 60%,#2b5a0a 100%);border-bottom:5px solid #5eb50d;color:#fff}
+.rc-pg-logo:empty{display:none}
+.rc-pg-logo .rc-escudo{width:60px;height:60px;background:#fff;border-radius:12px;padding:4px}
+.rc-pg-tit{flex:1;min-width:0}
+.rc-pg-tit small,.rc-pg-fecha small{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;color:#b9d8a0}
+.rc-pg-tit h2{margin:5px 0 0;padding:0;font-size:27px;line-height:1.15;font-weight:800;color:#fff;text-align:left;text-transform:none;letter-spacing:0}
+.rc-pg-fecha{text-align:right;flex:none}
+.rc-pg-fecha b{display:block;margin-top:3px;font-size:13px;color:#fff;font-weight:600}
+.rc-pg-main{flex:1;min-height:0;display:flex;flex-direction:column;padding:18px 36px 0}
+.rc-pg-main > .rc-resumen,.rc-pg-main > .rc-cab{flex:none}
+.rc-pg-body{flex:1;min-height:0;overflow:hidden}
+.rc-pg-body .rc-fila{border-right:1px solid var(--line)}
+.rc-pg-body .rc-fila:last-child{border-bottom:0}
+.rc-pie{flex:none;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 36px;border-top:1px solid #d3dccb;background:#eef2e8;font-size:10.5px;color:#43544a}
+.rc-leyenda{display:flex;gap:14px;flex-wrap:wrap}
+.rc-leyenda i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;background:var(--k)}
+.rc-pie b{font-weight:700;color:#263b28}
 @page comparativo-carta {size:letter portrait;margin:0}
 @media print {
   body.rc-imprimiendo > :not(.rc-exportacion) {display:none!important}
   body.rc-imprimiendo {background:white!important;margin:0!important;padding:0!important}
-  .rc-exportacion {position:static;width:8.5in;page:comparativo-carta;print-color-adjust:exact}
+  .rc-exportacion {position:static;width:8.5in;page:comparativo-carta;print-color-adjust:exact;-webkit-print-color-adjust:exact}
   .rc-pagina {break-inside:avoid}
   .rc-pagina + .rc-pagina {break-before:page}
 }
@@ -385,7 +419,7 @@
 <div class="rc-controles">
 <label for="rc-filtro">Equipo<select id="rc-filtro"><option value="">Todos los equipos</option></select></label>
 <button type="button" id="rc-recargar">Actualizar comparativo</button>
-<button type="button" id="rc-descargar">Descargar PNG</button>
+<button type="button" id="rc-descargar">Descargar PNG (todas las hojas)</button>
 <button type="button" id="rc-imprimir">Imprimir</button>
 </div>
 <p id="rc-estado" role="status"></p>
@@ -406,7 +440,7 @@
 <select id="rc-equipo-reporte"><option value="">Selecciona un equipo</option></select>
 </label>
 </div>
-<button type="button" id="rc-reporte-png">📥 Comparativo por equipo (PNG)</button>
+<button type="button" id="rc-reporte-png">📥 Comparativo por equipo (PNG · todas las hojas)</button>
 <button class="rv-btn" data-rv="todos" style="display:block; width:100%; padding:10px; border:1px solid #5eb50d; border-radius:10px; background:transparent; color:#5eb50d; font-weight:900; cursor:pointer;">📥 Descargar los 3</button>
 <div id="rv-aviso" style="text-align:center; font-size:0.78rem; margin-top:10px; min-height:16px; color:rgba(238,247,230,0.7);"></div>
 </div>
@@ -1760,20 +1794,66 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
     return '';
   }
 
-  function ficha(jugador, ausente) {
-    if (!jugador) return `<div class="rc-ficha rc-vacia">${ausente}</div>`;
-    const { nombre, numero, posicion, apodo, foto, fecha } = jugador;
-    const src = imagenURL(foto);
-    const meta = [limpio(numero) && `#${numero}`, posicion].filter(Boolean).join(' · ');
-    return `<div class="rc-ficha">
-      ${src ? `<img src="${esc(src)}" alt="Foto de ${esc(nombre)}" loading="lazy">` : ''}
+  const ETIQUETA = { activo: 'ACTIVO', corregir: 'CORREGIR', alta: 'ALTA', baja: 'BAJA' };
+  const fechaCorta = ms => new Date(ms).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  // Estatus de cada fila al comparar el Registro (alta) contra la hoja "Jugadores".
+  function estadoFila(alta, actual) {
+    if (alta && actual) {
+      if (actual.baja) return { tipo: 'corregir', nota: 'Registrado de nuevo, pero la hoja lo marca de baja' };
+      const difs = [];
+      const n1 = limpio(alta.numero), n2 = limpio(actual.numero);
+      if (n1 && n2 && n1 !== n2) difs.push(`Número: hoja #${n2} → alta #${n1}`);
+      const p1 = limpio(alta.posicion), p2 = limpio(actual.posicion);
+      if (p1 && p2 && rvNorm(p1) !== rvNorm(p2)) difs.push(`Posición: ${p2} → ${p1}`);
+      if (difs.length) return { tipo: 'corregir', nota: difs.join(' · ') };
+      return { tipo: 'activo', nota: 'Datos coinciden' };
+    }
+    if (alta) return { tipo: 'alta', nota: 'Pendiente de pasar a la hoja' };
+    return { tipo: 'baja', nota: actual.baja ? 'Marcado de baja en la hoja' : 'No aparece en el Registro' };
+  }
+
+  function filasEquipo(e) {
+    return alinear(e.registro, e.hoja).map(([alta, actual]) => ({ alta, actual, ...estadoFila(alta, actual) }));
+  }
+
+  function celda(j, ausente, conFecha) {
+    if (!j) return `<div class="rc-cel rc-vacia">${ausente}</div>`;
+    const src = imagenURL(j.foto);
+    const meta = [limpio(j.numero) && `#${limpio(j.numero)}`, limpio(j.posicion)].filter(Boolean).join(' · ');
+    const fecha = conFecha && j.fecha && Number.isFinite(new Date(j.fecha).getTime()) ? `Alta: ${fechaCorta(j.fecha)}` : '';
+    return `<div class="rc-cel">
+      ${src ? `<img class="rc-foto" src="${esc(src)}" alt="Foto de ${esc(j.nombre)}" loading="lazy">` : ''}
       <span class="rc-sin-foto" ${src ? 'hidden style="display:none"' : ''}>Sin foto</span>
-      <div><strong>${esc(nombre || 'Sin nombre')}</strong>
+      <div class="rc-dat"><strong>${esc(j.nombre || 'Sin nombre')}</strong>
       ${meta ? `<small>${esc(meta)}</small>` : ''}
-      ${apodo ? `<small>Apodo: ${esc(apodo)}</small>` : ''}
-      ${fecha && Number.isFinite(new Date(fecha).getTime()) ? `<small>Alta: ${esc(fechaRegistro(fecha))}</small>` : ''}</div>
+      ${j.apodo ? `<small>Apodo: ${esc(j.apodo)}</small>` : ''}
+      ${fecha ? `<small>${fecha}</small>` : ''}</div>
     </div>`;
   }
+
+  function filaHTML(f, i) {
+    return `<div class="rc-fila rc-k-${f.tipo}">
+      <span class="rc-n">${i + 1}</span>
+      ${celda(f.alta, 'Sin alta en Registro', true)}
+      ${celda(f.actual, 'No está en la hoja', false)}
+      <div class="rc-est"><span class="rc-tag">${ETIQUETA[f.tipo]}</span><small>${esc(f.nota)}</small></div>
+    </div>`;
+  }
+
+  function resumenHTML(filas, e) {
+    const n = t => filas.filter(f => f.tipo === t).length;
+    const celdaR = (k, valor, texto) => `<div class="${k ? 'rc-k-' + k : ''}"><b>${valor}</b><span>${texto}</span></div>`;
+    return `<div class="rc-resumen">
+      ${celdaR('', e.registro.length, 'En Registro')}
+      ${celdaR('activo', n('activo'), 'Activos')}
+      ${celdaR('corregir', n('corregir'), 'Por corregir')}
+      ${celdaR('alta', n('alta'), 'Altas pendientes')}
+      ${celdaR('baja', n('baja'), 'Bajas')}
+    </div>`;
+  }
+
+  const CABECERA = '<div class="rc-cab"><span>#</span><span>Registro · Datos del alta</span><span>Hoja Jugadores · Actual</span><span>Estatus</span></div>';
 
   lista.addEventListener('error', evento => {
     const img = evento.target;
@@ -1788,14 +1868,14 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
   function pintar() {
     const visibles = equipos.filter(e => !filtro.value || e.clave === filtro.value);
     lista.innerHTML = visibles.map(e => {
-      const filas = alinear(e.registro, e.hoja);
+      const filas = filasEquipo(e);
       const logo = imagenURL(e.logo);
-      return `<section class="rc-equipo">
-        <header>${logo ? `<img class="rc-escudo" src="${esc(logo)}" alt="" loading="lazy">` : ''}
-        <div><h3>${esc(e.nombre)}</h3>
-        <p><small>${e.registro.length} en Registro · ${e.hoja.length} en Jugadores · ${filas.filter(f => f[0] && f[1]).length} coincidencias</small></p></div></header>
-        <div class="rc-columnas"><span>Registro · Datos del alta</span><span>Jugadores · Hoja actual</span></div>
-        ${filas.map(([alta, actual]) => `<div class="rc-par">${ficha(alta, 'Sin coincidencia en Registro')}${ficha(actual, 'Sin coincidencia en Jugadores')}</div>`).join('')}
+      return `<section class="rc-bloque">
+        <div class="rc-bloque-cab">${logo ? `<img class="rc-escudo" src="${esc(logo)}" alt="" loading="lazy">` : ''}
+        <h3>${esc(e.nombre)}</h3></div>
+        ${resumenHTML(filas, e)}
+        ${CABECERA}
+        ${filas.length ? filas.map(filaHTML).join('') : '<div class="rc-vacio-tabla">Sin jugadores en las dos fuentes.</div>'}
       </section>`;
     }).join('');
     estado.textContent = visibles.length ? '' : 'No hay jugadores en las dos fuentes.';
@@ -1840,12 +1920,25 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
           ...j, id: limpio(j.idJugador), nombre: limpio(j.nombre)
         });
       }
-      for (const [id, nombre, equipo, numero, posicion, , foto, , apodo] of filas) {
+      // Si la hoja trae una columna de Estatus/Activo/Baja, se usa para marcar las bajas.
+      const colEst = encabezado.findIndex(h => /^(estatus|estado|status|activo|baja)$/i.test(limpio(h).replace(/^\uFEFF/, '')));
+      const colEsBaja = colEst >= 0 && /baja/i.test(limpio(encabezado[colEst]));
+      const esBaja = v => {
+        const t = rvNorm(v);
+        if (!t) return false;
+        const si = ['true', 'si', 'activo', '1', 'verdadero'].includes(t);
+        const no = ['false', 'no', 'baja', 'inactivo', '0', 'falso'].includes(t);
+        if (colEsBaja) return si || t === 'baja';
+        return no;
+      };
+      for (const fila of filas) {
+        const [id, nombre, equipo, numero, posicion, , foto, , apodo] = fila;
         if (!limpio(nombre)) continue;
         const valor = limpio(equipo);
         const equipoId = /^\d+$/.test(valor) || nombres.has(valor) ? valor : '';
         grupo(equipoId, equipoId ? '' : valor).hoja.push({
-          id: limpio(id), nombre: limpio(nombre), numero, posicion, foto, apodo
+          id: limpio(id), nombre: limpio(nombre), numero, posicion, foto, apodo,
+          baja: colEst >= 0 && esBaja(fila[colEst])
         });
       }
       equipos = [...grupos.values()].sort((a, b) => orden(a.nombre, b.nombre));
@@ -1892,36 +1985,43 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
     return false;
   }
 
-  function paginarComparativo(hoja, fuente) {
+  function paginarComparativo(hoja, staging, equipo, resumen, logoEl) {
     const paginas = [];
-    const filas = [...fuente.querySelectorAll('.rc-par')];
-    filas.forEach(fila => fila.remove());
+    const filas = [...staging.querySelectorAll('.rc-fila')];
+    const fecha = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+    const leyenda = ['activo', 'corregir', 'alta', 'baja']
+      .map(t => `<span class="rc-k-${t}"><i></i>${ETIQUETA[t]}</span>`).join('');
 
-    function nuevaPagina() {
+    function nuevaPagina(primera) {
       const pagina = document.createElement('section');
       pagina.className = 'rc-pagina';
-      pagina.innerHTML = '<small>LIGA NEXT LEVEL 7</small><h2>Comparativo de jugadores por equipo</h2>';
-      const tabla = fuente.cloneNode(true);
-      const pie = document.createElement('footer');
-      pie.className = 'rc-pie';
-      pagina.append(tabla, pie);
+      pagina.innerHTML = `
+        <header class="rc-pg-head">
+          <div class="rc-pg-logo"></div>
+          <div class="rc-pg-tit"><small>Liga Next Level 7 · Revisión de jugadores</small><h2>${esc(equipo.nombre)}</h2></div>
+          <div class="rc-pg-fecha"><small>Generado</small><b>${esc(fecha)}</b></div>
+        </header>
+        <div class="rc-pg-main">${primera ? resumen : ''}${CABECERA}<div class="rc-pg-body"></div></div>
+        <footer class="rc-pie"><div class="rc-leyenda">${leyenda}</div><span class="rc-num"></span></footer>`;
+      if (logoEl) pagina.querySelector('.rc-pg-logo').append(logoEl.cloneNode(true));
       hoja.append(pagina);
       paginas.push(pagina);
-      return { tabla, pie };
+      return pagina.querySelector('.rc-pg-body');
     }
 
-    let actual = nuevaPagina();
-    const cabe = () => actual.tabla.getBoundingClientRect().bottom <= actual.pie.getBoundingClientRect().bottom - 30;
+    let cuerpo = nuevaPagina(true);
+    const desborda = () => cuerpo.scrollHeight > cuerpo.clientHeight + 1;
+    if (!filas.length) cuerpo.innerHTML = '<div class="rc-vacio-tabla">Sin jugadores en las dos fuentes.</div>';
     for (const fila of filas) {
-      actual.tabla.append(fila);
-      if (cabe()) continue;
+      cuerpo.append(fila);
+      if (!desborda()) continue;
       fila.remove();
-      actual = nuevaPagina();
-      actual.tabla.append(fila);
-      if (!cabe()) throw Error('Una ficha excede el espacio de una hoja carta.');
+      cuerpo = nuevaPagina(false);
+      cuerpo.append(fila);
+      if (desborda()) throw Error('Una fila excede el espacio de una hoja carta.');
     }
     paginas.forEach((pagina, i) => {
-      pagina.querySelector('.rc-pie').textContent = `Carta · Página ${i + 1} de ${paginas.length}`;
+      pagina.querySelector('.rc-num').innerHTML = `Hoja <b>${i + 1}</b> de <b>${paginas.length}</b> · Tamaño carta`;
     });
     return paginas;
   }
@@ -1931,13 +2031,13 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
     archivos.querySelectorAll('a').forEach(enlace => URL.revokeObjectURL(enlace.href));
     archivos.replaceChildren();
   }
+  const pausa = ms => new Promise(resolve => setTimeout(resolve, ms));
 
   async function generarComparativo(formato) {
     if (exportarPNG.disabled) return;
     panel.open = true;
     const equipo = equipos.find(e => e.clave === filtro.value);
-    const seccion = lista.querySelector('.rc-equipo');
-    if (recargar.disabled || !equipo || !seccion) {
+    if (recargar.disabled || !equipo) {
       panel.scrollIntoView({ block: 'start' });
       if (!recargar.disabled) {
         filtro.focus({ preventScroll: true });
@@ -1952,34 +2052,65 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
     estado.textContent = 'Preparando el comparativo…';
     const hoja = document.createElement('article');
     hoja.className = 'rc-exportacion';
-    const fuente = seccion.cloneNode(true);
     document.body.append(hoja);
     try {
-      const imagenes = await Promise.all([...fuente.querySelectorAll('img')].map(img => prepararImagen(img, paraPNG)));
-      const paginas = paginarComparativo(hoja, fuente);
+      const filas = filasEquipo(equipo);
+      const logo = imagenURL(equipo.logo);
+      const staging = document.createElement('div');
+      staging.innerHTML = (logo ? `<img class="rc-escudo" src="${esc(logo)}" alt="">` : '') + filas.map(filaHTML).join('');
+      hoja.append(staging);
+      const imagenes = await Promise.all([...staging.querySelectorAll('img')].map(img => prepararImagen(img, paraPNG)));
+      const logoEl = staging.querySelector('img.rc-escudo');
+      const paginas = paginarComparativo(hoja, staging, equipo, resumenHTML(filas, equipo), logoEl);
+      staging.remove();
+
       if (paraPNG) {
         limpiarArchivos();
         const nombre = rvNorm(equipo.nombre).replace(/ /g, '_') || 'equipo';
+        const salidas = [];
         for (const [i, pagina] of paginas.entries()) {
+          estado.textContent = `Generando hoja ${i + 1} de ${paginas.length}…`;
           const canvas = await html2canvas(pagina, {
             backgroundColor: '#ffffff', useCORS: true, scale: 2,
             width: 816, height: 1056, windowWidth: 1024
           });
           const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
           if (!png) throw Error('No se pudo crear el PNG');
+          salidas.push({ nombre: `Comparativo_${nombre}_carta_hoja_${String(i + 1).padStart(2, '0')}_de_${String(paginas.length).padStart(2, '0')}.png`, png });
+        }
+        // Enlaces de respaldo (por si el navegador bloquea descargas múltiples) + ZIP.
+        for (const [i, s] of salidas.entries()) {
           const enlace = document.createElement('a');
-          enlace.href = URL.createObjectURL(png);
-          enlace.download = `Comparativo_${nombre}_carta_pagina_${i + 1}.png`;
-          enlace.textContent = `Descargar página ${i + 1}`;
+          enlace.href = URL.createObjectURL(s.png);
+          enlace.download = s.nombre;
+          enlace.textContent = `Hoja ${i + 1}`;
           archivos.append(enlace);
         }
-        if (paginas.length === 1) archivos.firstElementChild.click();
+        if (salidas.length > 1 && window.JSZip) {
+          try {
+            const zip = new JSZip();
+            salidas.forEach(s => zip.file(s.nombre, s.png));
+            const blobZip = await zip.generateAsync({ type: 'blob' });
+            const enlaceZip = document.createElement('a');
+            enlaceZip.href = URL.createObjectURL(blobZip);
+            enlaceZip.download = `Comparativo_${nombre}_carta.zip`;
+            enlaceZip.textContent = '📦 Todas las hojas (ZIP)';
+            archivos.append(enlaceZip);
+          } catch {}
+        }
+        // Descarga automática de TODAS las hojas, una tras otra.
+        for (const enlace of [...archivos.querySelectorAll('a')].filter(a => a.download.endsWith('.png'))) {
+          enlace.click();
+          await pausa(700);
+        }
       } else {
         document.body.classList.add('rc-imprimiendo');
         window.print();
       }
       const aviso = imagenes.includes(false) ? ' Algunas imágenes no se pudieron incluir.' : '';
-      estado.textContent = paraPNG ? `Páginas tamaño carta listas para descargar: ${paginas.length}.${aviso}` : aviso.trim();
+      estado.textContent = paraPNG
+        ? `Se generaron ${paginas.length} hoja${paginas.length === 1 ? '' : 's'} tamaño carta.${paginas.length > 1 ? ' Si tu navegador pidió permiso para varias descargas, acéptalo; también puedes usar los enlaces de abajo.' : ''}${aviso}`
+        : aviso.trim();
     } catch {
       if (paraPNG) limpiarArchivos();
       estado.textContent = paraPNG ? 'No se pudo generar el PNG. Intenta otra vez o usa Imprimir.' : 'No se pudo abrir la impresión.';
