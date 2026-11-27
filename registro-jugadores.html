@@ -245,7 +245,12 @@
 </style>
 <style>
 #rc-reporte-png {display:block;width:100%;margin:0 0 8px;padding:10px;border:0;border-radius:10px;background:#a4db52;color:#102007;font-weight:900;cursor:pointer}
-.rc-exportacion {position:absolute;left:-12000px;top:0;width:816px;box-sizing:border-box;padding:24px;background:#fff;color:#17281b;text-align:left}
+.rc-exportacion {position:absolute;left:-12000px;top:0;width:816px;color:#17281b;text-align:left}
+.rc-pagina {width:816px;height:1056px;box-sizing:border-box;padding:36px;background:#fff;display:flex;flex-direction:column}
+.rc-pagina > .rc-equipo {flex:none}
+.rc-pie {margin-top:auto;padding-top:10px;min-height:30px;box-sizing:border-box;font-size:12px;color:#263b28;text-align:right}
+#rc-archivos {display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 10px}
+#rc-archivos a {color:#c0ed83}
 .rc-exportacion h2 {margin:4px 0;font-size:22px}
 .rc-exportacion .rc-equipo {margin-top:12px;border-color:#b6c4ae}
 .rc-exportacion .rc-equipo header,.rc-exportacion .rc-columnas {background:#e6efd9;color:#21391b}
@@ -253,13 +258,13 @@
 .rc-exportacion .rc-sin-foto {background:#edf0ea;color:#374438}
 .rc-exportacion .rc-par,.rc-exportacion .rc-par > :nth-child(2),.rc-exportacion .rc-columnas > :nth-child(2) {border-color:#cfd9ca}
 .rc-exportacion .rc-ficha {flex-direction:row;align-items:center}
+@page comparativo-carta {size:letter portrait;margin:0}
 @media print {
   body.rc-imprimiendo > :not(.rc-exportacion) {display:none!important}
   body.rc-imprimiendo {background:white!important;margin:0!important;padding:0!important}
-  .rc-exportacion {position:static;width:100%;padding:0;print-color-adjust:exact}
-  .rc-exportacion .rc-equipo {overflow:visible}
-  .rc-exportacion .rc-par {break-inside:avoid}
-  .rc-exportacion .rc-equipo header,.rc-exportacion .rc-columnas {break-after:avoid}
+  .rc-exportacion {position:static;width:8.5in;page:comparativo-carta;print-color-adjust:exact}
+  .rc-pagina {break-inside:avoid}
+  .rc-pagina + .rc-pagina {break-before:page}
 }
 </style>
 </head>
@@ -384,6 +389,7 @@
 <button type="button" id="rc-imprimir">Imprimir</button>
 </div>
 <p id="rc-estado" role="status"></p>
+<div id="rc-archivos" aria-label="Páginas del comparativo"></div>
 <div id="rc-lista"></div>
 </div>
 </details>
@@ -1886,6 +1892,46 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
     return false;
   }
 
+  function paginarComparativo(hoja, fuente) {
+    const paginas = [];
+    const filas = [...fuente.querySelectorAll('.rc-par')];
+    filas.forEach(fila => fila.remove());
+
+    function nuevaPagina() {
+      const pagina = document.createElement('section');
+      pagina.className = 'rc-pagina';
+      pagina.innerHTML = '<small>LIGA NEXT LEVEL 7</small><h2>Comparativo de jugadores por equipo</h2>';
+      const tabla = fuente.cloneNode(true);
+      const pie = document.createElement('footer');
+      pie.className = 'rc-pie';
+      pagina.append(tabla, pie);
+      hoja.append(pagina);
+      paginas.push(pagina);
+      return { tabla, pie };
+    }
+
+    let actual = nuevaPagina();
+    const cabe = () => actual.tabla.getBoundingClientRect().bottom <= actual.pie.getBoundingClientRect().bottom - 30;
+    for (const fila of filas) {
+      actual.tabla.append(fila);
+      if (cabe()) continue;
+      fila.remove();
+      actual = nuevaPagina();
+      actual.tabla.append(fila);
+      if (!cabe()) throw Error('Una ficha excede el espacio de una hoja carta.');
+    }
+    paginas.forEach((pagina, i) => {
+      pagina.querySelector('.rc-pie').textContent = `Carta · Página ${i + 1} de ${paginas.length}`;
+    });
+    return paginas;
+  }
+
+  const archivos = document.getElementById('rc-archivos');
+  function limpiarArchivos() {
+    archivos.querySelectorAll('a').forEach(enlace => URL.revokeObjectURL(enlace.href));
+    archivos.replaceChildren();
+  }
+
   async function generarComparativo(formato) {
     if (exportarPNG.disabled) return;
     panel.open = true;
@@ -1902,41 +1948,46 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
 
     const paraPNG = formato === 'png';
     exportarPNG.disabled = imprimir.disabled = reporte.disabled = true;
+    recargar.disabled = filtro.disabled = filtroReporte.disabled = true;
     estado.textContent = 'Preparando el comparativo…';
     const hoja = document.createElement('article');
     hoja.className = 'rc-exportacion';
-    hoja.innerHTML = '<small>LIGA NEXT LEVEL 7</small><h2>Comparativo de jugadores por equipo</h2>';
-    hoja.append(seccion.cloneNode(true));
+    const fuente = seccion.cloneNode(true);
     document.body.append(hoja);
     try {
-      const imagenes = await Promise.all([...hoja.querySelectorAll('img')].map(img => prepararImagen(img, paraPNG)));
+      const imagenes = await Promise.all([...fuente.querySelectorAll('img')].map(img => prepararImagen(img, paraPNG)));
+      const paginas = paginarComparativo(hoja, fuente);
       if (paraPNG) {
-        const canvas = await html2canvas(hoja, {
-          backgroundColor: '#ffffff', useCORS: true, scale: 2, windowWidth: 1024
-        });
-        const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-        if (!png) throw Error('No se pudo crear el PNG');
-        const url = URL.createObjectURL(png);
-        const enlace = document.createElement('a');
-        enlace.href = url;
-        enlace.download = 'Comparativo_' + (rvNorm(equipo.nombre).replace(/ /g, '_') || 'equipo') + '.png';
-        document.body.append(enlace);
-        enlace.click();
-        enlace.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 30000);
+        limpiarArchivos();
+        const nombre = rvNorm(equipo.nombre).replace(/ /g, '_') || 'equipo';
+        for (const [i, pagina] of paginas.entries()) {
+          const canvas = await html2canvas(pagina, {
+            backgroundColor: '#ffffff', useCORS: true, scale: 2,
+            width: 816, height: 1056, windowWidth: 1024
+          });
+          const png = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+          if (!png) throw Error('No se pudo crear el PNG');
+          const enlace = document.createElement('a');
+          enlace.href = URL.createObjectURL(png);
+          enlace.download = `Comparativo_${nombre}_carta_pagina_${i + 1}.png`;
+          enlace.textContent = `Descargar página ${i + 1}`;
+          archivos.append(enlace);
+        }
+        if (paginas.length === 1) archivos.firstElementChild.click();
       } else {
         document.body.classList.add('rc-imprimiendo');
         window.print();
       }
-      estado.textContent = imagenes.includes(false)
-        ? 'Algunas imágenes no se pudieron incluir. Usa Imprimir si el navegador permite mostrarlas.'
-        : paraPNG ? 'PNG generado.' : '';
+      const aviso = imagenes.includes(false) ? ' Algunas imágenes no se pudieron incluir.' : '';
+      estado.textContent = paraPNG ? `Páginas tamaño carta listas para descargar: ${paginas.length}.${aviso}` : aviso.trim();
     } catch {
+      if (paraPNG) limpiarArchivos();
       estado.textContent = paraPNG ? 'No se pudo generar el PNG. Intenta otra vez o usa Imprimir.' : 'No se pudo abrir la impresión.';
     } finally {
       document.body.classList.remove('rc-imprimiendo');
       hoja.remove();
       exportarPNG.disabled = imprimir.disabled = reporte.disabled = false;
+      recargar.disabled = filtro.disabled = filtroReporte.disabled = false;
     }
   }
 
@@ -1959,17 +2010,19 @@ document.querySelectorAll('.rg-admin-nav a').forEach(enlace => {
     if (!equipos.length && getComputedStyle(document.getElementById('panel-reportes')).display !== 'none') cargar();
   });
   filtro.addEventListener('change', () => {
+    limpiarArchivos();
     filtroReporte.setCustomValidity('');
     filtroReporte.value = filtro.value;
     pintar();
   });
   filtroReporte.addEventListener('change', () => {
+    limpiarArchivos();
     filtroReporte.setCustomValidity('');
     filtro.value = filtroReporte.value;
     pintar();
   });
   recargar.addEventListener('click', cargar);
-  document.getElementById('link-cerrar-admin').addEventListener('click', () => { panel.open = false; });
+  document.getElementById('link-cerrar-admin').addEventListener('click', () => { limpiarArchivos(); panel.open = false; });
 })();
 </script>
 </body>
