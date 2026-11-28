@@ -489,7 +489,6 @@ function svgMini(tipo, num, logoUrl) {
   return `<svg viewBox="0 0 448 448" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;filter:drop-shadow(0 0 6px ${c.glow});"><path fill="${c.main}" d="M176,8c-0.677-0.005-1.378,0-2.031,0.256l-95.906,24.563c-1.85,0.432-3.475,1.52-4.594,3.063L1.445,138.779c-2.195,3.145-1.86,7.406,0.813,10.156l48.063,48.906c3.126,3.139,8.217,3.139,11.344,0l18.437-18.438v192.594h15.938v52H80.101v8.063c-0.016,4.445,3.585,8.049,8.031,8.031l272.125-0.16c4.396,0,7.984-3.512,8.031-7.906l-0.064-127.781h-16.031v-52h16l-0.032-72.75l18.188,18.188c3.139,3.217,8.329,3.217,11.469,0l47.938-48.906c2.739-2.77,3.105-7.111,0.843-10.281l-72.062-102.625c-1.07-1.568-2.643-2.691-4.469-3.188l-96.031-24.437c-0.659-0.192-1.354-0.256-2.031-0.256H176z"/><path fill="${c.detail}" opacity="0.35" d="M181.744,24.269l0.874,1.312c10.5,13.323,24.314,20.104,41.456,20.118c17.147-0.014,31.074-6.787,41.575-20.118l1.43-1.629l96.126,23.511l66.496,94.844l-37.677,38.385l-26.221-26.34c-5.037-5.115-13.747-1.52-13.701,5.668l0.242,263.977h-256.3v-263.977c-0.058-7.045-8.534-10.58-13.582-5.668l-26.457,26.457l-37.559-38.387l66.496-94.842c30.742-7.834,66.078-15.486,96.801-23.316z"/><text x="224" y="310" text-anchor="middle" font-family="Arial" font-weight="900" font-size="90" fill="${c.text}" opacity="0.85">${num}</text>${li}</svg>`;
 }
 let datosChatLiga;
-let goleadoresChat;
 async function cargarCarrusel() {
   try {
     await cargarCatalogoCarrusel(); // primero traemos equipos/logos/IDs reales del Sheet
@@ -634,11 +633,6 @@ async function cargarCarrusel() {
     const jornadasJugadas = new Set();
     filasP.slice(1).forEach(line => { const c = line.split(','); if ((c[6]||'').trim() === 'Jugado' && c[1]) jornadasJugadas.add(c[1].trim()); });
     const totalJornadas = jornadasJugadas.size || 1;
-    if (resJ.ok && resEv.ok) {
-      goleadoresChat = jugadores.filter(j => j.Nombre && !/^(penal|default|autogol)$/i.test(j.Nombre) && golMap[j.ID_Jugador] > 0)
-        .map(j => ({ nombre: j.Nombre, equipo: carEqID[Number(j.Equipo)], goles: golMap[j.ID_Jugador] }))
-        .sort((a, b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre, 'es'));
-    }
     const top3=jugadores.filter(j=>golMap[j.ID_Jugador]>0&&!carBajasID.has(Number(j.Equipo))).map(j=>({nombre:j.Nombre||'',equipoID:Number(j.Equipo),numero:j.Numero||'-',goles:golMap[j.ID_Jugador]||0,partidosJugados:partMap[j.ID_Jugador]||0})).sort((a,b)=>b.goles-a.goles).slice(0,3);
     let htmlGoles='';
     if(top3.length){
@@ -812,9 +806,84 @@ const cargaCarrusel = cargarCarrusel();
 })();
 </script>
 <script>
+let datosGoleadores;
+function cargarGoleadoresChat() {
+  if (datosGoleadores) return datosGoleadores;
+  const catalogoJugadores = 'https://docs.google.com/spreadsheets/d/1BhDkqSWYzkahtaG19_uO28no5FQbQkDeomjZoMWBYfE/export?format=csv&gid=1894947293';
+  async function leer(url) {
+    const respuesta = await fetch(url);
+    if (!respuesta.ok) throw new Error('Hoja no disponible');
+    const csv = await respuesta.text();
+    if (!csv.includes(',') || /^\s*</.test(csv)) throw new Error('Formato de hoja inesperado');
+    return carParseCSV(csv).map(fila => Object.values(fila));
+  }
+  async function catalogo() {
+    try {
+      const filas = await leer(catalogoJugadores);
+      if (filas.some(fila => fila[0] && fila[1])) return filas;
+    } catch {
+      // La publicación del catálogo sirve como segunda fuente.
+    }
+    return leer(CAR_EQUIPOS);
+  }
+  datosGoleadores = Promise.all([catalogo(), leer(CAR_JUGADORES), leer(CAR_EVENTOS)])
+    .then(([filasEquipos, filasJugadores, filasEventos]) => {
+      const equipos = new Map(filasEquipos.filter(fila => fila[0] && fila[1] &&
+        fila[1].toLowerCase() !== 'descansa' && (fila[5] || '').toLowerCase() !== 'baja')
+        .map(fila => [fila[0], fila[1]]));
+      if (!equipos.size) throw new Error('Catálogo vacío');
+      const goles = new Map();
+      for (const [, , jugador, tipo] of filasEventos) {
+        if (jugador && tipo?.toLowerCase() === 'gol') goles.set(jugador, (goles.get(jugador) || 0) + 1);
+      }
+      const jugadores = filasJugadores.filter(([id, nombre, equipo]) =>
+        id && nombre && equipos.has(equipo) && !/^(penal|default|autogol)$/i.test(nombre))
+        .map(([id, nombre, equipo]) => ({ nombre, equipo: equipos.get(equipo), goles: goles.get(id) || 0 }))
+        .sort((a, b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre, 'es'));
+      return { equipos: [...new Set(equipos.values())], jugadores };
+    }).catch(error => {
+      datosGoleadores = undefined;
+      throw error;
+    });
+  return datosGoleadores;
+}
+
+async function consultarGoleadores(consulta, alEncontrarEquipo) {
+  const { equipos, jugadores } = await cargarGoleadoresChat();
+  const normalizar = nombre => nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const llave = nombre => normalizar(nombre).replace(/ /g, '');
+  const clave = llave(consulta);
+  if (!clave) return null;
+  const exactos = equipos.filter(equipo => llave(equipo) === clave);
+  const opciones = exactos.length ? exactos : equipos.filter(equipo => llave(equipo).includes(clave));
+  const describir = j => j.nombre + ' · ' + j.goles + (j.goles === 1 ? ' gol' : ' goles');
+  if (opciones.length > 1) return 'Encontré varios equipos:\n' + opciones.join('\n');
+  if (opciones.length === 1) {
+    const [equipo] = opciones;
+    alEncontrarEquipo(equipo);
+    const lista = jugadores.filter(j => j.equipo === equipo && j.goles > 0);
+    return lista.length ? [equipo, ...lista.map(describir)].join('\n') : equipo + ' no tiene goles registrados.';
+  }
+
+  const palabras = normalizar(consulta).split(' ');
+  const exactosJugador = jugadores.filter(j => llave(j.nombre) === clave);
+  const coincidencias = exactosJugador.length ? exactosJugador : jugadores.filter(j => {
+    const nombre = normalizar(j.nombre).split(' ');
+    const identificadores = new Set([...nombre, ...normalizar(j.equipo).split(' ')]);
+    return palabras.some(palabra => nombre.includes(palabra)) &&
+      palabras.every(palabra => identificadores.has(palabra));
+  });
+  if (!coincidencias.length) return null;
+  const clubes = new Set(coincidencias.map(j => j.equipo));
+  if (clubes.size === 1) alEncontrarEquipo(coincidencias[0].equipo);
+  return coincidencias.map(j => describir(j) + ' · ' + j.equipo).join('\n');
+}
+
 window.NextLevel7Chat = {
   enlaces: { partidos: 'partidos.html', tabla: 'tablaGeneral.html', pendientes: 'partidos.html', goleadores: 'jugadores.html' },
   async consultar(tipo, consulta, alEncontrarEquipo) {
+    if (tipo === 'goleadores') return consultarGoleadores(consulta, alEncontrarEquipo);
     await cargaCarrusel;
     const datos = datosChatLiga;
     if (!datos) throw new Error('Datos de la liga no disponibles');
@@ -831,14 +900,6 @@ window.NextLevel7Chat = {
     if (!opciones.length) return null;
     const [equipo] = opciones;
     alEncontrarEquipo(equipo);
-    if (tipo === 'goleadores') {
-      if (!goleadoresChat) throw new Error('Goleadores no disponibles');
-      const lista = goleadoresChat.filter(j => j.equipo === equipo);
-      return lista.length
-        ? [equipo, ...lista.map(j => j.nombre + ' · ' + j.goles + (j.goles === 1 ? ' gol' : ' goles'))].join('\n')
-        : equipo + ' no tiene goleadores registrados.';
-    }
-
     if (tipo === 'tabla') {
       const fila = datos.equipos.find(e => normalizar(e.nombre) === normalizar(equipo));
       if (!fila) return equipo + ' aún no aparece en la tabla.';
@@ -994,7 +1055,11 @@ window.NextLevel7Chat = {
     showPortal(action);
     showWhatsapp(action);
     form.hidden = !['partidos', 'tabla', 'pendientes', 'goleadores'].includes(action[0]) || typeof config.consultar !== 'function';
+    const termino = action[0] === 'goleadores' ? 'Equipo o jugador' : 'Nombre del equipo';
+    input.placeholder = termino;
+    input.setAttribute('aria-label', termino);
     const messages = {
+      goleadores: 'Escribe un equipo o el nombre de un jugador.',
       inscripciones: 'Escríbenos para consultar los torneos abiertos y la inscripción.',
       renta: 'Cuéntanos qué fecha y hora buscas para confirmar disponibilidad.',
       contacto: 'Puedes escribirnos al 221 421 1261.'
@@ -1018,7 +1083,7 @@ window.NextLevel7Chat = {
     event.preventDefault();
     const team = input.value.trim();
     if (!team) {
-      answer.textContent = 'Escribe el nombre de tu equipo.';
+      answer.textContent = 'Escribe ' + input.placeholder.toLowerCase() + '.';
       input.focus();
       return;
     }
@@ -1032,7 +1097,9 @@ window.NextLevel7Chat = {
       });
       if (current !== request) return;
       answer.textContent = typeof result === 'string' && result.trim()
-        ? result : 'No encontré información para ese equipo. Revisa el nombre o escríbenos.';
+        ? result
+        : selected[0] === 'goleadores' ? 'No encontré ese equipo o jugador. Revisa el nombre.'
+          : 'No encontré información para ese equipo. Revisa el nombre o escríbenos.';
     } catch {
       if (current === request) answer.textContent = 'No pude consultar los datos en este momento. Puedes escribirnos por WhatsApp.';
     }
