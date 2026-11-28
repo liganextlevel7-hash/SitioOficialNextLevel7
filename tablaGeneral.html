@@ -57,6 +57,9 @@ body.standings{--green:#a4e55f;--gold:#e0bb58;--text:#eef5e8;--muted:#a4b398;--l
 @media(prefers-reduced-motion:reduce){.standings[data-season="navidad"] .christmas-snow{display:none;}.standings .snowflake{animation:none;}}
 @media print{.standings[data-season="navidad"] .christmas-snow{display:none;}}
 </style>
+<style>
+.standings .tbl-gn tbody tr.equipo-del-chat td { background: #294916 !important; box-shadow: inset 0 2px #a4e55f, inset 0 -2px #a4e55f; }
+</style>
 </head>
 <body class="standings">
 <div class="christmas-snow" aria-hidden="true"></div>
@@ -130,6 +133,42 @@ Cargando tabla...
 })();
 </script>
 <script src="tablaGeneral.js"></script>
+<script>
+(() => {
+  const nombre = new URLSearchParams(location.search).get('equipo');
+  const normalizar = texto => texto.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const objetivo = normalizar(nombre || '');
+  if (!objetivo) return;
+
+  function vigilar(contenedor, actualizar) {
+    const observador = new MutationObserver(revisar);
+    function revisar() {
+      if (!actualizar()) return;
+      observador.disconnect();
+      clearTimeout(expira);
+    }
+    observador.observe(contenedor, { childList: true, subtree: true, characterData: true });
+    const expira = setTimeout(() => observador.disconnect(), 30000);
+    revisar();
+  }
+
+  function enfocar(elemento) {
+    const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    requestAnimationFrame(() => elemento.scrollIntoView({ block: 'center', inline: 'nearest', behavior }));
+  }
+
+  const contenedor = document.querySelector('#tabla-general-completa');
+  vigilar(contenedor, () => {
+    const equipo = [...contenedor.querySelectorAll('tbody tr .team-name')]
+      .find(elemento => normalizar(elemento.textContent) === objetivo);
+    if (!equipo) return false;
+    equipo.closest('tr').classList.add('equipo-del-chat');
+    enfocar(equipo);
+    return true;
+  });
+})();
+</script>
 </body>
 </html>
 
