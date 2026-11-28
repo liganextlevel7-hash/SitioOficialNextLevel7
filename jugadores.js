@@ -433,7 +433,7 @@ async function cargarJugadores() {
     selector.innerHTML += `<option value="${id}">${nombre}</option>`;
   });
 
-  function mostrarJugadoresEquipo(soloGoleadores = false) {
+  function mostrarJugadoresEquipo(soloGoleadores = false, jugadorID = null) {
     const equipoID = selector.value;
     const tops = document.getElementById("tops-section");
     const equipoSection = document.getElementById("equipo-jugadores-section");
@@ -450,7 +450,7 @@ async function cargarJugadores() {
     document.getElementById('titulo-equipo-jugadores').textContent = '👕 ' + (equiposID[equipoID] || 'Jugadores');
 
     const lista = jugadores.filter(j =>
-      j.equipo === equipoID &&
+      j.equipo === equipoID && (!jugadorID || j.id === jugadorID) &&
       j.nombre !== "Penal" && j.nombre !== "Default" && j.nombre !== "Autogol"
     );
 
@@ -488,11 +488,24 @@ async function cargarJugadores() {
     });
 
     crearCarrusel('carrusel-equipo', htmlEquipoArr, statsEquipoArr);
+    if (jugadorID) {
+      const titulo = document.getElementById('titulo-equipo-jugadores');
+      titulo.textContent = lista[0].nombre + ' · ' + equiposID[equipoID];
+      requestAnimationFrame(() => titulo.scrollIntoView({ block: 'start' }));
+    }
   }
 
   selector.addEventListener('change', () => mostrarJugadoresEquipo());
-  const nombreSolicitado = new URLSearchParams(location.search).get('equipo');
-  if (nombreSolicitado) {
+  const parametros = new URLSearchParams(location.search);
+  const nombreSolicitado = parametros.get('equipo');
+  const jugadorSolicitado = parametros.get('jugador');
+  const ficha = jugadorSolicitado && jugadores.find(j => j.id === jugadorSolicitado &&
+    equiposID[j.equipo] && !/^(penal|default|autogol)$/i.test(j.nombre));
+  if (ficha) {
+    selector.value = ficha.equipo;
+    mostrarTab('equipo');
+    mostrarJugadoresEquipo(false, ficha.id);
+  } else if (nombreSolicitado) {
     const normalizar = nombre => nombre.normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const clave = normalizar(nombreSolicitado);
