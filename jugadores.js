@@ -433,7 +433,7 @@ async function cargarJugadores() {
     selector.innerHTML += `<option value="${id}">${nombre}</option>`;
   });
 
-  selector.addEventListener("change", () => {
+  function mostrarJugadoresEquipo(soloGoleadores = false) {
     const equipoID = selector.value;
     const tops = document.getElementById("tops-section");
     const equipoSection = document.getElementById("equipo-jugadores-section");
@@ -453,6 +453,18 @@ async function cargarJugadores() {
       j.equipo === equipoID &&
       j.nombre !== "Penal" && j.nombre !== "Default" && j.nombre !== "Autogol"
     );
+
+    if (soloGoleadores) {
+      const goleadoresEquipo = lista.filter(j => golesMap[j.id] > 0)
+        .sort((a, b) => golesMap[b.id] - golesMap[a.id] || a.nombre.localeCompare(b.nombre, 'es'));
+      const titulo = document.getElementById('titulo-equipo-jugadores');
+      titulo.textContent = '⚽ Goleadores · ' + equiposID[equipoID];
+      crearCarrusel('carrusel-equipo', goleadoresEquipo.map(j =>
+        playerCardHTML(j, golesMap[j.id], asistMap[j.id] || 0, amarillasMap[j.id] || 0, rojasMap[j.id] || 0)
+      ), goleadoresEquipo.map(j => statsFicha(j, [{ l: '⚽ GOLES', v: golesMap[j.id] }])));
+      requestAnimationFrame(() => titulo.scrollIntoView({ block: 'start' }));
+      return;
+    }
 
     const htmlEquipoArr = [], statsEquipoArr = [];
     lista.forEach(j => {
@@ -476,7 +488,21 @@ async function cargarJugadores() {
     });
 
     crearCarrusel('carrusel-equipo', htmlEquipoArr, statsEquipoArr);
-  });
+  }
+
+  selector.addEventListener('change', () => mostrarJugadoresEquipo());
+  const nombreSolicitado = new URLSearchParams(location.search).get('equipo');
+  if (nombreSolicitado) {
+    const normalizar = nombre => nombre.normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const clave = normalizar(nombreSolicitado);
+    const coincidencias = Object.entries(equiposID).filter(([, nombre]) => clave && normalizar(nombre) === clave);
+    if (coincidencias.length === 1) {
+      selector.value = coincidencias[0][0];
+      mostrarTab('equipo');
+      mostrarJugadoresEquipo(true);
+    }
+  }
 }
 
 cargarJugadores();
