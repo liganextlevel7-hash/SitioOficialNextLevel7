@@ -36,10 +36,37 @@ body.standings{--green:#a4e55f;--gold:#e0bb58;--text:#eef5e8;--muted:#a4b398;--l
 .standings .popup-card{background:#152010;border:1px solid #b6db7e66;box-shadow:0 20px 80px #0009;border-radius:16px;}.standings .popup-header{border-bottom-color:#9db97833;}.standings .popup-nombre{color:#edf5e7;text-transform:none;letter-spacing:0;font-size:17px;}.standings .popup-rank{color:#b9d89c;}.standings .popup-stat{background:#ffffff05;}.standings .popup-stat-lbl{color:#a6b999;font-size:10px;}.standings .popup-pts{background:#a4e55f0c;border-color:#a4e55f33;}.standings .popup-pts-val{color:#b8ea7a;}.standings .popup-close{color:#bacbad;min-width:32px;min-height:32px;}
 @media(max-width:700px){.standings .standings-header{padding:18px 16px;}.standings .brand-row{align-items:flex-start;flex-wrap:wrap;gap:14px;}.standings .brand-logos{gap:10px;}.standings .brand-logos .logo-liga{width:48px;height:56px;}.standings .brand-label strong{font-size:15px;}.standings .brand-label small{font-size:9px;letter-spacing:1.3px;}.standings .page-heading{margin-top:20px;padding-top:20px;}.standings .season-label{display:none;}.standings .contenedor{padding:0 12px 22px;}.standings .card{padding:15px 10px;border-radius:12px;}.standings .panel-heading{gap:10px;}.standings .zone-key{gap:10px;font-size:10px;}.standings .standings-footer{padding:0 16px 22px;}}
 @media(max-width:600px){.standings .mobile-hint{display:block;}.standings .tbl-gn thead th{font-size:10px;padding:12px 5px;letter-spacing:.5px;}.standings .tbl-gn td{padding:12px 5px;font-size:12px;}.standings .tbl-gn .td-team{min-width:0;}.standings .team-logo{width:35px;height:35px;flex-shrink:0;}.standings .team-inner{gap:7px;}.standings .team-name{font-size:12px;overflow-wrap:anywhere;}.standings .rank-circle{width:23px;height:23px;}.standings .tbl-gn .td-pts{font-size:17px!important;}.standings .tbl-gn-bar{justify-content:flex-start;}.standings .stats-key{font-size:11px;}.standings .standings-footer{flex-direction:column;}.standings .popup-card{width:calc(100% - 32px);}}
+
+/* Adornos de temporada del torneo. */
+.standings .brand-season{display:none;position:relative;flex:0 0 48px;width:48px;height:39px;}
+.standings .brand-season[data-season="navidad"]{display:block;filter:drop-shadow(0 3px 5px #0008);}
+.standings .season-bow{position:absolute;inset:0;}
+.standings .season-bow::before,.standings .season-bow::after{content:"";position:absolute;top:6px;width:23px;height:17px;border:1px solid #ffb392;background:linear-gradient(155deg,#ed6571,#bb162b 42%,#700e1c);border-radius:50% 44% 38% 48%;}
+.standings .season-bow::before{left:0;transform:rotate(21deg);}
+.standings .season-bow::after{right:0;transform:rotate(-21deg);}
+.standings .bow-tails{position:absolute;width:15px;height:23px;background:linear-gradient(90deg,#811021,#e94659,#b01830);clip-path:polygon(0 0,100% 0,100% 100%,50% 77%,0 100%);}
+.standings .bow-tails{top:16px;left:12px;transform:rotate(24deg);}
+.standings .bow-tail-right{left:auto;right:12px;transform:rotate(-24deg);}
+.standings .bow-knot{position:absolute;top:11px;left:19px;width:11px;height:13px;z-index:1;background:linear-gradient(140deg,#ffe6a1,#bd8029);border:1px solid #ffd888;border-radius:4px;}
+.standings .season-icon{display:none;}
+.standings .brand-season[data-season="reyes"],.standings .brand-season[data-season="candelaria"]{display:grid;place-items:center;border:1px solid #e0bb5855;border-radius:50%;background:#352917;color:#fbe1a1;}
+.standings .brand-season[data-season="reyes"] .season-reyes,.standings .brand-season[data-season="candelaria"] .season-candelaria{display:block;font-size:22px;line-height:1;}
+.standings .brand-season:not([data-season="navidad"]) .season-bow{display:none;}
+.standings .standings-header[data-season="navidad"] .page-heading{border-top-color:#e0bb5866;}
+@media(max-width:375px){.standings .brand-season{margin-left:-8px;transform:scale(.8);}}
+@media print{.standings .brand-season[data-season]{display:none;}}
+.standings .christmas-snow{display:none;position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+.standings[data-season="navidad"] .christmas-snow{display:block;}
+.standings .standings-header,.standings .contenedor,.standings .standings-footer{position:relative;}
+.standings .snowflake{position:absolute;top:0;left:var(--left);width:var(--size);height:var(--size);border-radius:50%;background:#f9fdff;opacity:var(--opacity);animation:snowfall var(--duration) linear var(--delay) infinite;will-change:transform;}
+@keyframes snowfall{from{transform:translate3d(0,-12px,0);}to{transform:translate3d(var(--drift),calc(100vh + 12px),0);}}
+@media(prefers-reduced-motion:reduce){.standings[data-season="navidad"] .christmas-snow{display:none;}.standings .snowflake{animation:none;}}
+@media print{.standings[data-season="navidad"] .christmas-snow{display:none;}}
 </style>
 </head>
 <body class="standings">
-<header class="standings-header"><div class="brand-row"><div class="brand-logos"><img src="logo-liga.png.png" class="logo-liga" alt="Liga Next Level 7"><img src="laregionallstars.png" class="logo-liga" alt="La Región All Stars"><div class="brand-label"><strong>Next Level 7</strong><small>TORNEO DOMINICAL</small></div></div><nav>
+<div class="christmas-snow" aria-hidden="true"></div>
+<header class="standings-header"><div class="brand-row"><div class="brand-logos"><img src="logo-liga.png.png" class="logo-liga" alt="Liga Next Level 7"><img src="laregionallstars.png" class="logo-liga" alt="La Región All Stars"><div class="brand-label"><strong>Next Level 7</strong><small>TORNEO DOMINICAL</small></div><span class="brand-season" aria-hidden="true"><span class="season-bow"><i class="bow-tails"></i><i class="bow-tails bow-tail-right"></i><i class="bow-knot"></i></span><span class="season-icon season-reyes">👑</span><span class="season-icon season-candelaria">🫔</span></span></div><nav aria-label="Navegación de Tabla General">
 <a href="index.html">Inicio</a>
 <a href="dashboard3d.html" title="Modo 3D interactivo"><svg viewBox="0 0 32 40" aria-hidden="true" style="height:1.15em;width:auto;vertical-align:-.2em;margin-right:6px"><rect x="4" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="24" y="15" width="4" height="11" rx="2" fill="#f1c9a0"/><rect x="10" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="17" y="27" width="5" height="11" rx="2" fill="#f3f5ee"/><rect x="9" y="14" width="14" height="14" rx="2" fill="#5eb50d"/><circle cx="16" cy="7" r="6" fill="#f1c9a0"/><path d="M10 6a6 6 0 0 1 12 0z" fill="#1a1410"/></svg>Modo 3D</a>
 </nav></div><div class="page-heading"><div><div class="eyebrow">CADA PARTIDO CUENTA</div><h1>Tabla General</h1><p class="subtitulo">Así marcha nuestra liga. Sigue la posición de tu equipo.</p></div><span class="season-label">Clasificación del torneo</span></div></header>
@@ -53,6 +80,61 @@ Cargando tabla...
 </div>
 </section>
 <footer class="standings-footer"><span>Liga Next Level 7 · Torneo Dominical</span><a href="index.html">Volver al inicio →</a></footer>
+
+<script>
+(() => {
+  const header = document.querySelector('.standings-header');
+  const ornament = header.querySelector('.brand-season');
+  const snow = document.querySelector('.christmas-snow');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const pueblaDate = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Mexico_City',
+    month: '2-digit',
+    day: '2-digit'
+  });
+
+  function updateSeason() {
+    const [month, day] = pueblaDate.format(new Date()).split('/').map(Number);
+    const date = month * 100 + day;
+    let season = '';
+    if (date >= 1120 || date <= 104) season = 'navidad';
+    else if (date >= 105 && date <= 107) season = 'reyes';
+    else if (date === 202) season = 'candelaria';
+
+    header.dataset.season = season;
+    ornament.dataset.season = season;
+    document.body.dataset.season = season;
+
+    if (season !== 'navidad' || reducedMotion.matches) {
+      if (snow.firstChild) snow.replaceChildren();
+      return;
+    }
+
+    if (snow.firstChild) return;
+    const flakes = document.createDocumentFragment();
+    const count = window.matchMedia('(max-width: 600px)').matches ? 24 : 42;
+    for (let index = 0; index < count; index++) {
+      const flake = document.createElement('i');
+      flake.className = 'snowflake';
+      const duration = 9 + Math.random() * 15;
+      flake.style.setProperty('--left', Math.random() * 100 + '%');
+      flake.style.setProperty('--size', 2 + Math.random() * 4 + 'px');
+      flake.style.setProperty('--opacity', 0.25 + Math.random() * 0.55);
+      flake.style.setProperty('--drift', Math.random() * 100 - 50 + 'px');
+      flake.style.setProperty('--duration', duration + 's');
+      flake.style.setProperty('--delay', -Math.random() * duration + 's');
+      flakes.append(flake);
+    }
+    snow.append(flakes);
+  }
+
+  updateSeason();
+  reducedMotion.addEventListener('change', updateSeason);
+  window.addEventListener('pageshow', updateSeason);
+  document.addEventListener('visibilitychange', updateSeason);
+  window.setInterval(updateSeason, 60_000);
+})();
+</script>
 <script src="tablaGeneral.js"></script>
 </body>
 </html>
