@@ -293,6 +293,10 @@ body.standings{padding:0;min-height:100vh;}
   .standings .editor-panel,.standings .stack-container{width:calc(100% - 32px);}
 }
 </style>
+<style>
+#stackContainer .stack-team-name.equipo-del-chat { color: #d4ff56; }
+#stackContainer .stack-card.partido-del-chat .stack-card-inner { outline: 2px solid #a4e55f; outline-offset: -2px; }
+</style>
 </head>
 <body class="standings">
 <div class="christmas-snow" aria-hidden="true"></div>
@@ -388,5 +392,60 @@ body.standings{padding:0;min-height:100vh;}
 </script>
   <script src="juegos-control.js?v=20261031-cupo15"></script>
   <script src="partidos.js?v=20261031-cupo15"></script>
+<script>
+(() => {
+  const nombre = new URLSearchParams(location.search).get('equipo');
+  const normalizar = texto => texto.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const objetivo = normalizar(nombre || '');
+  if (!objetivo) return;
+
+  function vigilar(contenedor, actualizar) {
+    const observador = new MutationObserver(revisar);
+    function revisar() {
+      if (!actualizar()) return;
+      observador.disconnect();
+      clearTimeout(expira);
+    }
+    observador.observe(contenedor, { childList: true, subtree: true, characterData: true });
+    const expira = setTimeout(() => observador.disconnect(), 30000);
+    revisar();
+  }
+
+  function enfocar(elemento) {
+    const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth';
+    requestAnimationFrame(() => elemento.scrollIntoView({ block: 'center', inline: 'nearest', behavior }));
+  }
+
+  const tipo = document.querySelector('#filterTipo');
+  const selector = document.querySelector('#filterEquipo');
+  const boton = document.querySelector('.load-btn');
+  const tarjetas = document.querySelector('#stackContainer');
+
+  vigilar(selector, () => {
+    const opcion = [...selector.options].find(opcion =>
+      opcion.value && normalizar(opcion.textContent) === objetivo);
+    if (!opcion) return false;
+    tipo.value = 'equipo';
+    tipo.dispatchEvent(new Event('change', { bubbles: true }));
+    selector.value = opcion.value;
+    if (!selector.value) return false;
+
+    vigilar(tarjetas, () => {
+      const equipos = [...tarjetas.querySelectorAll('.stack-team-name')].filter(
+        elemento => normalizar(elemento.textContent) === objetivo);
+      if (!equipos.length) return false;
+      for (const equipo of equipos) {
+        equipo.classList.add('equipo-del-chat');
+        equipo.closest('.stack-card')?.classList.add('partido-del-chat');
+      }
+      enfocar(equipos[0].closest('.stack-card') || equipos[0]);
+      return true;
+    });
+    boton.click();
+    return true;
+  });
+})();
+</script>
 </body>
 </html>
