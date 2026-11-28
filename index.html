@@ -838,7 +838,7 @@ function cargarGoleadoresChat() {
       }
       const jugadores = filasJugadores.filter(([id, nombre, equipo]) =>
         id && nombre && equipos.has(equipo) && !/^(penal|default|autogol)$/i.test(nombre))
-        .map(([id, nombre, equipo]) => ({ nombre, equipo: equipos.get(equipo), goles: goles.get(id) || 0 }))
+        .map(([id, nombre, equipo]) => ({ id, nombre, equipo: equipos.get(equipo), goles: goles.get(id) || 0 }))
         .sort((a, b) => b.goles - a.goles || a.nombre.localeCompare(b.nombre, 'es'));
       return { equipos: [...new Set(equipos.values())], jugadores };
     }).catch(error => {
@@ -876,7 +876,10 @@ async function consultarGoleadores(consulta, alEncontrarEquipo) {
   });
   if (!coincidencias.length) return null;
   const clubes = new Set(coincidencias.map(j => j.equipo));
-  if (clubes.size === 1) alEncontrarEquipo(coincidencias[0].equipo);
+  if (clubes.size === 1) {
+    const jugador = coincidencias.length === 1 ? coincidencias[0] : null;
+    alEncontrarEquipo(coincidencias[0].equipo, jugador?.id);
+  }
   return coincidencias.map(j => describir(j) + ' · ' + j.equipo).join('\n');
 }
 
@@ -1031,7 +1034,7 @@ window.NextLevel7Chat = {
     whatsapp.hidden = false;
   }
 
-  function showPortal(action, equipo = '') {
+  function showPortal(action, equipo = '', jugador = '') {
     portal.hidden = true;
     const href = config.enlaces?.[action[0]];
     if (!href) return;
@@ -1039,8 +1042,9 @@ window.NextLevel7Chat = {
       const url = new URL(href, location.href);
       if (!['https:', 'http:', 'file:'].includes(url.protocol)) return;
       if (equipo) url.searchParams.set('equipo', equipo);
+      if (jugador) url.searchParams.set('jugador', jugador);
       portal.href = url.href;
-      portal.textContent = 'Ver ' + action[1].toLocaleLowerCase('es-MX');
+      portal.textContent = jugador ? 'Ver ficha del jugador' : 'Ver ' + action[1].toLocaleLowerCase('es-MX');
       portal.hidden = false;
     } catch {
       // WhatsApp sigue disponible si la ruta no es válida.
@@ -1092,8 +1096,8 @@ window.NextLevel7Chat = {
     showWhatsapp(selected, team);
     answer.textContent = 'Consultando…';
     try {
-      const result = await config.consultar(selected[0], team, equipo => {
-        if (current === request) showPortal(selected, equipo);
+      const result = await config.consultar(selected[0], team, (equipo, jugador) => {
+        if (current === request) showPortal(selected, equipo, jugador);
       });
       if (current !== request) return;
       answer.textContent = typeof result === 'string' && result.trim()
